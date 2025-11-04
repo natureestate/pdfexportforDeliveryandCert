@@ -214,9 +214,30 @@ export const generatePdf = async (element: HTMLElement, filename: string): Promi
     try {
         console.log('Starting PDF generation process...');
         
-        // Hide scrollbars during capture for a cleaner image
+        // 🔥 บันทึกค่า style เดิมของ element
+        const originalWidth = element.style.width;
+        const originalHeight = element.style.height;
         const originalOverflow = element.style.overflow;
+        const originalMaxWidth = element.style.maxWidth;
+        const originalMaxHeight = element.style.maxHeight;
+        const originalAspectRatio = element.style.aspectRatio;
+        
+        // 🔥 บังคับให้ element มีขนาดเท่ากับ A4 จริงๆ (210mm x 297mm)
+        // แปลงเป็น pixels โดยใช้ 96 DPI standard (1mm = 3.7795 pixels)
+        const A4_WIDTH_PX = 794;  // 210mm * 3.7795
+        const A4_HEIGHT_PX = 1123; // 297mm * 3.7795
+        
+        element.style.width = `${A4_WIDTH_PX}px`;
+        element.style.height = `${A4_HEIGHT_PX}px`;
+        element.style.maxWidth = `${A4_WIDTH_PX}px`;
+        element.style.maxHeight = `${A4_HEIGHT_PX}px`;
+        element.style.aspectRatio = 'auto'; // ปิด aspect-ratio ชั่วคราว
         element.style.overflow = 'visible';
+        
+        console.log(`📏 Set element size to A4: ${A4_WIDTH_PX}x${A4_HEIGHT_PX}px`);
+        
+        // รอให้ DOM อัปเดตขนาดใหม่
+        await new Promise(resolve => setTimeout(resolve, 100));
 
         // แปลงรูปภาพเป็น Base64 ก่อนสร้าง canvas
         console.log('Preprocessing images for PDF...');
@@ -224,17 +245,26 @@ export const generatePdf = async (element: HTMLElement, filename: string): Promi
 
         console.log('Creating canvas with html2canvas...');
         const canvas = await html2canvas(element, {
-            scale: 2, // Keep scale for high resolution on screens
+            scale: 2, // Keep scale for high resolution
+            width: A4_WIDTH_PX,
+            height: A4_HEIGHT_PX,
             useCORS: true,
-            allowTaint: true, // อนุญาตให้ใช้รูปภาพที่อาจมี taint
-            logging: true, // เปิด logging เพื่อ debug
-            imageTimeout: 15000, // เพิ่ม timeout สำหรับโหลดรูป
-            backgroundColor: '#ffffff', // กำหนดสีพื้นหลัง
+            allowTaint: true,
+            logging: true,
+            imageTimeout: 15000,
+            backgroundColor: '#ffffff',
+            windowWidth: A4_WIDTH_PX,
+            windowHeight: A4_HEIGHT_PX,
         });
 
-        // Restore รูปภาพและ overflow กลับเป็นเดิม
+        // 🔥 Restore ค่า style เดิมทั้งหมด
         restoreImages();
+        element.style.width = originalWidth;
+        element.style.height = originalHeight;
         element.style.overflow = originalOverflow;
+        element.style.maxWidth = originalMaxWidth;
+        element.style.maxHeight = originalMaxHeight;
+        element.style.aspectRatio = originalAspectRatio;
 
         console.log(`Canvas created successfully: ${canvas.width}x${canvas.height}`);
 
@@ -253,30 +283,14 @@ export const generatePdf = async (element: HTMLElement, filename: string): Promi
         pdf.addFont('IBMPlexSansThai-Regular.ttf', 'IBMPlexSansThai', 'normal');
         pdf.setFont('IBMPlexSansThai');
 
-        const pdfWidth = pdf.internal.pageSize.getWidth();
-        const pdfHeight = pdf.internal.pageSize.getHeight();
-        const canvasWidth = canvas.width;
-        const canvasHeight = canvas.height;
-        const ratio = canvasWidth / canvasHeight;
+        const pdfWidth = pdf.internal.pageSize.getWidth(); // 210mm
+        const pdfHeight = pdf.internal.pageSize.getHeight(); // 297mm
         
-        // ✅ ใช้ความกว้างเต็ม A4 แต่รักษา ratio ของ canvas
-        let imgWidth = pdfWidth;
-        let imgHeight = imgWidth / ratio;
+        // 🔥 ใช้ขนาด A4 เต็มหน้า ไม่มี margin เพราะ element ถูกบังคับขนาดแล้ว
+        console.log(`Adding image to PDF: Full A4 size (${pdfWidth}x${pdfHeight}mm)`);
         
-        // ถ้าสูงเกิน A4 ให้ scale ลงโดยรักษา ratio
-        if (imgHeight > pdfHeight) {
-            imgHeight = pdfHeight;
-            imgWidth = imgHeight * ratio;
-        }
-        
-        // Center ในกรณีที่ width ไม่เต็ม
-        const x = (pdfWidth - imgWidth) / 2;
-        const y = 0; // เริ่มจากบนสุด
-        
-        console.log(`Adding image to PDF: ${imgWidth}x${imgHeight} at (${x}, ${y})`);
-        
-        // Specify 'JPEG' as the format
-        pdf.addImage(imgData, 'JPEG', x, y, imgWidth, imgHeight);
+        // Specify 'JPEG' as the format - ใช้เต็มหน้า A4
+        pdf.addImage(imgData, 'JPEG', 0, 0, pdfWidth, pdfHeight);
         
         console.log(`Saving PDF as: ${filename}`);
         pdf.save(filename);
