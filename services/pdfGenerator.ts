@@ -9,9 +9,12 @@ export const generatePdf = async (element: HTMLElement, filename: string): Promi
     element.style.overflow = 'visible';
 
     const canvas = await html2canvas(element, {
-        scale: 2, // Keep scale for high resolution on screens
-        useCORS: true,
-        logging: false,
+        scale: 2, // เพิ่ม scale สำหรับความละเอียดสูงบนหน้าจอ
+        useCORS: true, // อนุญาตให้โหลด image จาก external sources
+        allowTaint: true, // อนุญาตให้ render image ที่มาจากแหล่งอื่น
+        logging: false, // ปิด logging
+        imageTimeout: 0, // ไม่จำกัดเวลาในการโหลด image
+        backgroundColor: '#ffffff', // กำหนดสีพื้นหลัง
     });
 
     // Restore original overflow style
