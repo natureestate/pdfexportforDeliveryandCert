@@ -24,12 +24,16 @@ const DocumentPreview = forwardRef<HTMLDivElement, DocumentPreviewProps>(({ data
         <div ref={ref} className="bg-white shadow-lg p-8 md:p-12 w-full aspect-[210/297] overflow-auto text-sm" id="printable-area">
             <header className="flex justify-between items-start pb-4 border-b-2 border-gray-800">
                 <div className="w-2/5">
-                    <img 
-                        src={displayLogo} 
-                        alt="Company Logo" 
-                        className="max-h-20 object-contain"
-                        crossOrigin="anonymous"
-                    />
+                    {/* Wrapper สำหรับ trim ขอบบนล่าง - ขยายเพิ่ม 30% จาก max-h-32 (128px) = 166.4px ≈ 168px */}
+                    {/* ลด padding โดยใช้ auto height และ trim ขอบบนล่าง */}
+                    <div className="max-h-[168px] overflow-hidden flex items-center justify-start">
+                        <img 
+                            src={displayLogo} 
+                            alt="Company Logo" 
+                            className="max-h-[168px] w-auto max-w-full object-contain object-center"
+                            crossOrigin="anonymous"
+                        />
+                    </div>
                 </div>
                 <div className="w-3/5 text-right">
                     <h1 className="text-2xl font-bold text-gray-800">ใบส่งมอบงาน</h1>

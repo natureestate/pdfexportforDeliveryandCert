@@ -1,7 +1,11 @@
-import React, { useEffect, useState } from 'react';
+import React, { useEffect, useState, useCallback, useRef } from 'react';
 import { getDeliveryNotes, getWarrantyCards, deleteDeliveryNote, deleteWarrantyCard } from '../services/firestore';
 import type { DeliveryNoteDocument, WarrantyDocument } from '../services/firestore';
 import { useCompany } from '../contexts/CompanyContext';
+import { generatePdf } from '../services/pdfGenerator';
+import DocumentPreview from './DocumentPreview';
+import WarrantyPreview from './WarrantyPreview';
+import type { DeliveryNoteData, WarrantyData } from '../types';
 
 interface HistoryListProps {
     activeDocType: 'delivery' | 'warranty';
@@ -15,10 +19,18 @@ const HistoryList: React.FC<HistoryListProps> = ({ activeDocType, onLoadDocument
     const [loading, setLoading] = useState(true);
     const [error, setError] = useState<string | null>(null);
     const [deleteConfirm, setDeleteConfirm] = useState<{ type: 'delivery' | 'warranty', id: string } | null>(null);
+    const [downloadingPdfId, setDownloadingPdfId] = useState<string | null>(null); // เก็บ ID ของเอกสารที่กำลัง download
+    const previewRef = useRef<HTMLDivElement>(null); // Ref สำหรับ preview component ที่ซ่อนอยู่
+    const [previewData, setPreviewData] = useState<DeliveryNoteData | WarrantyData | null>(null); // ข้อมูลสำหรับ preview
+    const [showPreviewModal, setShowPreviewModal] = useState(false); // แสดง preview modal หรือไม่
+    const [previewDoc, setPreviewDoc] = useState<DeliveryNoteDocument | WarrantyDocument | null>(null); // เอกสารที่กำลัง preview
+    const previewModalRef = useRef<HTMLDivElement>(null); // Ref สำหรับ preview component ใน modal
 
     // โหลดข้อมูลจาก Firestore กรองตาม companyId
-    const fetchData = async () => {
-        setLoading(true);
+    const fetchData = useCallback(async (showLoading: boolean = true) => {
+        if (showLoading) {
+            setLoading(true);
+        }
         setError(null);
         
         try {
@@ -35,28 +47,47 @@ const HistoryList: React.FC<HistoryListProps> = ({ activeDocType, onLoadDocument
             console.error('Error fetching data:', err);
             setError('ไม่สามารถโหลดข้อมูลได้');
         } finally {
-            setLoading(false);
+            if (showLoading) {
+                setLoading(false);
+            }
         }
-    };
+    }, [activeDocType, currentCompany]); // เพิ่ม dependencies
 
     useEffect(() => {
         fetchData();
-    }, [activeDocType, currentCompany]); // เพิ่ม currentCompany เป็น dependency
+    }, [fetchData]); // ใช้ fetchData เป็น dependency
 
     // ฟังก์ชันลบเอกสาร
     const handleDelete = async (type: 'delivery' | 'warranty', id: string) => {
         try {
+            console.log(`🗑️ กำลังลบ ${type === 'delivery' ? 'ใบส่งมอบงาน' : 'ใบรับประกันสินค้า'} ID:`, id);
+            
             if (type === 'delivery') {
                 await deleteDeliveryNote(id);
+                console.log('✅ ลบใบส่งมอบงานสำเร็จ');
+                // ลบออกจาก state ทันทีเพื่อ UX ที่ดี
                 setDeliveryNotes(prev => prev.filter(note => note.id !== id));
             } else {
                 await deleteWarrantyCard(id);
+                console.log('✅ ลบใบรับประกันสินค้าสำเร็จ');
+                // ลบออกจาก state ทันทีเพื่อ UX ที่ดี
                 setWarrantyCards(prev => prev.filter(card => card.id !== id));
             }
+            
             setDeleteConfirm(null);
+            
+            // รอสักครู่เพื่อให้ Firestore sync เสร็จก่อนรีเฟรช
+            await new Promise(resolve => setTimeout(resolve, 500));
+            
+            // รีเฟรชข้อมูลใหม่จาก Firestore โดยไม่แสดง loading เพื่อให้แน่ใจว่าข้อมูลตรงกัน
+            // ใช้ showLoading = false เพื่อไม่ให้แสดง loading spinner
+            await fetchData(false);
+            console.log('✅ รีเฟรชข้อมูลสำเร็จ');
         } catch (err) {
-            console.error('Error deleting document:', err);
-            alert('ไม่สามารถลบเอกสารได้');
+            console.error('❌ Error deleting document:', err);
+            alert('ไม่สามารถลบเอกสารได้: ' + (err instanceof Error ? err.message : 'Unknown error'));
+            // ถ้าลบไม่สำเร็จ ให้รีเฟรชข้อมูลเพื่อให้แน่ใจว่าข้อมูลตรงกัน
+            await fetchData(false);
         }
     };
 
@@ -71,6 +102,159 @@ const HistoryList: React.FC<HistoryListProps> = ({ activeDocType, onLoadDocument
             minute: '2-digit',
         }).format(date);
     };
+
+    // ฟังก์ชันสร้างชื่อไฟล์ PDF
+    const generatePdfFilename = (type: 'delivery' | 'warranty', data: DeliveryNoteData | WarrantyData): string => {
+        const now = new Date();
+        const yy = String(now.getFullYear()).slice(-2);
+        const mm = String(now.getMonth() + 1).padStart(2, '0');
+        const dd = String(now.getDate()).padStart(2, '0');
+        
+        if (type === 'delivery') {
+            const deliveryData = data as DeliveryNoteData;
+            const customerName = deliveryData.toCompany || 'Unknown';
+            const cleanName = customerName.replace(/[^a-zA-Z0-9ก-๙]/g, '').substring(0, 20);
+            return `DN_${cleanName}_${yy}${mm}${dd}.pdf`;
+        } else {
+            const warrantyData = data as WarrantyData;
+            const customerName = warrantyData.customerName || 'Unknown';
+            const cleanName = customerName.replace(/[^a-zA-Z0-9ก-๙]/g, '').substring(0, 20);
+            return `WR_${cleanName}_${yy}${mm}${dd}.pdf`;
+        }
+    };
+
+    // ฟังก์ชันเปิด preview modal
+    const handleShowPreview = useCallback((doc: DeliveryNoteDocument | WarrantyDocument) => {
+        setPreviewDoc(doc);
+        setPreviewData(doc as DeliveryNoteData | WarrantyData);
+        setShowPreviewModal(true);
+    }, []);
+
+    // ฟังก์ชันปิด preview modal
+    const handleClosePreview = useCallback(() => {
+        setShowPreviewModal(false);
+        setPreviewDoc(null);
+        setPreviewData(null);
+    }, []);
+
+    // ฟังก์ชันดาวน์โหลด PDF จาก preview modal
+    const handleDownloadPdfFromPreview = useCallback(async () => {
+        if (!previewDoc) return;
+        
+        try {
+            setDownloadingPdfId(previewDoc.id || null);
+            
+            // ตรวจสอบ quota ก่อน export (ถ้ามี)
+            if (currentCompany?.id) {
+                try {
+                    const { getQuota } = await import('../services/quota');
+                    const quota = await getQuota(currentCompany.id);
+                    
+                    // ตรวจสอบว่า Free plan สามารถ export PDF ได้หรือไม่
+                    if (!quota.features.exportPDF) {
+                        alert('❌ Free plan ไม่สามารถ Export PDF ได้ กรุณาอัพเกรดแผน');
+                        setDownloadingPdfId(null);
+                        return;
+                    }
+                } catch (error) {
+                    console.error('Failed to check quota:', error);
+                    // ถ้าเช็ค quota ไม่ได้ ให้ดำเนินการต่อ (เพื่อไม่ให้ระบบหยุดทำงาน)
+                }
+            }
+
+            // รอให้ React render preview component ใน modal และ ref พร้อม
+            // ใช้ polling เพื่อรอให้ ref พร้อม (รอสูงสุด 2 วินาที)
+            let attempts = 0;
+            const maxAttempts = 20; // 20 * 100ms = 2 seconds
+            while (attempts < maxAttempts) {
+                await new Promise(resolve => setTimeout(resolve, 100));
+                if (previewModalRef.current) {
+                    break;
+                }
+                attempts++;
+            }
+            
+            // ตรวจสอบว่า preview element พร้อมแล้ว
+            if (!previewModalRef.current) {
+                throw new Error('ไม่พบ preview element กรุณาลองใหม่อีกครั้ง');
+            }
+
+            // สร้างชื่อไฟล์
+            const filename = generatePdfFilename(activeDocType, previewDoc as DeliveryNoteData | WarrantyData);
+            
+            // สร้าง PDF
+            await generatePdf(previewModalRef.current, filename);
+            
+            console.log('✅ PDF downloaded successfully');
+        } catch (error) {
+            console.error('❌ Error downloading PDF:', error);
+            alert('ไม่สามารถดาวน์โหลด PDF ได้: ' + (error instanceof Error ? error.message : 'Unknown error'));
+        } finally {
+            setDownloadingPdfId(null);
+        }
+    }, [activeDocType, currentCompany, previewDoc]);
+
+    // ฟังก์ชันดาวน์โหลด PDF
+    const handleDownloadPdf = useCallback(async (doc: DeliveryNoteDocument | WarrantyDocument) => {
+        try {
+            setDownloadingPdfId(doc.id || null);
+            
+            // ตรวจสอบ quota ก่อน export (ถ้ามี)
+            if (currentCompany?.id) {
+                try {
+                    const { getQuota } = await import('../services/quota');
+                    const quota = await getQuota(currentCompany.id);
+                    
+                    // ตรวจสอบว่า Free plan สามารถ export PDF ได้หรือไม่
+                    if (!quota.features.exportPDF) {
+                        alert('❌ Free plan ไม่สามารถ Export PDF ได้ กรุณาอัพเกรดแผน');
+                        setDownloadingPdfId(null);
+                        return;
+                    }
+                } catch (error) {
+                    console.error('Failed to check quota:', error);
+                    // ถ้าเช็ค quota ไม่ได้ ให้ดำเนินการต่อ (เพื่อไม่ให้ระบบหยุดทำงาน)
+                }
+            }
+
+            // ตั้งค่าข้อมูลสำหรับ preview
+            setPreviewData(doc as DeliveryNoteData | WarrantyData);
+            
+            // รอให้ React render preview component และ ref พร้อม
+            // ใช้ polling เพื่อรอให้ ref พร้อม (รอสูงสุด 2 วินาที)
+            let attempts = 0;
+            const maxAttempts = 20; // 20 * 100ms = 2 seconds
+            while (attempts < maxAttempts) {
+                await new Promise(resolve => setTimeout(resolve, 100));
+                if (previewRef.current) {
+                    break;
+                }
+                attempts++;
+            }
+            
+            // ตรวจสอบว่า preview element พร้อมแล้ว
+            if (!previewRef.current) {
+                throw new Error('ไม่พบ preview element กรุณาลองใหม่อีกครั้ง');
+            }
+
+            // สร้างชื่อไฟล์
+            const filename = generatePdfFilename(activeDocType, doc as DeliveryNoteData | WarrantyData);
+            
+            // สร้าง PDF
+            await generatePdf(previewRef.current, filename);
+            
+            console.log('✅ PDF downloaded successfully');
+        } catch (error) {
+            console.error('❌ Error downloading PDF:', error);
+            alert('ไม่สามารถดาวน์โหลด PDF ได้: ' + (error instanceof Error ? error.message : 'Unknown error'));
+        } finally {
+            setDownloadingPdfId(null);
+            // ล้างข้อมูล preview หลังจาก download เสร็จ (รอสักครู่เพื่อให้ PDF สร้างเสร็จ)
+            setTimeout(() => {
+                setPreviewData(null);
+            }, 500);
+        }
+    }, [activeDocType, currentCompany]);
 
     // แสดง Loading
     if (loading) {
@@ -115,6 +299,78 @@ const HistoryList: React.FC<HistoryListProps> = ({ activeDocType, onLoadDocument
 
     return (
         <div className="space-y-4">
+            {/* Hidden Preview Component สำหรับสร้าง PDF */}
+            <div className="fixed -left-[9999px] -top-[9999px] opacity-0 pointer-events-none">
+                {previewData && !showPreviewModal && (
+                    <>
+                        {activeDocType === 'delivery' && (
+                            <DocumentPreview ref={previewRef} data={previewData as DeliveryNoteData} />
+                        )}
+                        {activeDocType === 'warranty' && (
+                            <WarrantyPreview ref={previewRef} data={previewData as WarrantyData} />
+                        )}
+                    </>
+                )}
+            </div>
+
+            {/* Modal Preview เอกสาร */}
+            {showPreviewModal && previewData && previewDoc && (
+                <div className="fixed inset-0 bg-gray-900 bg-opacity-75 overflow-y-auto h-full w-full z-50 flex items-center justify-center p-4">
+                    <div className="relative bg-white rounded-lg shadow-xl max-w-4xl w-full max-h-[90vh] flex flex-col">
+                        {/* Header */}
+                        <div className="flex justify-between items-center p-4 border-b border-gray-200">
+                            <h2 className="text-xl font-semibold text-gray-900">
+                                {activeDocType === 'delivery' ? 'ตัวอย่างใบส่งมอบงาน' : 'ตัวอย่างใบรับประกันสินค้า'}
+                            </h2>
+                            <div className="flex items-center gap-2">
+                                <button
+                                    onClick={handleDownloadPdfFromPreview}
+                                    disabled={downloadingPdfId === previewDoc.id}
+                                    className="px-4 py-2 bg-blue-600 text-white text-sm rounded hover:bg-blue-700 flex items-center gap-2 disabled:opacity-50 disabled:cursor-not-allowed"
+                                >
+                                    {downloadingPdfId === previewDoc.id ? (
+                                        <>
+                                            <svg className="animate-spin h-4 w-4" xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24">
+                                                <circle className="opacity-25" cx="12" cy="12" r="10" stroke="currentColor" strokeWidth="4"></circle>
+                                                <path className="opacity-75" fill="currentColor" d="M4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4zm2 5.291A7.962 7.962 0 014 12H0c0 3.042 1.135 5.824 3 7.938l3-2.647z"></path>
+                                            </svg>
+                                            กำลังสร้าง PDF...
+                                        </>
+                                    ) : (
+                                        <>
+                                            <svg className="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                                <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M12 10v6m0 0l-3-3m3 3l3-3m2 8H7a2 2 0 01-2-2V5a2 2 0 012-2h5.586a1 1 0 01.707.293l5.414 5.414a1 1 0 01.293.707V19a2 2 0 01-2 2z" />
+                                            </svg>
+                                            ดาวน์โหลด PDF
+                                        </>
+                                    )}
+                                </button>
+                                <button
+                                    onClick={handleClosePreview}
+                                    className="p-2 text-gray-400 hover:text-gray-600 rounded-full hover:bg-gray-100"
+                                    title="ปิด"
+                                >
+                                    <svg className="w-6 h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                        <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M6 18L18 6M6 6l12 12" />
+                                    </svg>
+                                </button>
+                            </div>
+                        </div>
+                        
+                        {/* Preview Content */}
+                        <div className="flex-1 overflow-auto p-4 bg-gray-50">
+                            <div className="flex justify-center">
+                                {activeDocType === 'delivery' ? (
+                                    <DocumentPreview ref={previewModalRef} data={previewData as DeliveryNoteData} />
+                                ) : (
+                                    <WarrantyPreview ref={previewModalRef} data={previewData as WarrantyData} />
+                                )}
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            )}
+
             {/* Modal ยืนยันการลบ */}
             {deleteConfirm && (
                 <div className="fixed inset-0 bg-gray-600 bg-opacity-50 overflow-y-auto h-full w-full z-50 flex items-center justify-center">
@@ -177,7 +433,14 @@ const HistoryList: React.FC<HistoryListProps> = ({ activeDocType, onLoadDocument
                                     <h3 className="text-lg font-semibold text-gray-900">{note.project || 'ไม่ระบุโครงการ'}</h3>
                                     <div className="mt-2 grid grid-cols-2 gap-2 text-sm text-gray-600">
                                         <div>
-                                            <span className="font-medium">เลขที่:</span> {note.docNumber}
+                                            <span className="font-medium">เลขที่:</span>{' '}
+                                            <button
+                                                onClick={() => handleShowPreview(note)}
+                                                className="text-blue-600 hover:text-blue-800 hover:underline cursor-pointer"
+                                                title="คลิกเพื่อดูตัวอย่าง"
+                                            >
+                                                {note.docNumber}
+                                            </button>
                                         </div>
                                         <div>
                                             <span className="font-medium">วันที่:</span> {note.date ? formatDate(note.date) : 'ไม่ระบุ'}
@@ -205,6 +468,29 @@ const HistoryList: React.FC<HistoryListProps> = ({ activeDocType, onLoadDocument
                                         ✏️ แก้ไข
                                     </button>
                                     <button
+                                        onClick={() => handleDownloadPdf(note)}
+                                        disabled={downloadingPdfId === note.id}
+                                        className="px-3 py-1 bg-blue-600 text-white text-sm rounded hover:bg-blue-700 flex items-center gap-1 disabled:opacity-50 disabled:cursor-not-allowed"
+                                        title="ดาวน์โหลด PDF"
+                                    >
+                                        {downloadingPdfId === note.id ? (
+                                            <>
+                                                <svg className="animate-spin h-4 w-4" xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24">
+                                                    <circle className="opacity-25" cx="12" cy="12" r="10" stroke="currentColor" strokeWidth="4"></circle>
+                                                    <path className="opacity-75" fill="currentColor" d="M4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4zm2 5.291A7.962 7.962 0 014 12H0c0 3.042 1.135 5.824 3 7.938l3-2.647z"></path>
+                                                </svg>
+                                                กำลังสร้าง...
+                                            </>
+                                        ) : (
+                                            <>
+                                                <svg className="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                                    <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M12 10v6m0 0l-3-3m3 3l3-3m2 8H7a2 2 0 01-2-2V5a2 2 0 012-2h5.586a1 1 0 01.707.293l5.414 5.414a1 1 0 01.293.707V19a2 2 0 01-2 2z" />
+                                                </svg>
+                                                ดาวน์โหลด PDF
+                                            </>
+                                        )}
+                                    </button>
+                                    <button
                                         onClick={() => setDeleteConfirm({ type: 'delivery', id: note.id! })}
                                         className="px-3 py-1 bg-red-600 text-white text-sm rounded hover:bg-red-700 flex items-center gap-1"
                                     >
@@ -226,7 +512,18 @@ const HistoryList: React.FC<HistoryListProps> = ({ activeDocType, onLoadDocument
                                     <h3 className="text-lg font-semibold text-gray-900">{card.serviceName || card.projectName || 'ไม่ระบุสินค้า'}</h3>
                                     <div className="mt-2 grid grid-cols-2 gap-2 text-sm text-gray-600">
                                         <div>
-                                            <span className="font-medium">หมายเลข:</span> {card.warrantyNumber || 'ไม่ระบุ'}
+                                            <span className="font-medium">หมายเลข:</span>{' '}
+                                            {card.warrantyNumber ? (
+                                                <button
+                                                    onClick={() => handleShowPreview(card)}
+                                                    className="text-blue-600 hover:text-blue-800 hover:underline cursor-pointer"
+                                                    title="คลิกเพื่อดูตัวอย่าง"
+                                                >
+                                                    {card.warrantyNumber}
+                                                </button>
+                                            ) : (
+                                                'ไม่ระบุ'
+                                            )}
                                         </div>
                                         <div>
                                             <span className="font-medium">ลูกค้า:</span> {card.customerName || 'ไม่ระบุ'}
@@ -252,6 +549,29 @@ const HistoryList: React.FC<HistoryListProps> = ({ activeDocType, onLoadDocument
                                             <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M11 5H6a2 2 0 00-2 2v11a2 2 0 002 2h11a2 2 0 002-2v-5m-1.414-9.414a2 2 0 112.828 2.828L11.828 15H9v-2.828l8.586-8.586z" />
                                         </svg>
                                         ✏️ แก้ไข
+                                    </button>
+                                    <button
+                                        onClick={() => handleDownloadPdf(card)}
+                                        disabled={downloadingPdfId === card.id}
+                                        className="px-3 py-1 bg-blue-600 text-white text-sm rounded hover:bg-blue-700 flex items-center gap-1 disabled:opacity-50 disabled:cursor-not-allowed"
+                                        title="ดาวน์โหลด PDF"
+                                    >
+                                        {downloadingPdfId === card.id ? (
+                                            <>
+                                                <svg className="animate-spin h-4 w-4" xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24">
+                                                    <circle className="opacity-25" cx="12" cy="12" r="10" stroke="currentColor" strokeWidth="4"></circle>
+                                                    <path className="opacity-75" fill="currentColor" d="M4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4zm2 5.291A7.962 7.962 0 014 12H0c0 3.042 1.135 5.824 3 7.938l3-2.647z"></path>
+                                                </svg>
+                                                กำลังสร้าง...
+                                            </>
+                                        ) : (
+                                            <>
+                                                <svg className="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                                    <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M12 10v6m0 0l-3-3m3 3l3-3m2 8H7a2 2 0 01-2-2V5a2 2 0 012-2h5.586a1 1 0 01.707.293l5.414 5.414a1 1 0 01.293.707V19a2 2 0 01-2 2z" />
+                                                </svg>
+                                                ดาวน์โหลด PDF
+                                            </>
+                                        )}
                                     </button>
                                     <button
                                         onClick={() => setDeleteConfirm({ type: 'warranty', id: card.id! })}

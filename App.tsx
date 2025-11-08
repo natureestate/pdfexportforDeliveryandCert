@@ -250,6 +250,71 @@ const AppContent: React.FC = () => {
         }
     }, [activeTab, deliveryData, warrantyData, currentCompany, editingDocumentId]);
 
+    /**
+     * สร้างชื่อไฟล์ PDF ตามรูปแบบ: prefix + ลูกค้า + Create date (YYMMDD) + UUID
+     * @param type - ประเภทเอกสาร ('delivery' | 'warranty')
+     * @param data - ข้อมูลเอกสาร
+     * @returns ชื่อไฟล์ PDF
+     */
+    const generatePdfFilename = useCallback((type: 'delivery' | 'warranty', data: DeliveryNoteData | WarrantyData): string => {
+        // สร้าง UUID (ใช้ crypto.randomUUID() หรือ fallback)
+        const generateUUID = (): string => {
+            if (typeof crypto !== 'undefined' && crypto.randomUUID) {
+                return crypto.randomUUID();
+            }
+            // Fallback สำหรับ browser เก่า
+            return 'xxxxxxxx-xxxx-4xxx-yxxx-xxxxxxxxxxxx'.replace(/[xy]/g, (c) => {
+                const r = Math.random() * 16 | 0;
+                const v = c === 'x' ? r : (r & 0x3 | 0x8);
+                return v.toString(16);
+            });
+        };
+
+        // ทำความสะอาดชื่อลูกค้า (ลบอักขระพิเศษ เหลือแค่ a-z, A-Z, 0-9, และ _)
+        const cleanCustomerName = (name: string): string => {
+            return name
+                .replace(/[^a-zA-Z0-9ก-๙]/g, '_') // แทนที่อักขระพิเศษด้วย _
+                .replace(/_+/g, '_') // รวม _ หลายตัวเป็นตัวเดียว
+                .replace(/^_|_$/g, '') // ลบ _ ที่ต้นและท้าย
+                .substring(0, 50) // จำกัดความยาวไม่เกิน 50 ตัวอักษร
+                || 'Customer'; // ถ้าไม่มีชื่อให้ใช้ 'Customer'
+        };
+
+        // แปลงวันที่เป็น YYMMDD
+        const formatDateToYYMMDD = (date: Date | null | undefined): string => {
+            if (!date) {
+                const now = new Date();
+                const yy = String(now.getFullYear()).slice(-2);
+                const mm = String(now.getMonth() + 1).padStart(2, '0');
+                const dd = String(now.getDate()).padStart(2, '0');
+                return `${yy}${mm}${dd}`;
+            }
+            const d = date instanceof Date ? date : new Date(date);
+            const yy = String(d.getFullYear()).slice(-2);
+            const mm = String(d.getMonth() + 1).padStart(2, '0');
+            const dd = String(d.getDate()).padStart(2, '0');
+            return `${yy}${mm}${dd}`;
+        };
+
+        if (type === 'delivery') {
+            const deliveryData = data as DeliveryNoteData;
+            const prefix = 'DN';
+            const customerName = cleanCustomerName(deliveryData.toCompany || 'Customer');
+            const dateStr = formatDateToYYMMDD(deliveryData.date);
+            const uuid = generateUUID().substring(0, 8); // ใช้แค่ 8 ตัวแรกของ UUID
+            
+            return `${prefix}_${customerName}_${dateStr}_${uuid}.pdf`;
+        } else {
+            const warrantyData = data as WarrantyData;
+            const prefix = 'WR';
+            const customerName = cleanCustomerName(warrantyData.customerName || 'Customer');
+            const dateStr = formatDateToYYMMDD(warrantyData.purchaseDate);
+            const uuid = generateUUID().substring(0, 8); // ใช้แค่ 8 ตัวแรกของ UUID
+            
+            return `${prefix}_${customerName}_${dateStr}_${uuid}.pdf`;
+        }
+    }, []);
+
     // ฟังก์ชัน Export PDF
     const handleExportPdf = useCallback(async () => {
         if (!printableAreaRef.current) return;
@@ -274,9 +339,8 @@ const AppContent: React.FC = () => {
         setIsLoading(true);
         showToast('กำลังสร้าง PDF...', 'info');
 
-        const filename = activeTab === 'delivery' 
-            ? `delivery-note-${deliveryData.docNumber}.pdf` 
-            : `warranty-card-${warrantyData.serialNumber}.pdf`;
+        // สร้างชื่อไฟล์ตามรูปแบบใหม่: prefix + ลูกค้า + Create date (YYMMDD) + UUID
+        const filename = generatePdfFilename(activeTab, activeTab === 'delivery' ? deliveryData : warrantyData);
 
         try {
             await generatePdf(printableAreaRef.current, filename);
@@ -287,7 +351,7 @@ const AppContent: React.FC = () => {
         } finally {
             setIsLoading(false);
         }
-    }, [activeTab, deliveryData.docNumber, warrantyData.serialNumber, currentCompany]);
+    }, [activeTab, deliveryData, warrantyData, currentCompany, generatePdfFilename]);
 
     // ฟังก์ชันโหลดเอกสารจาก History (สำหรับ Edit)
     const handleLoadDocument = useCallback((doc: DeliveryNoteDocument | WarrantyDocument) => {

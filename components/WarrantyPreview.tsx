@@ -45,10 +45,10 @@ const WarrantyPreview = forwardRef<HTMLDivElement, WarrantyPreviewProps>(({ data
                 <main className="flex-grow space-y-2">
                     {/* ข้อมูลบริษัท */}
                     <section>
-                        <div className="bg-indigo-700 px-2 py-1 rounded mb-1 flex items-center">
-                            <h3 className="font-bold text-sm text-white flex items-center gap-1 m-0">
-                                <span className="leading-none">📋</span>
-                                <span className="leading-none">ข้อมูลบริษัทผู้ผลิต</span>
+                        <div className="bg-indigo-700 px-2 py-1.5 rounded mb-1.5 flex items-center justify-start">
+                            <h3 className="font-bold text-sm text-white flex items-center gap-1.5 m-0 leading-tight">
+                                <span className="leading-none flex items-center justify-center">📋</span>
+                                <span className="leading-none flex items-center">ข้อมูลบริษัทผู้ผลิต</span>
                             </h3>
                         </div>
                         <div className="mt-0.5 pl-1">
@@ -69,10 +69,10 @@ const WarrantyPreview = forwardRef<HTMLDivElement, WarrantyPreviewProps>(({ data
 
                     {/* ข้อมูลลูกค้า */}
                     <section>
-                        <div className="bg-indigo-700 px-2 py-1 rounded mb-1 flex items-center">
-                            <h3 className="font-bold text-sm text-white flex items-center gap-1 m-0">
-                                <span className="leading-none">👤</span>
-                                <span className="leading-none">ข้อมูลลูกค้า/โครงการ</span>
+                        <div className="bg-indigo-700 px-2 py-1.5 rounded mb-1.5 mt-1 flex items-center justify-start">
+                            <h3 className="font-bold text-sm text-white flex items-center gap-1.5 m-0 leading-tight">
+                                <span className="leading-none flex items-center justify-center">👤</span>
+                                <span className="leading-none flex items-center">ข้อมูลลูกค้า/โครงการ</span>
                             </h3>
                         </div>
                         <div className="mt-0.5 pl-1">
@@ -85,10 +85,10 @@ const WarrantyPreview = forwardRef<HTMLDivElement, WarrantyPreviewProps>(({ data
 
                     {/* ข้อมูลสินค้า */}
                     <section>
-                        <div className="bg-indigo-700 px-2 py-1 rounded mb-1 flex items-center">
-                            <h3 className="font-bold text-sm text-white flex items-center gap-1 m-0">
-                                <span className="leading-none">📦</span>
-                                <span className="leading-none">ข้อมูลสินค้า/บริการ</span>
+                        <div className="bg-indigo-700 px-2 py-1.5 rounded mb-1.5 mt-1 flex items-center justify-start">
+                            <h3 className="font-bold text-sm text-white flex items-center gap-1.5 m-0 leading-tight">
+                                <span className="leading-none flex items-center justify-center">📦</span>
+                                <span className="leading-none flex items-center">ข้อมูลสินค้า/บริการ</span>
                             </h3>
                         </div>
                         <div className="mt-0.5 pl-1">
@@ -113,10 +113,10 @@ const WarrantyPreview = forwardRef<HTMLDivElement, WarrantyPreviewProps>(({ data
 
                     {/* การรับประกัน */}
                     <section>
-                        <div className="bg-green-700 px-2 py-1 rounded mb-1 flex items-center">
-                            <h3 className="font-bold text-sm text-white flex items-center gap-1 m-0">
-                                <span className="leading-none">✅</span>
-                                <span className="leading-none">การรับประกัน</span>
+                        <div className="bg-green-700 px-2 py-1.5 rounded mb-1.5 mt-1 flex items-center justify-start">
+                            <h3 className="font-bold text-sm text-white flex items-center gap-1.5 m-0 leading-tight">
+                                <span className="leading-none flex items-center justify-center">✅</span>
+                                <span className="leading-none flex items-center">การรับประกัน</span>
                             </h3>
                         </div>
                         <div className="mt-0.5 pl-1">
@@ -176,10 +176,10 @@ const WarrantyPreview = forwardRef<HTMLDivElement, WarrantyPreviewProps>(({ data
 
                     {/* เงื่อนไขการรับประกัน */}
                     <section className="flex-grow">
-                        <div className="bg-indigo-700 px-2 py-1 rounded mb-1 flex items-center">
-                            <h3 className="font-bold text-sm text-white flex items-center gap-1 m-0">
-                                <span className="leading-none">📜</span>
-                                <span className="leading-none">เงื่อนไขการรับประกัน</span>
+                        <div className="bg-indigo-700 px-2 py-1.5 rounded mb-1.5 mt-1 flex items-center justify-start">
+                            <h3 className="font-bold text-sm text-white flex items-center gap-1.5 m-0 leading-tight">
+                                <span className="leading-none flex items-center justify-center">📜</span>
+                                <span className="leading-none flex items-center">เงื่อนไขการรับประกัน</span>
                             </h3>
                         </div>
                         <div className="text-xs text-slate-700 mt-0.5 p-1.5 bg-slate-50 rounded border border-slate-200 leading-relaxed">
@@ -197,11 +197,13 @@ const WarrantyPreview = forwardRef<HTMLDivElement, WarrantyPreviewProps>(({ data
                         </div>
                         <div className="text-center">
                             {/* แสดงโลโก้บริษัทแทนตราประทับ */}
-                            <div className="w-28 h-20 mx-auto flex items-center justify-center">
+                            {/* ขยายเพิ่ม 30% จาก max-h-32 max-w-28 (128px x 112px) = 166.4px x 145.6px ≈ 168px x 144px */}
+                            {/* ลด padding โดยใช้ max-height แทน fixed height เพื่อ trim ขอบบนล่าง */}
+                            <div className="max-w-[144px] max-h-[168px] mx-auto flex items-center justify-center overflow-hidden">
                                 <img 
                                     src={displayLogo} 
                                     alt="Company Logo" 
-                                    className="max-h-20 max-w-28 object-contain"
+                                    className="max-h-[168px] w-auto max-w-[144px] object-contain object-center"
                                     crossOrigin="anonymous"
                                 />
                             </div>

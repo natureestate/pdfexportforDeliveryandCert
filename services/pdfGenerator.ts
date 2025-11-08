@@ -110,6 +110,128 @@ const rasterizeImageElementToPng = async (img: HTMLImageElement): Promise<string
 };
 
 /**
+ * ปรับ CSS ของแถบสีและหัวข้อให้ตรงกันก่อน render PDF
+ * แก้ไขปัญหา html2canvas ที่ render CSS ไม่เหมือน browser
+ * @param element - HTML element ที่จะสร้าง PDF
+ */
+const fixSectionHeadersForPdf = (element: HTMLElement): () => void => {
+    // หาแถบสีทั้งหมด (section headers)
+    const sectionHeaders = element.querySelectorAll('[class*="bg-indigo-700"], [class*="bg-green-700"]');
+    const originalStyles: { element: HTMLElement; styles: { [key: string]: string } }[] = [];
+
+    sectionHeaders.forEach((header) => {
+        const el = header as HTMLElement;
+        
+        // บันทึก style เดิม
+        const originalStyle: { [key: string]: string } = {
+            paddingTop: el.style.paddingTop,
+            paddingBottom: el.style.paddingBottom,
+            paddingLeft: el.style.paddingLeft,
+            paddingRight: el.style.paddingRight,
+            display: el.style.display,
+            alignItems: el.style.alignItems,
+            alignSelf: el.style.alignSelf,
+            justifyContent: el.style.justifyContent,
+            height: el.style.height,
+            minHeight: el.style.minHeight,
+            boxSizing: el.style.boxSizing,
+            lineHeight: el.style.lineHeight,
+            verticalAlign: el.style.verticalAlign,
+        };
+        
+        originalStyles.push({ element: el, styles: originalStyle });
+
+        // ปรับ CSS ให้แน่ใจว่าแถบสีและข้อความตรงกัน - ใช้ padding เท่ากันทั้งบนและล่าง
+        // ใช้วิธีที่ html2canvas render ได้ดี: ตั้งค่า padding-top และ padding-bottom เท่ากัน
+        // และใช้ flexbox กับ alignItems: center เพื่อให้แน่ใจว่าเนื้อหาอยู่กึ่งกลาง
+        el.style.paddingTop = '12px';      // เพิ่ม padding-top ให้มากขึ้นเพื่อให้แน่ใจว่าเนื้อหาอยู่กึ่งกลาง
+        el.style.paddingBottom = '12px';   // เพิ่ม padding-bottom ให้เท่ากัน
+        el.style.paddingLeft = '8px';
+        el.style.paddingRight = '8px';
+        el.style.display = 'flex';
+        el.style.alignItems = 'center';   // จัดกึ่งกลางแนวตั้ง - สำคัญมาก!
+        el.style.alignSelf = 'stretch';   // ให้แน่ใจว่าแถบสีขยายเต็มความสูง
+        el.style.justifyContent = 'flex-start';
+        el.style.height = 'auto';
+        el.style.minHeight = '40px';      // ตั้งค่า min-height เพื่อให้มีพื้นที่เพียงพอ (12px top + 16px content + 12px bottom)
+        el.style.boxSizing = 'border-box';
+        el.style.lineHeight = '1';        // ตั้งค่า line-height เพื่อไม่ให้มี space เพิ่ม
+        el.style.verticalAlign = 'middle'; // เพิ่ม vertical-align สำหรับกรณีที่ flexbox ไม่ทำงาน
+
+        // ปรับ h3 และ span ภายใน
+        const h3 = el.querySelector('h3') as HTMLElement;
+        if (h3) {
+            const h3OriginalStyle: { [key: string]: string } = {
+                margin: h3.style.margin,
+                padding: h3.style.padding,
+                display: h3.style.display,
+                alignItems: h3.style.alignItems,
+                alignSelf: h3.style.alignSelf,
+                lineHeight: h3.style.lineHeight,
+                height: h3.style.height,
+                verticalAlign: h3.style.verticalAlign,
+                boxSizing: h3.style.boxSizing,
+            };
+            
+            originalStyles.push({ element: h3, styles: h3OriginalStyle });
+            
+            h3.style.margin = '0';
+            h3.style.padding = '0';
+            h3.style.display = 'flex';
+            h3.style.alignItems = 'center';
+            h3.style.alignSelf = 'center';  // เพิ่ม align-self เพื่อให้แน่ใจว่าอยู่กึ่งกลาง
+            h3.style.lineHeight = '1';
+            h3.style.height = '100%';       // ให้ h3 สูงเต็มแถบสี
+            h3.style.verticalAlign = 'middle';
+            h3.style.marginTop = '0';
+            h3.style.marginBottom = '0';
+            h3.style.boxSizing = 'border-box';
+
+            // ปรับ span ทั้งหมดใน h3
+            const spans = h3.querySelectorAll('span');
+            spans.forEach((span) => {
+                const spanEl = span as HTMLElement;
+                const spanOriginalStyle: { [key: string]: string } = {
+                    display: spanEl.style.display,
+                    alignItems: spanEl.style.alignItems,
+                    alignSelf: spanEl.style.alignSelf,
+                    lineHeight: spanEl.style.lineHeight,
+                    verticalAlign: spanEl.style.verticalAlign,
+                    height: spanEl.style.height,
+                    marginTop: spanEl.style.marginTop,
+                    marginBottom: spanEl.style.marginBottom,
+                };
+                
+                originalStyles.push({ element: spanEl, styles: spanOriginalStyle });
+                
+                spanEl.style.display = 'inline-flex';
+                spanEl.style.alignItems = 'center';
+                spanEl.style.alignSelf = 'center';  // เพิ่ม align-self เพื่อให้แน่ใจว่าอยู่กึ่งกลาง
+                spanEl.style.justifyContent = 'center';
+                spanEl.style.lineHeight = '1';
+                spanEl.style.verticalAlign = 'middle';
+                spanEl.style.height = 'auto';
+                spanEl.style.marginTop = '0';
+                spanEl.style.marginBottom = '0';
+            });
+        }
+    });
+
+    // คืนค่าฟังก์ชันสำหรับ restore styles
+    return () => {
+        originalStyles.forEach(({ element: el, styles }) => {
+            Object.keys(styles).forEach((key) => {
+                if (styles[key]) {
+                    el.style.setProperty(key, styles[key]);
+                } else {
+                    el.style.removeProperty(key);
+                }
+            });
+        });
+    };
+};
+
+/**
  * แปลงโลโก้ใน element เป็น Base64 ก่อนสร้าง PDF
  * @param element - HTML element ที่จะสร้าง PDF
  */
@@ -239,9 +361,19 @@ export const generatePdf = async (element: HTMLElement, filename: string): Promi
         // รอให้ DOM อัปเดตขนาดใหม่
         await new Promise(resolve => setTimeout(resolve, 100));
 
+        // ปรับ CSS ของแถบสีและหัวข้อให้ตรงกันก่อน render PDF
+        console.log('Fixing section headers alignment for PDF...');
+        const restoreHeaders = fixSectionHeadersForPdf(element);
+
         // แปลงรูปภาพเป็น Base64 ก่อนสร้าง canvas
         console.log('Preprocessing images for PDF...');
         const restoreImages = await preprocessImagesForPdf(element);
+
+        // รอเพิ่มอีก 300ms เพื่อให้ CSS เปลี่ยนแปลงเสร็จสมบูรณ์และ browser render ใหม่
+        await new Promise(resolve => setTimeout(resolve, 300));
+        
+        // Force reflow เพื่อให้แน่ใจว่า browser render CSS ใหม่
+        void element.offsetHeight;
 
         console.log('Creating canvas with html2canvas...');
         const canvas = await html2canvas(element, {
@@ -259,6 +391,7 @@ export const generatePdf = async (element: HTMLElement, filename: string): Promi
 
         // 🔥 Restore ค่า style เดิมทั้งหมด
         restoreImages();
+        restoreHeaders();
         element.style.width = originalWidth;
         element.style.height = originalHeight;
         element.style.overflow = originalOverflow;

@@ -359,7 +359,7 @@ const LogoManager: React.FC<LogoManagerProps> = ({
                         <img 
                             src={displayLogo} 
                             alt="Default Logo" 
-                            className="max-h-20 mx-auto mb-3 object-contain opacity-60"
+                            className="max-h-32 mx-auto mb-3 object-contain opacity-60"
                         />
                         <svg className="mx-auto h-10 w-10 text-slate-400 mb-2" stroke="currentColor" fill="none" viewBox="0 0 48 48">
                             <path d="M28 8H12a4 4 0 00-4 4v20m32-12v8m0 0v8a4 4 0 01-4 4H12a4 4 0 01-4-4v-4m32-4l-3.172-3.172a4 4 0 00-5.656 0L28 28M8 32l9.172-9.172a4 4 0 015.656 0L28 28m0 0l4 4m4-24h8m-4-4v8" strokeWidth={2} strokeLinecap="round" strokeLinejoin="round" />
