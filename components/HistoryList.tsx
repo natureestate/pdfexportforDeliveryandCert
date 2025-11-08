@@ -25,6 +25,11 @@ const HistoryList: React.FC<HistoryListProps> = ({ activeDocType, onLoadDocument
     const [showPreviewModal, setShowPreviewModal] = useState(false); // แสดง preview modal หรือไม่
     const [previewDoc, setPreviewDoc] = useState<DeliveryNoteDocument | WarrantyDocument | null>(null); // เอกสารที่กำลัง preview
     const previewModalRef = useRef<HTMLDivElement>(null); // Ref สำหรับ preview component ใน modal
+    
+    // State สำหรับ filter และ pagination
+    const [searchTerm, setSearchTerm] = useState<string>(''); // คำค้นหาสำหรับ filter
+    const [currentPage, setCurrentPage] = useState<number>(1); // หน้าปัจจุบัน
+    const itemsPerPage = 10; // จำนวนรายการต่อหน้า
 
     // โหลดข้อมูลจาก Firestore กรองตาม companyId
     const fetchData = useCallback(async (showLoading: boolean = true) => {
@@ -56,6 +61,11 @@ const HistoryList: React.FC<HistoryListProps> = ({ activeDocType, onLoadDocument
     useEffect(() => {
         fetchData();
     }, [fetchData]); // ใช้ fetchData เป็น dependency
+
+    // Reset หน้าเป็น 1 เมื่อเปลี่ยน search term หรือ doc type
+    useEffect(() => {
+        setCurrentPage(1);
+    }, [searchTerm, activeDocType]);
 
     // ฟังก์ชันลบเอกสาร
     const handleDelete = async (type: 'delivery' | 'warranty', id: string) => {
@@ -282,6 +292,40 @@ const HistoryList: React.FC<HistoryListProps> = ({ activeDocType, onLoadDocument
 
     const currentList = activeDocType === 'delivery' ? deliveryNotes : warrantyCards;
 
+    // ฟังก์ชัน filter รายการตาม search term
+    const filteredList = currentList.filter((item) => {
+        if (!searchTerm.trim()) return true;
+        
+        const searchLower = searchTerm.toLowerCase();
+        
+        if (activeDocType === 'delivery') {
+            const note = item as DeliveryNoteDocument;
+            return (
+                (note.docNumber || '').toLowerCase().includes(searchLower) ||
+                (note.project || '').toLowerCase().includes(searchLower) ||
+                (note.fromCompany || '').toLowerCase().includes(searchLower) ||
+                (note.toCompany || '').toLowerCase().includes(searchLower) ||
+                (note.date ? formatDate(note.date).toLowerCase().includes(searchLower) : false)
+            );
+        } else {
+            const card = item as WarrantyDocument;
+            return (
+                (card.warrantyNumber || '').toLowerCase().includes(searchLower) ||
+                (card.serviceName || '').toLowerCase().includes(searchLower) ||
+                (card.projectName || '').toLowerCase().includes(searchLower) ||
+                (card.customerName || '').toLowerCase().includes(searchLower) ||
+                (card.warrantyPeriod || '').toLowerCase().includes(searchLower) ||
+                (card.purchaseDate ? formatDate(card.purchaseDate).toLowerCase().includes(searchLower) : false)
+            );
+        }
+    });
+
+    // คำนวณ pagination
+    const totalPages = Math.ceil(filteredList.length / itemsPerPage);
+    const startIndex = (currentPage - 1) * itemsPerPage;
+    const endIndex = startIndex + itemsPerPage;
+    const paginatedList = filteredList.slice(startIndex, endIndex);
+
     // แสดงเมื่อไม่มีข้อมูล
     if (currentList.length === 0) {
         return (
@@ -407,58 +451,111 @@ const HistoryList: React.FC<HistoryListProps> = ({ activeDocType, onLoadDocument
             )}
 
             {/* Header */}
-            <div className="flex justify-between items-center mb-4">
+            <div className="flex flex-col sm:flex-row justify-between items-start sm:items-center gap-4 mb-4">
                 <h2 className="text-xl font-semibold text-slate-700">
                     ประวัติ{activeDocType === 'delivery' ? 'ใบส่งมอบงาน' : 'ใบรับประกันสินค้า'}
                 </h2>
-                <button
-                    onClick={fetchData}
-                    className="px-3 py-1 text-sm bg-white border border-gray-300 rounded-md hover:bg-gray-50 flex items-center gap-2"
-                >
-                    <svg className="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                        <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M4 4v5h.582m15.356 2A8.001 8.001 0 004.582 9m0 0H9m11 11v-5h-.581m0 0a8.003 8.003 0 01-15.357-2m15.357 2H15" />
-                    </svg>
-                    รีเฟรช
-                </button>
+                <div className="flex items-center gap-2 w-full sm:w-auto">
+                    {/* Search/Filter Input */}
+                    <div className="flex-1 sm:flex-none relative">
+                        <input
+                            type="text"
+                            placeholder={`ค้นหา${activeDocType === 'delivery' ? 'เลขที่, โครงการ, จาก, ถึง' : 'หมายเลข, สินค้า, ลูกค้า'}`}
+                            value={searchTerm}
+                            onChange={(e) => setSearchTerm(e.target.value)}
+                            className="w-full sm:w-64 px-4 py-2 pl-10 text-sm border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-indigo-500 focus:border-transparent"
+                        />
+                        <svg 
+                            className="absolute left-3 top-2.5 h-5 w-5 text-gray-400" 
+                            fill="none" 
+                            stroke="currentColor" 
+                            viewBox="0 0 24 24"
+                        >
+                            <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M21 21l-6-6m2-5a7 7 0 11-14 0 7 7 0 0114 0z" />
+                        </svg>
+                        {searchTerm && (
+                            <button
+                                onClick={() => setSearchTerm('')}
+                                className="absolute right-3 top-2.5 text-gray-400 hover:text-gray-600"
+                                title="ล้างการค้นหา"
+                            >
+                                <svg className="h-5 w-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                    <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M6 18L18 6M6 6l12 12" />
+                                </svg>
+                            </button>
+                        )}
+                    </div>
+                    <button
+                        onClick={fetchData}
+                        className="px-3 py-2 text-sm bg-white border border-gray-300 rounded-md hover:bg-gray-50 flex items-center gap-2"
+                    >
+                        <svg className="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                            <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M4 4v5h.582m15.356 2A8.001 8.001 0 004.582 9m0 0H9m11 11v-5h-.581m0 0a8.003 8.003 0 01-15.357-2m15.357 2H15" />
+                        </svg>
+                        รีเฟรช
+                    </button>
+                </div>
             </div>
+
+            {/* แสดงจำนวนผลลัพธ์ */}
+            {searchTerm && (
+                <div className="text-sm text-gray-600 mb-2">
+                    พบ {filteredList.length} รายการ จากทั้งหมด {currentList.length} รายการ
+                </div>
+            )}
+
+            {/* แสดงเมื่อไม่มีผลลัพธ์จากการค้นหา */}
+            {filteredList.length === 0 && currentList.length > 0 && (
+                <div className="bg-yellow-50 border border-yellow-200 rounded-lg p-4 text-center">
+                    <p className="text-yellow-800">ไม่พบผลลัพธ์ที่ตรงกับการค้นหา "{searchTerm}"</p>
+                    <button
+                        onClick={() => setSearchTerm('')}
+                        className="mt-2 text-sm text-yellow-600 hover:text-yellow-800 underline"
+                    >
+                        ล้างการค้นหา
+                    </button>
+                </div>
+            )}
 
             {/* รายการเอกสาร */}
             <div className="grid grid-cols-1 gap-4">
                 {activeDocType === 'delivery' ? (
                     // รายการใบส่งมอบงาน
-                    deliveryNotes.map((note) => (
-                        <div key={note.id} className="bg-white border border-gray-200 rounded-lg p-4 hover:shadow-md transition-shadow">
+                    paginatedList.map((note) => {
+                        const noteItem = note as DeliveryNoteDocument;
+                        return (
+                        <div key={noteItem.id} className="bg-white border border-gray-200 rounded-lg p-4 hover:shadow-md transition-shadow">
                             <div className="flex justify-between items-start">
                                 <div className="flex-1">
-                                    <h3 className="text-lg font-semibold text-gray-900">{note.project || 'ไม่ระบุโครงการ'}</h3>
+                                    <h3 className="text-lg font-semibold text-gray-900">{noteItem.project || 'ไม่ระบุโครงการ'}</h3>
                                     <div className="mt-2 grid grid-cols-2 gap-2 text-sm text-gray-600">
                                         <div>
                                             <span className="font-medium">เลขที่:</span>{' '}
                                             <button
-                                                onClick={() => handleShowPreview(note)}
+                                                onClick={() => handleShowPreview(noteItem)}
                                                 className="text-blue-600 hover:text-blue-800 hover:underline cursor-pointer"
                                                 title="คลิกเพื่อดูตัวอย่าง"
                                             >
-                                                {note.docNumber}
+                                                {noteItem.docNumber}
                                             </button>
                                         </div>
                                         <div>
-                                            <span className="font-medium">วันที่:</span> {note.date ? formatDate(note.date) : 'ไม่ระบุ'}
+                                            <span className="font-medium">วันที่:</span> {noteItem.date ? formatDate(noteItem.date) : 'ไม่ระบุ'}
                                         </div>
                                         <div>
-                                            <span className="font-medium">จาก:</span> {note.fromCompany}
+                                            <span className="font-medium">จาก:</span> {noteItem.fromCompany}
                                         </div>
                                         <div>
-                                            <span className="font-medium">ถึง:</span> {note.toCompany}
+                                            <span className="font-medium">ถึง:</span> {noteItem.toCompany}
                                         </div>
                                     </div>
                                     <div className="mt-2 text-xs text-gray-400">
-                                        บันทึกเมื่อ: {formatDate(note.createdAt)}
+                                        บันทึกเมื่อ: {formatDate(noteItem.createdAt)}
                                     </div>
                                 </div>
                                 <div className="flex flex-col gap-2 ml-4">
                                     <button
-                                        onClick={() => onLoadDocument(note)}
+                                        onClick={() => onLoadDocument(noteItem)}
                                         className="px-3 py-1 bg-amber-600 text-white text-sm rounded hover:bg-amber-700 flex items-center gap-1"
                                         title="โหลดเอกสารเพื่อแก้ไข"
                                     >
@@ -468,12 +565,12 @@ const HistoryList: React.FC<HistoryListProps> = ({ activeDocType, onLoadDocument
                                         ✏️ แก้ไข
                                     </button>
                                     <button
-                                        onClick={() => handleDownloadPdf(note)}
-                                        disabled={downloadingPdfId === note.id}
+                                        onClick={() => handleDownloadPdf(noteItem)}
+                                        disabled={downloadingPdfId === noteItem.id}
                                         className="px-3 py-1 bg-blue-600 text-white text-sm rounded hover:bg-blue-700 flex items-center gap-1 disabled:opacity-50 disabled:cursor-not-allowed"
                                         title="ดาวน์โหลด PDF"
                                     >
-                                        {downloadingPdfId === note.id ? (
+                                        {downloadingPdfId === noteItem.id ? (
                                             <>
                                                 <svg className="animate-spin h-4 w-4" xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24">
                                                     <circle className="opacity-25" cx="12" cy="12" r="10" stroke="currentColor" strokeWidth="4"></circle>
@@ -491,7 +588,7 @@ const HistoryList: React.FC<HistoryListProps> = ({ activeDocType, onLoadDocument
                                         )}
                                     </button>
                                     <button
-                                        onClick={() => setDeleteConfirm({ type: 'delivery', id: note.id! })}
+                                        onClick={() => setDeleteConfirm({ type: 'delivery', id: noteItem.id! })}
                                         className="px-3 py-1 bg-red-600 text-white text-sm rounded hover:bg-red-700 flex items-center gap-1"
                                     >
                                         <svg className="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
@@ -502,46 +599,49 @@ const HistoryList: React.FC<HistoryListProps> = ({ activeDocType, onLoadDocument
                                 </div>
                             </div>
                         </div>
-                    ))
+                    );
+                    })
                 ) : (
                     // รายการใบรับประกันสินค้า
-                    warrantyCards.map((card) => (
-                        <div key={card.id} className="bg-white border border-gray-200 rounded-lg p-4 hover:shadow-md transition-shadow">
+                    paginatedList.map((card) => {
+                        const cardItem = card as WarrantyDocument;
+                        return (
+                        <div key={cardItem.id} className="bg-white border border-gray-200 rounded-lg p-4 hover:shadow-md transition-shadow">
                             <div className="flex justify-between items-start">
                                 <div className="flex-1">
-                                    <h3 className="text-lg font-semibold text-gray-900">{card.serviceName || card.projectName || 'ไม่ระบุสินค้า'}</h3>
+                                    <h3 className="text-lg font-semibold text-gray-900">{cardItem.serviceName || cardItem.projectName || 'ไม่ระบุสินค้า'}</h3>
                                     <div className="mt-2 grid grid-cols-2 gap-2 text-sm text-gray-600">
                                         <div>
                                             <span className="font-medium">หมายเลข:</span>{' '}
-                                            {card.warrantyNumber ? (
+                                            {cardItem.warrantyNumber ? (
                                                 <button
-                                                    onClick={() => handleShowPreview(card)}
+                                                    onClick={() => handleShowPreview(cardItem)}
                                                     className="text-blue-600 hover:text-blue-800 hover:underline cursor-pointer"
                                                     title="คลิกเพื่อดูตัวอย่าง"
                                                 >
-                                                    {card.warrantyNumber}
+                                                    {cardItem.warrantyNumber}
                                                 </button>
                                             ) : (
                                                 'ไม่ระบุ'
                                             )}
                                         </div>
                                         <div>
-                                            <span className="font-medium">ลูกค้า:</span> {card.customerName || 'ไม่ระบุ'}
+                                            <span className="font-medium">ลูกค้า:</span> {cardItem.customerName || 'ไม่ระบุ'}
                                         </div>
                                         <div>
-                                            <span className="font-medium">วันซื้อ:</span> {card.purchaseDate ? formatDate(card.purchaseDate) : 'ไม่ระบุ'}
+                                            <span className="font-medium">วันซื้อ:</span> {cardItem.purchaseDate ? formatDate(cardItem.purchaseDate) : 'ไม่ระบุ'}
                                         </div>
                                         <div>
-                                            <span className="font-medium">รับประกัน:</span> {card.warrantyPeriod || 'ไม่ระบุ'}
+                                            <span className="font-medium">รับประกัน:</span> {cardItem.warrantyPeriod || 'ไม่ระบุ'}
                                         </div>
                                     </div>
                                     <div className="mt-2 text-xs text-gray-400">
-                                        บันทึกเมื่อ: {formatDate(card.createdAt)}
+                                        บันทึกเมื่อ: {formatDate(cardItem.createdAt)}
                                     </div>
                                 </div>
                                 <div className="flex flex-col gap-2 ml-4">
                                     <button
-                                        onClick={() => onLoadDocument(card)}
+                                        onClick={() => onLoadDocument(cardItem)}
                                         className="px-3 py-1 bg-amber-600 text-white text-sm rounded hover:bg-amber-700 flex items-center gap-1"
                                         title="โหลดเอกสารเพื่อแก้ไข"
                                     >
@@ -551,12 +651,12 @@ const HistoryList: React.FC<HistoryListProps> = ({ activeDocType, onLoadDocument
                                         ✏️ แก้ไข
                                     </button>
                                     <button
-                                        onClick={() => handleDownloadPdf(card)}
-                                        disabled={downloadingPdfId === card.id}
+                                        onClick={() => handleDownloadPdf(cardItem)}
+                                        disabled={downloadingPdfId === cardItem.id}
                                         className="px-3 py-1 bg-blue-600 text-white text-sm rounded hover:bg-blue-700 flex items-center gap-1 disabled:opacity-50 disabled:cursor-not-allowed"
                                         title="ดาวน์โหลด PDF"
                                     >
-                                        {downloadingPdfId === card.id ? (
+                                        {downloadingPdfId === cardItem.id ? (
                                             <>
                                                 <svg className="animate-spin h-4 w-4" xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24">
                                                     <circle className="opacity-25" cx="12" cy="12" r="10" stroke="currentColor" strokeWidth="4"></circle>
@@ -574,7 +674,7 @@ const HistoryList: React.FC<HistoryListProps> = ({ activeDocType, onLoadDocument
                                         )}
                                     </button>
                                     <button
-                                        onClick={() => setDeleteConfirm({ type: 'warranty', id: card.id! })}
+                                        onClick={() => setDeleteConfirm({ type: 'warranty', id: cardItem.id! })}
                                         className="px-3 py-1 bg-red-600 text-white text-sm rounded hover:bg-red-700 flex items-center gap-1"
                                     >
                                         <svg className="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
@@ -585,9 +685,80 @@ const HistoryList: React.FC<HistoryListProps> = ({ activeDocType, onLoadDocument
                                 </div>
                             </div>
                         </div>
-                    ))
+                    );
+                    })
                 )}
             </div>
+
+            {/* Pagination Controls */}
+            {totalPages > 1 && (
+                <div className="flex flex-col sm:flex-row justify-between items-center gap-4 mt-6 pt-4 border-t border-gray-200">
+                    <div className="text-sm text-gray-600">
+                        แสดง {startIndex + 1}-{Math.min(endIndex, filteredList.length)} จาก {filteredList.length} รายการ
+                    </div>
+                    <div className="flex items-center gap-2">
+                        {/* ปุ่มไปหน้าหลัง */}
+                        <button
+                            onClick={() => setCurrentPage(prev => Math.max(1, prev - 1))}
+                            disabled={currentPage === 1}
+                            className="px-3 py-2 text-sm bg-white border border-gray-300 rounded-md hover:bg-gray-50 disabled:opacity-50 disabled:cursor-not-allowed flex items-center gap-1"
+                        >
+                            <svg className="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M15 19l-7-7 7-7" />
+                            </svg>
+                            ก่อนหน้า
+                        </button>
+
+                        {/* หมายเลขหน้า */}
+                        <div className="flex items-center gap-1">
+                            {Array.from({ length: totalPages }, (_, i) => i + 1).map((page) => {
+                                // แสดงเฉพาะหน้าที่ใกล้เคียงกับหน้าปัจจุบัน
+                                if (
+                                    page === 1 ||
+                                    page === totalPages ||
+                                    (page >= currentPage - 1 && page <= currentPage + 1)
+                                ) {
+                                    return (
+                                        <button
+                                            key={page}
+                                            onClick={() => setCurrentPage(page)}
+                                            className={`px-3 py-2 text-sm rounded-md ${
+                                                currentPage === page
+                                                    ? 'bg-indigo-600 text-white'
+                                                    : 'bg-white border border-gray-300 text-gray-700 hover:bg-gray-50'
+                                            }`}
+                                        >
+                                            {page}
+                                        </button>
+                                    );
+                                } else if (
+                                    page === currentPage - 2 ||
+                                    page === currentPage + 2
+                                ) {
+                                    return (
+                                        <span key={page} className="px-2 text-gray-400">
+                                            ...
+                                        </span>
+                                    );
+                                }
+                                return null;
+                            })}
+                        </div>
+
+                        {/* ปุ่มไปหน้าถัดไป */}
+                        <button
+                            onClick={() => setCurrentPage(prev => Math.min(totalPages, prev + 1))}
+                            disabled={currentPage === totalPages}
+                            className="px-3 py-2 text-sm bg-white border border-gray-300 rounded-md hover:bg-gray-50 disabled:opacity-50 disabled:cursor-not-allowed flex items-center gap-1"
+                        >
+                            ถัดไป
+                            <svg className="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M9 5l7 7-7 7" />
+                            </svg>
+                        </button>
+                    </div>
+                </div>
+            )}
         </div>
     );
 };

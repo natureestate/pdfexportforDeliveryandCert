@@ -336,27 +336,70 @@ export const generatePdf = async (element: HTMLElement, filename: string): Promi
     try {
         console.log('Starting PDF generation process...');
         
-        // 🔥 บันทึกค่า style เดิมของ element
+        // 🔥 บันทึกค่า style เดิมของ element และ parent
         const originalWidth = element.style.width;
         const originalHeight = element.style.height;
         const originalOverflow = element.style.overflow;
         const originalMaxWidth = element.style.maxWidth;
         const originalMaxHeight = element.style.maxHeight;
         const originalAspectRatio = element.style.aspectRatio;
+        const originalPadding = element.style.padding;
+        const originalMargin = element.style.margin;
+        const originalBoxSizing = element.style.boxSizing;
+        
+        // อ่านค่า computed styles เพื่อ override padding/margin ที่ถูกกำหนดผ่าน CSS classes
+        const computedStyle = window.getComputedStyle(element);
+        const originalPaddingTop = element.style.paddingTop || computedStyle.paddingTop;
+        const originalPaddingRight = element.style.paddingRight || computedStyle.paddingRight;
+        const originalPaddingBottom = element.style.paddingBottom || computedStyle.paddingBottom;
+        const originalPaddingLeft = element.style.paddingLeft || computedStyle.paddingLeft;
+        const originalMarginTop = element.style.marginTop || computedStyle.marginTop;
+        const originalMarginRight = element.style.marginRight || computedStyle.marginRight;
+        const originalMarginBottom = element.style.marginBottom || computedStyle.marginBottom;
+        const originalMarginLeft = element.style.marginLeft || computedStyle.marginLeft;
+        
+        // บันทึกค่า style ของ parent element (ถ้ามี) เพื่อลบ padding/margin ที่อาจส่งผลต่อ PDF
+        const parentElement = element.parentElement;
+        let parentOriginalPadding = '';
+        let parentOriginalMargin = '';
+        if (parentElement) {
+            const parentComputedStyle = window.getComputedStyle(parentElement);
+            parentOriginalPadding = parentElement.style.padding || parentComputedStyle.padding;
+            parentOriginalMargin = parentElement.style.margin || parentComputedStyle.margin;
+        }
         
         // 🔥 บังคับให้ element มีขนาดเท่ากับ A4 จริงๆ (210mm x 297mm)
         // แปลงเป็น pixels โดยใช้ 96 DPI standard (1mm = 3.7795 pixels)
         const A4_WIDTH_PX = 794;  // 210mm * 3.7795
         const A4_HEIGHT_PX = 1123; // 297mm * 3.7795
         
+        // ลบ padding และ margin ของ element เพื่อให้เนื้อหาเต็ม A4
+        // ใช้ inline styles เพื่อ override CSS classes
         element.style.width = `${A4_WIDTH_PX}px`;
         element.style.height = `${A4_HEIGHT_PX}px`;
         element.style.maxWidth = `${A4_WIDTH_PX}px`;
         element.style.maxHeight = `${A4_HEIGHT_PX}px`;
         element.style.aspectRatio = 'auto'; // ปิด aspect-ratio ชั่วคราว
         element.style.overflow = 'visible';
+        element.style.padding = '0'; // ลบ padding เพื่อให้เนื้อหาเต็ม A4
+        element.style.paddingTop = '0';
+        element.style.paddingRight = '0';
+        element.style.paddingBottom = '0';
+        element.style.paddingLeft = '0';
+        element.style.margin = '0'; // ลบ margin เพื่อให้เนื้อหาเต็ม A4
+        element.style.marginTop = '0';
+        element.style.marginRight = '0';
+        element.style.marginBottom = '0';
+        element.style.marginLeft = '0';
+        element.style.boxSizing = 'border-box'; // ใช้ border-box เพื่อให้ padding/margin ถูกนับในขนาด
         
-        console.log(`📏 Set element size to A4: ${A4_WIDTH_PX}x${A4_HEIGHT_PX}px`);
+        // ลบ padding และ margin ของ parent element (เช่น wrapper ใน modal) เพื่อให้แน่ใจว่าไม่มี spacing เพิ่มเติม
+        if (parentElement) {
+            parentElement.style.padding = '0';
+            parentElement.style.margin = '0';
+        }
+        
+        console.log(`📏 Set element size to A4: ${A4_WIDTH_PX}x${A4_HEIGHT_PX}px (removed padding/margin)`);
         
         // รอให้ DOM อัปเดตขนาดใหม่
         await new Promise(resolve => setTimeout(resolve, 100));
@@ -398,6 +441,43 @@ export const generatePdf = async (element: HTMLElement, filename: string): Promi
         element.style.maxWidth = originalMaxWidth;
         element.style.maxHeight = originalMaxHeight;
         element.style.aspectRatio = originalAspectRatio;
+        element.style.padding = originalPadding;
+        element.style.margin = originalMargin;
+        element.style.boxSizing = originalBoxSizing;
+        
+        // Restore padding และ margin แบบละเอียด
+        // ลบ inline styles ที่ตั้งค่าไว้ก่อน แล้วค่อย restore เฉพาะเมื่อมีค่าเดิมจริงๆ
+        element.style.removeProperty('padding-top');
+        element.style.removeProperty('padding-right');
+        element.style.removeProperty('padding-bottom');
+        element.style.removeProperty('padding-left');
+        element.style.removeProperty('margin-top');
+        element.style.removeProperty('margin-right');
+        element.style.removeProperty('margin-bottom');
+        element.style.removeProperty('margin-left');
+        
+        // Restore เฉพาะเมื่อมี inline style เดิม (ไม่ใช่จาก CSS classes)
+        // ถ้า originalPaddingTop มาจาก computedStyle (CSS classes) จะไม่ restore เพื่อให้ CSS classes ทำงาน
+        if (originalPadding && originalPadding !== '0') {
+            element.style.padding = originalPadding;
+        }
+        if (originalMargin && originalMargin !== '0') {
+            element.style.margin = originalMargin;
+        }
+        
+        // Restore parent element styles
+        if (parentElement) {
+            if (parentOriginalPadding) {
+                parentElement.style.padding = parentOriginalPadding;
+            } else {
+                parentElement.style.removeProperty('padding');
+            }
+            if (parentOriginalMargin) {
+                parentElement.style.margin = parentOriginalMargin;
+            } else {
+                parentElement.style.removeProperty('margin');
+            }
+        }
 
         console.log(`Canvas created successfully: ${canvas.width}x${canvas.height}`);
 
