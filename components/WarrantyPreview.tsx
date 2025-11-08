@@ -193,7 +193,7 @@ const WarrantyPreview = forwardRef<HTMLDivElement, WarrantyPreviewProps>(({ data
                     <div className="grid grid-cols-2 gap-2 items-end">
                         <div className="text-xs text-slate-600">
                             <p className="font-semibold text-xs text-slate-900">วันที่ออกเอกสาร: {formatDate(data.issueDate)}</p>
-                            <p className="text-xs">ผู้ออกเอกสาร: <span className="font-medium text-slate-900">{data.issuedBy || '........................'}</span></p>
+                            <p className="text-xs">เอกสารนี้ออกโดยระบบอิเล็กโทรนิก</p>
                         </div>
                         <div className="text-center">
                             {/* แสดงโลโก้บริษัทแทนตราประทับ */}
