@@ -405,17 +405,6 @@ const WarrantyForm: React.FC<WarrantyFormProps> = ({
                             </div>
                             <p className="mt-1 text-xs text-gray-500">💡 จะสร้างอัตโนมัติ (รูปแบบ: WR-YYMMDDXX)</p>
                         </div>
-                        <div>
-                            <label htmlFor="issuedBy" className="block text-sm font-medium text-slate-700">ผู้ออกเอกสาร</label>
-                            <input 
-                                type="text" 
-                                id="issuedBy" 
-                                value={data.issuedBy} 
-                                onChange={(e) => handleDataChange('issuedBy', e.target.value)} 
-                                className="block w-full rounded-md border-gray-300 shadow-sm focus:border-indigo-500 focus:ring-indigo-500 sm:text-sm bg-gray-50" 
-                                placeholder="เช่น ฝ่ายขาย / คุณสมชาย"
-                            />
-                        </div>
                     </div>
                 </div>
 
