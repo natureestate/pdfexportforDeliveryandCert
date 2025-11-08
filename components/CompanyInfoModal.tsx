@@ -200,14 +200,6 @@ const CompanyInfoModal: React.FC<CompanyInfoModalProps> = ({
                                 className="w-full px-4 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-indigo-500 focus:border-indigo-500 disabled:bg-gray-100 disabled:cursor-not-allowed"
                             />
                         </div>
-
-                        {/* Info Message */}
-                        <div className="bg-blue-50 border border-blue-200 rounded-lg p-3 text-sm text-blue-700 flex items-start gap-2">
-                            <svg className="w-5 h-5 flex-shrink-0 mt-0.5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                                <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M13 16h-1v-4h-1m1-4h.01M21 12a9 9 0 11-18 0 9 9 0 0118 0z" />
-                            </svg>
-                            <span>ข้อมูลนี้จะถูกใช้ในทั้ง 2 แบบฟอร์ม (ใบส่งมอบงาน และ ใบรับประกันงาน)</span>
-                        </div>
                     </div>
 
                     {/* Modal Footer */}
