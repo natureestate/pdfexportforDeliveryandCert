@@ -263,6 +263,27 @@ service cloud.firestore {
       allow delete: if isAuthenticated() && isSuperAdmin();
     }
     
+    // User Consents (Cookie Consent และ PDPA Consent)
+    match /userConsents/{userId} {
+      // อนุญาตให้อ่านได้เฉพาะเจ้าของ consent หรือ Super Admin
+      allow read: if isAuthenticated() && (
+        isSuperAdmin() ||
+        isOwner(userId)
+      );
+      
+      // อนุญาตให้สร้างได้เฉพาะเจ้าของ consent (userId ต้องตรงกับ user ปัจจุบัน)
+      allow create: if isAuthenticated() && request.resource.data.userId == request.auth.uid && userId == request.auth.uid;
+      
+      // อนุญาตให้แก้ไขได้เฉพาะเจ้าของ consent หรือ Super Admin
+      allow update: if isAuthenticated() && (
+        isSuperAdmin() ||
+        (isOwner(userId) && userId == request.auth.uid)
+      );
+      
+      // ไม่อนุญาตให้ลบ (เพื่อรักษาประวัติการยอมรับตาม PDPA)
+      allow delete: if false;
+    }
+    
     // Default: ปฏิเสธทุก collection อื่นๆ
     match /{document=**} {
       allow read, write: if false;

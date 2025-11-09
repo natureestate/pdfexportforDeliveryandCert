@@ -12,6 +12,7 @@ import WarrantyPreview from './components/WarrantyPreview';
 import HistoryList from './components/HistoryList';
 import AcceptInvitationPage from './components/AcceptInvitationPage';
 import SuperAdminDashboard from './components/SuperAdminDashboard';
+import CookieConsentModal from './components/CookieConsentModal';
 import { generatePdf } from './services/pdfGenerator';
 import { saveDeliveryNote, saveWarrantyCard } from './services/firestore';
 import type { DeliveryNoteDocument, WarrantyDocument } from './services/firestore';
@@ -601,8 +602,34 @@ const AppContent: React.FC = () => {
 
 // Main App Component with Providers and Routing
 const App: React.FC = () => {
+    const [cookieConsent, setCookieConsent] = useState<string | null>(null);
+
+    useEffect(() => {
+        // ตรวจสอบ cookie consent เมื่อ app โหลด
+        const consent = localStorage.getItem('pdpa-cookie-consent');
+        setCookieConsent(consent);
+    }, []);
+
+    const handleCookieAccept = () => {
+        setCookieConsent('accepted');
+        console.log('✅ User accepted PDPA cookie consent');
+    };
+
+    const handleCookieDecline = () => {
+        setCookieConsent('declined');
+        console.log('⚠️ User declined PDPA cookie consent');
+    };
+
     return (
         <AuthProvider>
+            {/* Cookie Consent Modal */}
+            {!cookieConsent && (
+                <CookieConsentModal 
+                    onAccept={handleCookieAccept}
+                    onDecline={handleCookieDecline}
+                />
+            )}
+            
             <Routes>
                 {/* หน้ายอมรับคำเชิญ - ไม่ต้อง login ก่อน */}
                 <Route path="/accept-invitation" element={<AcceptInvitationPage />} />

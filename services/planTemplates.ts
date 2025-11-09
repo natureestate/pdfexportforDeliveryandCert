@@ -28,6 +28,7 @@ export interface PlanTemplate {
     description: string;              // คำอธิบายแผน
     
     // โควตา
+    maxCompanies: number;             // จำนวนองค์กรสูงสุดที่สร้างได้ (-1 = ไม่จำกัด)
     maxUsers: number;                 // จำนวนผู้ใช้สูงสุด (-1 = ไม่จำกัด)
     maxDocuments: number;             // จำนวนเอกสารต่อเดือน (-1 = ไม่จำกัด)
     maxLogos: number;                 // จำนวนโลโก้ (-1 = ไม่จำกัด)
@@ -70,6 +71,7 @@ const DEFAULT_PLAN_TEMPLATES: Record<SubscriptionPlan, Omit<PlanTemplate, 'creat
         id: 'free',
         name: '🆓 Free',
         description: 'สำหรับเริ่มต้นใช้งาน (1 องค์กร)',
+        maxCompanies: 1,              // สร้างได้แค่ 1 องค์กร
         maxUsers: 3,
         maxDocuments: 50,
         maxLogos: 1,
@@ -96,6 +98,7 @@ const DEFAULT_PLAN_TEMPLATES: Record<SubscriptionPlan, Omit<PlanTemplate, 'creat
         id: 'basic',
         name: '💼 Basic',
         description: 'สำหรับธุรกิจขนาดเล็ก',
+        maxCompanies: 3,              // สร้างได้สูงสุด 3 องค์กร
         maxUsers: 10,
         maxDocuments: 200,
         maxLogos: 5,
@@ -122,6 +125,7 @@ const DEFAULT_PLAN_TEMPLATES: Record<SubscriptionPlan, Omit<PlanTemplate, 'creat
         id: 'premium',
         name: '💎 Premium',
         description: 'สำหรับธุรกิจขนาดกลาง',
+        maxCompanies: 10,             // สร้างได้สูงสุด 10 องค์กร
         maxUsers: 50,
         maxDocuments: 1000,
         maxLogos: 20,
@@ -148,6 +152,7 @@ const DEFAULT_PLAN_TEMPLATES: Record<SubscriptionPlan, Omit<PlanTemplate, 'creat
         id: 'enterprise',
         name: '🏢 Enterprise',
         description: 'สำหรับองค์กรขนาดใหญ่',
+        maxCompanies: -1,             // ไม่จำกัด
         maxUsers: -1,
         maxDocuments: -1,
         maxLogos: -1,
@@ -226,6 +231,7 @@ export const getAllPlanTemplates = async (): Promise<PlanTemplate[]> => {
                 id: doc.id,
                 name: data.name,
                 description: data.description,
+                maxCompanies: data.maxCompanies ?? 1,  // Default 1 ถ้าไม่มีข้อมูล
                 maxUsers: data.maxUsers,
                 maxDocuments: data.maxDocuments,
                 maxLogos: data.maxLogos,
@@ -271,6 +277,7 @@ export const getPlanTemplate = async (planId: string): Promise<PlanTemplate | nu
             id: templateSnap.id,
             name: data.name,
             description: data.description,
+            maxCompanies: data.maxCompanies ?? 1,  // Default 1 ถ้าไม่มีข้อมูล
             maxUsers: data.maxUsers,
             maxDocuments: data.maxDocuments,
             maxLogos: data.maxLogos,

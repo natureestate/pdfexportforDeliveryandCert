@@ -3,7 +3,7 @@
  * หน้า Login ด้วย Google OAuth, Phone, Email/Password และ Email Link
  */
 
-import React, { useState } from 'react';
+import React, { useState, useEffect } from 'react';
 import { signInWithGoogle } from '../services/auth';
 import { executeAndVerifyRecaptcha, isRecaptchaScoreValid, getRecaptchaErrorMessage } from '../services/recaptcha';
 import PhoneAuthForm from './PhoneAuthForm';
@@ -19,6 +19,7 @@ const LoginPage: React.FC = () => {
     const [loginMethod, setLoginMethod] = useState<LoginMethod>('google');
     const [showPolicyModal, setShowPolicyModal] = useState(false);
     const [policyType, setPolicyType] = useState<'terms' | 'privacy'>('terms');
+    const [showRecaptchaBadge, setShowRecaptchaBadge] = useState(false);
 
     const handleOpenPolicy = (type: 'terms' | 'privacy') => {
         setPolicyType(type);
@@ -28,6 +29,132 @@ const LoginPage: React.FC = () => {
     const handleClosePolicy = () => {
         setShowPolicyModal(false);
     };
+
+    /**
+     * แสดง reCAPTCHA badge เมื่อคลิกที่ข้อความ
+     * และซ่อนอัตโนมัติหลังจาก 3 วินาที
+     */
+    const handleShowRecaptchaBadge = () => {
+        console.log('🔍 คลิกที่ข้อความ reCAPTCHA');
+        
+        // สร้างหรือหา badge element
+        let badge = document.querySelector('.grecaptcha-badge') as HTMLElement;
+        
+        if (!badge) {
+            console.log('📦 สร้าง badge element ใหม่');
+            // สร้าง badge element ใหม่
+            badge = document.createElement('div');
+            badge.className = 'grecaptcha-badge show-badge';
+            badge.setAttribute('data-style', 'bottomright');
+            badge.style.cssText = `
+                visibility: visible !important;
+                opacity: 1 !important;
+                position: fixed !important;
+                bottom: 14px !important;
+                right: 14px !important;
+                width: 256px !important;
+                height: 60px !important;
+                z-index: 9999 !important;
+                background: #fff !important;
+                border: 1px solid #c1c1c1 !important;
+                border-radius: 3px !important;
+                box-shadow: 0 0 4px 1px rgba(0,0,0,.08) !important;
+                display: flex !important;
+                align-items: center !important;
+                justify-content: center !important;
+                font-size: 11px !important;
+                color: #555 !important;
+                font-family: Roboto, helvetica, arial, sans-serif !important;
+            `;
+            
+            // สร้างเนื้อหาภายใน badge
+            const badgeContent = document.createElement('div');
+            badgeContent.style.cssText = 'display: flex; align-items: center; gap: 8px; padding: 8px; flex-wrap: wrap;';
+            
+            // เพิ่มข้อความ
+            const text = document.createElement('span');
+            text.textContent = 'This site is protected by reCAPTCHA and the Google ';
+            text.style.cssText = 'color: #555; font-size: 11px;';
+            
+            // เพิ่มลิงก์
+            const link = document.createElement('a');
+            link.href = 'https://policies.google.com/privacy';
+            link.target = '_blank';
+            link.rel = 'noopener noreferrer';
+            link.textContent = 'Privacy Policy';
+            link.style.cssText = 'color: #1a73e8; text-decoration: none; font-size: 11px;';
+            
+            const and = document.createTextNode(' and ');
+            const termsLink = document.createElement('a');
+            termsLink.href = 'https://policies.google.com/terms';
+            termsLink.target = '_blank';
+            termsLink.rel = 'noopener noreferrer';
+            termsLink.textContent = 'Terms of Service';
+            termsLink.style.cssText = 'color: #1a73e8; text-decoration: none; font-size: 11px;';
+            
+            badgeContent.appendChild(text);
+            badgeContent.appendChild(link);
+            badgeContent.appendChild(and);
+            badgeContent.appendChild(termsLink);
+            badge.appendChild(badgeContent);
+            document.body.appendChild(badge);
+            console.log('✅ Badge ถูกสร้างและเพิ่มเข้า DOM แล้ว');
+        } else {
+            console.log('✅ พบ badge ที่มีอยู่แล้ว');
+        }
+
+        // แสดง badge โดยตั้งค่า state และ style
+        setShowRecaptchaBadge(true);
+        
+        // ตั้งค่า style โดยตรงเพื่อให้แน่ใจว่าแสดง
+        if (badge) {
+            badge.classList.add('show-badge');
+            badge.style.visibility = 'visible';
+            badge.style.opacity = '1';
+            badge.style.display = 'flex';
+            console.log('✅ Badge แสดงแล้ว:', {
+                visibility: badge.style.visibility,
+                opacity: badge.style.opacity,
+                display: badge.style.display,
+                hasShowBadgeClass: badge.classList.contains('show-badge')
+            });
+        }
+        
+        // ซ่อน badge หลังจาก 3 วินาที
+        setTimeout(() => {
+            console.log('⏰ ซ่อน badge หลังจาก 3 วินาที');
+            setShowRecaptchaBadge(false);
+            if (badge) {
+                badge.classList.remove('show-badge');
+                badge.style.visibility = 'hidden';
+                badge.style.opacity = '0';
+                badge.style.display = 'none';
+            }
+        }, 3000);
+    };
+
+    /**
+     * ควบคุมการแสดง/ซ่อน reCAPTCHA badge ด้วย CSS
+     */
+    useEffect(() => {
+        const badge = document.querySelector('.grecaptcha-badge') as HTMLElement;
+        if (badge) {
+            if (showRecaptchaBadge) {
+                // แสดง badge โดยเพิ่ม class และตั้งค่า style
+                badge.classList.add('show-badge');
+                badge.style.visibility = 'visible';
+                badge.style.opacity = '1';
+                badge.style.display = 'flex';
+                console.log('แสดง reCAPTCHA badge');
+            } else {
+                // ซ่อน badge โดยลบ class และตั้งค่า style
+                badge.classList.remove('show-badge');
+                badge.style.visibility = 'hidden';
+                badge.style.opacity = '0';
+                badge.style.display = 'none';
+            }
+        }
+    }, [showRecaptchaBadge]);
 
     const handleGoogleSignIn = async () => {
         setIsLoading(true);
@@ -276,7 +403,11 @@ const LoginPage: React.FC = () => {
                             นโยบายความเป็นส่วนตัว
                         </button>
                     </p>
-                    <p className="text-xs text-gray-400 flex items-center justify-center gap-1">
+                    <p 
+                        className="text-xs text-gray-400 flex items-center justify-center gap-1 cursor-pointer hover:text-gray-600 transition-colors"
+                        onClick={handleShowRecaptchaBadge}
+                        title="คลิกเพื่อดู reCAPTCHA badge"
+                    >
                         <svg className="w-3 h-3" fill="currentColor" viewBox="0 0 24 24">
                             <path d="M12 2C6.48 2 2 6.48 2 12s4.48 10 10 10 10-4.48 10-10S17.52 2 12 2zm1 15h-2v-2h2v2zm0-4h-2V7h2v6z"/>
                         </svg>

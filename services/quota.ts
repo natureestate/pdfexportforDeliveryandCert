@@ -183,6 +183,8 @@ export const createQuota = async (
         const quotaData: CompanyQuota = {
             plan: plan,
             status: 'active',
+            maxCompanies: planTemplate.maxCompanies ?? DEFAULT_QUOTAS[plan].maxCompanies,  // ใช้จาก template หรือ fallback
+            currentCompanies: 0,
             maxUsers: planTemplate.maxUsers,
             currentUsers: 0,
             maxDocuments: planTemplate.maxDocuments,
@@ -237,10 +239,23 @@ export const getQuota = async (companyId: string): Promise<CompanyQuota | null> 
         }
 
         const data = quotaSnap.data();
+        
+        // ดึง maxCompanies จาก template หรือใช้ default จาก DEFAULT_QUOTAS
+        let maxCompanies = data.maxCompanies;
+        if (maxCompanies === undefined || maxCompanies === null) {
+            // ถ้าไม่มีใน quota document ให้ดึงจาก template หรือ DEFAULT_QUOTAS
+            const planTemplate = await getPlanTemplate(data.plan);
+            if (planTemplate && planTemplate.maxCompanies !== undefined) {
+                maxCompanies = planTemplate.maxCompanies;
+            } else {
+                maxCompanies = DEFAULT_QUOTAS[data.plan as SubscriptionPlan]?.maxCompanies ?? 1;
+            }
+        }
+        
         return {
             plan: data.plan,
             status: data.status,
-            maxCompanies: data.maxCompanies ?? 1,  // Default 1 ถ้าไม่มีข้อมูล
+            maxCompanies: maxCompanies,
             currentCompanies: data.currentCompanies ?? 0,
             maxUsers: data.maxUsers,
             currentUsers: data.currentUsers,
@@ -333,6 +348,7 @@ export const changePlan = async (
         const updates: Partial<CompanyQuota> = {
             plan: newPlan,
             status: 'active',
+            maxCompanies: newQuotaDefaults.maxCompanies,  // อัปเดต maxCompanies ด้วย
             maxUsers: newQuotaDefaults.maxUsers,
             maxDocuments: newQuotaDefaults.maxDocuments,
             maxLogos: newQuotaDefaults.maxLogos,
