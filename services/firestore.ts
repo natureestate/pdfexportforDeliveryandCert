@@ -1,5 +1,6 @@
 // Firestore Service - บริการสำหรับจัดการข้อมูลใน Firestore
 // ไฟล์นี้รวมฟังก์ชันสำหรับ CRUD operations กับ Firestore
+// Refactored: ใช้ Generic Document Service เพื่อลด code duplication
 
 import { 
     collection, 
@@ -18,6 +19,7 @@ import {
 } from "firebase/firestore";
 import { db, auth } from "../firebase.config";
 import { DeliveryNoteData, WarrantyData, InvoiceData, ReceiptData, QuotationData, PurchaseOrderData } from "../types";
+import { createDocumentService, createIdGenerator, FirestoreDocument } from "./documentService";
 
 // Collection names
 const DELIVERY_NOTES_COLLECTION = "deliveryNotes";
@@ -27,89 +29,126 @@ const RECEIPTS_COLLECTION = "receipts";
 const QUOTATIONS_COLLECTION = "quotations";
 const PURCHASE_ORDERS_COLLECTION = "purchaseOrders";
 
-/**
- * สร้าง Document ID ที่อ่านง่าย สำหรับใบส่งมอบงาน
- * รูปแบบ: YYMMDD_DN-XXXX (เช่น 250930_DN-2025-001)
- */
-const generateDeliveryNoteId = (docNumber: string): string => {
+// Re-export FirestoreDocument interface from documentService
+export type { FirestoreDocument };
+
+// ==================== Document Services (ใช้ Generic Service) ====================
+
+// Delivery Notes Service
+const deliveryNoteService = createDocumentService<DeliveryNoteData>({
+    collection: DELIVERY_NOTES_COLLECTION,
+    prefix: 'DN',
+    documentNumberField: 'docNumber',
+    generateId: createIdGenerator('DN'),
+    dateFields: ['date'],
+    errorMessages: {
+        save: 'ไม่สามารถบันทึกใบส่งมอบงานได้',
+        get: 'ไม่สามารถดึงข้อมูลใบส่งมอบงานได้',
+        getAll: 'ไม่สามารถดึงรายการใบส่งมอบงานได้',
+        update: 'ไม่สามารถอัปเดตใบส่งมอบงานได้',
+        delete: 'ไม่สามารถลบใบส่งมอบงานได้',
+        search: 'ไม่สามารถค้นหาใบส่งมอบงานได้',
+    },
+});
+
+// Warranty Cards Service (ใช้ houseModel แทน document number สำหรับ ID generation)
+const generateWarrantyCardId = (houseModel: string): string => {
     const now = new Date();
     const yy = String(now.getFullYear()).slice(-2);
     const mm = String(now.getMonth() + 1).padStart(2, '0');
     const dd = String(now.getDate()).padStart(2, '0');
-    
-    // ลบ "DN-" ออกจาก docNumber ถ้ามี แล้วใส่กลับในรูปแบบที่ต้องการ
-    const cleanDocNumber = docNumber.replace(/^DN-/i, '');
-    return `${yy}${mm}${dd}_DN-${cleanDocNumber}`;
+    const cleanHouseModel = houseModel.replace(/[^a-zA-Z0-9]/g, '_').substring(0, 20);
+    return `${yy}${mm}${dd}_WR-${cleanHouseModel}`;
 };
 
-/**
- * สร้าง Document ID ที่อ่านง่าย สำหรับใบแจ้งหนี้
- * รูปแบบ: YYMMDD_IN-XXXX (เช่น 251010_IN-2025-001)
- */
-const generateInvoiceId = (invoiceNumber: string): string => {
-    const now = new Date();
-    const yy = String(now.getFullYear()).slice(-2);
-    const mm = String(now.getMonth() + 1).padStart(2, '0');
-    const dd = String(now.getDate()).padStart(2, '0');
-    
-    // ลบ "IN-" ออกจาก invoiceNumber ถ้ามี แล้วใส่กลับในรูปแบบที่ต้องการ
-    const cleanInvoiceNumber = invoiceNumber.replace(/^IN-/i, '');
-    return `${yy}${mm}${dd}_IN-${cleanInvoiceNumber}`;
-};
+const warrantyCardService = createDocumentService<WarrantyData>({
+    collection: WARRANTY_CARDS_COLLECTION,
+    prefix: 'WR',
+    documentNumberField: 'warrantyNumber',
+    generateId: (warrantyNumber: string) => {
+        // สำหรับ warranty card ใช้ houseModel แทน warrantyNumber ถ้ามี
+        // แต่เนื่องจาก generic service ต้องการ documentNumberField เราจะใช้ warrantyNumber
+        // และ override ใน save function ถ้าจำเป็น
+        return createIdGenerator('WR')(warrantyNumber);
+    },
+    dateFields: ['purchaseDate', 'warrantyEndDate', 'issueDate'],
+    errorMessages: {
+        save: 'ไม่สามารถบันทึกใบรับประกันสินค้าได้',
+        get: 'ไม่สามารถดึงข้อมูลใบรับประกันสินค้าได้',
+        getAll: 'ไม่สามารถดึงรายการใบรับประกันสินค้าได้',
+        update: 'ไม่สามารถอัปเดตใบรับประกันสินค้าได้',
+        delete: 'ไม่สามารถลบใบรับประกันสินค้าได้',
+        search: 'ไม่สามารถค้นหาใบรับประกันสินค้าได้',
+    },
+});
 
-/**
- * สร้าง Document ID ที่อ่านง่าย สำหรับใบเสร็จ
- * รูปแบบ: YYMMDD_RC-XXXX (เช่น 251010_RC-2025-001)
- */
-const generateReceiptId = (receiptNumber: string): string => {
-    const now = new Date();
-    const yy = String(now.getFullYear()).slice(-2);
-    const mm = String(now.getMonth() + 1).padStart(2, '0');
-    const dd = String(now.getDate()).padStart(2, '0');
-    
-    // ลบ "RC-" ออกจาก receiptNumber ถ้ามี แล้วใส่กลับในรูปแบบที่ต้องการ
-    const cleanReceiptNumber = receiptNumber.replace(/^RC-/i, '');
-    return `${yy}${mm}${dd}_RC-${cleanReceiptNumber}`;
-};
+// Invoice Service
+const invoiceService = createDocumentService<InvoiceData>({
+    collection: INVOICES_COLLECTION,
+    prefix: 'IN',
+    documentNumberField: 'invoiceNumber',
+    generateId: createIdGenerator('IN'),
+    dateFields: ['invoiceDate', 'dueDate'],
+    errorMessages: {
+        save: 'ไม่สามารถบันทึกใบแจ้งหนี้ได้',
+        get: 'ไม่สามารถดึงข้อมูลใบแจ้งหนี้ได้',
+        getAll: 'ไม่สามารถดึงรายการใบแจ้งหนี้ได้',
+        update: 'ไม่สามารถอัปเดตใบแจ้งหนี้ได้',
+        delete: 'ไม่สามารถลบใบแจ้งหนี้ได้',
+        search: 'ไม่สามารถค้นหาใบแจ้งหนี้ได้',
+    },
+});
 
-/**
- * สร้าง Document ID ที่อ่านง่าย สำหรับใบเสนอราคา
- * รูปแบบ: YYMMDD_QT-XXXX (เช่น 251010_QT-2025-001)
- */
-const generateQuotationId = (quotationNumber: string): string => {
-    const now = new Date();
-    const yy = String(now.getFullYear()).slice(-2);
-    const mm = String(now.getMonth() + 1).padStart(2, '0');
-    const dd = String(now.getDate()).padStart(2, '0');
-    
-    // ลบ "QT-" ออกจาก quotationNumber ถ้ามี แล้วใส่กลับในรูปแบบที่ต้องการ
-    const cleanQuotationNumber = quotationNumber.replace(/^QT-/i, '');
-    return `${yy}${mm}${dd}_QT-${cleanQuotationNumber}`;
-};
+// Receipt Service
+const receiptService = createDocumentService<ReceiptData>({
+    collection: RECEIPTS_COLLECTION,
+    prefix: 'RC',
+    documentNumberField: 'receiptNumber',
+    generateId: createIdGenerator('RC'),
+    dateFields: ['receiptDate'],
+    errorMessages: {
+        save: 'ไม่สามารถบันทึกใบเสร็จได้',
+        get: 'ไม่สามารถดึงข้อมูลใบเสร็จได้',
+        getAll: 'ไม่สามารถดึงรายการใบเสร็จได้',
+        update: 'ไม่สามารถอัปเดตใบเสร็จได้',
+        delete: 'ไม่สามารถลบใบเสร็จได้',
+        search: 'ไม่สามารถค้นหาใบเสร็จได้',
+    },
+});
 
-/**
- * สร้าง Document ID ที่อ่านง่าย สำหรับใบสั่งซื้อ
- * รูปแบบ: YYMMDD_PO-XXXX (เช่น 251010_PO-2025-001)
- */
-const generatePurchaseOrderId = (purchaseOrderNumber: string): string => {
-    const now = new Date();
-    const yy = String(now.getFullYear()).slice(-2);
-    const mm = String(now.getMonth() + 1).padStart(2, '0');
-    const dd = String(now.getDate()).padStart(2, '0');
-    
-    // ลบ "PO-" ออกจาก purchaseOrderNumber ถ้ามี แล้วใส่กลับในรูปแบบที่ต้องการ
-    const cleanPurchaseOrderNumber = purchaseOrderNumber.replace(/^PO-/i, '');
-    return `${yy}${mm}${dd}_PO-${cleanPurchaseOrderNumber}`;
-};
+// Quotation Service
+const quotationService = createDocumentService<QuotationData>({
+    collection: QUOTATIONS_COLLECTION,
+    prefix: 'QT',
+    documentNumberField: 'quotationNumber',
+    generateId: createIdGenerator('QT'),
+    dateFields: ['quotationDate', 'validUntilDate'],
+    errorMessages: {
+        save: 'ไม่สามารถบันทึกใบเสนอราคาได้',
+        get: 'ไม่สามารถดึงข้อมูลใบเสนอราคาได้',
+        getAll: 'ไม่สามารถดึงรายการใบเสนอราคาได้',
+        update: 'ไม่สามารถอัปเดตใบเสนอราคาได้',
+        delete: 'ไม่สามารถลบใบเสนอราคาได้',
+        search: 'ไม่สามารถค้นหาใบเสนอราคาได้',
+    },
+});
 
-// Interface สำหรับเอกสารที่บันทึกใน Firestore
-export interface FirestoreDocument {
-    id?: string;
-    createdAt?: Date;
-    updatedAt?: Date;
-    isDeleted?: boolean;      // สำหรับ soft delete
-    deletedAt?: Date | null;  // วันที่ลบ (soft delete)
-}
+// Purchase Order Service
+const purchaseOrderService = createDocumentService<PurchaseOrderData>({
+    collection: PURCHASE_ORDERS_COLLECTION,
+    prefix: 'PO',
+    documentNumberField: 'purchaseOrderNumber',
+    generateId: createIdGenerator('PO'),
+    dateFields: ['purchaseOrderDate', 'expectedDeliveryDate'],
+    errorMessages: {
+        save: 'ไม่สามารถบันทึกใบสั่งซื้อได้',
+        get: 'ไม่สามารถดึงข้อมูลใบสั่งซื้อได้',
+        getAll: 'ไม่สามารถดึงรายการใบสั่งซื้อได้',
+        update: 'ไม่สามารถอัปเดตใบสั่งซื้อได้',
+        delete: 'ไม่สามารถลบใบสั่งซื้อได้',
+        search: 'ไม่สามารถค้นหาใบสั่งซื้อได้',
+    },
+});
 
 export interface DeliveryNoteDocument extends DeliveryNoteData, FirestoreDocument {}
 export interface WarrantyDocument extends WarrantyData, FirestoreDocument {}
@@ -119,6 +158,7 @@ export interface QuotationDocument extends QuotationData, FirestoreDocument {}
 export interface PurchaseOrderDocument extends PurchaseOrderData, FirestoreDocument {}
 
 // ==================== Delivery Notes Functions ====================
+// Refactored: ใช้ Generic Document Service
 
 /**
  * บันทึกใบส่งมอบงานใหม่ลง Firestore
@@ -126,66 +166,14 @@ export interface PurchaseOrderDocument extends PurchaseOrderData, FirestoreDocum
  * @param companyId - ID ของบริษัท (optional)
  */
 export const saveDeliveryNote = async (data: DeliveryNoteData, companyId?: string): Promise<string> => {
-    try {
-        // ตรวจสอบว่า user login แล้วหรือยัง
-        const currentUser = auth.currentUser;
-        if (!currentUser) {
-            throw new Error("กรุณา Login ก่อนบันทึกข้อมูล");
-        }
-        
-        // สร้าง Document ID ที่อ่านง่าย
-        const docId = generateDeliveryNoteId(data.docNumber);
-        const docRef = doc(db, DELIVERY_NOTES_COLLECTION, docId);
-        
-        // เตรียมข้อมูลสำหรับบันทึก - ไม่บันทึก Base64 ถ้ามี logoUrl
-        const dataToSave = {
-            ...data,
-            // ถ้ามี logoUrl (อัปโหลดไปยัง Storage แล้ว) ให้ลบ Base64 ออก
-            logo: data.logoUrl ? null : data.logo,
-            userId: currentUser.uid, // เพิ่ม userId
-            companyId: companyId || null, // เพิ่ม companyId
-            isDeleted: false, // ตั้งค่า isDeleted เป็น false สำหรับเอกสารใหม่
-            createdAt: Timestamp.now(),
-            updatedAt: Timestamp.now(),
-        };
-        
-        await setDoc(docRef, dataToSave);
-        
-        return docId;
-    } catch (error) {
-        console.error("Error saving delivery note:", error);
-        throw new Error("ไม่สามารถบันทึกใบส่งมอบงานได้");
-    }
+    return deliveryNoteService.save(data, companyId);
 };
 
 /**
  * ดึงข้อมูลใบส่งมอบงานตาม ID
  */
 export const getDeliveryNote = async (id: string): Promise<DeliveryNoteDocument | null> => {
-    try {
-        const docRef = doc(db, DELIVERY_NOTES_COLLECTION, id);
-        const docSnap = await getDoc(docRef);
-        
-        if (docSnap.exists()) {
-            const data = docSnap.data();
-            // ถ้าเอกสารถูกลบ (soft delete) ให้ return null
-            if (data.isDeleted) {
-                return null;
-            }
-            return {
-                id: docSnap.id,
-                ...data,
-                date: data.date?.toDate() || null,
-                createdAt: data.createdAt?.toDate(),
-                updatedAt: data.updatedAt?.toDate(),
-                deletedAt: data.deletedAt?.toDate() || null,
-            } as DeliveryNoteDocument;
-        }
-        return null;
-    } catch (error) {
-        console.error("Error getting delivery note:", error);
-        throw new Error("ไม่สามารถดึงข้อมูลใบส่งมอบงานได้");
-    }
+    return deliveryNoteService.get(id) as Promise<DeliveryNoteDocument | null>;
 };
 
 /**
@@ -194,55 +182,7 @@ export const getDeliveryNote = async (id: string): Promise<DeliveryNoteDocument 
  * @param companyId - ID ของบริษัท (optional) ถ้าไม่ระบุจะดึงทั้งหมด
  */
 export const getDeliveryNotes = async (limitCount: number = 50, companyId?: string): Promise<DeliveryNoteDocument[]> => {
-    try {
-        // ตรวจสอบว่า user login แล้วหรือยัง
-        const currentUser = auth.currentUser;
-        if (!currentUser) {
-            throw new Error("กรุณา Login ก่อนดูข้อมูล");
-        }
-        
-        // สร้าง query constraints
-        const constraints: QueryConstraint[] = [
-            where("userId", "==", currentUser.uid), // กรองเฉพาะของ user นี้
-        ];
-        
-        // ถ้ามี companyId ให้กรองเฉพาะบริษัทนั้น
-        if (companyId) {
-            constraints.push(where("companyId", "==", companyId));
-        }
-        
-        // กรองเฉพาะเอกสารที่ยังไม่ถูกลบ (isDeleted != true)
-        // ใช้ where("isDeleted", "==", false) เพื่อกรองเอกสารที่ isDeleted เป็น false หรือไม่มี field
-        // หมายเหตุ: Firestore จะรวมเอกสารที่ไม่มี field isDeleted ด้วย
-        constraints.push(where("isDeleted", "==", false));
-        
-        constraints.push(orderBy("createdAt", "desc"));
-        constraints.push(limit(limitCount));
-        
-        const q = query(collection(db, DELIVERY_NOTES_COLLECTION), ...constraints);
-        
-        const querySnapshot = await getDocs(q);
-        return querySnapshot.docs
-            .map(doc => {
-                const data = doc.data();
-                // ตรวจสอบอีกครั้งที่ client-side เพื่อความแน่ใจ
-                if (data.isDeleted === true) {
-                    return null;
-                }
-                return {
-                    id: doc.id,
-                    ...data,
-                    date: data.date?.toDate() || null,
-                    createdAt: data.createdAt?.toDate(),
-                    updatedAt: data.updatedAt?.toDate(),
-                    deletedAt: data.deletedAt?.toDate() || null,
-                } as DeliveryNoteDocument;
-            })
-            .filter((doc): doc is DeliveryNoteDocument => doc !== null && !doc.isDeleted); // กรองเอกสารที่ถูกลบ (soft delete) ออก
-    } catch (error) {
-        console.error("Error getting delivery notes:", error);
-        throw new Error("ไม่สามารถดึงรายการใบส่งมอบงานได้");
-    }
+    return deliveryNoteService.getAll(limitCount, companyId) as Promise<DeliveryNoteDocument[]>;
 };
 
 /**
@@ -251,49 +191,7 @@ export const getDeliveryNotes = async (limitCount: number = 50, companyId?: stri
  * @param data - ข้อมูลที่ต้องการอัปเดต
  */
 export const updateDeliveryNote = async (id: string, data: Partial<DeliveryNoteData>): Promise<void> => {
-    try {
-        // ตรวจสอบว่า user login แล้วหรือยัง
-        const currentUser = auth.currentUser;
-        if (!currentUser) {
-            throw new Error("กรุณา Login ก่อนอัปเดตข้อมูล");
-        }
-
-        // ตรวจสอบว่าเอกสารมีอยู่จริงและ user มีสิทธิ์แก้ไข
-        const docRef = doc(db, DELIVERY_NOTES_COLLECTION, id);
-        const docSnap = await getDoc(docRef);
-        
-        if (!docSnap.exists()) {
-            throw new Error("ไม่พบเอกสารที่ต้องการอัปเดต");
-        }
-
-        const existingData = docSnap.data();
-        
-        // ตรวจสอบสิทธิ์: ต้องเป็นเจ้าของหรือเป็น Super Admin (ตรวจสอบที่ Firestore Rules)
-        if (existingData.userId !== currentUser.uid && existingData.companyId == null) {
-            throw new Error("คุณไม่มีสิทธิ์แก้ไขเอกสารนี้");
-        }
-
-        // เตรียมข้อมูลสำหรับอัปเดต
-        const dataToUpdate: any = {
-            ...data,
-            updatedAt: Timestamp.now(),
-        };
-
-        // จัดการ logo: ถ้ามี logoUrl ให้ลบ Base64 ออก
-        if (data.logoUrl !== undefined) {
-            dataToUpdate.logo = data.logoUrl ? null : data.logo;
-        }
-
-        // แปลง Date เป็น Timestamp ถ้ามี
-        if (data.date instanceof Date) {
-            dataToUpdate.date = Timestamp.fromDate(data.date);
-        }
-
-        await updateDoc(docRef, dataToUpdate);
-    } catch (error) {
-        console.error("Error updating delivery note:", error);
-        throw error instanceof Error ? error : new Error("ไม่สามารถอัปเดตใบส่งมอบงานได้");
-    }
+    return deliveryNoteService.update(id, data);
 };
 
 /**
@@ -301,39 +199,7 @@ export const updateDeliveryNote = async (id: string, data: Partial<DeliveryNoteD
  * @param id - Document ID ของเอกสารที่ต้องการลบ
  */
 export const deleteDeliveryNote = async (id: string): Promise<void> => {
-    try {
-        // ตรวจสอบว่า user login แล้วหรือยัง
-        const currentUser = auth.currentUser;
-        if (!currentUser) {
-            throw new Error("กรุณา Login ก่อนลบข้อมูล");
-        }
-
-        // ตรวจสอบว่าเอกสารมีอยู่จริงและ user มีสิทธิ์ลบ
-        const docRef = doc(db, DELIVERY_NOTES_COLLECTION, id);
-        const docSnap = await getDoc(docRef);
-        
-        if (!docSnap.exists()) {
-            throw new Error("ไม่พบเอกสารที่ต้องการลบ");
-        }
-
-        const existingData = docSnap.data();
-        
-        // ตรวจสอบสิทธิ์: ต้องเป็นเจ้าของหรือเป็น Super Admin (ตรวจสอบที่ Firestore Rules)
-        if (existingData.userId !== currentUser.uid && existingData.companyId == null) {
-            throw new Error("คุณไม่มีสิทธิ์ลบเอกสารนี้");
-        }
-
-        // ใช้ soft delete แทนการลบจริง - ตั้งค่า isDeleted = true และ deletedAt
-        await updateDoc(docRef, {
-            isDeleted: true,
-            deletedAt: Timestamp.now(),
-            updatedAt: Timestamp.now(),
-        });
-        console.log(`✅ Soft delete delivery note สำเร็จ: ${id}`);
-    } catch (error) {
-        console.error("Error deleting delivery note:", error);
-        throw error instanceof Error ? error : new Error("ไม่สามารถลบใบส่งมอบงานได้");
-    }
+    return deliveryNoteService.delete(id);
 };
 
 /**
@@ -342,52 +208,11 @@ export const deleteDeliveryNote = async (id: string): Promise<void> => {
  * @param companyId - ID ของบริษัท (optional) ถ้าไม่ระบุจะค้นหาทั้งหมดของ user
  */
 export const searchDeliveryNoteByDocNumber = async (docNumber: string, companyId?: string): Promise<DeliveryNoteDocument[]> => {
-    try {
-        // ตรวจสอบว่า user login แล้วหรือยัง
-        const currentUser = auth.currentUser;
-        if (!currentUser) {
-            throw new Error("กรุณา Login ก่อนค้นหาข้อมูล");
-        }
-
-        // สร้าง query constraints
-        const constraints: QueryConstraint[] = [
-            where("docNumber", "==", docNumber),
-            where("userId", "==", currentUser.uid), // กรองเฉพาะของ user นี้
-            where("isDeleted", "==", false), // กรองเฉพาะเอกสารที่ยังไม่ถูกลบ
-        ];
-
-        // ถ้ามี companyId ให้กรองเฉพาะบริษัทนั้น
-        if (companyId) {
-            constraints.push(where("companyId", "==", companyId));
-        }
-
-        const q = query(collection(db, DELIVERY_NOTES_COLLECTION), ...constraints);
-        
-        const querySnapshot = await getDocs(q);
-        return querySnapshot.docs
-            .map(doc => {
-                const data = doc.data();
-                // ตรวจสอบอีกครั้งที่ client-side เพื่อความแน่ใจ
-                if (data.isDeleted === true) {
-                    return null;
-                }
-                return {
-                    id: doc.id,
-                    ...data,
-                    date: data.date?.toDate() || null,
-                    createdAt: data.createdAt?.toDate(),
-                    updatedAt: data.updatedAt?.toDate(),
-                    deletedAt: data.deletedAt?.toDate() || null,
-                } as DeliveryNoteDocument;
-            })
-            .filter((doc): doc is DeliveryNoteDocument => doc !== null && !doc.isDeleted); // กรองเอกสารที่ถูกลบ (soft delete) ออก
-    } catch (error) {
-        console.error("Error searching delivery note:", error);
-        throw new Error("ไม่สามารถค้นหาใบส่งมอบงานได้");
-    }
+    return deliveryNoteService.searchByDocumentNumber(docNumber, companyId) as Promise<DeliveryNoteDocument[]>;
 };
 
 // ==================== Warranty Cards Functions ====================
+// Refactored: ใช้ Generic Document Service (แต่ต้อง override save เพื่อใช้ houseModel สำหรับ ID)
 
 /**
  * บันทึกใบรับประกันสินค้าใหม่ลง Firestore
@@ -395,31 +220,28 @@ export const searchDeliveryNoteByDocNumber = async (docNumber: string, companyId
  * @param companyId - ID ของบริษัท (optional)
  */
 export const saveWarrantyCard = async (data: WarrantyData, companyId?: string): Promise<string> => {
+    // Warranty Card ใช้ houseModel แทน warrantyNumber สำหรับ generate ID
+    // Override save function เพื่อใช้ houseModel
     try {
-        // ตรวจสอบว่า user login แล้วหรือยัง
         const currentUser = auth.currentUser;
         if (!currentUser) {
             throw new Error("กรุณา Login ก่อนบันทึกข้อมูล");
         }
         
-        // สร้าง Document ID ที่อ่านง่าย
-        const docId = generateWarrantyCardId(data.houseModel);
+        const docId = generateWarrantyCardId(data.houseModel || data.warrantyNumber || 'WR');
         const docRef = doc(db, WARRANTY_CARDS_COLLECTION, docId);
         
-        // เตรียมข้อมูลสำหรับบันทึก - ไม่บันทึก Base64 ถ้ามี logoUrl
         const dataToSave = {
             ...data,
-            // ถ้ามี logoUrl (อัปโหลดไปยัง Storage แล้ว) ให้ลบ Base64 ออก
             logo: data.logoUrl ? null : data.logo,
-            userId: currentUser.uid, // เพิ่ม userId
-            companyId: companyId || null, // เพิ่ม companyId
-            isDeleted: false, // ตั้งค่า isDeleted เป็น false สำหรับเอกสารใหม่
+            userId: currentUser.uid,
+            companyId: companyId || null,
+            isDeleted: false,
             createdAt: Timestamp.now(),
             updatedAt: Timestamp.now(),
         };
         
         await setDoc(docRef, dataToSave);
-        
         return docId;
     } catch (error) {
         console.error("Error saving warranty card:", error);
@@ -431,30 +253,7 @@ export const saveWarrantyCard = async (data: WarrantyData, companyId?: string): 
  * ดึงข้อมูลใบรับประกันสินค้าตาม ID
  */
 export const getWarrantyCard = async (id: string): Promise<WarrantyDocument | null> => {
-    try {
-        const docRef = doc(db, WARRANTY_CARDS_COLLECTION, id);
-        const docSnap = await getDoc(docRef);
-        
-        if (docSnap.exists()) {
-            const data = docSnap.data();
-            // ถ้าเอกสารถูกลบ (soft delete) ให้ return null
-            if (data.isDeleted) {
-                return null;
-            }
-            return {
-                id: docSnap.id,
-                ...data,
-                purchaseDate: data.purchaseDate?.toDate() || null,
-                createdAt: data.createdAt?.toDate(),
-                updatedAt: data.updatedAt?.toDate(),
-                deletedAt: data.deletedAt?.toDate() || null,
-            } as WarrantyDocument;
-        }
-        return null;
-    } catch (error) {
-        console.error("Error getting warranty card:", error);
-        throw new Error("ไม่สามารถดึงข้อมูลใบรับประกันสินค้าได้");
-    }
+    return warrantyCardService.get(id) as Promise<WarrantyDocument | null>;
 };
 
 /**
@@ -463,57 +262,7 @@ export const getWarrantyCard = async (id: string): Promise<WarrantyDocument | nu
  * @param companyId - ID ของบริษัท (optional) ถ้าไม่ระบุจะดึงทั้งหมด
  */
 export const getWarrantyCards = async (limitCount: number = 50, companyId?: string): Promise<WarrantyDocument[]> => {
-    try {
-        // ตรวจสอบว่า user login แล้วหรือยัง
-        const currentUser = auth.currentUser;
-        if (!currentUser) {
-            throw new Error("กรุณา Login ก่อนดูข้อมูล");
-        }
-        
-        // สร้าง query constraints
-        const constraints: QueryConstraint[] = [
-            where("userId", "==", currentUser.uid), // กรองเฉพาะของ user นี้
-        ];
-        
-        // ถ้ามี companyId ให้กรองเฉพาะบริษัทนั้น
-        if (companyId) {
-            constraints.push(where("companyId", "==", companyId));
-        }
-        
-        // กรองเฉพาะเอกสารที่ยังไม่ถูกลบ (isDeleted != true)
-        // ใช้ where("isDeleted", "==", false) เพื่อกรองเอกสารที่ isDeleted เป็น false หรือไม่มี field
-        // หมายเหตุ: Firestore จะรวมเอกสารที่ไม่มี field isDeleted ด้วย
-        constraints.push(where("isDeleted", "==", false));
-        
-        constraints.push(orderBy("createdAt", "desc"));
-        constraints.push(limit(limitCount));
-        
-        const q = query(collection(db, WARRANTY_CARDS_COLLECTION), ...constraints);
-        
-        const querySnapshot = await getDocs(q);
-        return querySnapshot.docs
-            .map(doc => {
-                const data = doc.data();
-                // ตรวจสอบอีกครั้งที่ client-side เพื่อความแน่ใจ
-                if (data.isDeleted === true) {
-                    return null;
-                }
-                return {
-                    id: doc.id,
-                    ...data,
-                    purchaseDate: data.purchaseDate?.toDate() || null,
-                    warrantyEndDate: data.warrantyEndDate?.toDate() || null,
-                    issueDate: data.issueDate?.toDate() || null,
-                    createdAt: data.createdAt?.toDate(),
-                    updatedAt: data.updatedAt?.toDate(),
-                    deletedAt: data.deletedAt?.toDate() || null,
-                } as WarrantyDocument;
-            })
-            .filter((doc): doc is WarrantyDocument => doc !== null && !doc.isDeleted); // กรองเอกสารที่ถูกลบ (soft delete) ออก
-    } catch (error) {
-        console.error("Error getting warranty cards:", error);
-        throw new Error("ไม่สามารถดึงรายการใบรับประกันสินค้าได้");
-    }
+    return warrantyCardService.getAll(limitCount, companyId) as Promise<WarrantyDocument[]>;
 };
 
 /**
@@ -522,55 +271,7 @@ export const getWarrantyCards = async (limitCount: number = 50, companyId?: stri
  * @param data - ข้อมูลที่ต้องการอัปเดต
  */
 export const updateWarrantyCard = async (id: string, data: Partial<WarrantyData>): Promise<void> => {
-    try {
-        // ตรวจสอบว่า user login แล้วหรือยัง
-        const currentUser = auth.currentUser;
-        if (!currentUser) {
-            throw new Error("กรุณา Login ก่อนอัปเดตข้อมูล");
-        }
-
-        // ตรวจสอบว่าเอกสารมีอยู่จริงและ user มีสิทธิ์แก้ไข
-        const docRef = doc(db, WARRANTY_CARDS_COLLECTION, id);
-        const docSnap = await getDoc(docRef);
-        
-        if (!docSnap.exists()) {
-            throw new Error("ไม่พบเอกสารที่ต้องการอัปเดต");
-        }
-
-        const existingData = docSnap.data();
-        
-        // ตรวจสอบสิทธิ์: ต้องเป็นเจ้าของหรือเป็น Super Admin (ตรวจสอบที่ Firestore Rules)
-        if (existingData.userId !== currentUser.uid && existingData.companyId == null) {
-            throw new Error("คุณไม่มีสิทธิ์แก้ไขเอกสารนี้");
-        }
-
-        // เตรียมข้อมูลสำหรับอัปเดต
-        const dataToUpdate: any = {
-            ...data,
-            updatedAt: Timestamp.now(),
-        };
-
-        // จัดการ logo: ถ้ามี logoUrl ให้ลบ Base64 ออก
-        if (data.logoUrl !== undefined) {
-            dataToUpdate.logo = data.logoUrl ? null : data.logo;
-        }
-
-        // แปลง Date เป็น Timestamp ถ้ามี
-        if (data.purchaseDate instanceof Date) {
-            dataToUpdate.purchaseDate = Timestamp.fromDate(data.purchaseDate);
-        }
-        if (data.warrantyEndDate instanceof Date) {
-            dataToUpdate.warrantyEndDate = Timestamp.fromDate(data.warrantyEndDate);
-        }
-        if (data.issueDate instanceof Date) {
-            dataToUpdate.issueDate = Timestamp.fromDate(data.issueDate);
-        }
-
-        await updateDoc(docRef, dataToUpdate);
-    } catch (error) {
-        console.error("Error updating warranty card:", error);
-        throw error instanceof Error ? error : new Error("ไม่สามารถอัปเดตใบรับประกันสินค้าได้");
-    }
+    return warrantyCardService.update(id, data);
 };
 
 /**
@@ -578,39 +279,7 @@ export const updateWarrantyCard = async (id: string, data: Partial<WarrantyData>
  * @param id - Document ID ของเอกสารที่ต้องการลบ
  */
 export const deleteWarrantyCard = async (id: string): Promise<void> => {
-    try {
-        // ตรวจสอบว่า user login แล้วหรือยัง
-        const currentUser = auth.currentUser;
-        if (!currentUser) {
-            throw new Error("กรุณา Login ก่อนลบข้อมูล");
-        }
-
-        // ตรวจสอบว่าเอกสารมีอยู่จริงและ user มีสิทธิ์ลบ
-        const docRef = doc(db, WARRANTY_CARDS_COLLECTION, id);
-        const docSnap = await getDoc(docRef);
-        
-        if (!docSnap.exists()) {
-            throw new Error("ไม่พบเอกสารที่ต้องการลบ");
-        }
-
-        const existingData = docSnap.data();
-        
-        // ตรวจสอบสิทธิ์: ต้องเป็นเจ้าของหรือเป็น Super Admin (ตรวจสอบที่ Firestore Rules)
-        if (existingData.userId !== currentUser.uid && existingData.companyId == null) {
-            throw new Error("คุณไม่มีสิทธิ์ลบเอกสารนี้");
-        }
-
-        // ใช้ soft delete แทนการลบจริง - ตั้งค่า isDeleted = true และ deletedAt
-        await updateDoc(docRef, {
-            isDeleted: true,
-            deletedAt: Timestamp.now(),
-            updatedAt: Timestamp.now(),
-        });
-        console.log(`✅ Soft delete warranty card สำเร็จ: ${id}`);
-    } catch (error) {
-        console.error("Error deleting warranty card:", error);
-        throw error instanceof Error ? error : new Error("ไม่สามารถลบใบรับประกันสินค้าได้");
-    }
+    return warrantyCardService.delete(id);
 };
 
 /**
@@ -677,75 +346,14 @@ export const searchWarrantyCardBySerialNumber = searchWarrantyCardByHouseModel;
  * @param companyId - ID ของบริษัท (optional)
  */
 export const saveInvoice = async (data: InvoiceData, companyId?: string): Promise<string> => {
-    try {
-        // ตรวจสอบว่า user login แล้วหรือยัง
-        const currentUser = auth.currentUser;
-        if (!currentUser) {
-            throw new Error("กรุณา Login ก่อนบันทึกข้อมูล");
-        }
-        
-        // สร้าง Document ID ที่อ่านง่าย
-        const docId = generateInvoiceId(data.invoiceNumber);
-        const docRef = doc(db, INVOICES_COLLECTION, docId);
-        
-        // เตรียมข้อมูลสำหรับบันทึก - ไม่บันทึก Base64 ถ้ามี logoUrl
-        const dataToSave = {
-            ...data,
-            // ถ้ามี logoUrl (อัปโหลดไปยัง Storage แล้ว) ให้ลบ Base64 ออก
-            logo: data.logoUrl ? null : data.logo,
-            userId: currentUser.uid, // เพิ่ม userId
-            companyId: companyId || null, // เพิ่ม companyId
-            isDeleted: false, // ตั้งค่า isDeleted เป็น false สำหรับเอกสารใหม่
-            createdAt: Timestamp.now(),
-            updatedAt: Timestamp.now(),
-        };
-        
-        // แปลง Date เป็น Timestamp
-        if (data.invoiceDate instanceof Date) {
-            dataToSave.invoiceDate = Timestamp.fromDate(data.invoiceDate);
-        }
-        if (data.dueDate instanceof Date) {
-            dataToSave.dueDate = Timestamp.fromDate(data.dueDate);
-        }
-        
-        await setDoc(docRef, dataToSave);
-        
-        return docId;
-    } catch (error) {
-        console.error("Error saving invoice:", error);
-        throw new Error("ไม่สามารถบันทึกใบแจ้งหนี้ได้");
-    }
+    return invoiceService.save(data, companyId);
 };
 
 /**
  * ดึงข้อมูลใบแจ้งหนี้ตาม ID
  */
 export const getInvoice = async (id: string): Promise<InvoiceDocument | null> => {
-    try {
-        const docRef = doc(db, INVOICES_COLLECTION, id);
-        const docSnap = await getDoc(docRef);
-        
-        if (docSnap.exists()) {
-            const data = docSnap.data();
-            // ถ้าเอกสารถูกลบ (soft delete) ให้ return null
-            if (data.isDeleted) {
-                return null;
-            }
-            return {
-                id: docSnap.id,
-                ...data,
-                invoiceDate: data.invoiceDate?.toDate() || null,
-                dueDate: data.dueDate?.toDate() || null,
-                createdAt: data.createdAt?.toDate(),
-                updatedAt: data.updatedAt?.toDate(),
-                deletedAt: data.deletedAt?.toDate() || null,
-            } as InvoiceDocument;
-        }
-        return null;
-    } catch (error) {
-        console.error("Error getting invoice:", error);
-        throw new Error("ไม่สามารถดึงข้อมูลใบแจ้งหนี้ได้");
-    }
+    return invoiceService.get(id) as Promise<InvoiceDocument | null>;
 };
 
 /**
@@ -754,54 +362,7 @@ export const getInvoice = async (id: string): Promise<InvoiceDocument | null> =>
  * @param companyId - ID ของบริษัท (optional) ถ้าไม่ระบุจะดึงทั้งหมด
  */
 export const getInvoices = async (limitCount: number = 50, companyId?: string): Promise<InvoiceDocument[]> => {
-    try {
-        // ตรวจสอบว่า user login แล้วหรือยัง
-        const currentUser = auth.currentUser;
-        if (!currentUser) {
-            throw new Error("กรุณา Login ก่อนดูข้อมูล");
-        }
-        
-        // สร้าง query constraints
-        const constraints: QueryConstraint[] = [
-            where("userId", "==", currentUser.uid), // กรองเฉพาะของ user นี้
-        ];
-        
-        // ถ้ามี companyId ให้กรองเฉพาะบริษัทนั้น
-        if (companyId) {
-            constraints.push(where("companyId", "==", companyId));
-        }
-        
-        // กรองเฉพาะเอกสารที่ยังไม่ถูกลบ (isDeleted != true)
-        constraints.push(where("isDeleted", "==", false));
-        
-        constraints.push(orderBy("createdAt", "desc"));
-        constraints.push(limit(limitCount));
-        
-        const q = query(collection(db, INVOICES_COLLECTION), ...constraints);
-        
-        const querySnapshot = await getDocs(q);
-        return querySnapshot.docs
-            .map(doc => {
-                const data = doc.data();
-                // ตรวจสอบอีกครั้งที่ client-side เพื่อความแน่ใจ
-                if (data.isDeleted === true) {
-                    return null;
-                }
-                return {
-                    id: doc.id,
-                    ...data,
-                    invoiceDate: data.invoiceDate?.toDate() || null,
-                    dueDate: data.dueDate?.toDate() || null,
-                    createdAt: data.createdAt?.toDate(),
-                    updatedAt: data.updatedAt?.toDate(),
-                    deletedAt: data.deletedAt?.toDate() || null,
-                } as InvoiceDocument;
-            })
-            .filter((doc): doc is InvoiceDocument => doc !== null && !doc.isDeleted); // กรองเอกสารที่ถูกลบ (soft delete) ออก
-    } catch (error) {
-        console.error("Error getting invoices:", error);
-        throw new Error("ไม่สามารถดึงรายการใบแจ้งหนี้ได้");
-    }
+    return invoiceService.getAll(limitCount, companyId) as Promise<InvoiceDocument[]>;
 };
 
 /**
@@ -810,52 +371,7 @@ export const getInvoices = async (limitCount: number = 50, companyId?: string): 
  * @param data - ข้อมูลที่ต้องการอัปเดต
  */
 export const updateInvoice = async (id: string, data: Partial<InvoiceData>): Promise<void> => {
-    try {
-        // ตรวจสอบว่า user login แล้วหรือยัง
-        const currentUser = auth.currentUser;
-        if (!currentUser) {
-            throw new Error("กรุณา Login ก่อนอัปเดตข้อมูล");
-        }
-
-        // ตรวจสอบว่าเอกสารมีอยู่จริงและ user มีสิทธิ์แก้ไข
-        const docRef = doc(db, INVOICES_COLLECTION, id);
-        const docSnap = await getDoc(docRef);
-        
-        if (!docSnap.exists()) {
-            throw new Error("ไม่พบเอกสารที่ต้องการอัปเดต");
-        }
-
-        const existingData = docSnap.data();
-        
-        // ตรวจสอบสิทธิ์: ต้องเป็นเจ้าของหรือเป็น Super Admin (ตรวจสอบที่ Firestore Rules)
-        if (existingData.userId !== currentUser.uid && existingData.companyId == null) {
-            throw new Error("คุณไม่มีสิทธิ์แก้ไขเอกสารนี้");
-        }
-
-        // เตรียมข้อมูลสำหรับอัปเดต
-        const dataToUpdate: any = {
-            ...data,
-            updatedAt: Timestamp.now(),
-        };
-
-        // จัดการ logo: ถ้ามี logoUrl ให้ลบ Base64 ออก
-        if (data.logoUrl !== undefined) {
-            dataToUpdate.logo = data.logoUrl ? null : data.logo;
-        }
-
-        // แปลง Date เป็น Timestamp ถ้ามี
-        if (data.invoiceDate instanceof Date) {
-            dataToUpdate.invoiceDate = Timestamp.fromDate(data.invoiceDate);
-        }
-        if (data.dueDate instanceof Date) {
-            dataToUpdate.dueDate = Timestamp.fromDate(data.dueDate);
-        }
-
-        await updateDoc(docRef, dataToUpdate);
-    } catch (error) {
-        console.error("Error updating invoice:", error);
-        throw error instanceof Error ? error : new Error("ไม่สามารถอัปเดตใบแจ้งหนี้ได้");
-    }
+    return invoiceService.update(id, data);
 };
 
 /**
@@ -863,39 +379,7 @@ export const updateInvoice = async (id: string, data: Partial<InvoiceData>): Pro
  * @param id - Document ID ของเอกสารที่ต้องการลบ
  */
 export const deleteInvoice = async (id: string): Promise<void> => {
-    try {
-        // ตรวจสอบว่า user login แล้วหรือยัง
-        const currentUser = auth.currentUser;
-        if (!currentUser) {
-            throw new Error("กรุณา Login ก่อนลบข้อมูล");
-        }
-
-        // ตรวจสอบว่าเอกสารมีอยู่จริงและ user มีสิทธิ์ลบ
-        const docRef = doc(db, INVOICES_COLLECTION, id);
-        const docSnap = await getDoc(docRef);
-        
-        if (!docSnap.exists()) {
-            throw new Error("ไม่พบเอกสารที่ต้องการลบ");
-        }
-
-        const existingData = docSnap.data();
-        
-        // ตรวจสอบสิทธิ์: ต้องเป็นเจ้าของหรือเป็น Super Admin (ตรวจสอบที่ Firestore Rules)
-        if (existingData.userId !== currentUser.uid && existingData.companyId == null) {
-            throw new Error("คุณไม่มีสิทธิ์ลบเอกสารนี้");
-        }
-
-        // ใช้ soft delete แทนการลบจริง - ตั้งค่า isDeleted = true และ deletedAt
-        await updateDoc(docRef, {
-            isDeleted: true,
-            deletedAt: Timestamp.now(),
-            updatedAt: Timestamp.now(),
-        });
-        console.log(`✅ Soft delete invoice สำเร็จ: ${id}`);
-    } catch (error) {
-        console.error("Error deleting invoice:", error);
-        throw error instanceof Error ? error : new Error("ไม่สามารถลบใบแจ้งหนี้ได้");
-    }
+    return invoiceService.delete(id);
 };
 
 /**
@@ -904,736 +388,82 @@ export const deleteInvoice = async (id: string): Promise<void> => {
  * @param companyId - ID ของบริษัท (optional) ถ้าไม่ระบุจะค้นหาทั้งหมดของ user
  */
 export const searchInvoiceByInvoiceNumber = async (invoiceNumber: string, companyId?: string): Promise<InvoiceDocument[]> => {
-    try {
-        // ตรวจสอบว่า user login แล้วหรือยัง
-        const currentUser = auth.currentUser;
-        if (!currentUser) {
-            throw new Error("กรุณา Login ก่อนค้นหาข้อมูล");
-        }
-
-        // สร้าง query constraints
-        const constraints: QueryConstraint[] = [
-            where("invoiceNumber", "==", invoiceNumber),
-            where("userId", "==", currentUser.uid), // กรองเฉพาะของ user นี้
-            where("isDeleted", "==", false), // กรองเฉพาะเอกสารที่ยังไม่ถูกลบ
-        ];
-
-        // ถ้ามี companyId ให้กรองเฉพาะบริษัทนั้น
-        if (companyId) {
-            constraints.push(where("companyId", "==", companyId));
-        }
-
-        const q = query(collection(db, INVOICES_COLLECTION), ...constraints);
-        
-        const querySnapshot = await getDocs(q);
-        return querySnapshot.docs
-            .map(doc => {
-                const data = doc.data();
-                // ตรวจสอบอีกครั้งที่ client-side เพื่อความแน่ใจ
-                if (data.isDeleted === true) {
-                    return null;
-                }
-                return {
-                    id: doc.id,
-                    ...data,
-                    invoiceDate: data.invoiceDate?.toDate() || null,
-                    dueDate: data.dueDate?.toDate() || null,
-                    createdAt: data.createdAt?.toDate(),
-                    updatedAt: data.updatedAt?.toDate(),
-                    deletedAt: data.deletedAt?.toDate() || null,
-                } as InvoiceDocument;
-            })
-            .filter((doc): doc is InvoiceDocument => doc !== null && !doc.isDeleted); // กรองเอกสารที่ถูกลบ (soft delete) ออก
-    } catch (error) {
-        console.error("Error searching invoice:", error);
-        throw new Error("ไม่สามารถค้นหาใบแจ้งหนี้ได้");
-    }
+    return invoiceService.searchByDocumentNumber(invoiceNumber, companyId) as Promise<InvoiceDocument[]>;
 };
 
 // ==================== Receipt Functions ====================
+// Refactored: ใช้ Generic Document Service
 
-/**
- * บันทึกใบเสร็จใหม่ลง Firestore
- * @param data - ข้อมูลใบเสร็จ
- * @param companyId - ID ของบริษัท (optional)
- */
 export const saveReceipt = async (data: ReceiptData, companyId?: string): Promise<string> => {
-    try {
-        // ตรวจสอบว่า user login แล้วหรือยัง
-        const currentUser = auth.currentUser;
-        if (!currentUser) {
-            throw new Error("กรุณา Login ก่อนบันทึกข้อมูล");
-        }
-        
-        // สร้าง Document ID ที่อ่านง่าย
-        const docId = generateReceiptId(data.receiptNumber);
-        const docRef = doc(db, RECEIPTS_COLLECTION, docId);
-        
-        // เตรียมข้อมูลสำหรับบันทึก - ไม่บันทึก Base64 ถ้ามี logoUrl
-        const dataToSave = {
-            ...data,
-            // ถ้ามี logoUrl (อัปโหลดไปยัง Storage แล้ว) ให้ลบ Base64 ออก
-            logo: data.logoUrl ? null : data.logo,
-            userId: currentUser.uid, // เพิ่ม userId
-            companyId: companyId || null, // เพิ่ม companyId
-            isDeleted: false, // ตั้งค่า isDeleted เป็น false สำหรับเอกสารใหม่
-            createdAt: Timestamp.now(),
-            updatedAt: Timestamp.now(),
-        };
-        
-        // แปลง Date เป็น Timestamp
-        if (data.receiptDate instanceof Date) {
-            dataToSave.receiptDate = Timestamp.fromDate(data.receiptDate);
-        }
-        
-        await setDoc(docRef, dataToSave);
-        
-        return docId;
-    } catch (error) {
-        console.error("Error saving receipt:", error);
-        throw new Error("ไม่สามารถบันทึกใบเสร็จได้");
-    }
+    return receiptService.save(data, companyId);
 };
 
-/**
- * ดึงข้อมูลใบเสร็จตาม ID
- */
 export const getReceipt = async (id: string): Promise<ReceiptDocument | null> => {
-    try {
-        const docRef = doc(db, RECEIPTS_COLLECTION, id);
-        const docSnap = await getDoc(docRef);
-        
-        if (docSnap.exists()) {
-            const data = docSnap.data();
-            // ถ้าเอกสารถูกลบ (soft delete) ให้ return null
-            if (data.isDeleted) {
-                return null;
-            }
-            return {
-                id: docSnap.id,
-                ...data,
-                receiptDate: data.receiptDate?.toDate() || null,
-                createdAt: data.createdAt?.toDate(),
-                updatedAt: data.updatedAt?.toDate(),
-                deletedAt: data.deletedAt?.toDate() || null,
-            } as ReceiptDocument;
-        }
-        return null;
-    } catch (error) {
-        console.error("Error getting receipt:", error);
-        throw new Error("ไม่สามารถดึงข้อมูลใบเสร็จได้");
-    }
+    return receiptService.get(id) as Promise<ReceiptDocument | null>;
 };
 
-/**
- * ดึงรายการใบเสร็จทั้งหมด (มีการ limit) - เฉพาะของ user และ company ที่เลือก
- * @param limitCount - จำนวนเอกสารที่ต้องการดึง
- * @param companyId - ID ของบริษัท (optional) ถ้าไม่ระบุจะดึงทั้งหมด
- */
 export const getReceipts = async (limitCount: number = 50, companyId?: string): Promise<ReceiptDocument[]> => {
-    try {
-        // ตรวจสอบว่า user login แล้วหรือยัง
-        const currentUser = auth.currentUser;
-        if (!currentUser) {
-            throw new Error("กรุณา Login ก่อนดูข้อมูล");
-        }
-        
-        // สร้าง query constraints
-        const constraints: QueryConstraint[] = [
-            where("userId", "==", currentUser.uid), // กรองเฉพาะของ user นี้
-        ];
-        
-        // ถ้ามี companyId ให้กรองเฉพาะบริษัทนั้น
-        if (companyId) {
-            constraints.push(where("companyId", "==", companyId));
-        }
-        
-        // กรองเฉพาะเอกสารที่ยังไม่ถูกลบ (isDeleted != true)
-        constraints.push(where("isDeleted", "==", false));
-        
-        constraints.push(orderBy("createdAt", "desc"));
-        constraints.push(limit(limitCount));
-        
-        const q = query(collection(db, RECEIPTS_COLLECTION), ...constraints);
-        
-        const querySnapshot = await getDocs(q);
-        return querySnapshot.docs
-            .map(doc => {
-                const data = doc.data();
-                // ตรวจสอบอีกครั้งที่ client-side เพื่อความแน่ใจ
-                if (data.isDeleted === true) {
-                    return null;
-                }
-                return {
-                    id: doc.id,
-                    ...data,
-                    receiptDate: data.receiptDate?.toDate() || null,
-                    createdAt: data.createdAt?.toDate(),
-                    updatedAt: data.updatedAt?.toDate(),
-                    deletedAt: data.deletedAt?.toDate() || null,
-                } as ReceiptDocument;
-            })
-            .filter((doc): doc is ReceiptDocument => doc !== null && !doc.isDeleted); // กรองเอกสารที่ถูกลบ (soft delete) ออก
-    } catch (error) {
-        console.error("Error getting receipts:", error);
-        throw new Error("ไม่สามารถดึงรายการใบเสร็จได้");
-    }
+    return receiptService.getAll(limitCount, companyId) as Promise<ReceiptDocument[]>;
 };
 
-/**
- * อัปเดตใบเสร็จ
- * @param id - Document ID ของเอกสารที่ต้องการอัปเดต
- * @param data - ข้อมูลที่ต้องการอัปเดต
- */
 export const updateReceipt = async (id: string, data: Partial<ReceiptData>): Promise<void> => {
-    try {
-        // ตรวจสอบว่า user login แล้วหรือยัง
-        const currentUser = auth.currentUser;
-        if (!currentUser) {
-            throw new Error("กรุณา Login ก่อนอัปเดตข้อมูล");
-        }
-
-        // ตรวจสอบว่าเอกสารมีอยู่จริงและ user มีสิทธิ์แก้ไข
-        const docRef = doc(db, RECEIPTS_COLLECTION, id);
-        const docSnap = await getDoc(docRef);
-        
-        if (!docSnap.exists()) {
-            throw new Error("ไม่พบเอกสารที่ต้องการอัปเดต");
-        }
-
-        const existingData = docSnap.data();
-        
-        // ตรวจสอบสิทธิ์: ต้องเป็นเจ้าของหรือเป็น Super Admin (ตรวจสอบที่ Firestore Rules)
-        if (existingData.userId !== currentUser.uid && existingData.companyId == null) {
-            throw new Error("คุณไม่มีสิทธิ์แก้ไขเอกสารนี้");
-        }
-
-        // เตรียมข้อมูลสำหรับอัปเดต
-        const dataToUpdate: any = {
-            ...data,
-            updatedAt: Timestamp.now(),
-        };
-
-        // ถ้ามี logoUrl (อัปโหลดไปยัง Storage แล้ว) ให้ลบ Base64 ออก
-        if (data.logoUrl) {
-            dataToUpdate.logo = null;
-        }
-
-        // แปลง Date เป็น Timestamp
-        if (data.receiptDate instanceof Date) {
-            dataToUpdate.receiptDate = Timestamp.fromDate(data.receiptDate);
-        }
-
-        await updateDoc(docRef, dataToUpdate);
-    } catch (error) {
-        console.error("Error updating receipt:", error);
-        throw error instanceof Error ? error : new Error("ไม่สามารถอัปเดตใบเสร็จได้");
-    }
+    return receiptService.update(id, data);
 };
 
-/**
- * ลบใบเสร็จ (Soft Delete) - ตั้งค่า isDeleted = true แทนการลบจริง
- * @param id - Document ID ของเอกสารที่ต้องการลบ
- */
 export const deleteReceipt = async (id: string): Promise<void> => {
-    try {
-        // ตรวจสอบว่า user login แล้วหรือยัง
-        const currentUser = auth.currentUser;
-        if (!currentUser) {
-            throw new Error("กรุณา Login ก่อนลบข้อมูล");
-        }
-
-        // ตรวจสอบว่าเอกสารมีอยู่จริงและ user มีสิทธิ์ลบ
-        const docRef = doc(db, RECEIPTS_COLLECTION, id);
-        const docSnap = await getDoc(docRef);
-        
-        if (!docSnap.exists()) {
-            throw new Error("ไม่พบเอกสารที่ต้องการลบ");
-        }
-
-        const existingData = docSnap.data();
-        
-        // ตรวจสอบสิทธิ์: ต้องเป็นเจ้าของหรือเป็น Super Admin (ตรวจสอบที่ Firestore Rules)
-        if (existingData.userId !== currentUser.uid && existingData.companyId == null) {
-            throw new Error("คุณไม่มีสิทธิ์ลบเอกสารนี้");
-        }
-
-        // ใช้ soft delete แทนการลบจริง - ตั้งค่า isDeleted = true และ deletedAt
-        await updateDoc(docRef, {
-            isDeleted: true,
-            deletedAt: Timestamp.now(),
-            updatedAt: Timestamp.now(),
-        });
-        console.log(`✅ Soft delete receipt สำเร็จ: ${id}`);
-    } catch (error) {
-        console.error("Error deleting receipt:", error);
-        throw error instanceof Error ? error : new Error("ไม่สามารถลบใบเสร็จได้");
-    }
+    return receiptService.delete(id);
 };
 
-/**
- * ค้นหาใบเสร็จตามเลขที่เอกสาร
- * @param receiptNumber - เลขที่ใบเสร็จที่ต้องการค้นหา
- * @param companyId - ID ของบริษัท (optional) ถ้าไม่ระบุจะค้นหาทั้งหมดของ user
- */
 export const searchReceiptByReceiptNumber = async (receiptNumber: string, companyId?: string): Promise<ReceiptDocument[]> => {
-    try {
-        // ตรวจสอบว่า user login แล้วหรือยัง
-        const currentUser = auth.currentUser;
-        if (!currentUser) {
-            throw new Error("กรุณา Login ก่อนค้นหาข้อมูล");
-        }
-
-        // สร้าง query constraints
-        const constraints: QueryConstraint[] = [
-            where("receiptNumber", "==", receiptNumber),
-            where("userId", "==", currentUser.uid), // กรองเฉพาะของ user นี้
-            where("isDeleted", "==", false), // กรองเฉพาะเอกสารที่ยังไม่ถูกลบ
-        ];
-
-        // ถ้ามี companyId ให้กรองเฉพาะบริษัทนั้น
-        if (companyId) {
-            constraints.push(where("companyId", "==", companyId));
-        }
-
-        const q = query(collection(db, RECEIPTS_COLLECTION), ...constraints);
-        
-        const querySnapshot = await getDocs(q);
-        return querySnapshot.docs
-            .map(doc => {
-                const data = doc.data();
-                // ตรวจสอบอีกครั้งที่ client-side เพื่อความแน่ใจ
-                if (data.isDeleted === true) {
-                    return null;
-                }
-                return {
-                    id: doc.id,
-                    ...data,
-                    receiptDate: data.receiptDate?.toDate() || null,
-                    createdAt: data.createdAt?.toDate(),
-                    updatedAt: data.updatedAt?.toDate(),
-                    deletedAt: data.deletedAt?.toDate() || null,
-                } as ReceiptDocument;
-            })
-            .filter((doc): doc is ReceiptDocument => doc !== null && !doc.isDeleted); // กรองเอกสารที่ถูกลบ (soft delete) ออก
-    } catch (error) {
-        console.error("Error searching receipt:", error);
-        throw new Error("ไม่สามารถค้นหาใบเสร็จได้");
-    }
+    return receiptService.searchByDocumentNumber(receiptNumber, companyId) as Promise<ReceiptDocument[]>;
 };
 
 // ==================== Quotations Functions ====================
+// Refactored: ใช้ Generic Document Service
 
-/**
- * บันทึกใบเสนอราคาใหม่ลง Firestore
- * @param data - ข้อมูลใบเสนอราคา
- * @param companyId - ID ของบริษัท (optional)
- */
 export const saveQuotation = async (data: QuotationData, companyId?: string): Promise<string> => {
-    try {
-        // ตรวจสอบว่า user login แล้วหรือยัง
-        const currentUser = auth.currentUser;
-        if (!currentUser) {
-            throw new Error("กรุณา Login ก่อนบันทึกข้อมูล");
-        }
-        
-        // สร้าง Document ID ที่อ่านง่าย
-        const docId = generateQuotationId(data.quotationNumber);
-        const docRef = doc(db, QUOTATIONS_COLLECTION, docId);
-        
-        // เตรียมข้อมูลสำหรับบันทึก - ไม่บันทึก Base64 ถ้ามี logoUrl
-        const dataToSave = {
-            ...data,
-            // ถ้ามี logoUrl (อัปโหลดไปยัง Storage แล้ว) ให้ลบ Base64 ออก
-            logo: data.logoUrl ? null : data.logo,
-            userId: currentUser.uid, // เพิ่ม userId
-            companyId: companyId || null, // เพิ่ม companyId
-            isDeleted: false, // ตั้งค่า isDeleted เป็น false สำหรับเอกสารใหม่
-            createdAt: Timestamp.now(),
-            updatedAt: Timestamp.now(),
-        };
-        
-        await setDoc(docRef, dataToSave);
-        
-        return docId;
-    } catch (error) {
-        console.error("Error saving quotation:", error);
-        throw new Error("ไม่สามารถบันทึกใบเสนอราคาได้");
-    }
+    return quotationService.save(data, companyId);
 };
 
-/**
- * ดึงข้อมูลใบเสนอราคาตาม ID
- */
 export const getQuotation = async (id: string): Promise<QuotationDocument | null> => {
-    try {
-        const docRef = doc(db, QUOTATIONS_COLLECTION, id);
-        const docSnap = await getDoc(docRef);
-        
-        if (docSnap.exists()) {
-            const data = docSnap.data();
-            // ถ้าเอกสารถูกลบ (soft delete) ให้ return null
-            if (data.isDeleted) {
-                return null;
-            }
-            return {
-                id: docSnap.id,
-                ...data,
-                quotationDate: data.quotationDate?.toDate() || null,
-                validUntilDate: data.validUntilDate?.toDate() || null,
-                createdAt: data.createdAt?.toDate(),
-                updatedAt: data.updatedAt?.toDate(),
-                deletedAt: data.deletedAt?.toDate() || null,
-            } as QuotationDocument;
-        }
-        return null;
-    } catch (error) {
-        console.error("Error getting quotation:", error);
-        throw new Error("ไม่สามารถดึงข้อมูลใบเสนอราคาได้");
-    }
+    return quotationService.get(id) as Promise<QuotationDocument | null>;
 };
 
-/**
- * ดึงรายการใบเสนอราคาทั้งหมด (มีการ limit) - เฉพาะของ user และ company ที่เลือก
- * @param limitCount - จำนวนเอกสารที่ต้องการดึง
- * @param companyId - ID ของบริษัท (optional) ถ้าไม่ระบุจะดึงทั้งหมด
- */
 export const getQuotations = async (limitCount: number = 50, companyId?: string): Promise<QuotationDocument[]> => {
-    try {
-        // ตรวจสอบว่า user login แล้วหรือยัง
-        const currentUser = auth.currentUser;
-        if (!currentUser) {
-            throw new Error("กรุณา Login ก่อนดูข้อมูล");
-        }
-        
-        // สร้าง query constraints
-        const constraints: QueryConstraint[] = [
-            where("userId", "==", currentUser.uid), // กรองเฉพาะของ user นี้
-        ];
-        
-        // ถ้ามี companyId ให้กรองเฉพาะบริษัทนั้น
-        if (companyId) {
-            constraints.push(where("companyId", "==", companyId));
-        }
-        
-        // กรองเฉพาะเอกสารที่ยังไม่ถูกลบ (isDeleted != true)
-        constraints.push(where("isDeleted", "==", false));
-        
-        constraints.push(orderBy("createdAt", "desc"));
-        constraints.push(limit(limitCount));
-        
-        const q = query(collection(db, QUOTATIONS_COLLECTION), ...constraints);
-        
-        const querySnapshot = await getDocs(q);
-        return querySnapshot.docs
-            .map(doc => {
-                const data = doc.data();
-                // ตรวจสอบอีกครั้งที่ client-side เพื่อความแน่ใจ
-                if (data.isDeleted === true) {
-                    return null;
-                }
-                return {
-                    id: doc.id,
-                    ...data,
-                    quotationDate: data.quotationDate?.toDate() || null,
-                    validUntilDate: data.validUntilDate?.toDate() || null,
-                    createdAt: data.createdAt?.toDate(),
-                    updatedAt: data.updatedAt?.toDate(),
-                    deletedAt: data.deletedAt?.toDate() || null,
-                } as QuotationDocument;
-            })
-            .filter((doc): doc is QuotationDocument => doc !== null && !doc.isDeleted); // กรองเอกสารที่ถูกลบ (soft delete) ออก
-    } catch (error) {
-        console.error("Error getting quotations:", error);
-        throw new Error("ไม่สามารถดึงรายการใบเสนอราคาได้");
-    }
+    return quotationService.getAll(limitCount, companyId) as Promise<QuotationDocument[]>;
 };
 
-/**
- * อัปเดตใบเสนอราคา
- */
 export const updateQuotation = async (id: string, data: Partial<QuotationData>): Promise<void> => {
-    try {
-        // ตรวจสอบว่า user login แล้วหรือยัง
-        const currentUser = auth.currentUser;
-        if (!currentUser) {
-            throw new Error("กรุณา Login ก่อนอัปเดตข้อมูล");
-        }
-        
-        const docRef = doc(db, QUOTATIONS_COLLECTION, id);
-        
-        // เตรียมข้อมูลสำหรับอัปเดต - ไม่บันทึก Base64 ถ้ามี logoUrl
-        const dataToUpdate: any = {
-            ...data,
-            // ถ้ามี logoUrl (อัปโหลดไปยัง Storage แล้ว) ให้ลบ Base64 ออก
-            logo: data.logoUrl ? null : data.logo,
-            updatedAt: Timestamp.now(),
-        };
-        
-        await updateDoc(docRef, dataToUpdate);
-        console.log(`✅ อัปเดตใบเสนอราคาสำเร็จ: ${id}`);
-    } catch (error) {
-        console.error("Error updating quotation:", error);
-        throw error instanceof Error ? error : new Error("ไม่สามารถอัปเดตใบเสนอราคาได้");
-    }
+    return quotationService.update(id, data);
 };
 
-/**
- * ลบใบเสนอราคา (Soft Delete)
- */
 export const deleteQuotation = async (id: string): Promise<void> => {
-    try {
-        // ตรวจสอบว่า user login แล้วหรือยัง
-        const currentUser = auth.currentUser;
-        if (!currentUser) {
-            throw new Error("กรุณา Login ก่อนลบข้อมูล");
-        }
-        
-        const docRef = doc(db, QUOTATIONS_COLLECTION, id);
-        
-        // Soft delete - ตั้งค่า isDeleted เป็น true และ deletedAt เป็นเวลาปัจจุบัน
-        await updateDoc(docRef, {
-            isDeleted: true,
-            deletedAt: Timestamp.now(),
-            updatedAt: Timestamp.now(),
-        });
-        
-        console.log(`✅ Soft delete quotation สำเร็จ: ${id}`);
-    } catch (error) {
-        console.error("Error deleting quotation:", error);
-        throw error instanceof Error ? error : new Error("ไม่สามารถลบใบเสนอราคาได้");
-    }
+    return quotationService.delete(id);
 };
 
-/**
- * ค้นหาใบเสนอราคาตามเลขที่เอกสาร
- * @param quotationNumber - เลขที่ใบเสนอราคาที่ต้องการค้นหา
- * @param companyId - ID ของบริษัท (optional) ถ้าไม่ระบุจะค้นหาทั้งหมดของ user
- */
 export const searchQuotationByQuotationNumber = async (quotationNumber: string, companyId?: string): Promise<QuotationDocument[]> => {
-    try {
-        // ตรวจสอบว่า user login แล้วหรือยัง
-        const currentUser = auth.currentUser;
-        if (!currentUser) {
-            throw new Error("กรุณา Login ก่อนค้นหาข้อมูล");
-        }
-
-        // สร้าง query constraints
-        const constraints: QueryConstraint[] = [
-            where("quotationNumber", "==", quotationNumber),
-            where("userId", "==", currentUser.uid), // กรองเฉพาะของ user นี้
-            where("isDeleted", "==", false), // กรองเฉพาะเอกสารที่ยังไม่ถูกลบ
-        ];
-
-        // ถ้ามี companyId ให้กรองเฉพาะบริษัทนั้น
-        if (companyId) {
-            constraints.push(where("companyId", "==", companyId));
-        }
-
-        const q = query(collection(db, QUOTATIONS_COLLECTION), ...constraints);
-        
-        const querySnapshot = await getDocs(q);
-        return querySnapshot.docs
-            .map(doc => {
-                const data = doc.data();
-                // ตรวจสอบอีกครั้งที่ client-side เพื่อความแน่ใจ
-                if (data.isDeleted === true) {
-                    return null;
-                }
-                return {
-                    id: doc.id,
-                    ...data,
-                    quotationDate: data.quotationDate?.toDate() || null,
-                    validUntilDate: data.validUntilDate?.toDate() || null,
-                    createdAt: data.createdAt?.toDate(),
-                    updatedAt: data.updatedAt?.toDate(),
-                    deletedAt: data.deletedAt?.toDate() || null,
-                } as QuotationDocument;
-            })
-            .filter((doc): doc is QuotationDocument => doc !== null && !doc.isDeleted); // กรองเอกสารที่ถูกลบ (soft delete) ออก
-    } catch (error) {
-        console.error("Error searching quotation:", error);
-        throw new Error("ไม่สามารถค้นหาใบเสนอราคาได้");
-    }
+    return quotationService.searchByDocumentNumber(quotationNumber, companyId) as Promise<QuotationDocument[]>;
 };
 
 // ==================== Purchase Orders Functions ====================
+// Refactored: ใช้ Generic Document Service
 
-/**
- * บันทึกใบสั่งซื้อใหม่ลง Firestore
- * @param data - ข้อมูลใบสั่งซื้อ
- * @param companyId - ID ของบริษัท (optional)
- */
 export const savePurchaseOrder = async (data: PurchaseOrderData, companyId?: string): Promise<string> => {
-    try {
-        // ตรวจสอบว่า user login แล้วหรือยัง
-        const currentUser = auth.currentUser;
-        if (!currentUser) {
-            throw new Error("กรุณา Login ก่อนบันทึกข้อมูล");
-        }
-        
-        // สร้าง Document ID ที่อ่านง่าย
-        const docId = generatePurchaseOrderId(data.purchaseOrderNumber);
-        const docRef = doc(db, PURCHASE_ORDERS_COLLECTION, docId);
-        
-        // เตรียมข้อมูลสำหรับบันทึก - ไม่บันทึก Base64 ถ้ามี logoUrl
-        const dataToSave = {
-            ...data,
-            // ถ้ามี logoUrl (อัปโหลดไปยัง Storage แล้ว) ให้ลบ Base64 ออก
-            logo: data.logoUrl ? null : data.logo,
-            userId: currentUser.uid, // เพิ่ม userId
-            companyId: companyId || null, // เพิ่ม companyId
-            isDeleted: false, // ตั้งค่า isDeleted เป็น false สำหรับเอกสารใหม่
-            createdAt: Timestamp.now(),
-            updatedAt: Timestamp.now(),
-        };
-        
-        await setDoc(docRef, dataToSave);
-        
-        return docId;
-    } catch (error) {
-        console.error("Error saving purchase order:", error);
-        throw new Error("ไม่สามารถบันทึกใบสั่งซื้อได้");
-    }
+    return purchaseOrderService.save(data, companyId);
 };
 
-/**
- * ดึงข้อมูลใบสั่งซื้อตาม ID
- */
 export const getPurchaseOrder = async (id: string): Promise<PurchaseOrderDocument | null> => {
-    try {
-        const docRef = doc(db, PURCHASE_ORDERS_COLLECTION, id);
-        const docSnap = await getDoc(docRef);
-        
-        if (docSnap.exists()) {
-            const data = docSnap.data();
-            // ถ้าเอกสารถูกลบ (soft delete) ให้ return null
-            if (data.isDeleted) {
-                return null;
-            }
-            return {
-                id: docSnap.id,
-                ...data,
-                purchaseOrderDate: data.purchaseOrderDate?.toDate() || null,
-                expectedDeliveryDate: data.expectedDeliveryDate?.toDate() || null,
-                createdAt: data.createdAt?.toDate(),
-                updatedAt: data.updatedAt?.toDate(),
-                deletedAt: data.deletedAt?.toDate() || null,
-            } as PurchaseOrderDocument;
-        }
-        return null;
-    } catch (error) {
-        console.error("Error getting purchase order:", error);
-        throw new Error("ไม่สามารถดึงข้อมูลใบสั่งซื้อได้");
-    }
+    return purchaseOrderService.get(id) as Promise<PurchaseOrderDocument | null>;
 };
 
-/**
- * ดึงรายการใบสั่งซื้อทั้งหมด (สำหรับ History)
- */
 export const getPurchaseOrders = async (limitCount: number = 50, companyId?: string): Promise<PurchaseOrderDocument[]> => {
-    try {
-        // ตรวจสอบว่า user login แล้วหรือยัง
-        const currentUser = auth.currentUser;
-        if (!currentUser) {
-            throw new Error("กรุณา Login ก่อนดูข้อมูล");
-        }
-        
-        // สร้าง query constraints
-        const constraints: QueryConstraint[] = [
-            where("userId", "==", currentUser.uid), // กรองเฉพาะของ user นี้
-        ];
-        
-        // ถ้ามี companyId ให้กรองเฉพาะบริษัทนั้น
-        if (companyId) {
-            constraints.push(where("companyId", "==", companyId));
-        }
-        
-        // กรองเฉพาะเอกสารที่ยังไม่ถูกลบ (isDeleted != true)
-        constraints.push(where("isDeleted", "==", false));
-        
-        constraints.push(orderBy("createdAt", "desc"));
-        constraints.push(limit(limitCount));
-        
-        const q = query(collection(db, PURCHASE_ORDERS_COLLECTION), ...constraints);
-        
-        const querySnapshot = await getDocs(q);
-        return querySnapshot.docs
-            .map(doc => {
-                const data = doc.data();
-                // ตรวจสอบอีกครั้งที่ client-side เพื่อความแน่ใจ
-                if (data.isDeleted === true) {
-                    return null;
-                }
-                return {
-                    id: doc.id,
-                    ...data,
-                    purchaseOrderDate: data.purchaseOrderDate?.toDate() || null,
-                    expectedDeliveryDate: data.expectedDeliveryDate?.toDate() || null,
-                    createdAt: data.createdAt?.toDate(),
-                    updatedAt: data.updatedAt?.toDate(),
-                    deletedAt: data.deletedAt?.toDate() || null,
-                } as PurchaseOrderDocument;
-            })
-            .filter((doc): doc is PurchaseOrderDocument => doc !== null && !doc.isDeleted); // กรองเอกสารที่ถูกลบ (soft delete) ออก
-    } catch (error) {
-        console.error("Error getting purchase orders:", error);
-        throw new Error("ไม่สามารถดึงรายการใบสั่งซื้อได้");
-    }
+    return purchaseOrderService.getAll(limitCount, companyId) as Promise<PurchaseOrderDocument[]>;
 };
 
-/**
- * อัปเดตใบสั่งซื้อ
- */
 export const updatePurchaseOrder = async (id: string, data: Partial<PurchaseOrderData>): Promise<void> => {
-    try {
-        // ตรวจสอบว่า user login แล้วหรือยัง
-        const currentUser = auth.currentUser;
-        if (!currentUser) {
-            throw new Error("กรุณา Login ก่อนอัปเดตข้อมูล");
-        }
-        
-        const docRef = doc(db, PURCHASE_ORDERS_COLLECTION, id);
-        
-        // เตรียมข้อมูลสำหรับอัปเดต - ไม่บันทึก Base64 ถ้ามี logoUrl
-        const dataToUpdate: any = {
-            ...data,
-            // ถ้ามี logoUrl (อัปโหลดไปยัง Storage แล้ว) ให้ลบ Base64 ออก
-            logo: data.logoUrl ? null : data.logo,
-            updatedAt: Timestamp.now(),
-        };
-        
-        await updateDoc(docRef, dataToUpdate);
-        console.log(`✅ อัปเดตใบสั่งซื้อสำเร็จ: ${id}`);
-    } catch (error) {
-        console.error("Error updating purchase order:", error);
-        throw error instanceof Error ? error : new Error("ไม่สามารถอัปเดตใบสั่งซื้อได้");
-    }
+    return purchaseOrderService.update(id, data);
 };
 
-/**
- * ลบใบสั่งซื้อ (Soft Delete)
- */
 export const deletePurchaseOrder = async (id: string): Promise<void> => {
-    try {
-        // ตรวจสอบว่า user login แล้วหรือยัง
-        const currentUser = auth.currentUser;
-        if (!currentUser) {
-            throw new Error("กรุณา Login ก่อนลบข้อมูล");
-        }
-        
-        const docRef = doc(db, PURCHASE_ORDERS_COLLECTION, id);
-        
-        // Soft delete - ตั้งค่า isDeleted เป็น true และ deletedAt เป็นเวลาปัจจุบัน
-        await updateDoc(docRef, {
-            isDeleted: true,
-            deletedAt: Timestamp.now(),
-            updatedAt: Timestamp.now(),
-        });
-        
-        console.log(`✅ Soft delete purchase order สำเร็จ: ${id}`);
-    } catch (error) {
-        console.error("Error deleting purchase order:", error);
-        throw error instanceof Error ? error : new Error("ไม่สามารถลบใบสั่งซื้อได้");
-    }
+    return purchaseOrderService.delete(id);
 };

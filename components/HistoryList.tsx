@@ -1,8 +1,9 @@
 import React, { useEffect, useState, useCallback, useRef } from 'react';
-import { getDeliveryNotes, getWarrantyCards, getInvoices, getReceipts, getQuotations, getPurchaseOrders, deleteDeliveryNote, deleteWarrantyCard, deleteInvoice, deleteReceipt, deleteQuotation, deletePurchaseOrder } from '../services/firestore';
 import type { DeliveryNoteDocument, WarrantyDocument, InvoiceDocument, ReceiptDocument, QuotationDocument, PurchaseOrderDocument } from '../services/firestore';
 import { useCompany } from '../contexts/CompanyContext';
 import { generatePdf } from '../services/pdfGenerator';
+import { generatePdfFilename as generatePdfFilenameFromRegistry, type DocType, type DocumentDocument } from '../utils/documentRegistry';
+import { useDocumentList } from '../hooks/useDocumentList';
 import DocumentPreview from './DocumentPreview';
 import WarrantyPreview from './WarrantyPreview';
 import InvoicePreview from './InvoicePreview';
@@ -12,20 +13,26 @@ import PurchaseOrderPreview from './PurchaseOrderPreview';
 import type { DeliveryNoteData, WarrantyData, InvoiceData, ReceiptData, QuotationData, PurchaseOrderData } from '../types';
 
 interface HistoryListProps {
-    activeDocType: 'delivery' | 'warranty' | 'invoice' | 'receipt' | 'quotation' | 'purchase-order';
-    onLoadDocument: (doc: DeliveryNoteDocument | WarrantyDocument | InvoiceDocument | ReceiptDocument | QuotationDocument | PurchaseOrderDocument) => void;
+    activeDocType: DocType;
+    onLoadDocument: (doc: DocumentDocument) => void;
 }
 
 const HistoryList: React.FC<HistoryListProps> = ({ activeDocType, onLoadDocument }) => {
     const { currentCompany } = useCompany(); // ใช้ CompanyContext
-    const [deliveryNotes, setDeliveryNotes] = useState<DeliveryNoteDocument[]>([]);
-    const [warrantyCards, setWarrantyCards] = useState<WarrantyDocument[]>([]);
-    const [invoices, setInvoices] = useState<InvoiceDocument[]>([]);
-    const [receipts, setReceipts] = useState<ReceiptDocument[]>([]);
-    const [quotations, setQuotations] = useState<QuotationDocument[]>([]);
-    const [purchaseOrders, setPurchaseOrders] = useState<PurchaseOrderDocument[]>([]);
-    const [loading, setLoading] = useState(true);
-    const [error, setError] = useState<string | null>(null);
+    
+    // ใช้ hook สำหรับจัดการ document list
+    const {
+        documents,
+        loading,
+        error,
+        fetchData,
+        handleDelete: handleDeleteDocument,
+        documentTypeName,
+    } = useDocumentList<DocumentDocument>({
+        docType: activeDocType,
+        limit: 50,
+    });
+    
     const [deleteConfirm, setDeleteConfirm] = useState<{ type: 'delivery' | 'warranty' | 'invoice' | 'receipt' | 'quotation' | 'purchase-order', id: string } | null>(null);
     const [downloadingPdfId, setDownloadingPdfId] = useState<string | null>(null); // เก็บ ID ของเอกสารที่กำลัง download
     const previewRef = useRef<HTMLDivElement>(null); // Ref สำหรับ preview component ที่ซ่อนอยู่
@@ -39,98 +46,21 @@ const HistoryList: React.FC<HistoryListProps> = ({ activeDocType, onLoadDocument
     const [currentPage, setCurrentPage] = useState<number>(1); // หน้าปัจจุบัน
     const itemsPerPage = 10; // จำนวนรายการต่อหน้า
 
-    // โหลดข้อมูลจาก Firestore กรองตาม companyId
-    const fetchData = useCallback(async (showLoading: boolean = true) => {
-        if (showLoading) {
-            setLoading(true);
-        }
-        setError(null);
-        
-        try {
-            const companyId = currentCompany?.id; // ดึง companyId จาก context
-            
-            if (activeDocType === 'delivery') {
-                const notes = await getDeliveryNotes(50, companyId);
-                setDeliveryNotes(notes);
-            } else if (activeDocType === 'warranty') {
-                const cards = await getWarrantyCards(50, companyId);
-                setWarrantyCards(cards);
-            } else if (activeDocType === 'invoice') {
-                const invoiceList = await getInvoices(50, companyId);
-                setInvoices(invoiceList);
-            } else if (activeDocType === 'receipt') {
-                const receiptList = await getReceipts(50, companyId);
-                setReceipts(receiptList);
-            } else if (activeDocType === 'quotation') {
-                const quotationList = await getQuotations(50, companyId);
-                setQuotations(quotationList);
-            } else {
-                const purchaseOrderList = await getPurchaseOrders(50, companyId);
-                setPurchaseOrders(purchaseOrderList);
-            }
-        } catch (err) {
-            console.error('Error fetching data:', err);
-            setError('ไม่สามารถโหลดข้อมูลได้');
-        } finally {
-            if (showLoading) {
-                setLoading(false);
-            }
-        }
-    }, [activeDocType, currentCompany]); // เพิ่ม dependencies
-
-    useEffect(() => {
-        fetchData();
-    }, [fetchData]); // ใช้ fetchData เป็น dependency
-
     // Reset หน้าเป็น 1 เมื่อเปลี่ยน search term หรือ doc type
     useEffect(() => {
         setCurrentPage(1);
     }, [searchTerm, activeDocType]);
 
-    // ฟังก์ชันลบเอกสาร
-    const handleDelete = async (type: 'delivery' | 'warranty' | 'invoice' | 'receipt' | 'quotation' | 'purchase-order', id: string) => {
+    // ฟังก์ชันลบเอกสาร - Refactored: ใช้ hook function
+    const handleDelete = async (type: DocType, id: string) => {
         try {
-            console.log(`🗑️ กำลังลบ ${type === 'delivery' ? 'ใบส่งมอบงาน' : type === 'warranty' ? 'ใบรับประกันสินค้า' : type === 'invoice' ? 'ใบแจ้งหนี้' : type === 'receipt' ? 'ใบเสร็จ' : type === 'quotation' ? 'ใบเสนอราคา' : 'ใบสั่งซื้อ'} ID:`, id);
-            
-            if (type === 'delivery') {
-                await deleteDeliveryNote(id);
-                console.log('✅ ลบใบส่งมอบงานสำเร็จ');
-                setDeliveryNotes(prev => prev.filter(note => note.id !== id));
-            } else if (type === 'warranty') {
-                await deleteWarrantyCard(id);
-                console.log('✅ ลบใบรับประกันสินค้าสำเร็จ');
-                setWarrantyCards(prev => prev.filter(card => card.id !== id));
-            } else if (type === 'invoice') {
-                await deleteInvoice(id);
-                console.log('✅ ลบใบแจ้งหนี้สำเร็จ');
-                setInvoices(prev => prev.filter(invoice => invoice.id !== id));
-            } else if (type === 'receipt') {
-                await deleteReceipt(id);
-                console.log('✅ ลบใบเสร็จสำเร็จ');
-                setReceipts(prev => prev.filter(receipt => receipt.id !== id));
-            } else if (type === 'quotation') {
-                await deleteQuotation(id);
-                console.log('✅ ลบใบเสนอราคาสำเร็จ');
-                setQuotations(prev => prev.filter(quotation => quotation.id !== id));
-            } else {
-                await deletePurchaseOrder(id);
-                console.log('✅ ลบใบสั่งซื้อสำเร็จ');
-                setPurchaseOrders(prev => prev.filter(po => po.id !== id));
-            }
-            
+            console.log(`🗑️ กำลังลบ ${documentTypeName} ID:`, id);
+            await handleDeleteDocument(id);
+            console.log(`✅ ลบ${documentTypeName}สำเร็จ`);
             setDeleteConfirm(null);
-            
-            // รอสักครู่เพื่อให้ Firestore sync เสร็จก่อนรีเฟรช
-            await new Promise(resolve => setTimeout(resolve, 500));
-            
-            // รีเฟรชข้อมูลใหม่จาก Firestore โดยไม่แสดง loading เพื่อให้แน่ใจว่าข้อมูลตรงกัน
-            await fetchData(false);
-            console.log('✅ รีเฟรชข้อมูลสำเร็จ');
         } catch (err) {
             console.error('❌ Error deleting document:', err);
             alert('ไม่สามารถลบเอกสารได้: ' + (err instanceof Error ? err.message : 'Unknown error'));
-            // ถ้าลบไม่สำเร็จ ให้รีเฟรชข้อมูลเพื่อให้แน่ใจว่าข้อมูลตรงกัน
-            await fetchData(false);
         }
     };
 
@@ -146,50 +76,15 @@ const HistoryList: React.FC<HistoryListProps> = ({ activeDocType, onLoadDocument
         }).format(date);
     };
 
-    // ฟังก์ชันสร้างชื่อไฟล์ PDF
-    const generatePdfFilename = (type: 'delivery' | 'warranty' | 'invoice' | 'receipt' | 'quotation' | 'purchase-order', data: DeliveryNoteData | WarrantyData | InvoiceData | ReceiptData | QuotationData | PurchaseOrderData): string => {
-        const now = new Date();
-        const yy = String(now.getFullYear()).slice(-2);
-        const mm = String(now.getMonth() + 1).padStart(2, '0');
-        const dd = String(now.getDate()).padStart(2, '0');
-        
-        if (type === 'delivery') {
-            const deliveryData = data as DeliveryNoteData;
-            const customerName = deliveryData.toCompany || 'Unknown';
-            const cleanName = customerName.replace(/[^a-zA-Z0-9ก-๙]/g, '').substring(0, 20);
-            return `DN_${cleanName}_${yy}${mm}${dd}.pdf`;
-        } else if (type === 'warranty') {
-            const warrantyData = data as WarrantyData;
-            const customerName = warrantyData.customerName || 'Unknown';
-            const cleanName = customerName.replace(/[^a-zA-Z0-9ก-๙]/g, '').substring(0, 20);
-            return `WR_${cleanName}_${yy}${mm}${dd}.pdf`;
-        } else if (type === 'invoice') {
-            const invoiceData = data as InvoiceData;
-            const customerName = invoiceData.customerName || 'Unknown';
-            const cleanName = customerName.replace(/[^a-zA-Z0-9ก-๙]/g, '').substring(0, 20);
-            return `IN_${cleanName}_${yy}${mm}${dd}.pdf`;
-        } else if (type === 'receipt') {
-            const receiptData = data as ReceiptData;
-            const customerName = receiptData.customerName || 'Unknown';
-            const cleanName = customerName.replace(/[^a-zA-Z0-9ก-๙]/g, '').substring(0, 20);
-            return `RC_${cleanName}_${yy}${mm}${dd}.pdf`;
-        } else if (type === 'quotation') {
-            const quotationData = data as QuotationData;
-            const customerName = quotationData.customerName || 'Unknown';
-            const cleanName = customerName.replace(/[^a-zA-Z0-9ก-๙]/g, '').substring(0, 20);
-            return `QT_${cleanName}_${yy}${mm}${dd}.pdf`;
-        } else {
-            const purchaseOrderData = data as PurchaseOrderData;
-            const supplierName = purchaseOrderData.supplierName || 'Unknown';
-            const cleanName = supplierName.replace(/[^a-zA-Z0-9ก-๙]/g, '').substring(0, 20);
-            return `PO_${cleanName}_${yy}${mm}${dd}.pdf`;
-        }
+    // ฟังก์ชันสร้างชื่อไฟล์ PDF - Refactored: ใช้ Document Registry
+    const generatePdfFilename = (type: DocType, data: DocumentData): string => {
+        return generatePdfFilenameFromRegistry(type, data);
     };
 
     // ฟังก์ชันเปิด preview modal
-    const handleShowPreview = useCallback((doc: DeliveryNoteDocument | WarrantyDocument | InvoiceDocument | ReceiptDocument | QuotationDocument | PurchaseOrderDocument) => {
+    const handleShowPreview = useCallback((doc: DocumentDocument) => {
         setPreviewDoc(doc);
-        setPreviewData(doc as DeliveryNoteData | WarrantyData | InvoiceData | ReceiptData | QuotationData | PurchaseOrderData);
+        setPreviewData(doc as DocumentData);
         setShowPreviewModal(true);
     }, []);
 
@@ -243,7 +138,7 @@ const HistoryList: React.FC<HistoryListProps> = ({ activeDocType, onLoadDocument
             }
 
             // สร้างชื่อไฟล์
-            const filename = generatePdfFilename(activeDocType, previewDoc as DeliveryNoteData | WarrantyData | InvoiceData | ReceiptData | QuotationData | PurchaseOrderData);
+            const filename = generatePdfFilename(activeDocType, previewDoc as DocumentData);
             
             // สร้าง PDF
             await generatePdf(previewModalRef.current, filename);
@@ -258,7 +153,7 @@ const HistoryList: React.FC<HistoryListProps> = ({ activeDocType, onLoadDocument
     }, [activeDocType, currentCompany, previewDoc]);
 
     // ฟังก์ชันดาวน์โหลด PDF
-    const handleDownloadPdf = useCallback(async (doc: DeliveryNoteDocument | WarrantyDocument | InvoiceDocument | ReceiptDocument | QuotationDocument | PurchaseOrderDocument) => {
+    const handleDownloadPdf = useCallback(async (doc: DocumentDocument) => {
         try {
             setDownloadingPdfId(doc.id || null);
             
@@ -281,7 +176,7 @@ const HistoryList: React.FC<HistoryListProps> = ({ activeDocType, onLoadDocument
             }
 
             // ตั้งค่าข้อมูลสำหรับ preview
-            setPreviewData(doc as DeliveryNoteData | WarrantyData | InvoiceData | ReceiptData | QuotationData | PurchaseOrderData);
+            setPreviewData(doc as DocumentData);
             
             // รอให้ React render preview component และ ref พร้อม
             // ใช้ polling เพื่อรอให้ ref พร้อม (รอสูงสุด 2 วินาที)
@@ -301,7 +196,7 @@ const HistoryList: React.FC<HistoryListProps> = ({ activeDocType, onLoadDocument
             }
 
             // สร้างชื่อไฟล์
-            const filename = generatePdfFilename(activeDocType, doc as DeliveryNoteData | WarrantyData | InvoiceData | ReceiptData | QuotationData | PurchaseOrderData);
+            const filename = generatePdfFilename(activeDocType, doc as DocumentData);
             
             // สร้าง PDF
             await generatePdf(previewRef.current, filename);
@@ -317,7 +212,7 @@ const HistoryList: React.FC<HistoryListProps> = ({ activeDocType, onLoadDocument
                 setPreviewData(null);
             }, 500);
         }
-    }, [activeDocType, currentCompany]);
+    }, [activeDocType, currentCompany, generatePdfFilename]);
 
     // แสดง Loading
     if (loading) {
@@ -343,7 +238,7 @@ const HistoryList: React.FC<HistoryListProps> = ({ activeDocType, onLoadDocument
         );
     }
 
-    const currentList = activeDocType === 'delivery' ? deliveryNotes : activeDocType === 'warranty' ? warrantyCards : activeDocType === 'invoice' ? invoices : activeDocType === 'receipt' ? receipts : activeDocType === 'quotation' ? quotations : purchaseOrders;
+    const currentList = documents;
 
     // ฟังก์ชัน filter รายการตาม search term
     const filteredList = currentList.filter((item) => {
@@ -425,7 +320,7 @@ const HistoryList: React.FC<HistoryListProps> = ({ activeDocType, onLoadDocument
                 </svg>
                 <h3 className="mt-2 text-sm font-medium text-gray-900">ไม่มีเอกสาร</h3>
                 <p className="mt-1 text-sm text-gray-500">
-                    เริ่มต้นโดยการสร้าง{activeDocType === 'delivery' ? 'ใบส่งมอบงาน' : activeDocType === 'warranty' ? 'ใบรับประกันสินค้า' : activeDocType === 'invoice' ? 'ใบแจ้งหนี้' : activeDocType === 'receipt' ? 'ใบเสร็จ' : activeDocType === 'quotation' ? 'ใบเสนอราคา' : 'ใบสั่งซื้อ'}ใหม่
+                    เริ่มต้นโดยการสร้าง{documentTypeName}ใหม่
                 </p>
             </div>
         );
@@ -466,7 +361,7 @@ const HistoryList: React.FC<HistoryListProps> = ({ activeDocType, onLoadDocument
                         {/* Header */}
                         <div className="flex justify-between items-center p-4 border-b border-gray-200">
                             <h2 className="text-xl font-semibold text-gray-900">
-                                {activeDocType === 'delivery' ? 'ตัวอย่างใบส่งมอบงาน' : activeDocType === 'warranty' ? 'ตัวอย่างใบรับประกันสินค้า' : activeDocType === 'invoice' ? 'ตัวอย่างใบแจ้งหนี้' : activeDocType === 'receipt' ? 'ตัวอย่างใบเสร็จ' : activeDocType === 'quotation' ? 'ตัวอย่างใบเสนอราคา' : 'ตัวอย่างใบสั่งซื้อ'}
+                                ตัวอย่าง{documentTypeName}
                             </h2>
                             <div className="flex items-center gap-2">
                                 <button
@@ -563,7 +458,7 @@ const HistoryList: React.FC<HistoryListProps> = ({ activeDocType, onLoadDocument
             {/* Header */}
             <div className="flex flex-col sm:flex-row justify-between items-start sm:items-center gap-4 mb-4">
                 <h2 className="text-xl font-semibold text-slate-700">
-                    ประวัติ{activeDocType === 'delivery' ? 'ใบส่งมอบงาน' : activeDocType === 'warranty' ? 'ใบรับประกันสินค้า' : activeDocType === 'invoice' ? 'ใบแจ้งหนี้' : activeDocType === 'receipt' ? 'ใบเสร็จ' : activeDocType === 'quotation' ? 'ใบเสนอราคา' : 'ใบสั่งซื้อ'}
+                    ประวัติ{documentTypeName}
                 </h2>
                 <div className="flex items-center gap-2 w-full sm:w-auto">
                     {/* Search/Filter Input */}

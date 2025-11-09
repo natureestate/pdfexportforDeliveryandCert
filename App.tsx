@@ -24,6 +24,7 @@ import CookieConsentModal from './components/CookieConsentModal';
 import { generatePdf } from './services/pdfGenerator';
 import { saveDeliveryNote, saveWarrantyCard, saveInvoice, saveReceipt, saveQuotation, savePurchaseOrder } from './services/firestore';
 import type { DeliveryNoteDocument, WarrantyDocument, InvoiceDocument, ReceiptDocument, QuotationDocument, PurchaseOrderDocument } from './services/firestore';
+import { DOCUMENT_REGISTRY, generatePdfFilename as generatePdfFilenameFromRegistry, saveOrUpdateDocument, type DocType } from './utils/documentRegistry';
 
 const getInitialDeliveryData = (): DeliveryNoteData => ({
     logo: null,
@@ -226,7 +227,6 @@ const initialPurchaseOrderData: PurchaseOrderData = {
     issuedBy: '',
 };
 
-type DocType = 'delivery' | 'warranty' | 'invoice' | 'receipt' | 'quotation' | 'purchase-order';
 type ViewMode = 'form' | 'history';
 type Notification = { show: boolean; message: string; type: 'success' | 'info' | 'error' };
 
@@ -254,44 +254,22 @@ const AppContent: React.FC = () => {
     const [sharedLogoUrl, setSharedLogoUrl] = useState<string | null>(null);
     const [sharedLogoType, setSharedLogoType] = useState<LogoType>('default');
     
-    // Sync shared logo กับ delivery, warranty และ invoice data
+    // Sync shared logo กับ document data ทั้งหมด
+    // Refactored: ใช้ loop แทนการเขียนซ้ำ
     useEffect(() => {
-        setDeliveryData(prev => ({
+        const updateLogo = (prev: any) => ({
             ...prev,
             logo: sharedLogo,
             logoUrl: sharedLogoUrl,
             logoType: sharedLogoType,
-        }));
-        setWarrantyData(prev => ({
-            ...prev,
-            logo: sharedLogo,
-            logoUrl: sharedLogoUrl,
-            logoType: sharedLogoType,
-        }));
-        setInvoiceData(prev => ({
-            ...prev,
-            logo: sharedLogo,
-            logoUrl: sharedLogoUrl,
-            logoType: sharedLogoType,
-        }));
-        setReceiptData(prev => ({
-            ...prev,
-            logo: sharedLogo,
-            logoUrl: sharedLogoUrl,
-            logoType: sharedLogoType,
-        }));
-        setQuotationData(prev => ({
-            ...prev,
-            logo: sharedLogo,
-            logoUrl: sharedLogoUrl,
-            logoType: sharedLogoType,
-        }));
-        setPurchaseOrderData(prev => ({
-            ...prev,
-            logo: sharedLogo,
-            logoUrl: sharedLogoUrl,
-            logoType: sharedLogoType,
-        }));
+        });
+        
+        setDeliveryData(updateLogo);
+        setWarrantyData(updateLogo);
+        setInvoiceData(updateLogo);
+        setReceiptData(updateLogo);
+        setQuotationData(updateLogo);
+        setPurchaseOrderData(updateLogo);
     }, [sharedLogo, sharedLogoUrl, sharedLogoType]);
 
     // Sync ข้อมูลบริษัทจาก currentCompany ไปยัง form data
@@ -437,7 +415,27 @@ const AppContent: React.FC = () => {
         setNotification({ show: true, message, type });
     };
 
+    // Helper function สำหรับดึงข้อมูลตาม activeTab
+    // ต้องประกาศก่อน handleSaveToFirestore เพื่อให้สามารถใช้งานได้
+    const getCurrentData = useCallback((): DocumentData => {
+        switch (activeTab) {
+            case 'delivery':
+                return deliveryData;
+            case 'warranty':
+                return warrantyData;
+            case 'invoice':
+                return invoiceData;
+            case 'receipt':
+                return receiptData;
+            case 'quotation':
+                return quotationData;
+            case 'purchase-order':
+                return purchaseOrderData;
+        }
+    }, [activeTab, deliveryData, warrantyData, invoiceData, receiptData, quotationData, purchaseOrderData]);
+
     // ฟังก์ชันบันทึกข้อมูลลง Firestore พร้อม companyId (รองรับทั้ง create และ update)
+    // Refactored: ใช้ Document Registry Pattern
     const handleSaveToFirestore = useCallback(async () => {
         setIsSaving(true);
         
@@ -445,80 +443,16 @@ const AppContent: React.FC = () => {
         showToast(isEditMode ? 'กำลังอัปเดตเอกสาร...' : 'กำลังบันทึกเอกสารใหม่...', 'info');
 
         try {
-            const companyId = currentCompany?.id; // ดึง companyId จาก context
+            const companyId = currentCompany?.id;
             
-            if (activeTab === 'delivery') {
-                if (isEditMode) {
-                    // อัปเดตเอกสารเดิม
-                    const { updateDeliveryNote } = await import('./services/firestore');
-                    await updateDeliveryNote(editingDocumentId, deliveryData);
-                    showToast(`อัปเดตใบส่งมอบงานสำเร็จ`, 'success');
-                } else {
-                    // สร้างเอกสารใหม่
-                    const id = await saveDeliveryNote(deliveryData, companyId);
-                    showToast(`บันทึกใบส่งมอบงานสำเร็จ (ID: ${id})`, 'success');
-                    setEditingDocumentId(id); // เปลี่ยนเป็น edit mode
-                }
-            } else if (activeTab === 'warranty') {
-                if (isEditMode) {
-                    // อัปเดตเอกสารเดิม
-                    const { updateWarrantyCard } = await import('./services/firestore');
-                    await updateWarrantyCard(editingDocumentId, warrantyData);
-                    showToast(`อัปเดตใบรับประกันสำเร็จ`, 'success');
-                } else {
-                    // สร้างเอกสารใหม่
-                    const id = await saveWarrantyCard(warrantyData, companyId);
-                    showToast(`บันทึกใบรับประกันสำเร็จ (ID: ${id})`, 'success');
-                    setEditingDocumentId(id); // เปลี่ยนเป็น edit mode
-                }
-            } else if (activeTab === 'invoice') {
-                if (isEditMode) {
-                    // อัปเดตเอกสารเดิม
-                    const { updateInvoice } = await import('./services/firestore');
-                    await updateInvoice(editingDocumentId, invoiceData);
-                    showToast(`อัปเดตใบแจ้งหนี้สำเร็จ`, 'success');
-                } else {
-                    // สร้างเอกสารใหม่
-                    const id = await saveInvoice(invoiceData, companyId);
-                    showToast(`บันทึกใบแจ้งหนี้สำเร็จ (ID: ${id})`, 'success');
-                    setEditingDocumentId(id); // เปลี่ยนเป็น edit mode
-                }
-            } else if (activeTab === 'receipt') {
-                if (isEditMode) {
-                    // อัปเดตเอกสารเดิม
-                    const { updateReceipt } = await import('./services/firestore');
-                    await updateReceipt(editingDocumentId, receiptData);
-                    showToast(`อัปเดตใบเสร็จสำเร็จ`, 'success');
-                } else {
-                    // สร้างเอกสารใหม่
-                    const id = await saveReceipt(receiptData, companyId);
-                    showToast(`บันทึกใบเสร็จสำเร็จ (ID: ${id})`, 'success');
-                    setEditingDocumentId(id); // เปลี่ยนเป็น edit mode
-                }
-            } else if (activeTab === 'quotation') {
-                if (isEditMode) {
-                    // อัปเดตเอกสารเดิม
-                    const { updateQuotation } = await import('./services/firestore');
-                    await updateQuotation(editingDocumentId, quotationData);
-                    showToast(`อัปเดตใบเสนอราคาสำเร็จ`, 'success');
-                } else {
-                    // สร้างเอกสารใหม่
-                    const id = await saveQuotation(quotationData, companyId);
-                    showToast(`บันทึกใบเสนอราคาสำเร็จ (ID: ${id})`, 'success');
-                    setEditingDocumentId(id); // เปลี่ยนเป็น edit mode
-                }
-            } else if (activeTab === 'purchase-order') {
-                if (isEditMode) {
-                    // อัปเดตเอกสารเดิม
-                    const { updatePurchaseOrder } = await import('./services/firestore');
-                    await updatePurchaseOrder(editingDocumentId, purchaseOrderData);
-                    showToast(`อัปเดตใบสั่งซื้อสำเร็จ`, 'success');
-                } else {
-                    // สร้างเอกสารใหม่
-                    const id = await savePurchaseOrder(purchaseOrderData, companyId);
-                    showToast(`บันทึกใบสั่งซื้อสำเร็จ (ID: ${id})`, 'success');
-                    setEditingDocumentId(id); // เปลี่ยนเป็น edit mode
-                }
+            // ดึงข้อมูลตาม activeTab และใช้ Document Registry เพื่อ save หรือ update
+            const data = getCurrentData();
+            const result = await saveOrUpdateDocument(activeTab, data, editingDocumentId, companyId);
+            showToast(result.message, 'success');
+            
+            // ถ้าเป็น create mode ให้ set editingDocumentId
+            if (!isEditMode) {
+                setEditingDocumentId(result.id);
             }
         } catch (error) {
             console.error('Failed to save to Firestore:', error);
@@ -526,106 +460,18 @@ const AppContent: React.FC = () => {
         } finally {
             setIsSaving(false);
         }
-    }, [activeTab, deliveryData, warrantyData, invoiceData, receiptData, quotationData, purchaseOrderData, currentCompany, editingDocumentId]);
+    }, [activeTab, getCurrentData, currentCompany, editingDocumentId]);
 
     /**
      * สร้างชื่อไฟล์ PDF ตามรูปแบบ: prefix + ลูกค้า + Create date (YYMMDD) + UUID
-     * @param type - ประเภทเอกสาร ('delivery' | 'warranty')
-     * @param data - ข้อมูลเอกสาร
-     * @returns ชื่อไฟล์ PDF
+     * Refactored: ใช้ Document Registry
      */
-    const generatePdfFilename = useCallback((type: 'delivery' | 'warranty' | 'invoice' | 'receipt' | 'quotation' | 'purchase-order', data: DeliveryNoteData | WarrantyData | InvoiceData | ReceiptData | QuotationData | PurchaseOrderData): string => {
-        // สร้าง UUID (ใช้ crypto.randomUUID() หรือ fallback)
-        const generateUUID = (): string => {
-            if (typeof crypto !== 'undefined' && crypto.randomUUID) {
-                return crypto.randomUUID();
-            }
-            // Fallback สำหรับ browser เก่า
-            return 'xxxxxxxx-xxxx-4xxx-yxxx-xxxxxxxxxxxx'.replace(/[xy]/g, (c) => {
-                const r = Math.random() * 16 | 0;
-                const v = c === 'x' ? r : (r & 0x3 | 0x8);
-                return v.toString(16);
-            });
-        };
-
-        // ทำความสะอาดชื่อลูกค้า (ลบอักขระพิเศษ เหลือแค่ a-z, A-Z, 0-9, และ _)
-        const cleanCustomerName = (name: string): string => {
-            return name
-                .replace(/[^a-zA-Z0-9ก-๙]/g, '_') // แทนที่อักขระพิเศษด้วย _
-                .replace(/_+/g, '_') // รวม _ หลายตัวเป็นตัวเดียว
-                .replace(/^_|_$/g, '') // ลบ _ ที่ต้นและท้าย
-                .substring(0, 50) // จำกัดความยาวไม่เกิน 50 ตัวอักษร
-                || 'Customer'; // ถ้าไม่มีชื่อให้ใช้ 'Customer'
-        };
-
-        // แปลงวันที่เป็น YYMMDD
-        const formatDateToYYMMDD = (date: Date | null | undefined): string => {
-            if (!date) {
-                const now = new Date();
-                const yy = String(now.getFullYear()).slice(-2);
-                const mm = String(now.getMonth() + 1).padStart(2, '0');
-                const dd = String(now.getDate()).padStart(2, '0');
-                return `${yy}${mm}${dd}`;
-            }
-            const d = date instanceof Date ? date : new Date(date);
-            const yy = String(d.getFullYear()).slice(-2);
-            const mm = String(d.getMonth() + 1).padStart(2, '0');
-            const dd = String(d.getDate()).padStart(2, '0');
-            return `${yy}${mm}${dd}`;
-        };
-
-        if (type === 'delivery') {
-            const deliveryData = data as DeliveryNoteData;
-            const prefix = 'DN';
-            const customerName = cleanCustomerName(deliveryData.toCompany || 'Customer');
-            const dateStr = formatDateToYYMMDD(deliveryData.date);
-            const uuid = generateUUID().substring(0, 8); // ใช้แค่ 8 ตัวแรกของ UUID
-            
-            return `${prefix}_${customerName}_${dateStr}_${uuid}.pdf`;
-        } else if (type === 'warranty') {
-            const warrantyData = data as WarrantyData;
-            const prefix = 'WR';
-            const customerName = cleanCustomerName(warrantyData.customerName || 'Customer');
-            const dateStr = formatDateToYYMMDD(warrantyData.purchaseDate);
-            const uuid = generateUUID().substring(0, 8); // ใช้แค่ 8 ตัวแรกของ UUID
-            
-            return `${prefix}_${customerName}_${dateStr}_${uuid}.pdf`;
-        } else if (type === 'invoice') {
-            const invoiceData = data as InvoiceData;
-            const prefix = 'IN';
-            const customerName = cleanCustomerName(invoiceData.customerName || 'Customer');
-            const dateStr = formatDateToYYMMDD(invoiceData.invoiceDate);
-            const uuid = generateUUID().substring(0, 8); // ใช้แค่ 8 ตัวแรกของ UUID
-            
-            return `${prefix}_${customerName}_${dateStr}_${uuid}.pdf`;
-        } else if (type === 'receipt') {
-            const receiptData = data as ReceiptData;
-            const prefix = 'RC';
-            const customerName = cleanCustomerName(receiptData.customerName || 'Customer');
-            const dateStr = formatDateToYYMMDD(receiptData.receiptDate);
-            const uuid = generateUUID().substring(0, 8); // ใช้แค่ 8 ตัวแรกของ UUID
-            
-            return `${prefix}_${customerName}_${dateStr}_${uuid}.pdf`;
-        } else if (type === 'quotation') {
-            const quotationData = data as QuotationData;
-            const prefix = 'QT';
-            const customerName = cleanCustomerName(quotationData.customerName || 'Customer');
-            const dateStr = formatDateToYYMMDD(quotationData.quotationDate);
-            const uuid = generateUUID().substring(0, 8); // ใช้แค่ 8 ตัวแรกของ UUID
-            
-            return `${prefix}_${customerName}_${dateStr}_${uuid}.pdf`;
-        } else {
-            const purchaseOrderData = data as PurchaseOrderData;
-            const prefix = 'PO';
-            const supplierName = cleanCustomerName(purchaseOrderData.supplierName || 'Supplier');
-            const dateStr = formatDateToYYMMDD(purchaseOrderData.purchaseOrderDate);
-            const uuid = generateUUID().substring(0, 8); // ใช้แค่ 8 ตัวแรกของ UUID
-            
-            return `${prefix}_${supplierName}_${dateStr}_${uuid}.pdf`;
-        }
+    const generatePdfFilename = useCallback((type: DocType, data: DocumentData): string => {
+        return generatePdfFilenameFromRegistry(type, data);
     }, []);
 
     // ฟังก์ชัน Export PDF
+    // Refactored: ใช้ helper function
     const handleExportPdf = useCallback(async () => {
         if (!printableAreaRef.current) return;
         
@@ -650,7 +496,9 @@ const AppContent: React.FC = () => {
         showToast('กำลังสร้าง PDF...', 'info');
 
         // สร้างชื่อไฟล์ตามรูปแบบใหม่: prefix + ลูกค้า + Create date (YYMMDD) + UUID
-        const filename = generatePdfFilename(activeTab, activeTab === 'delivery' ? deliveryData : activeTab === 'warranty' ? warrantyData : activeTab === 'invoice' ? invoiceData : activeTab === 'receipt' ? receiptData : activeTab === 'quotation' ? quotationData : purchaseOrderData);
+        // Refactored: ใช้ Document Registry และ helper function
+        const data = getCurrentData();
+        const filename = generatePdfFilename(activeTab, data);
 
         try {
             await generatePdf(printableAreaRef.current, filename);
@@ -661,7 +509,7 @@ const AppContent: React.FC = () => {
         } finally {
             setIsLoading(false);
         }
-    }, [activeTab, deliveryData, warrantyData, invoiceData, receiptData, quotationData, purchaseOrderData, currentCompany, generatePdfFilename]);
+    }, [activeTab, getCurrentData, currentCompany, generatePdfFilename]);
 
     // ฟังก์ชันโหลดเอกสารจาก History (สำหรับ Edit)
     const handleLoadDocument = useCallback((doc: DeliveryNoteDocument | WarrantyDocument | InvoiceDocument | ReceiptDocument | QuotationDocument | PurchaseOrderDocument) => {
@@ -726,71 +574,41 @@ const AppContent: React.FC = () => {
     }, []);
 
     // ฟังก์ชันสร้างฟอร์มใหม่
+    // Refactored: ลด code duplication โดยใช้ helper function
     const handleCreateNewForm = useCallback(() => {
         // Clear edit mode
         setEditingDocumentId(null);
         
-        if (activeTab === 'delivery') {
-            setDeliveryData(getInitialDeliveryData());
-        } else if (activeTab === 'warranty') {
-            setWarrantyData({
-                logo: sharedLogo,
-                logoUrl: sharedLogoUrl,
-                logoType: sharedLogoType,
-                companyName: '',
-                companyAddress: '',
-                companyPhone: '',
-                companyEmail: '',
-                companyWebsite: '',
-                projectName: '',
-                customerName: '',
-                customerPhone: '',
-                customerAddress: '',
-                serviceName: '',
-                productDetail: '',
-                houseModel: '',
-                batchNo: '',
-                showBatchNo: false,
-                purchaseDate: new Date(),
-                warrantyPeriod: '',
-                warrantyEndDate: null,
-                terms: '',
-                useMultipleWarrantyTypes: false,
-                warrantyGeneral: false,
-                warrantyRoof: false,
-                warrantyStructure: false,
-                warrantyNumber: '',
-                issueDate: new Date(),
-                issuedBy: ''
-            });
-        } else if (activeTab === 'invoice') {
-            setInvoiceData({
-                ...initialInvoiceData,
-                logo: sharedLogo,
-                logoUrl: sharedLogoUrl,
-                logoType: sharedLogoType,
-            });
-        } else if (activeTab === 'receipt') {
-            setReceiptData({
-                ...initialReceiptData,
-                logo: sharedLogo,
-                logoUrl: sharedLogoUrl,
-                logoType: sharedLogoType,
-            });
-        } else if (activeTab === 'quotation') {
-            setQuotationData({
-                ...initialQuotationData,
-                logo: sharedLogo,
-                logoUrl: sharedLogoUrl,
-                logoType: sharedLogoType,
-            });
-        } else {
-            setPurchaseOrderData({
-                ...initialPurchaseOrderData,
-                logo: sharedLogo,
-                logoUrl: sharedLogoUrl,
-                logoType: sharedLogoType,
-            });
+        // Helper function สำหรับเพิ่ม logo ให้กับ initial data
+        const withLogo = <T extends { logo?: string | null; logoUrl?: string | null; logoType?: LogoType }>(data: T): T => ({
+            ...data,
+            logo: sharedLogo,
+            logoUrl: sharedLogoUrl,
+            logoType: sharedLogoType,
+        });
+        
+        switch (activeTab) {
+            case 'delivery':
+                setDeliveryData(getInitialDeliveryData());
+                break;
+            case 'warranty':
+                setWarrantyData({
+                    ...initialWarrantyData,
+                    ...withLogo({}),
+                });
+                break;
+            case 'invoice':
+                setInvoiceData(withLogo(initialInvoiceData));
+                break;
+            case 'receipt':
+                setReceiptData(withLogo(initialReceiptData));
+                break;
+            case 'quotation':
+                setQuotationData(withLogo(initialQuotationData));
+                break;
+            case 'purchase-order':
+                setPurchaseOrderData(withLogo(initialPurchaseOrderData));
+                break;
         }
         showToast('สร้างฟอร์มใหม่สำเร็จ', 'success');
     }, [activeTab, sharedLogo, sharedLogoUrl, sharedLogoType]);
