@@ -966,7 +966,7 @@ const HistoryList: React.FC<HistoryListProps> = ({ activeDocType, onLoadDocument
                         </div>
                     );
                     })
-                ) : (
+                ) : activeDocType === 'quotation' ? (
                     // รายการใบเสนอราคา
                     paginatedList.map((quotation) => {
                         const quotationItem = quotation as QuotationDocument;
