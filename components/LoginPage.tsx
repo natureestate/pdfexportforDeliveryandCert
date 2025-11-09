@@ -9,6 +9,7 @@ import { executeAndVerifyRecaptcha, isRecaptchaScoreValid, getRecaptchaErrorMess
 import PhoneAuthForm from './PhoneAuthForm';
 import { EmailPasswordForm } from './EmailPasswordForm';
 import { EmailLinkForm } from './EmailLinkForm';
+import PolicyModal from './PolicyModal';
 
 type LoginMethod = 'google' | 'phone' | 'email' | 'emailLink';
 
@@ -16,6 +17,17 @@ const LoginPage: React.FC = () => {
     const [isLoading, setIsLoading] = useState(false);
     const [error, setError] = useState<string | null>(null);
     const [loginMethod, setLoginMethod] = useState<LoginMethod>('google');
+    const [showPolicyModal, setShowPolicyModal] = useState(false);
+    const [policyType, setPolicyType] = useState<'terms' | 'privacy'>('terms');
+
+    const handleOpenPolicy = (type: 'terms' | 'privacy') => {
+        setPolicyType(type);
+        setShowPolicyModal(true);
+    };
+
+    const handleClosePolicy = () => {
+        setShowPolicyModal(false);
+    };
 
     const handleGoogleSignIn = async () => {
         setIsLoading(true);
@@ -244,21 +256,38 @@ const LoginPage: React.FC = () => {
                     <p className="text-xs text-gray-500">
                         การ Login หมายถึงคุณยอมรับ
                         <br />
-                        <a href="#" className="text-indigo-600 hover:text-indigo-700 underline">เงื่อนไขการใช้งาน</a>
+                        <button 
+                            onClick={(e) => {
+                                e.preventDefault();
+                                handleOpenPolicy('terms');
+                            }}
+                            className="text-indigo-600 hover:text-indigo-700 underline"
+                        >
+                            เงื่อนไขการใช้งาน
+                        </button>
                         {' และ '}
-                        <a href="#" className="text-indigo-600 hover:text-indigo-700 underline">นโยบายความเป็นส่วนตัว</a>
-                    </p>
-                    <p className="text-xs text-gray-400 flex items-center justify-center gap-1">
-                        <svg className="w-3 h-3" fill="currentColor" viewBox="0 0 24 24">
-                            <path d="M12 2C6.48 2 2 6.48 2 12s4.48 10 10 10 10-4.48 10-10S17.52 2 12 2zm1 15h-2v-2h2v2zm0-4h-2V7h2v6z"/>
-                        </svg>
-                        ระบบป้องกันด้วย reCAPTCHA v3
+                        <button 
+                            onClick={(e) => {
+                                e.preventDefault();
+                                handleOpenPolicy('privacy');
+                            }}
+                            className="text-indigo-600 hover:text-indigo-700 underline"
+                        >
+                            นโยบายความเป็นส่วนตัว
+                        </button>
                     </p>
                 </div>
 
                 {/* reCAPTCHA Container สำหรับ Phone Auth */}
                 <div id="recaptcha-container"></div>
             </div>
+
+            {/* Policy Modal */}
+            <PolicyModal 
+                isOpen={showPolicyModal}
+                onClose={handleClosePolicy}
+                type={policyType}
+            />
 
             {/* Background Decoration */}
             <div className="fixed inset-0 -z-10 overflow-hidden pointer-events-none">
