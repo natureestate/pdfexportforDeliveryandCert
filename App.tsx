@@ -1,6 +1,6 @@
 import React, { useState, useRef, useCallback, useEffect } from 'react';
 import { Routes, Route, Navigate } from 'react-router-dom';
-import { DeliveryNoteData, WarrantyData, LogoType } from './types';
+import { DeliveryNoteData, WarrantyData, InvoiceData, LogoType } from './types';
 import { AuthProvider } from './contexts/AuthContext';
 import { CompanyProvider, useCompany } from './contexts/CompanyContext';
 import ProtectedRoute from './components/ProtectedRoute';
@@ -9,13 +9,15 @@ import DeliveryForm from './components/DeliveryForm';
 import DocumentPreview from './components/DocumentPreview';
 import WarrantyForm from './components/WarrantyForm';
 import WarrantyPreview from './components/WarrantyPreview';
+import InvoiceForm from './components/InvoiceForm';
+import InvoicePreview from './components/InvoicePreview';
 import HistoryList from './components/HistoryList';
 import AcceptInvitationPage from './components/AcceptInvitationPage';
 import SuperAdminDashboard from './components/SuperAdminDashboard';
 import CookieConsentModal from './components/CookieConsentModal';
 import { generatePdf } from './services/pdfGenerator';
-import { saveDeliveryNote, saveWarrantyCard } from './services/firestore';
-import type { DeliveryNoteDocument, WarrantyDocument } from './services/firestore';
+import { saveDeliveryNote, saveWarrantyCard, saveInvoice } from './services/firestore';
+import type { DeliveryNoteDocument, WarrantyDocument, InvoiceDocument } from './services/firestore';
 
 const getInitialDeliveryData = (): DeliveryNoteData => ({
     logo: null,
@@ -42,6 +44,7 @@ const initialWarrantyData: WarrantyData = {
     companyAddress: '',
     companyPhone: '',
     companyEmail: '',
+    companyWebsite: '',
     // ข้อมูลลูกค้า/โครงการ
     projectName: '',
     customerName: '',
@@ -69,7 +72,43 @@ const initialWarrantyData: WarrantyData = {
     issuedBy: ''
 };
 
-type DocType = 'delivery' | 'warranty';
+const initialInvoiceData: InvoiceData = {
+    logo: null,
+    // ข้อมูลบริษัทผู้ขาย
+    companyName: '',
+    companyAddress: '',
+    companyPhone: '',
+    companyEmail: '',
+    companyWebsite: '',
+    companyTaxId: '',
+    // ข้อมูลลูกค้า/ผู้ซื้อ
+    customerName: '',
+    customerAddress: '',
+    customerPhone: '',
+    customerEmail: '',
+    customerTaxId: '',
+    // ข้อมูลเอกสาร
+    invoiceNumber: '', // จะถูก auto-generate ใน InvoiceForm
+    invoiceDate: new Date(),
+    dueDate: null,
+    referenceNumber: '',
+    // รายการสินค้า/บริการ
+    items: [
+        { description: '', quantity: 1, unit: 'ชิ้น', unitPrice: 0, amount: 0, notes: '' },
+    ],
+    // ข้อมูลการชำระเงิน
+    subtotal: 0,
+    taxRate: 7, // Default 7%
+    taxAmount: 0,
+    discount: 0,
+    total: 0,
+    // ข้อมูลเพิ่มเติม
+    paymentTerms: '',
+    notes: '',
+    issuedBy: '',
+};
+
+type DocType = 'delivery' | 'warranty' | 'invoice';
 type ViewMode = 'form' | 'history';
 type Notification = { show: boolean; message: string; type: 'success' | 'info' | 'error' };
 
@@ -78,6 +117,7 @@ const AppContent: React.FC = () => {
     const { currentCompany } = useCompany(); // ใช้ CompanyContext
     const [deliveryData, setDeliveryData] = useState<DeliveryNoteData>(initialDeliveryData);
     const [warrantyData, setWarrantyData] = useState<WarrantyData>(initialWarrantyData);
+    const [invoiceData, setInvoiceData] = useState<InvoiceData>(initialInvoiceData);
     const [activeTab, setActiveTab] = useState<DocType>('delivery');
     const [viewMode, setViewMode] = useState<ViewMode>('form');
     const [isLoading, setIsLoading] = useState<boolean>(false);
@@ -93,7 +133,7 @@ const AppContent: React.FC = () => {
     const [sharedLogoUrl, setSharedLogoUrl] = useState<string | null>(null);
     const [sharedLogoType, setSharedLogoType] = useState<LogoType>('default');
     
-    // Sync shared logo กับ delivery และ warranty data
+    // Sync shared logo กับ delivery, warranty และ invoice data
     useEffect(() => {
         setDeliveryData(prev => ({
             ...prev,
@@ -102,6 +142,12 @@ const AppContent: React.FC = () => {
             logoType: sharedLogoType,
         }));
         setWarrantyData(prev => ({
+            ...prev,
+            logo: sharedLogo,
+            logoUrl: sharedLogoUrl,
+            logoType: sharedLogoType,
+        }));
+        setInvoiceData(prev => ({
             ...prev,
             logo: sharedLogo,
             logoUrl: sharedLogoUrl,
@@ -119,6 +165,9 @@ const AppContent: React.FC = () => {
                 ...prev,
                 fromCompany: currentCompany.name,
                 fromAddress: currentCompany.address || '',
+                fromPhone: currentCompany.phone || '',
+                fromEmail: currentCompany.email || '',
+                fromWebsite: currentCompany.website || '',
             }));
 
             // Sync ไปยัง WarrantyForm (ข้อมูลบริษัท)
@@ -128,6 +177,17 @@ const AppContent: React.FC = () => {
                 companyAddress: currentCompany.address || '',
                 companyPhone: currentCompany.phone || '',
                 companyEmail: currentCompany.email || '',
+                companyWebsite: currentCompany.website || '',
+            }));
+
+            // Sync ไปยัง InvoiceForm (ข้อมูลบริษัทผู้ขาย)
+            setInvoiceData(prev => ({
+                ...prev,
+                companyName: currentCompany.name,
+                companyAddress: currentCompany.address || '',
+                companyPhone: currentCompany.phone || '',
+                companyEmail: currentCompany.email || '',
+                companyWebsite: currentCompany.website || '',
             }));
         }
     }, [currentCompany]);
@@ -230,7 +290,7 @@ const AppContent: React.FC = () => {
                     showToast(`บันทึกใบส่งมอบงานสำเร็จ (ID: ${id})`, 'success');
                     setEditingDocumentId(id); // เปลี่ยนเป็น edit mode
                 }
-            } else {
+            } else if (activeTab === 'warranty') {
                 if (isEditMode) {
                     // อัปเดตเอกสารเดิม
                     const { updateWarrantyCard } = await import('./services/firestore');
@@ -242,6 +302,18 @@ const AppContent: React.FC = () => {
                     showToast(`บันทึกใบรับประกันสำเร็จ (ID: ${id})`, 'success');
                     setEditingDocumentId(id); // เปลี่ยนเป็น edit mode
                 }
+            } else if (activeTab === 'invoice') {
+                if (isEditMode) {
+                    // อัปเดตเอกสารเดิม
+                    const { updateInvoice } = await import('./services/firestore');
+                    await updateInvoice(editingDocumentId, invoiceData);
+                    showToast(`อัปเดตใบแจ้งหนี้สำเร็จ`, 'success');
+                } else {
+                    // สร้างเอกสารใหม่
+                    const id = await saveInvoice(invoiceData, companyId);
+                    showToast(`บันทึกใบแจ้งหนี้สำเร็จ (ID: ${id})`, 'success');
+                    setEditingDocumentId(id); // เปลี่ยนเป็น edit mode
+                }
             }
         } catch (error) {
             console.error('Failed to save to Firestore:', error);
@@ -249,7 +321,7 @@ const AppContent: React.FC = () => {
         } finally {
             setIsSaving(false);
         }
-    }, [activeTab, deliveryData, warrantyData, currentCompany, editingDocumentId]);
+    }, [activeTab, deliveryData, warrantyData, invoiceData, currentCompany, editingDocumentId]);
 
     /**
      * สร้างชื่อไฟล์ PDF ตามรูปแบบ: prefix + ลูกค้า + Create date (YYMMDD) + UUID
@@ -257,7 +329,7 @@ const AppContent: React.FC = () => {
      * @param data - ข้อมูลเอกสาร
      * @returns ชื่อไฟล์ PDF
      */
-    const generatePdfFilename = useCallback((type: 'delivery' | 'warranty', data: DeliveryNoteData | WarrantyData): string => {
+    const generatePdfFilename = useCallback((type: 'delivery' | 'warranty' | 'invoice', data: DeliveryNoteData | WarrantyData | InvoiceData): string => {
         // สร้าง UUID (ใช้ crypto.randomUUID() หรือ fallback)
         const generateUUID = (): string => {
             if (typeof crypto !== 'undefined' && crypto.randomUUID) {
@@ -305,11 +377,19 @@ const AppContent: React.FC = () => {
             const uuid = generateUUID().substring(0, 8); // ใช้แค่ 8 ตัวแรกของ UUID
             
             return `${prefix}_${customerName}_${dateStr}_${uuid}.pdf`;
-        } else {
+        } else if (type === 'warranty') {
             const warrantyData = data as WarrantyData;
             const prefix = 'WR';
             const customerName = cleanCustomerName(warrantyData.customerName || 'Customer');
             const dateStr = formatDateToYYMMDD(warrantyData.purchaseDate);
+            const uuid = generateUUID().substring(0, 8); // ใช้แค่ 8 ตัวแรกของ UUID
+            
+            return `${prefix}_${customerName}_${dateStr}_${uuid}.pdf`;
+        } else {
+            const invoiceData = data as InvoiceData;
+            const prefix = 'IN';
+            const customerName = cleanCustomerName(invoiceData.customerName || 'Customer');
+            const dateStr = formatDateToYYMMDD(invoiceData.invoiceDate);
             const uuid = generateUUID().substring(0, 8); // ใช้แค่ 8 ตัวแรกของ UUID
             
             return `${prefix}_${customerName}_${dateStr}_${uuid}.pdf`;
@@ -341,7 +421,7 @@ const AppContent: React.FC = () => {
         showToast('กำลังสร้าง PDF...', 'info');
 
         // สร้างชื่อไฟล์ตามรูปแบบใหม่: prefix + ลูกค้า + Create date (YYMMDD) + UUID
-        const filename = generatePdfFilename(activeTab, activeTab === 'delivery' ? deliveryData : warrantyData);
+        const filename = generatePdfFilename(activeTab, activeTab === 'delivery' ? deliveryData : activeTab === 'warranty' ? warrantyData : invoiceData);
 
         try {
             await generatePdf(printableAreaRef.current, filename);
@@ -352,10 +432,10 @@ const AppContent: React.FC = () => {
         } finally {
             setIsLoading(false);
         }
-    }, [activeTab, deliveryData, warrantyData, currentCompany, generatePdfFilename]);
+    }, [activeTab, deliveryData, warrantyData, invoiceData, currentCompany, generatePdfFilename]);
 
     // ฟังก์ชันโหลดเอกสารจาก History (สำหรับ Edit)
-    const handleLoadDocument = useCallback((doc: DeliveryNoteDocument | WarrantyDocument) => {
+    const handleLoadDocument = useCallback((doc: DeliveryNoteDocument | WarrantyDocument | InvoiceDocument) => {
         // โหลด logo จากเอกสาร
         if (doc.logoUrl || doc.logo) {
             setSharedLogo(doc.logo || null);
@@ -373,13 +453,21 @@ const AppContent: React.FC = () => {
                 date: doc.date || null,
             });
             setActiveTab('delivery');
-        } else {
+        } else if ('warrantyNumber' in doc) {
             // เป็น WarrantyDocument
             setWarrantyData({
                 ...doc,
                 purchaseDate: doc.purchaseDate || null,
             });
             setActiveTab('warranty');
+        } else {
+            // เป็น InvoiceDocument
+            setInvoiceData({
+                ...doc,
+                invoiceDate: doc.invoiceDate || null,
+                dueDate: doc.dueDate || null,
+            });
+            setActiveTab('invoice');
         }
         setViewMode('form');
         showToast('โหลดเอกสารสำเร็จ - โหมดแก้ไข', 'info');
@@ -392,20 +480,43 @@ const AppContent: React.FC = () => {
         
         if (activeTab === 'delivery') {
             setDeliveryData(getInitialDeliveryData());
-        } else {
+        } else if (activeTab === 'warranty') {
             setWarrantyData({
                 logo: sharedLogo,
                 logoUrl: sharedLogoUrl,
                 logoType: sharedLogoType,
                 companyName: '',
                 companyAddress: '',
+                companyPhone: '',
+                companyEmail: '',
+                companyWebsite: '',
+                projectName: '',
                 customerName: '',
-                customerContact: '',
-                productName: '',
-                serialNumber: '',
+                customerPhone: '',
+                customerAddress: '',
+                serviceName: '',
+                productDetail: '',
+                houseModel: '',
+                batchNo: '',
+                showBatchNo: false,
                 purchaseDate: new Date(),
                 warrantyPeriod: '',
-                terms: ''
+                warrantyEndDate: null,
+                terms: '',
+                useMultipleWarrantyTypes: false,
+                warrantyGeneral: false,
+                warrantyRoof: false,
+                warrantyStructure: false,
+                warrantyNumber: '',
+                issueDate: new Date(),
+                issuedBy: ''
+            });
+        } else {
+            setInvoiceData({
+                ...initialInvoiceData,
+                logo: sharedLogo,
+                logoUrl: sharedLogoUrl,
+                logoType: sharedLogoType,
             });
         }
         showToast('สร้างฟอร์มใหม่สำเร็จ', 'success');
@@ -486,6 +597,12 @@ const AppContent: React.FC = () => {
                                     >
                                         ใบรับประกันสินค้า
                                     </button>
+                                    <button
+                                        onClick={() => setActiveTab('invoice')}
+                                        className={`${activeTab === 'invoice' ? 'border-indigo-500 text-indigo-600' : 'border-transparent text-gray-500 hover:text-gray-700 hover:border-gray-300'} whitespace-nowrap py-4 px-1 border-b-2 font-medium text-sm transition-colors`}
+                                    >
+                                        ใบแจ้งหนี้
+                                    </button>
                                 </nav>
                             </div>
                             
@@ -504,10 +621,25 @@ const AppContent: React.FC = () => {
                                     }}
                                     onSetDefaultLogo={handleSetDefaultLogo}
                                 />
-                            ) : (
+                            ) : activeTab === 'warranty' ? (
                                 <WarrantyForm
                                     data={warrantyData}
                                     setData={setWarrantyData}
+                                    sharedLogo={sharedLogo}
+                                    sharedLogoUrl={sharedLogoUrl}
+                                    sharedLogoType={sharedLogoType}
+                                    companyDefaultLogoUrl={currentCompany?.defaultLogoUrl}
+                                    onLogoChange={(logo, logoUrl, logoType) => {
+                                        setSharedLogo(logo);
+                                        setSharedLogoUrl(logoUrl);
+                                        setSharedLogoType(logoType);
+                                    }}
+                                    onSetDefaultLogo={handleSetDefaultLogo}
+                                />
+                            ) : (
+                                <InvoiceForm
+                                    data={invoiceData}
+                                    setData={setInvoiceData}
                                     sharedLogo={sharedLogo}
                                     sharedLogoUrl={sharedLogoUrl}
                                     sharedLogoType={sharedLogoType}
@@ -579,8 +711,10 @@ const AppContent: React.FC = () => {
                                 <div className="bg-white p-1 rounded-lg shadow-lg">
                                     {activeTab === 'delivery' ? (
                                         <DocumentPreview ref={printableAreaRef} data={deliveryData} />
-                                    ) : (
+                                    ) : activeTab === 'warranty' ? (
                                         <WarrantyPreview ref={printableAreaRef} data={warrantyData} />
+                                    ) : (
+                                        <InvoicePreview ref={printableAreaRef} data={invoiceData} />
                                     )}
                                 </div>
                             </div>

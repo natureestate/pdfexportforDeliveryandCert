@@ -22,8 +22,14 @@ interface CompanyInfoModalProps {
     /** เบอร์โทรศัพท์บริษัทปัจจุบัน */
     companyPhone?: string;
     
-    /** อีเมล/เว็บไซต์บริษัทปัจจุบัน */
+    /** อีเมลบริษัทปัจจุบัน */
     companyEmail?: string;
+    
+    /** เว็บไซต์บริษัทปัจจุบัน */
+    companyWebsite?: string;
+    
+    /** เลขประจำตัวผู้เสียภาษีบริษัทปัจจุบัน */
+    companyTaxId?: string;
     
     /** Callback เมื่อบันทึกข้อมูล */
     onSave: (data: {
@@ -31,6 +37,8 @@ interface CompanyInfoModalProps {
         address?: string;
         phone?: string;
         email?: string;
+        website?: string;
+        taxId?: string;
     }) => Promise<void>;
 }
 
@@ -41,12 +49,16 @@ const CompanyInfoModal: React.FC<CompanyInfoModalProps> = ({
     companyAddress,
     companyPhone,
     companyEmail,
+    companyWebsite,
+    companyTaxId,
     onSave,
 }) => {
     const [name, setName] = useState(companyName);
     const [address, setAddress] = useState(companyAddress || '');
     const [phone, setPhone] = useState(companyPhone || '');
     const [email, setEmail] = useState(companyEmail || '');
+    const [website, setWebsite] = useState(companyWebsite || '');
+    const [taxId, setTaxId] = useState(companyTaxId || '');
     const [isSaving, setIsSaving] = useState(false);
     const [error, setError] = useState<string | null>(null);
 
@@ -56,7 +68,9 @@ const CompanyInfoModal: React.FC<CompanyInfoModalProps> = ({
         setAddress(companyAddress || '');
         setPhone(companyPhone || '');
         setEmail(companyEmail || '');
-    }, [companyName, companyAddress, companyPhone, companyEmail]);
+        setWebsite(companyWebsite || '');
+        setTaxId(companyTaxId || '');
+    }, [companyName, companyAddress, companyPhone, companyEmail, companyWebsite, companyTaxId]);
 
     // รีเซ็ต error เมื่อปิด modal
     useEffect(() => {
@@ -84,6 +98,8 @@ const CompanyInfoModal: React.FC<CompanyInfoModalProps> = ({
                 address: address.trim() || undefined,
                 phone: phone.trim() || undefined,
                 email: email.trim() || undefined,
+                website: website.trim() || undefined,
+                taxId: taxId.trim() || undefined,
             });
 
             console.log('✅ บันทึกข้อมูลบริษัทสำเร็จ');
@@ -185,18 +201,50 @@ const CompanyInfoModal: React.FC<CompanyInfoModalProps> = ({
                             />
                         </div>
 
-                        {/* อีเมล/เว็บไซต์ */}
+                        {/* อีเมล */}
                         <div>
                             <label htmlFor="company-email" className="block text-sm font-medium text-gray-700 mb-2">
-                                อีเมล/เว็บไซต์
+                                อีเมล
                             </label>
                             <input
-                                type="text"
+                                type="email"
                                 id="company-email"
                                 value={email}
                                 onChange={(e) => setEmail(e.target.value)}
                                 disabled={isSaving}
-                                placeholder="กรอกอีเมลหรือเว็บไซต์"
+                                placeholder="กรอกอีเมลบริษัท"
+                                className="w-full px-4 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-indigo-500 focus:border-indigo-500 disabled:bg-gray-100 disabled:cursor-not-allowed"
+                            />
+                        </div>
+
+                        {/* เว็บไซต์ */}
+                        <div>
+                            <label htmlFor="company-website" className="block text-sm font-medium text-gray-700 mb-2">
+                                เว็บไซต์
+                            </label>
+                            <input
+                                type="url"
+                                id="company-website"
+                                value={website}
+                                onChange={(e) => setWebsite(e.target.value)}
+                                disabled={isSaving}
+                                placeholder="กรอกเว็บไซต์บริษัท (เช่น https://example.com)"
+                                className="w-full px-4 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-indigo-500 focus:border-indigo-500 disabled:bg-gray-100 disabled:cursor-not-allowed"
+                            />
+                        </div>
+
+                        {/* เลขประจำตัวผู้เสียภาษี */}
+                        <div>
+                            <label htmlFor="company-taxId" className="block text-sm font-medium text-gray-700 mb-2">
+                                เลขประจำตัวผู้เสียภาษี
+                            </label>
+                            <input
+                                type="text"
+                                id="company-taxId"
+                                value={taxId}
+                                onChange={(e) => setTaxId(e.target.value)}
+                                disabled={isSaving}
+                                placeholder="กรอกเลขประจำตัวผู้เสียภาษี"
                                 className="w-full px-4 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-indigo-500 focus:border-indigo-500 disabled:bg-gray-100 disabled:cursor-not-allowed"
                             />
                         </div>

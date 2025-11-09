@@ -318,6 +318,8 @@ const Header: React.FC = () => {
         address?: string;
         phone?: string;
         email?: string;
+        website?: string;
+        taxId?: string;
     }) => {
         if (!currentCompany?.id) {
             throw new Error('ไม่พบข้อมูลบริษัท');
@@ -329,6 +331,8 @@ const Header: React.FC = () => {
                 address: data.address,
                 phone: data.phone,
                 email: data.email,
+                website: data.website,
+                taxId: data.taxId,
             });
             console.log('✅ [Header] บันทึกข้อมูลบริษัทสำเร็จ');
             
@@ -1260,6 +1264,8 @@ const Header: React.FC = () => {
                     companyAddress={currentCompany.address}
                     companyPhone={currentCompany.phone}
                     companyEmail={currentCompany.email}
+                    companyWebsite={currentCompany.website}
+                    companyTaxId={currentCompany.taxId}
                     onSave={handleSaveCompanyInfo}
                 />
             )}

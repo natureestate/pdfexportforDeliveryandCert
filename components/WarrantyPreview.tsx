@@ -60,9 +60,13 @@ const WarrantyPreview = forwardRef<HTMLDivElement, WarrantyPreviewProps>(({ data
                                     <p className="w-3/5 text-xs font-medium text-slate-900">{data.companyPhone || '...........................'}</p>
                                 </div>
                                 <div className="flex py-1 border-b border-slate-200">
-                                    <p className="w-2/5 text-xs text-slate-600 font-medium">อีเมล/เว็บไซต์</p>
+                                    <p className="w-2/5 text-xs text-slate-600 font-medium">อีเมล</p>
                                     <p className="w-3/5 text-xs font-medium text-slate-900">{data.companyEmail || '...........................'}</p>
                                 </div>
+                            </div>
+                            <div className="flex py-1 border-b border-slate-200 mt-1">
+                                <p className="w-2/5 text-xs text-slate-600 font-medium">เว็บไซต์</p>
+                                <p className="w-3/5 text-xs font-medium text-slate-900">{data.companyWebsite || '...........................'}</p>
                             </div>
                         </div>
                     </section>

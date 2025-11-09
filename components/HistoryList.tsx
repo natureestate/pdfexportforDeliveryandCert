@@ -1,29 +1,31 @@
 import React, { useEffect, useState, useCallback, useRef } from 'react';
-import { getDeliveryNotes, getWarrantyCards, deleteDeliveryNote, deleteWarrantyCard } from '../services/firestore';
-import type { DeliveryNoteDocument, WarrantyDocument } from '../services/firestore';
+import { getDeliveryNotes, getWarrantyCards, getInvoices, deleteDeliveryNote, deleteWarrantyCard, deleteInvoice } from '../services/firestore';
+import type { DeliveryNoteDocument, WarrantyDocument, InvoiceDocument } from '../services/firestore';
 import { useCompany } from '../contexts/CompanyContext';
 import { generatePdf } from '../services/pdfGenerator';
 import DocumentPreview from './DocumentPreview';
 import WarrantyPreview from './WarrantyPreview';
-import type { DeliveryNoteData, WarrantyData } from '../types';
+import InvoicePreview from './InvoicePreview';
+import type { DeliveryNoteData, WarrantyData, InvoiceData } from '../types';
 
 interface HistoryListProps {
-    activeDocType: 'delivery' | 'warranty';
-    onLoadDocument: (doc: DeliveryNoteDocument | WarrantyDocument) => void;
+    activeDocType: 'delivery' | 'warranty' | 'invoice';
+    onLoadDocument: (doc: DeliveryNoteDocument | WarrantyDocument | InvoiceDocument) => void;
 }
 
 const HistoryList: React.FC<HistoryListProps> = ({ activeDocType, onLoadDocument }) => {
     const { currentCompany } = useCompany(); // ใช้ CompanyContext
     const [deliveryNotes, setDeliveryNotes] = useState<DeliveryNoteDocument[]>([]);
     const [warrantyCards, setWarrantyCards] = useState<WarrantyDocument[]>([]);
+    const [invoices, setInvoices] = useState<InvoiceDocument[]>([]);
     const [loading, setLoading] = useState(true);
     const [error, setError] = useState<string | null>(null);
-    const [deleteConfirm, setDeleteConfirm] = useState<{ type: 'delivery' | 'warranty', id: string } | null>(null);
+    const [deleteConfirm, setDeleteConfirm] = useState<{ type: 'delivery' | 'warranty' | 'invoice', id: string } | null>(null);
     const [downloadingPdfId, setDownloadingPdfId] = useState<string | null>(null); // เก็บ ID ของเอกสารที่กำลัง download
     const previewRef = useRef<HTMLDivElement>(null); // Ref สำหรับ preview component ที่ซ่อนอยู่
-    const [previewData, setPreviewData] = useState<DeliveryNoteData | WarrantyData | null>(null); // ข้อมูลสำหรับ preview
+    const [previewData, setPreviewData] = useState<DeliveryNoteData | WarrantyData | InvoiceData | null>(null); // ข้อมูลสำหรับ preview
     const [showPreviewModal, setShowPreviewModal] = useState(false); // แสดง preview modal หรือไม่
-    const [previewDoc, setPreviewDoc] = useState<DeliveryNoteDocument | WarrantyDocument | null>(null); // เอกสารที่กำลัง preview
+    const [previewDoc, setPreviewDoc] = useState<DeliveryNoteDocument | WarrantyDocument | InvoiceDocument | null>(null); // เอกสารที่กำลัง preview
     const previewModalRef = useRef<HTMLDivElement>(null); // Ref สำหรับ preview component ใน modal
     
     // State สำหรับ filter และ pagination
@@ -44,9 +46,12 @@ const HistoryList: React.FC<HistoryListProps> = ({ activeDocType, onLoadDocument
             if (activeDocType === 'delivery') {
                 const notes = await getDeliveryNotes(50, companyId);
                 setDeliveryNotes(notes);
-            } else {
+            } else if (activeDocType === 'warranty') {
                 const cards = await getWarrantyCards(50, companyId);
                 setWarrantyCards(cards);
+            } else {
+                const invoiceList = await getInvoices(50, companyId);
+                setInvoices(invoiceList);
             }
         } catch (err) {
             console.error('Error fetching data:', err);
@@ -68,20 +73,22 @@ const HistoryList: React.FC<HistoryListProps> = ({ activeDocType, onLoadDocument
     }, [searchTerm, activeDocType]);
 
     // ฟังก์ชันลบเอกสาร
-    const handleDelete = async (type: 'delivery' | 'warranty', id: string) => {
+    const handleDelete = async (type: 'delivery' | 'warranty' | 'invoice', id: string) => {
         try {
-            console.log(`🗑️ กำลังลบ ${type === 'delivery' ? 'ใบส่งมอบงาน' : 'ใบรับประกันสินค้า'} ID:`, id);
+            console.log(`🗑️ กำลังลบ ${type === 'delivery' ? 'ใบส่งมอบงาน' : type === 'warranty' ? 'ใบรับประกันสินค้า' : 'ใบแจ้งหนี้'} ID:`, id);
             
             if (type === 'delivery') {
                 await deleteDeliveryNote(id);
                 console.log('✅ ลบใบส่งมอบงานสำเร็จ');
-                // ลบออกจาก state ทันทีเพื่อ UX ที่ดี
                 setDeliveryNotes(prev => prev.filter(note => note.id !== id));
-            } else {
+            } else if (type === 'warranty') {
                 await deleteWarrantyCard(id);
                 console.log('✅ ลบใบรับประกันสินค้าสำเร็จ');
-                // ลบออกจาก state ทันทีเพื่อ UX ที่ดี
                 setWarrantyCards(prev => prev.filter(card => card.id !== id));
+            } else {
+                await deleteInvoice(id);
+                console.log('✅ ลบใบแจ้งหนี้สำเร็จ');
+                setInvoices(prev => prev.filter(invoice => invoice.id !== id));
             }
             
             setDeleteConfirm(null);
@@ -90,7 +97,6 @@ const HistoryList: React.FC<HistoryListProps> = ({ activeDocType, onLoadDocument
             await new Promise(resolve => setTimeout(resolve, 500));
             
             // รีเฟรชข้อมูลใหม่จาก Firestore โดยไม่แสดง loading เพื่อให้แน่ใจว่าข้อมูลตรงกัน
-            // ใช้ showLoading = false เพื่อไม่ให้แสดง loading spinner
             await fetchData(false);
             console.log('✅ รีเฟรชข้อมูลสำเร็จ');
         } catch (err) {
@@ -114,7 +120,7 @@ const HistoryList: React.FC<HistoryListProps> = ({ activeDocType, onLoadDocument
     };
 
     // ฟังก์ชันสร้างชื่อไฟล์ PDF
-    const generatePdfFilename = (type: 'delivery' | 'warranty', data: DeliveryNoteData | WarrantyData): string => {
+    const generatePdfFilename = (type: 'delivery' | 'warranty' | 'invoice', data: DeliveryNoteData | WarrantyData | InvoiceData): string => {
         const now = new Date();
         const yy = String(now.getFullYear()).slice(-2);
         const mm = String(now.getMonth() + 1).padStart(2, '0');
@@ -125,18 +131,23 @@ const HistoryList: React.FC<HistoryListProps> = ({ activeDocType, onLoadDocument
             const customerName = deliveryData.toCompany || 'Unknown';
             const cleanName = customerName.replace(/[^a-zA-Z0-9ก-๙]/g, '').substring(0, 20);
             return `DN_${cleanName}_${yy}${mm}${dd}.pdf`;
-        } else {
+        } else if (type === 'warranty') {
             const warrantyData = data as WarrantyData;
             const customerName = warrantyData.customerName || 'Unknown';
             const cleanName = customerName.replace(/[^a-zA-Z0-9ก-๙]/g, '').substring(0, 20);
             return `WR_${cleanName}_${yy}${mm}${dd}.pdf`;
+        } else {
+            const invoiceData = data as InvoiceData;
+            const customerName = invoiceData.customerName || 'Unknown';
+            const cleanName = customerName.replace(/[^a-zA-Z0-9ก-๙]/g, '').substring(0, 20);
+            return `IN_${cleanName}_${yy}${mm}${dd}.pdf`;
         }
     };
 
     // ฟังก์ชันเปิด preview modal
-    const handleShowPreview = useCallback((doc: DeliveryNoteDocument | WarrantyDocument) => {
+    const handleShowPreview = useCallback((doc: DeliveryNoteDocument | WarrantyDocument | InvoiceDocument) => {
         setPreviewDoc(doc);
-        setPreviewData(doc as DeliveryNoteData | WarrantyData);
+        setPreviewData(doc as DeliveryNoteData | WarrantyData | InvoiceData);
         setShowPreviewModal(true);
     }, []);
 
@@ -205,7 +216,7 @@ const HistoryList: React.FC<HistoryListProps> = ({ activeDocType, onLoadDocument
     }, [activeDocType, currentCompany, previewDoc]);
 
     // ฟังก์ชันดาวน์โหลด PDF
-    const handleDownloadPdf = useCallback(async (doc: DeliveryNoteDocument | WarrantyDocument) => {
+    const handleDownloadPdf = useCallback(async (doc: DeliveryNoteDocument | WarrantyDocument | InvoiceDocument) => {
         try {
             setDownloadingPdfId(doc.id || null);
             
@@ -228,7 +239,7 @@ const HistoryList: React.FC<HistoryListProps> = ({ activeDocType, onLoadDocument
             }
 
             // ตั้งค่าข้อมูลสำหรับ preview
-            setPreviewData(doc as DeliveryNoteData | WarrantyData);
+            setPreviewData(doc as DeliveryNoteData | WarrantyData | InvoiceData);
             
             // รอให้ React render preview component และ ref พร้อม
             // ใช้ polling เพื่อรอให้ ref พร้อม (รอสูงสุด 2 วินาที)
@@ -248,7 +259,7 @@ const HistoryList: React.FC<HistoryListProps> = ({ activeDocType, onLoadDocument
             }
 
             // สร้างชื่อไฟล์
-            const filename = generatePdfFilename(activeDocType, doc as DeliveryNoteData | WarrantyData);
+            const filename = generatePdfFilename(activeDocType, doc as DeliveryNoteData | WarrantyData | InvoiceData);
             
             // สร้าง PDF
             await generatePdf(previewRef.current, filename);
@@ -290,7 +301,7 @@ const HistoryList: React.FC<HistoryListProps> = ({ activeDocType, onLoadDocument
         );
     }
 
-    const currentList = activeDocType === 'delivery' ? deliveryNotes : warrantyCards;
+    const currentList = activeDocType === 'delivery' ? deliveryNotes : activeDocType === 'warranty' ? warrantyCards : invoices;
 
     // ฟังก์ชัน filter รายการตาม search term
     const filteredList = currentList.filter((item) => {
@@ -307,7 +318,7 @@ const HistoryList: React.FC<HistoryListProps> = ({ activeDocType, onLoadDocument
                 (note.toCompany || '').toLowerCase().includes(searchLower) ||
                 (note.date ? formatDate(note.date).toLowerCase().includes(searchLower) : false)
             );
-        } else {
+        } else if (activeDocType === 'warranty') {
             const card = item as WarrantyDocument;
             return (
                 (card.warrantyNumber || '').toLowerCase().includes(searchLower) ||
@@ -316,6 +327,15 @@ const HistoryList: React.FC<HistoryListProps> = ({ activeDocType, onLoadDocument
                 (card.customerName || '').toLowerCase().includes(searchLower) ||
                 (card.warrantyPeriod || '').toLowerCase().includes(searchLower) ||
                 (card.purchaseDate ? formatDate(card.purchaseDate).toLowerCase().includes(searchLower) : false)
+            );
+        } else {
+            const invoice = item as InvoiceDocument;
+            return (
+                (invoice.invoiceNumber || '').toLowerCase().includes(searchLower) ||
+                (invoice.customerName || '').toLowerCase().includes(searchLower) ||
+                (invoice.companyName || '').toLowerCase().includes(searchLower) ||
+                (invoice.total ? invoice.total.toString().includes(searchLower) : false) ||
+                (invoice.invoiceDate ? formatDate(invoice.invoiceDate).toLowerCase().includes(searchLower) : false)
             );
         }
     });
@@ -335,7 +355,7 @@ const HistoryList: React.FC<HistoryListProps> = ({ activeDocType, onLoadDocument
                 </svg>
                 <h3 className="mt-2 text-sm font-medium text-gray-900">ไม่มีเอกสาร</h3>
                 <p className="mt-1 text-sm text-gray-500">
-                    เริ่มต้นโดยการสร้าง{activeDocType === 'delivery' ? 'ใบส่งมอบงาน' : 'ใบรับประกันสินค้า'}ใหม่
+                    เริ่มต้นโดยการสร้าง{activeDocType === 'delivery' ? 'ใบส่งมอบงาน' : activeDocType === 'warranty' ? 'ใบรับประกันสินค้า' : 'ใบแจ้งหนี้'}ใหม่
                 </p>
             </div>
         );
@@ -353,6 +373,9 @@ const HistoryList: React.FC<HistoryListProps> = ({ activeDocType, onLoadDocument
                         {activeDocType === 'warranty' && (
                             <WarrantyPreview ref={previewRef} data={previewData as WarrantyData} />
                         )}
+                        {activeDocType === 'invoice' && (
+                            <InvoicePreview ref={previewRef} data={previewData as InvoiceData} />
+                        )}
                     </>
                 )}
             </div>
@@ -364,7 +387,7 @@ const HistoryList: React.FC<HistoryListProps> = ({ activeDocType, onLoadDocument
                         {/* Header */}
                         <div className="flex justify-between items-center p-4 border-b border-gray-200">
                             <h2 className="text-xl font-semibold text-gray-900">
-                                {activeDocType === 'delivery' ? 'ตัวอย่างใบส่งมอบงาน' : 'ตัวอย่างใบรับประกันสินค้า'}
+                                {activeDocType === 'delivery' ? 'ตัวอย่างใบส่งมอบงาน' : activeDocType === 'warranty' ? 'ตัวอย่างใบรับประกันสินค้า' : 'ตัวอย่างใบแจ้งหนี้'}
                             </h2>
                             <div className="flex items-center gap-2">
                                 <button
@@ -406,8 +429,10 @@ const HistoryList: React.FC<HistoryListProps> = ({ activeDocType, onLoadDocument
                             <div className="flex justify-center">
                                 {activeDocType === 'delivery' ? (
                                     <DocumentPreview ref={previewModalRef} data={previewData as DeliveryNoteData} />
-                                ) : (
+                                ) : activeDocType === 'warranty' ? (
                                     <WarrantyPreview ref={previewModalRef} data={previewData as WarrantyData} />
+                                ) : (
+                                    <InvoicePreview ref={previewModalRef} data={previewData as InvoiceData} />
                                 )}
                             </div>
                         </div>
@@ -453,14 +478,14 @@ const HistoryList: React.FC<HistoryListProps> = ({ activeDocType, onLoadDocument
             {/* Header */}
             <div className="flex flex-col sm:flex-row justify-between items-start sm:items-center gap-4 mb-4">
                 <h2 className="text-xl font-semibold text-slate-700">
-                    ประวัติ{activeDocType === 'delivery' ? 'ใบส่งมอบงาน' : 'ใบรับประกันสินค้า'}
+                    ประวัติ{activeDocType === 'delivery' ? 'ใบส่งมอบงาน' : activeDocType === 'warranty' ? 'ใบรับประกันสินค้า' : 'ใบแจ้งหนี้'}
                 </h2>
                 <div className="flex items-center gap-2 w-full sm:w-auto">
                     {/* Search/Filter Input */}
                     <div className="flex-1 sm:flex-none relative">
                         <input
                             type="text"
-                            placeholder={`ค้นหา${activeDocType === 'delivery' ? 'เลขที่, โครงการ, จาก, ถึง' : 'หมายเลข, สินค้า, ลูกค้า'}`}
+                            placeholder={`ค้นหา${activeDocType === 'delivery' ? 'เลขที่, โครงการ, จาก, ถึง' : activeDocType === 'warranty' ? 'หมายเลข, สินค้า, ลูกค้า' : 'เลขที่, ลูกค้า, ยอดรวม'}`}
                             value={searchTerm}
                             onChange={(e) => setSearchTerm(e.target.value)}
                             className="w-full sm:w-64 px-4 py-2 pl-10 text-sm border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-indigo-500 focus:border-transparent"
@@ -601,7 +626,7 @@ const HistoryList: React.FC<HistoryListProps> = ({ activeDocType, onLoadDocument
                         </div>
                     );
                     })
-                ) : (
+                ) : activeDocType === 'warranty' ? (
                     // รายการใบรับประกันสินค้า
                     paginatedList.map((card) => {
                         const cardItem = card as WarrantyDocument;
@@ -675,6 +700,88 @@ const HistoryList: React.FC<HistoryListProps> = ({ activeDocType, onLoadDocument
                                     </button>
                                     <button
                                         onClick={() => setDeleteConfirm({ type: 'warranty', id: cardItem.id! })}
+                                        className="px-3 py-1 bg-red-600 text-white text-sm rounded hover:bg-red-700 flex items-center gap-1"
+                                    >
+                                        <svg className="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                            <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M19 7l-.867 12.142A2 2 0 0116.138 21H7.862a2 2 0 01-1.995-1.858L5 7m5 4v6m4-6v6m1-10V4a1 1 0 00-1-1h-4a1 1 0 00-1 1v3M4 7h16" />
+                                        </svg>
+                                        ลบ
+                                    </button>
+                                </div>
+                            </div>
+                        </div>
+                    );
+                    })
+                ) : (
+                    // รายการใบแจ้งหนี้
+                    paginatedList.map((invoice) => {
+                        const invoiceItem = invoice as InvoiceDocument;
+                        return (
+                        <div key={invoiceItem.id} className="bg-white border border-gray-200 rounded-lg p-4 hover:shadow-md transition-shadow">
+                            <div className="flex justify-between items-start">
+                                <div className="flex-1">
+                                    <h3 className="text-lg font-semibold text-gray-900">{invoiceItem.customerName || 'ไม่ระบุลูกค้า'}</h3>
+                                    <div className="mt-2 grid grid-cols-2 gap-2 text-sm text-gray-600">
+                                        <div>
+                                            <span className="font-medium">เลขที่:</span>{' '}
+                                            <button
+                                                onClick={() => handleShowPreview(invoiceItem)}
+                                                className="text-blue-600 hover:text-blue-800 hover:underline cursor-pointer"
+                                                title="คลิกเพื่อดูตัวอย่าง"
+                                            >
+                                                {invoiceItem.invoiceNumber}
+                                            </button>
+                                        </div>
+                                        <div>
+                                            <span className="font-medium">วันที่ออก:</span> {invoiceItem.invoiceDate ? formatDate(invoiceItem.invoiceDate) : 'ไม่ระบุ'}
+                                        </div>
+                                        <div>
+                                            <span className="font-medium">ผู้ขาย:</span> {invoiceItem.companyName || 'ไม่ระบุ'}
+                                        </div>
+                                        <div>
+                                            <span className="font-medium">ยอดรวม:</span> <span className="font-bold text-indigo-600">{invoiceItem.total.toLocaleString('th-TH', { minimumFractionDigits: 2, maximumFractionDigits: 2 })} บาท</span>
+                                        </div>
+                                    </div>
+                                    <div className="mt-2 text-xs text-gray-400">
+                                        บันทึกเมื่อ: {formatDate(invoiceItem.createdAt)}
+                                    </div>
+                                </div>
+                                <div className="flex flex-col gap-2 ml-4">
+                                    <button
+                                        onClick={() => onLoadDocument(invoiceItem)}
+                                        className="px-3 py-1 bg-amber-600 text-white text-sm rounded hover:bg-amber-700 flex items-center gap-1"
+                                        title="โหลดเอกสารเพื่อแก้ไข"
+                                    >
+                                        <svg className="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                            <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M11 5H6a2 2 0 00-2 2v11a2 2 0 002 2h11a2 2 0 002-2v-5m-1.414-9.414a2 2 0 112.828 2.828L11.828 15H9v-2.828l8.586-8.586z" />
+                                        </svg>
+                                        ✏️ แก้ไข
+                                    </button>
+                                    <button
+                                        onClick={() => handleDownloadPdf(invoiceItem)}
+                                        disabled={downloadingPdfId === invoiceItem.id}
+                                        className="px-3 py-1 bg-blue-600 text-white text-sm rounded hover:bg-blue-700 flex items-center gap-1 disabled:opacity-50 disabled:cursor-not-allowed"
+                                        title="ดาวน์โหลด PDF"
+                                    >
+                                        {downloadingPdfId === invoiceItem.id ? (
+                                            <>
+                                                <svg className="animate-spin h-4 w-4" xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24">
+                                                    <circle className="opacity-25" cx="12" cy="12" r="10" stroke="currentColor" strokeWidth="4"></circle>
+                                                    <path className="opacity-75" fill="currentColor" d="M4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4zm2 5.291A7.962 7.962 0 014 12H0c0 3.042 1.135 5.824 3 7.938l3-2.647z"></path>
+                                                </svg>
+                                                กำลังสร้าง...
+                                            </>
+                                        ) : (
+                                            <>
+                                                <svg className="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                                    <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M12 10v6m0 0l-3-3m3 3l3-3m2 8H7a2 2 0 01-2-2V5a2 2 0 012-2h5.586a1 1 0 01.707.293l5.414 5.414a1 1 0 01.293.707V19a2 2 0 01-2 2z" />
+                                                </svg>
+                                                ดาวน์โหลด PDF
+                                            </>
+                                        )}
+                                    </button>
+                                    <button
+                                        onClick={() => setDeleteConfirm({ type: 'invoice', id: invoiceItem.id! })}
                                         className="px-3 py-1 bg-red-600 text-white text-sm rounded hover:bg-red-700 flex items-center gap-1"
                                     >
                                         <svg className="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">

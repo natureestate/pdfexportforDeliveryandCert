@@ -56,6 +56,18 @@ export const createCompany = async (
         if (company.address) {
             dataToSave.address = company.address;
         }
+        if (company.phone) {
+            dataToSave.phone = company.phone;
+        }
+        if (company.email) {
+            dataToSave.email = company.email;
+        }
+        if (company.website) {
+            dataToSave.website = company.website;
+        }
+        if (company.taxId) {
+            dataToSave.taxId = company.taxId;
+        }
         if (company.logoUrl !== undefined) {
             dataToSave.logoUrl = company.logoUrl;
         }
@@ -142,6 +154,8 @@ export const getUserCompanies = async (): Promise<Company[]> => {
                         address: data.address,
                         phone: data.phone,
                         email: data.email,
+                        website: data.website,
+                        taxId: data.taxId,
                         userId: data.userId,
                         logoUrl: data.logoUrl,
                         logoType: data.logoType,
@@ -189,6 +203,8 @@ export const getCompanyById = async (companyId: string): Promise<Company | null>
             address: data.address,
             phone: data.phone,
             email: data.email,
+            website: data.website,
+            taxId: data.taxId,
             userId: data.userId,
             logoUrl: data.logoUrl,
             logoType: data.logoType,
