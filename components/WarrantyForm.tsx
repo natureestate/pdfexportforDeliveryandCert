@@ -41,7 +41,6 @@ const WarrantyForm: React.FC<WarrantyFormProps> = ({
     const fileInputRef = useRef<HTMLInputElement>(null);
     const [showCompanySelector, setShowCompanySelector] = useState(false);
     const [showServiceSelector, setShowServiceSelector] = useState(false);
-    const [isGeneratingSerialNumber, setIsGeneratingSerialNumber] = useState(false);
 
     const handleDataChange = <K extends keyof WarrantyData,>(key: K, value: WarrantyData[K]) => {
         setData(prev => ({ ...prev, [key]: value }));
@@ -68,15 +67,12 @@ const WarrantyForm: React.FC<WarrantyFormProps> = ({
      * สร้าง Warranty Number อัตโนมัติ (รูปแบบ: WR-YYMMDDXX)
      */
     const handleGenerateWarrantyNumber = async () => {
-        setIsGeneratingSerialNumber(true);
         try {
             const newWarrantyNumber = await generateDocumentNumber('warranty');
             handleDataChange('warrantyNumber', newWarrantyNumber);
         } catch (error) {
             console.error('Error generating warranty number:', error);
             alert('ไม่สามารถสร้างเลขที่ใบรับประกันได้ กรุณาลองใหม่อีกครั้ง');
-        } finally {
-            setIsGeneratingSerialNumber(false);
         }
     };
 
@@ -132,6 +128,12 @@ const WarrantyForm: React.FC<WarrantyFormProps> = ({
     return (
         <div className="space-y-8 pt-4">
              <div className="space-y-6">
+                {/* เลขที่ใบรับประกัน - แสดงด้านบนสุด */}
+                <div className="text-sm text-gray-600">
+                    <span className="font-medium">เลขที่ใบรับประกัน:</span> <span className="font-mono">{data.warrantyNumber || 'กำลังสร้าง...'}</span>
+                    <span className="text-xs text-gray-500 ml-2">(รูปแบบ: WR-YYMMDDXX)</span>
+                </div>
+                
                 <FormDivider title="ข้อมูลลูกค้า/โครงการ" />
                 <div className="space-y-4">
                     {/* CustomerSelector - ระบบจัดการลูกค้าแบบครบวงจร */}
@@ -380,30 +382,6 @@ const WarrantyForm: React.FC<WarrantyFormProps> = ({
                                 onChange={(e) => handleDataChange('issueDate', e.target.value ? new Date(e.target.value) : null)} 
                                 className="mt-1 block w-full rounded-md border-gray-300 shadow-sm focus:border-indigo-500 focus:ring-indigo-500 sm:text-sm bg-gray-50" 
                             />
-                        </div>
-                    </div>
-                    <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
-                        <div>
-                            <label htmlFor="warrantyNumber" className="block text-sm font-medium text-slate-700">เลขที่ใบรับประกัน</label>
-                            <div className="flex gap-2">
-                                <input 
-                                    type="text" 
-                                    id="warrantyNumber" 
-                                    value={data.warrantyNumber} 
-                                    onChange={(e) => handleDataChange('warrantyNumber', e.target.value)} 
-                                    className="block w-full rounded-md border-gray-300 shadow-sm focus:border-indigo-500 focus:ring-indigo-500 sm:text-sm bg-gray-50" 
-                                    placeholder="WR-25101001"
-                                />
-                                <button
-                                    type="button"
-                                    onClick={handleGenerateWarrantyNumber}
-                                    disabled={isGeneratingSerialNumber}
-                                    className="px-3 py-2 text-xs font-medium text-white bg-indigo-600 rounded-md hover:bg-indigo-700 disabled:bg-gray-400 whitespace-nowrap"
-                                >
-                                    {isGeneratingSerialNumber ? '...' : '🔄 Auto'}
-                                </button>
-                            </div>
-                            <p className="mt-1 text-xs text-gray-500">💡 จะสร้างอัตโนมัติ (รูปแบบ: WR-YYMMDDXX)</p>
                         </div>
                     </div>
                 </div>

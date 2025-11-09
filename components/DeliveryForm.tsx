@@ -39,7 +39,6 @@ const DeliveryForm: React.FC<DeliveryFormProps> = ({
     const fileInputRef = useRef<HTMLInputElement>(null);
     const [isConfirmModalOpen, setIsConfirmModalOpen] = useState(false);
     const [itemToRemove, setItemToRemove] = useState<number | null>(null);
-    const [isGeneratingDocNumber, setIsGeneratingDocNumber] = useState(false);
 
     const handleDataChange = <K extends keyof DeliveryNoteData,>(key: K, value: DeliveryNoteData[K]) => {
         setData(prev => ({ ...prev, [key]: value }));
@@ -94,15 +93,12 @@ const DeliveryForm: React.FC<DeliveryFormProps> = ({
      * สร้างเลขที่เอกสารอัตโนมัติ
      */
     const handleGenerateDocNumber = async () => {
-        setIsGeneratingDocNumber(true);
         try {
             const newDocNumber = await generateDocumentNumber('delivery');
             handleDataChange('docNumber', newDocNumber);
         } catch (error) {
             console.error('Error generating document number:', error);
             alert('ไม่สามารถสร้างเลขที่เอกสารได้ กรุณาลองใหม่อีกครั้ง');
-        } finally {
-            setIsGeneratingDocNumber(false);
         }
     };
 
@@ -115,7 +111,7 @@ const DeliveryForm: React.FC<DeliveryFormProps> = ({
                                   data.docNumber.match(/^DN-\d{4}-\d{3}$/) || // รูปแบบเก่า: DN-2025-001
                                   data.docNumber === '';
         
-        if (isDefaultOrEmpty && !isGeneratingDocNumber) {
+        if (isDefaultOrEmpty) {
             handleGenerateDocNumber();
         }
     }, []); // เรียกครั้งเดียวตอน mount
@@ -159,6 +155,12 @@ const DeliveryForm: React.FC<DeliveryFormProps> = ({
 
             {/* Form Fields */}
             <div className="space-y-6">
+                {/* เลขที่เอกสาร - แสดงด้านบนสุด */}
+                <div className="text-sm text-gray-600">
+                    <span className="font-medium">เลขที่เอกสาร:</span> <span className="font-mono">{data.docNumber || 'กำลังสร้าง...'}</span>
+                    <span className="text-xs text-gray-500 ml-2">(รูปแบบ: DN-YYMMDDXX)</span>
+                </div>
+                
                 <FormDivider title="ข้อมูลผู้รับมอบ/ลูกค้า" />
                 <div className="space-y-4">
                     {/* CustomerSelector - ระบบจัดการลูกค้าแบบครบวงจร */}
@@ -192,47 +194,10 @@ const DeliveryForm: React.FC<DeliveryFormProps> = ({
                 <FormDivider title="รายละเอียดเอกสาร" />
                 <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
                     <div>
-                        <label htmlFor="docNumber" className="block text-sm font-medium text-slate-700">เลขที่เอกสาร</label>
-                        <div className="mt-1 flex gap-2">
-                            <input 
-                                type="text" 
-                                id="docNumber" 
-                                value={data.docNumber} 
-                                onChange={(e) => handleDataChange('docNumber', e.target.value)} 
-                                className="block w-full rounded-md border-gray-300 shadow-sm focus:border-indigo-500 focus:ring-indigo-500 sm:text-sm bg-gray-50" 
-                                placeholder="DN-25101001"
-                            />
-                            <button
-                                type="button"
-                                onClick={handleGenerateDocNumber}
-                                disabled={isGeneratingDocNumber}
-                                className="inline-flex items-center px-3 py-2 border border-transparent text-sm leading-4 font-medium rounded-md text-white bg-indigo-600 hover:bg-indigo-700 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-indigo-500 disabled:bg-gray-400 disabled:cursor-not-allowed whitespace-nowrap"
-                            >
-                                {isGeneratingDocNumber ? (
-                                    <>
-                                        <svg className="animate-spin -ml-1 mr-2 h-4 w-4 text-white" xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24">
-                                            <circle className="opacity-25" cx="12" cy="12" r="10" stroke="currentColor" strokeWidth="4"></circle>
-                                            <path className="opacity-75" fill="currentColor" d="M4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4zm2 5.291A7.962 7.962 0 014 12H0c0 3.042 1.135 5.824 3 7.938l3-2.647z"></path>
-                                        </svg>
-                                        สร้าง...
-                                    </>
-                                ) : (
-                                    <>
-                                        <svg className="-ml-0.5 mr-2 h-4 w-4" xmlns="http://www.w3.org/2000/svg" viewBox="0 0 20 20" fill="currentColor">
-                                            <path fillRule="evenodd" d="M10 3a1 1 0 011 1v5h5a1 1 0 110 2h-5v5a1 1 0 11-2 0v-5H4a1 1 0 110-2h5V4a1 1 0 011-1z" clipRule="evenodd" />
-                                        </svg>
-                                        Auto
-                                    </>
-                                )}
-                            </button>
-                        </div>
-                        <p className="mt-1 text-xs text-gray-500">รูปแบบ: DN-YYMMDDXX (เช่น DN-25101001)</p>
-                    </div>
-                    <div>
                         <label htmlFor="date" className="block text-sm font-medium text-slate-700">วันที่</label>
                         <input type="date" id="date" value={formatDateForInput(data.date)} onChange={(e) => handleDataChange('date', e.target.value ? new Date(e.target.value) : null)} className="mt-1 block w-full rounded-md border-gray-300 shadow-sm focus:border-indigo-500 focus:ring-indigo-500 sm:text-sm bg-gray-50" />
                     </div>
-                    <div className="md:col-span-2">
+                    <div>
                         <label htmlFor="project" className="block text-sm font-medium text-slate-700">โครงการ/เรื่อง</label>
                         <input type="text" id="project" value={data.project} onChange={(e) => handleDataChange('project', e.target.value)} className="mt-1 block w-full rounded-md border-gray-300 shadow-sm focus:border-indigo-500 focus:ring-indigo-500 sm:text-sm bg-gray-50" />
                     </div>
