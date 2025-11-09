@@ -17,12 +17,13 @@ import {
     QueryConstraint
 } from "firebase/firestore";
 import { db, auth } from "../firebase.config";
-import { DeliveryNoteData, WarrantyData, InvoiceData } from "../types";
+import { DeliveryNoteData, WarrantyData, InvoiceData, ReceiptData } from "../types";
 
 // Collection names
 const DELIVERY_NOTES_COLLECTION = "deliveryNotes";
 const WARRANTY_CARDS_COLLECTION = "warrantyCards";
 const INVOICES_COLLECTION = "invoices";
+const RECEIPTS_COLLECTION = "receipts";
 
 /**
  * สร้าง Document ID ที่อ่านง่าย สำหรับใบส่งมอบงาน
@@ -54,6 +55,21 @@ const generateInvoiceId = (invoiceNumber: string): string => {
     return `${yy}${mm}${dd}_IN-${cleanInvoiceNumber}`;
 };
 
+/**
+ * สร้าง Document ID ที่อ่านง่าย สำหรับใบเสร็จ
+ * รูปแบบ: YYMMDD_RC-XXXX (เช่น 251010_RC-2025-001)
+ */
+const generateReceiptId = (receiptNumber: string): string => {
+    const now = new Date();
+    const yy = String(now.getFullYear()).slice(-2);
+    const mm = String(now.getMonth() + 1).padStart(2, '0');
+    const dd = String(now.getDate()).padStart(2, '0');
+    
+    // ลบ "RC-" ออกจาก receiptNumber ถ้ามี แล้วใส่กลับในรูปแบบที่ต้องการ
+    const cleanReceiptNumber = receiptNumber.replace(/^RC-/i, '');
+    return `${yy}${mm}${dd}_RC-${cleanReceiptNumber}`;
+};
+
 // Interface สำหรับเอกสารที่บันทึกใน Firestore
 export interface FirestoreDocument {
     id?: string;
@@ -66,6 +82,7 @@ export interface FirestoreDocument {
 export interface DeliveryNoteDocument extends DeliveryNoteData, FirestoreDocument {}
 export interface WarrantyDocument extends WarrantyData, FirestoreDocument {}
 export interface InvoiceDocument extends InvoiceData, FirestoreDocument {}
+export interface ReceiptDocument extends ReceiptData, FirestoreDocument {}
 
 // ==================== Delivery Notes Functions ====================
 
@@ -896,5 +913,277 @@ export const searchInvoiceByInvoiceNumber = async (invoiceNumber: string, compan
     } catch (error) {
         console.error("Error searching invoice:", error);
         throw new Error("ไม่สามารถค้นหาใบแจ้งหนี้ได้");
+    }
+};
+
+// ==================== Receipt Functions ====================
+
+/**
+ * บันทึกใบเสร็จใหม่ลง Firestore
+ * @param data - ข้อมูลใบเสร็จ
+ * @param companyId - ID ของบริษัท (optional)
+ */
+export const saveReceipt = async (data: ReceiptData, companyId?: string): Promise<string> => {
+    try {
+        // ตรวจสอบว่า user login แล้วหรือยัง
+        const currentUser = auth.currentUser;
+        if (!currentUser) {
+            throw new Error("กรุณา Login ก่อนบันทึกข้อมูล");
+        }
+        
+        // สร้าง Document ID ที่อ่านง่าย
+        const docId = generateReceiptId(data.receiptNumber);
+        const docRef = doc(db, RECEIPTS_COLLECTION, docId);
+        
+        // เตรียมข้อมูลสำหรับบันทึก - ไม่บันทึก Base64 ถ้ามี logoUrl
+        const dataToSave = {
+            ...data,
+            // ถ้ามี logoUrl (อัปโหลดไปยัง Storage แล้ว) ให้ลบ Base64 ออก
+            logo: data.logoUrl ? null : data.logo,
+            userId: currentUser.uid, // เพิ่ม userId
+            companyId: companyId || null, // เพิ่ม companyId
+            isDeleted: false, // ตั้งค่า isDeleted เป็น false สำหรับเอกสารใหม่
+            createdAt: Timestamp.now(),
+            updatedAt: Timestamp.now(),
+        };
+        
+        // แปลง Date เป็น Timestamp
+        if (data.receiptDate instanceof Date) {
+            dataToSave.receiptDate = Timestamp.fromDate(data.receiptDate);
+        }
+        
+        await setDoc(docRef, dataToSave);
+        
+        return docId;
+    } catch (error) {
+        console.error("Error saving receipt:", error);
+        throw new Error("ไม่สามารถบันทึกใบเสร็จได้");
+    }
+};
+
+/**
+ * ดึงข้อมูลใบเสร็จตาม ID
+ */
+export const getReceipt = async (id: string): Promise<ReceiptDocument | null> => {
+    try {
+        const docRef = doc(db, RECEIPTS_COLLECTION, id);
+        const docSnap = await getDoc(docRef);
+        
+        if (docSnap.exists()) {
+            const data = docSnap.data();
+            // ถ้าเอกสารถูกลบ (soft delete) ให้ return null
+            if (data.isDeleted) {
+                return null;
+            }
+            return {
+                id: docSnap.id,
+                ...data,
+                receiptDate: data.receiptDate?.toDate() || null,
+                createdAt: data.createdAt?.toDate(),
+                updatedAt: data.updatedAt?.toDate(),
+                deletedAt: data.deletedAt?.toDate() || null,
+            } as ReceiptDocument;
+        }
+        return null;
+    } catch (error) {
+        console.error("Error getting receipt:", error);
+        throw new Error("ไม่สามารถดึงข้อมูลใบเสร็จได้");
+    }
+};
+
+/**
+ * ดึงรายการใบเสร็จทั้งหมด (มีการ limit) - เฉพาะของ user และ company ที่เลือก
+ * @param limitCount - จำนวนเอกสารที่ต้องการดึง
+ * @param companyId - ID ของบริษัท (optional) ถ้าไม่ระบุจะดึงทั้งหมด
+ */
+export const getReceipts = async (limitCount: number = 50, companyId?: string): Promise<ReceiptDocument[]> => {
+    try {
+        // ตรวจสอบว่า user login แล้วหรือยัง
+        const currentUser = auth.currentUser;
+        if (!currentUser) {
+            throw new Error("กรุณา Login ก่อนดูข้อมูล");
+        }
+        
+        // สร้าง query constraints
+        const constraints: QueryConstraint[] = [
+            where("userId", "==", currentUser.uid), // กรองเฉพาะของ user นี้
+        ];
+        
+        // ถ้ามี companyId ให้กรองเฉพาะบริษัทนั้น
+        if (companyId) {
+            constraints.push(where("companyId", "==", companyId));
+        }
+        
+        // กรองเฉพาะเอกสารที่ยังไม่ถูกลบ (isDeleted != true)
+        constraints.push(where("isDeleted", "==", false));
+        
+        constraints.push(orderBy("createdAt", "desc"));
+        constraints.push(limit(limitCount));
+        
+        const q = query(collection(db, RECEIPTS_COLLECTION), ...constraints);
+        
+        const querySnapshot = await getDocs(q);
+        return querySnapshot.docs
+            .map(doc => {
+                const data = doc.data();
+                // ตรวจสอบอีกครั้งที่ client-side เพื่อความแน่ใจ
+                if (data.isDeleted === true) {
+                    return null;
+                }
+                return {
+                    id: doc.id,
+                    ...data,
+                    receiptDate: data.receiptDate?.toDate() || null,
+                    createdAt: data.createdAt?.toDate(),
+                    updatedAt: data.updatedAt?.toDate(),
+                    deletedAt: data.deletedAt?.toDate() || null,
+                } as ReceiptDocument;
+            })
+            .filter((doc): doc is ReceiptDocument => doc !== null && !doc.isDeleted); // กรองเอกสารที่ถูกลบ (soft delete) ออก
+    } catch (error) {
+        console.error("Error getting receipts:", error);
+        throw new Error("ไม่สามารถดึงรายการใบเสร็จได้");
+    }
+};
+
+/**
+ * อัปเดตใบเสร็จ
+ * @param id - Document ID ของเอกสารที่ต้องการอัปเดต
+ * @param data - ข้อมูลที่ต้องการอัปเดต
+ */
+export const updateReceipt = async (id: string, data: Partial<ReceiptData>): Promise<void> => {
+    try {
+        // ตรวจสอบว่า user login แล้วหรือยัง
+        const currentUser = auth.currentUser;
+        if (!currentUser) {
+            throw new Error("กรุณา Login ก่อนอัปเดตข้อมูล");
+        }
+
+        // ตรวจสอบว่าเอกสารมีอยู่จริงและ user มีสิทธิ์แก้ไข
+        const docRef = doc(db, RECEIPTS_COLLECTION, id);
+        const docSnap = await getDoc(docRef);
+        
+        if (!docSnap.exists()) {
+            throw new Error("ไม่พบเอกสารที่ต้องการอัปเดต");
+        }
+
+        const existingData = docSnap.data();
+        
+        // ตรวจสอบสิทธิ์: ต้องเป็นเจ้าของหรือเป็น Super Admin (ตรวจสอบที่ Firestore Rules)
+        if (existingData.userId !== currentUser.uid && existingData.companyId == null) {
+            throw new Error("คุณไม่มีสิทธิ์แก้ไขเอกสารนี้");
+        }
+
+        // เตรียมข้อมูลสำหรับอัปเดต
+        const dataToUpdate: any = {
+            ...data,
+            updatedAt: Timestamp.now(),
+        };
+
+        // ถ้ามี logoUrl (อัปโหลดไปยัง Storage แล้ว) ให้ลบ Base64 ออก
+        if (data.logoUrl) {
+            dataToUpdate.logo = null;
+        }
+
+        // แปลง Date เป็น Timestamp
+        if (data.receiptDate instanceof Date) {
+            dataToUpdate.receiptDate = Timestamp.fromDate(data.receiptDate);
+        }
+
+        await updateDoc(docRef, dataToUpdate);
+    } catch (error) {
+        console.error("Error updating receipt:", error);
+        throw error instanceof Error ? error : new Error("ไม่สามารถอัปเดตใบเสร็จได้");
+    }
+};
+
+/**
+ * ลบใบเสร็จ (Soft Delete) - ตั้งค่า isDeleted = true แทนการลบจริง
+ * @param id - Document ID ของเอกสารที่ต้องการลบ
+ */
+export const deleteReceipt = async (id: string): Promise<void> => {
+    try {
+        // ตรวจสอบว่า user login แล้วหรือยัง
+        const currentUser = auth.currentUser;
+        if (!currentUser) {
+            throw new Error("กรุณา Login ก่อนลบข้อมูล");
+        }
+
+        // ตรวจสอบว่าเอกสารมีอยู่จริงและ user มีสิทธิ์ลบ
+        const docRef = doc(db, RECEIPTS_COLLECTION, id);
+        const docSnap = await getDoc(docRef);
+        
+        if (!docSnap.exists()) {
+            throw new Error("ไม่พบเอกสารที่ต้องการลบ");
+        }
+
+        const existingData = docSnap.data();
+        
+        // ตรวจสอบสิทธิ์: ต้องเป็นเจ้าของหรือเป็น Super Admin (ตรวจสอบที่ Firestore Rules)
+        if (existingData.userId !== currentUser.uid && existingData.companyId == null) {
+            throw new Error("คุณไม่มีสิทธิ์ลบเอกสารนี้");
+        }
+
+        // ใช้ soft delete แทนการลบจริง - ตั้งค่า isDeleted = true และ deletedAt
+        await updateDoc(docRef, {
+            isDeleted: true,
+            deletedAt: Timestamp.now(),
+            updatedAt: Timestamp.now(),
+        });
+        console.log(`✅ Soft delete receipt สำเร็จ: ${id}`);
+    } catch (error) {
+        console.error("Error deleting receipt:", error);
+        throw error instanceof Error ? error : new Error("ไม่สามารถลบใบเสร็จได้");
+    }
+};
+
+/**
+ * ค้นหาใบเสร็จตามเลขที่เอกสาร
+ * @param receiptNumber - เลขที่ใบเสร็จที่ต้องการค้นหา
+ * @param companyId - ID ของบริษัท (optional) ถ้าไม่ระบุจะค้นหาทั้งหมดของ user
+ */
+export const searchReceiptByReceiptNumber = async (receiptNumber: string, companyId?: string): Promise<ReceiptDocument[]> => {
+    try {
+        // ตรวจสอบว่า user login แล้วหรือยัง
+        const currentUser = auth.currentUser;
+        if (!currentUser) {
+            throw new Error("กรุณา Login ก่อนค้นหาข้อมูล");
+        }
+
+        // สร้าง query constraints
+        const constraints: QueryConstraint[] = [
+            where("receiptNumber", "==", receiptNumber),
+            where("userId", "==", currentUser.uid), // กรองเฉพาะของ user นี้
+            where("isDeleted", "==", false), // กรองเฉพาะเอกสารที่ยังไม่ถูกลบ
+        ];
+
+        // ถ้ามี companyId ให้กรองเฉพาะบริษัทนั้น
+        if (companyId) {
+            constraints.push(where("companyId", "==", companyId));
+        }
+
+        const q = query(collection(db, RECEIPTS_COLLECTION), ...constraints);
+        
+        const querySnapshot = await getDocs(q);
+        return querySnapshot.docs
+            .map(doc => {
+                const data = doc.data();
+                // ตรวจสอบอีกครั้งที่ client-side เพื่อความแน่ใจ
+                if (data.isDeleted === true) {
+                    return null;
+                }
+                return {
+                    id: doc.id,
+                    ...data,
+                    receiptDate: data.receiptDate?.toDate() || null,
+                    createdAt: data.createdAt?.toDate(),
+                    updatedAt: data.updatedAt?.toDate(),
+                    deletedAt: data.deletedAt?.toDate() || null,
+                } as ReceiptDocument;
+            })
+            .filter((doc): doc is ReceiptDocument => doc !== null && !doc.isDeleted); // กรองเอกสารที่ถูกลบ (soft delete) ออก
+    } catch (error) {
+        console.error("Error searching receipt:", error);
+        throw new Error("ไม่สามารถค้นหาใบเสร็จได้");
     }
 };
