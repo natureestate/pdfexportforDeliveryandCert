@@ -17,7 +17,7 @@ import {
     QueryConstraint
 } from "firebase/firestore";
 import { db, auth } from "../firebase.config";
-import { DeliveryNoteData, WarrantyData, InvoiceData, ReceiptData, QuotationData } from "../types";
+import { DeliveryNoteData, WarrantyData, InvoiceData, ReceiptData, QuotationData, PurchaseOrderData } from "../types";
 
 // Collection names
 const DELIVERY_NOTES_COLLECTION = "deliveryNotes";
@@ -25,6 +25,7 @@ const WARRANTY_CARDS_COLLECTION = "warrantyCards";
 const INVOICES_COLLECTION = "invoices";
 const RECEIPTS_COLLECTION = "receipts";
 const QUOTATIONS_COLLECTION = "quotations";
+const PURCHASE_ORDERS_COLLECTION = "purchaseOrders";
 
 /**
  * สร้าง Document ID ที่อ่านง่าย สำหรับใบส่งมอบงาน
@@ -86,6 +87,21 @@ const generateQuotationId = (quotationNumber: string): string => {
     return `${yy}${mm}${dd}_QT-${cleanQuotationNumber}`;
 };
 
+/**
+ * สร้าง Document ID ที่อ่านง่าย สำหรับใบสั่งซื้อ
+ * รูปแบบ: YYMMDD_PO-XXXX (เช่น 251010_PO-2025-001)
+ */
+const generatePurchaseOrderId = (purchaseOrderNumber: string): string => {
+    const now = new Date();
+    const yy = String(now.getFullYear()).slice(-2);
+    const mm = String(now.getMonth() + 1).padStart(2, '0');
+    const dd = String(now.getDate()).padStart(2, '0');
+    
+    // ลบ "PO-" ออกจาก purchaseOrderNumber ถ้ามี แล้วใส่กลับในรูปแบบที่ต้องการ
+    const cleanPurchaseOrderNumber = purchaseOrderNumber.replace(/^PO-/i, '');
+    return `${yy}${mm}${dd}_PO-${cleanPurchaseOrderNumber}`;
+};
+
 // Interface สำหรับเอกสารที่บันทึกใน Firestore
 export interface FirestoreDocument {
     id?: string;
@@ -100,6 +116,7 @@ export interface WarrantyDocument extends WarrantyData, FirestoreDocument {}
 export interface InvoiceDocument extends InvoiceData, FirestoreDocument {}
 export interface ReceiptDocument extends ReceiptData, FirestoreDocument {}
 export interface QuotationDocument extends QuotationData, FirestoreDocument {}
+export interface PurchaseOrderDocument extends PurchaseOrderData, FirestoreDocument {}
 
 // ==================== Delivery Notes Functions ====================
 
@@ -1437,5 +1454,186 @@ export const searchQuotationByQuotationNumber = async (quotationNumber: string, 
     } catch (error) {
         console.error("Error searching quotation:", error);
         throw new Error("ไม่สามารถค้นหาใบเสนอราคาได้");
+    }
+};
+
+// ==================== Purchase Orders Functions ====================
+
+/**
+ * บันทึกใบสั่งซื้อใหม่ลง Firestore
+ * @param data - ข้อมูลใบสั่งซื้อ
+ * @param companyId - ID ของบริษัท (optional)
+ */
+export const savePurchaseOrder = async (data: PurchaseOrderData, companyId?: string): Promise<string> => {
+    try {
+        // ตรวจสอบว่า user login แล้วหรือยัง
+        const currentUser = auth.currentUser;
+        if (!currentUser) {
+            throw new Error("กรุณา Login ก่อนบันทึกข้อมูล");
+        }
+        
+        // สร้าง Document ID ที่อ่านง่าย
+        const docId = generatePurchaseOrderId(data.purchaseOrderNumber);
+        const docRef = doc(db, PURCHASE_ORDERS_COLLECTION, docId);
+        
+        // เตรียมข้อมูลสำหรับบันทึก - ไม่บันทึก Base64 ถ้ามี logoUrl
+        const dataToSave = {
+            ...data,
+            // ถ้ามี logoUrl (อัปโหลดไปยัง Storage แล้ว) ให้ลบ Base64 ออก
+            logo: data.logoUrl ? null : data.logo,
+            userId: currentUser.uid, // เพิ่ม userId
+            companyId: companyId || null, // เพิ่ม companyId
+            isDeleted: false, // ตั้งค่า isDeleted เป็น false สำหรับเอกสารใหม่
+            createdAt: Timestamp.now(),
+            updatedAt: Timestamp.now(),
+        };
+        
+        await setDoc(docRef, dataToSave);
+        
+        return docId;
+    } catch (error) {
+        console.error("Error saving purchase order:", error);
+        throw new Error("ไม่สามารถบันทึกใบสั่งซื้อได้");
+    }
+};
+
+/**
+ * ดึงข้อมูลใบสั่งซื้อตาม ID
+ */
+export const getPurchaseOrder = async (id: string): Promise<PurchaseOrderDocument | null> => {
+    try {
+        const docRef = doc(db, PURCHASE_ORDERS_COLLECTION, id);
+        const docSnap = await getDoc(docRef);
+        
+        if (docSnap.exists()) {
+            const data = docSnap.data();
+            // ถ้าเอกสารถูกลบ (soft delete) ให้ return null
+            if (data.isDeleted) {
+                return null;
+            }
+            return {
+                id: docSnap.id,
+                ...data,
+                purchaseOrderDate: data.purchaseOrderDate?.toDate() || null,
+                expectedDeliveryDate: data.expectedDeliveryDate?.toDate() || null,
+                createdAt: data.createdAt?.toDate(),
+                updatedAt: data.updatedAt?.toDate(),
+                deletedAt: data.deletedAt?.toDate() || null,
+            } as PurchaseOrderDocument;
+        }
+        return null;
+    } catch (error) {
+        console.error("Error getting purchase order:", error);
+        throw new Error("ไม่สามารถดึงข้อมูลใบสั่งซื้อได้");
+    }
+};
+
+/**
+ * ดึงรายการใบสั่งซื้อทั้งหมด (สำหรับ History)
+ */
+export const getPurchaseOrders = async (limitCount: number = 50, companyId?: string): Promise<PurchaseOrderDocument[]> => {
+    try {
+        // ตรวจสอบว่า user login แล้วหรือยัง
+        const currentUser = auth.currentUser;
+        if (!currentUser) {
+            throw new Error("กรุณา Login ก่อนดูข้อมูล");
+        }
+        
+        // สร้าง query constraints
+        const constraints: QueryConstraint[] = [
+            where("userId", "==", currentUser.uid), // กรองเฉพาะของ user นี้
+        ];
+        
+        // ถ้ามี companyId ให้กรองเฉพาะบริษัทนั้น
+        if (companyId) {
+            constraints.push(where("companyId", "==", companyId));
+        }
+        
+        // กรองเฉพาะเอกสารที่ยังไม่ถูกลบ (isDeleted != true)
+        constraints.push(where("isDeleted", "==", false));
+        
+        constraints.push(orderBy("createdAt", "desc"));
+        constraints.push(limit(limitCount));
+        
+        const q = query(collection(db, PURCHASE_ORDERS_COLLECTION), ...constraints);
+        
+        const querySnapshot = await getDocs(q);
+        return querySnapshot.docs
+            .map(doc => {
+                const data = doc.data();
+                // ตรวจสอบอีกครั้งที่ client-side เพื่อความแน่ใจ
+                if (data.isDeleted === true) {
+                    return null;
+                }
+                return {
+                    id: doc.id,
+                    ...data,
+                    purchaseOrderDate: data.purchaseOrderDate?.toDate() || null,
+                    expectedDeliveryDate: data.expectedDeliveryDate?.toDate() || null,
+                    createdAt: data.createdAt?.toDate(),
+                    updatedAt: data.updatedAt?.toDate(),
+                    deletedAt: data.deletedAt?.toDate() || null,
+                } as PurchaseOrderDocument;
+            })
+            .filter((doc): doc is PurchaseOrderDocument => doc !== null && !doc.isDeleted); // กรองเอกสารที่ถูกลบ (soft delete) ออก
+    } catch (error) {
+        console.error("Error getting purchase orders:", error);
+        throw new Error("ไม่สามารถดึงรายการใบสั่งซื้อได้");
+    }
+};
+
+/**
+ * อัปเดตใบสั่งซื้อ
+ */
+export const updatePurchaseOrder = async (id: string, data: Partial<PurchaseOrderData>): Promise<void> => {
+    try {
+        // ตรวจสอบว่า user login แล้วหรือยัง
+        const currentUser = auth.currentUser;
+        if (!currentUser) {
+            throw new Error("กรุณา Login ก่อนอัปเดตข้อมูล");
+        }
+        
+        const docRef = doc(db, PURCHASE_ORDERS_COLLECTION, id);
+        
+        // เตรียมข้อมูลสำหรับอัปเดต - ไม่บันทึก Base64 ถ้ามี logoUrl
+        const dataToUpdate: any = {
+            ...data,
+            // ถ้ามี logoUrl (อัปโหลดไปยัง Storage แล้ว) ให้ลบ Base64 ออก
+            logo: data.logoUrl ? null : data.logo,
+            updatedAt: Timestamp.now(),
+        };
+        
+        await updateDoc(docRef, dataToUpdate);
+        console.log(`✅ อัปเดตใบสั่งซื้อสำเร็จ: ${id}`);
+    } catch (error) {
+        console.error("Error updating purchase order:", error);
+        throw error instanceof Error ? error : new Error("ไม่สามารถอัปเดตใบสั่งซื้อได้");
+    }
+};
+
+/**
+ * ลบใบสั่งซื้อ (Soft Delete)
+ */
+export const deletePurchaseOrder = async (id: string): Promise<void> => {
+    try {
+        // ตรวจสอบว่า user login แล้วหรือยัง
+        const currentUser = auth.currentUser;
+        if (!currentUser) {
+            throw new Error("กรุณา Login ก่อนลบข้อมูล");
+        }
+        
+        const docRef = doc(db, PURCHASE_ORDERS_COLLECTION, id);
+        
+        // Soft delete - ตั้งค่า isDeleted เป็น true และ deletedAt เป็นเวลาปัจจุบัน
+        await updateDoc(docRef, {
+            isDeleted: true,
+            deletedAt: Timestamp.now(),
+            updatedAt: Timestamp.now(),
+        });
+        
+        console.log(`✅ Soft delete purchase order สำเร็จ: ${id}`);
+    } catch (error) {
+        console.error("Error deleting purchase order:", error);
+        throw error instanceof Error ? error : new Error("ไม่สามารถลบใบสั่งซื้อได้");
     }
 };

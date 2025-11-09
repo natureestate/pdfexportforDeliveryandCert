@@ -1,6 +1,6 @@
 import React, { useState, useRef, useCallback, useEffect } from 'react';
 import { Routes, Route, Navigate } from 'react-router-dom';
-import { DeliveryNoteData, WarrantyData, InvoiceData, ReceiptData, QuotationData, LogoType } from './types';
+import { DeliveryNoteData, WarrantyData, InvoiceData, ReceiptData, QuotationData, PurchaseOrderData, LogoType } from './types';
 import { AuthProvider } from './contexts/AuthContext';
 import { CompanyProvider, useCompany } from './contexts/CompanyContext';
 import ProtectedRoute from './components/ProtectedRoute';
@@ -15,13 +15,15 @@ import ReceiptForm from './components/ReceiptForm';
 import ReceiptPreview from './components/ReceiptPreview';
 import QuotationForm from './components/QuotationForm';
 import QuotationPreview from './components/QuotationPreview';
+import PurchaseOrderForm from './components/PurchaseOrderForm';
+import PurchaseOrderPreview from './components/PurchaseOrderPreview';
 import HistoryList from './components/HistoryList';
 import AcceptInvitationPage from './components/AcceptInvitationPage';
 import SuperAdminDashboard from './components/SuperAdminDashboard';
 import CookieConsentModal from './components/CookieConsentModal';
 import { generatePdf } from './services/pdfGenerator';
-import { saveDeliveryNote, saveWarrantyCard, saveInvoice, saveReceipt, saveQuotation } from './services/firestore';
-import type { DeliveryNoteDocument, WarrantyDocument, InvoiceDocument, ReceiptDocument, QuotationDocument } from './services/firestore';
+import { saveDeliveryNote, saveWarrantyCard, saveInvoice, saveReceipt, saveQuotation, savePurchaseOrder } from './services/firestore';
+import type { DeliveryNoteDocument, WarrantyDocument, InvoiceDocument, ReceiptDocument, QuotationDocument, PurchaseOrderDocument } from './services/firestore';
 
 const getInitialDeliveryData = (): DeliveryNoteData => ({
     logo: null,
@@ -187,7 +189,44 @@ const initialQuotationData: QuotationData = {
     issuedBy: '',
 };
 
-type DocType = 'delivery' | 'warranty' | 'invoice' | 'receipt' | 'quotation';
+const initialPurchaseOrderData: PurchaseOrderData = {
+    logo: null,
+    // ข้อมูลบริษัทผู้สั่งซื้อ
+    companyName: '',
+    companyAddress: '',
+    companyPhone: '',
+    companyEmail: '',
+    companyWebsite: '',
+    companyTaxId: '',
+    // ข้อมูลผู้ขาย/ผู้จำหน่าย
+    supplierName: '',
+    supplierAddress: '',
+    supplierPhone: '',
+    supplierEmail: '',
+    supplierTaxId: '',
+    // ข้อมูลเอกสาร
+    purchaseOrderNumber: '', // จะถูก auto-generate ใน PurchaseOrderForm
+    purchaseOrderDate: new Date(),
+    expectedDeliveryDate: null,
+    referenceNumber: '',
+    // รายการสินค้า/บริการ
+    items: [
+        { description: '', quantity: 1, unit: 'ชิ้น', unitPrice: 0, amount: 0, notes: '' },
+    ],
+    // ข้อมูลการสั่งซื้อ
+    subtotal: 0,
+    taxRate: 7, // Default 7%
+    taxAmount: 0,
+    discount: 0,
+    total: 0,
+    // ข้อมูลเพิ่มเติม
+    paymentTerms: '',
+    deliveryTerms: '',
+    notes: '',
+    issuedBy: '',
+};
+
+type DocType = 'delivery' | 'warranty' | 'invoice' | 'receipt' | 'quotation' | 'purchase-order';
 type ViewMode = 'form' | 'history';
 type Notification = { show: boolean; message: string; type: 'success' | 'info' | 'error' };
 
@@ -199,6 +238,7 @@ const AppContent: React.FC = () => {
     const [invoiceData, setInvoiceData] = useState<InvoiceData>(initialInvoiceData);
     const [receiptData, setReceiptData] = useState<ReceiptData>(initialReceiptData);
     const [quotationData, setQuotationData] = useState<QuotationData>(initialQuotationData);
+    const [purchaseOrderData, setPurchaseOrderData] = useState<PurchaseOrderData>(initialPurchaseOrderData);
     const [activeTab, setActiveTab] = useState<DocType>('delivery');
     const [viewMode, setViewMode] = useState<ViewMode>('form');
     const [isLoading, setIsLoading] = useState<boolean>(false);
@@ -241,6 +281,12 @@ const AppContent: React.FC = () => {
             logoType: sharedLogoType,
         }));
         setQuotationData(prev => ({
+            ...prev,
+            logo: sharedLogo,
+            logoUrl: sharedLogoUrl,
+            logoType: sharedLogoType,
+        }));
+        setPurchaseOrderData(prev => ({
             ...prev,
             logo: sharedLogo,
             logoUrl: sharedLogoUrl,
@@ -295,6 +341,16 @@ const AppContent: React.FC = () => {
 
             // Sync ไปยัง QuotationForm (ข้อมูลบริษัทผู้เสนอราคา)
             setQuotationData(prev => ({
+                ...prev,
+                companyName: currentCompany.name,
+                companyAddress: currentCompany.address || '',
+                companyPhone: currentCompany.phone || '',
+                companyEmail: currentCompany.email || '',
+                companyWebsite: currentCompany.website || '',
+            }));
+
+            // Sync ไปยัง PurchaseOrderForm (ข้อมูลบริษัทผู้สั่งซื้อ)
+            setPurchaseOrderData(prev => ({
                 ...prev,
                 companyName: currentCompany.name,
                 companyAddress: currentCompany.address || '',
@@ -451,6 +507,18 @@ const AppContent: React.FC = () => {
                     showToast(`บันทึกใบเสนอราคาสำเร็จ (ID: ${id})`, 'success');
                     setEditingDocumentId(id); // เปลี่ยนเป็น edit mode
                 }
+            } else if (activeTab === 'purchase-order') {
+                if (isEditMode) {
+                    // อัปเดตเอกสารเดิม
+                    const { updatePurchaseOrder } = await import('./services/firestore');
+                    await updatePurchaseOrder(editingDocumentId, purchaseOrderData);
+                    showToast(`อัปเดตใบสั่งซื้อสำเร็จ`, 'success');
+                } else {
+                    // สร้างเอกสารใหม่
+                    const id = await savePurchaseOrder(purchaseOrderData, companyId);
+                    showToast(`บันทึกใบสั่งซื้อสำเร็จ (ID: ${id})`, 'success');
+                    setEditingDocumentId(id); // เปลี่ยนเป็น edit mode
+                }
             }
         } catch (error) {
             console.error('Failed to save to Firestore:', error);
@@ -458,7 +526,7 @@ const AppContent: React.FC = () => {
         } finally {
             setIsSaving(false);
         }
-    }, [activeTab, deliveryData, warrantyData, invoiceData, receiptData, quotationData, currentCompany, editingDocumentId]);
+    }, [activeTab, deliveryData, warrantyData, invoiceData, receiptData, quotationData, purchaseOrderData, currentCompany, editingDocumentId]);
 
     /**
      * สร้างชื่อไฟล์ PDF ตามรูปแบบ: prefix + ลูกค้า + Create date (YYMMDD) + UUID
@@ -466,7 +534,7 @@ const AppContent: React.FC = () => {
      * @param data - ข้อมูลเอกสาร
      * @returns ชื่อไฟล์ PDF
      */
-    const generatePdfFilename = useCallback((type: 'delivery' | 'warranty' | 'invoice' | 'receipt' | 'quotation', data: DeliveryNoteData | WarrantyData | InvoiceData | ReceiptData | QuotationData): string => {
+    const generatePdfFilename = useCallback((type: 'delivery' | 'warranty' | 'invoice' | 'receipt' | 'quotation' | 'purchase-order', data: DeliveryNoteData | WarrantyData | InvoiceData | ReceiptData | QuotationData | PurchaseOrderData): string => {
         // สร้าง UUID (ใช้ crypto.randomUUID() หรือ fallback)
         const generateUUID = (): string => {
             if (typeof crypto !== 'undefined' && crypto.randomUUID) {
@@ -538,7 +606,7 @@ const AppContent: React.FC = () => {
             const uuid = generateUUID().substring(0, 8); // ใช้แค่ 8 ตัวแรกของ UUID
             
             return `${prefix}_${customerName}_${dateStr}_${uuid}.pdf`;
-        } else {
+        } else if (type === 'quotation') {
             const quotationData = data as QuotationData;
             const prefix = 'QT';
             const customerName = cleanCustomerName(quotationData.customerName || 'Customer');
@@ -546,6 +614,14 @@ const AppContent: React.FC = () => {
             const uuid = generateUUID().substring(0, 8); // ใช้แค่ 8 ตัวแรกของ UUID
             
             return `${prefix}_${customerName}_${dateStr}_${uuid}.pdf`;
+        } else {
+            const purchaseOrderData = data as PurchaseOrderData;
+            const prefix = 'PO';
+            const supplierName = cleanCustomerName(purchaseOrderData.supplierName || 'Supplier');
+            const dateStr = formatDateToYYMMDD(purchaseOrderData.purchaseOrderDate);
+            const uuid = generateUUID().substring(0, 8); // ใช้แค่ 8 ตัวแรกของ UUID
+            
+            return `${prefix}_${supplierName}_${dateStr}_${uuid}.pdf`;
         }
     }, []);
 
@@ -574,7 +650,7 @@ const AppContent: React.FC = () => {
         showToast('กำลังสร้าง PDF...', 'info');
 
         // สร้างชื่อไฟล์ตามรูปแบบใหม่: prefix + ลูกค้า + Create date (YYMMDD) + UUID
-        const filename = generatePdfFilename(activeTab, activeTab === 'delivery' ? deliveryData : activeTab === 'warranty' ? warrantyData : activeTab === 'invoice' ? invoiceData : activeTab === 'receipt' ? receiptData : quotationData);
+        const filename = generatePdfFilename(activeTab, activeTab === 'delivery' ? deliveryData : activeTab === 'warranty' ? warrantyData : activeTab === 'invoice' ? invoiceData : activeTab === 'receipt' ? receiptData : activeTab === 'quotation' ? quotationData : purchaseOrderData);
 
         try {
             await generatePdf(printableAreaRef.current, filename);
@@ -585,10 +661,10 @@ const AppContent: React.FC = () => {
         } finally {
             setIsLoading(false);
         }
-    }, [activeTab, deliveryData, warrantyData, invoiceData, receiptData, quotationData, currentCompany, generatePdfFilename]);
+    }, [activeTab, deliveryData, warrantyData, invoiceData, receiptData, quotationData, purchaseOrderData, currentCompany, generatePdfFilename]);
 
     // ฟังก์ชันโหลดเอกสารจาก History (สำหรับ Edit)
-    const handleLoadDocument = useCallback((doc: DeliveryNoteDocument | WarrantyDocument | InvoiceDocument | ReceiptDocument | QuotationDocument) => {
+    const handleLoadDocument = useCallback((doc: DeliveryNoteDocument | WarrantyDocument | InvoiceDocument | ReceiptDocument | QuotationDocument | PurchaseOrderDocument) => {
         // โหลด logo จากเอกสาร
         if (doc.logoUrl || doc.logo) {
             setSharedLogo(doc.logo || null);
@@ -628,7 +704,7 @@ const AppContent: React.FC = () => {
                 receiptDate: doc.receiptDate || null,
             });
             setActiveTab('receipt');
-        } else {
+        } else if ('quotationNumber' in doc) {
             // เป็น QuotationDocument
             setQuotationData({
                 ...doc,
@@ -636,6 +712,14 @@ const AppContent: React.FC = () => {
                 validUntilDate: doc.validUntilDate || null,
             });
             setActiveTab('quotation');
+        } else {
+            // เป็น PurchaseOrderDocument
+            setPurchaseOrderData({
+                ...doc,
+                purchaseOrderDate: doc.purchaseOrderDate || null,
+                expectedDeliveryDate: doc.expectedDeliveryDate || null,
+            });
+            setActiveTab('purchase-order');
         }
         setViewMode('form');
         showToast('โหลดเอกสารสำเร็จ - โหมดแก้ไข', 'info');
@@ -693,9 +777,16 @@ const AppContent: React.FC = () => {
                 logoUrl: sharedLogoUrl,
                 logoType: sharedLogoType,
             });
-        } else {
+        } else if (activeTab === 'quotation') {
             setQuotationData({
                 ...initialQuotationData,
+                logo: sharedLogo,
+                logoUrl: sharedLogoUrl,
+                logoType: sharedLogoType,
+            });
+        } else {
+            setPurchaseOrderData({
+                ...initialPurchaseOrderData,
                 logo: sharedLogo,
                 logoUrl: sharedLogoUrl,
                 logoType: sharedLogoType,
@@ -797,6 +888,12 @@ const AppContent: React.FC = () => {
                                     >
                                         ใบเสนอราคา
                                     </button>
+                                    <button
+                                        onClick={() => setActiveTab('purchase-order')}
+                                        className={`${activeTab === 'purchase-order' ? 'border-indigo-500 text-indigo-600' : 'border-transparent text-gray-500 hover:text-gray-700 hover:border-gray-300'} whitespace-nowrap py-4 px-1 border-b-2 font-medium text-sm transition-colors`}
+                                    >
+                                        ใบสั่งซื้อ
+                                    </button>
                                 </nav>
                             </div>
                             
@@ -860,10 +957,25 @@ const AppContent: React.FC = () => {
                                     }}
                                     onSetDefaultLogo={handleSetDefaultLogo}
                                 />
-                            ) : (
+                            ) : activeTab === 'quotation' ? (
                                 <QuotationForm
                                     data={quotationData}
                                     setData={setQuotationData}
+                                    sharedLogo={sharedLogo}
+                                    sharedLogoUrl={sharedLogoUrl}
+                                    sharedLogoType={sharedLogoType}
+                                    companyDefaultLogoUrl={currentCompany?.defaultLogoUrl}
+                                    onLogoChange={(logo, logoUrl, logoType) => {
+                                        setSharedLogo(logo);
+                                        setSharedLogoUrl(logoUrl);
+                                        setSharedLogoType(logoType);
+                                    }}
+                                    onSetDefaultLogo={handleSetDefaultLogo}
+                                />
+                            ) : (
+                                <PurchaseOrderForm
+                                    data={purchaseOrderData}
+                                    setData={setPurchaseOrderData}
                                     sharedLogo={sharedLogo}
                                     sharedLogoUrl={sharedLogoUrl}
                                     sharedLogoType={sharedLogoType}
@@ -941,8 +1053,10 @@ const AppContent: React.FC = () => {
                                         <InvoicePreview ref={printableAreaRef} data={invoiceData} />
                                     ) : activeTab === 'receipt' ? (
                                         <ReceiptPreview ref={printableAreaRef} data={receiptData} />
-                                    ) : (
+                                    ) : activeTab === 'quotation' ? (
                                         <QuotationPreview ref={printableAreaRef} data={quotationData} />
+                                    ) : (
+                                        <PurchaseOrderPreview ref={printableAreaRef} data={purchaseOrderData} />
                                     )}
                                 </div>
                             </div>

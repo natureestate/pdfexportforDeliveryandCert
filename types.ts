@@ -422,6 +422,60 @@ export interface QuotationData {
     issuedBy?: string;             // ผู้ออกเอกสาร (optional)
 }
 
+// Purchase Order Item - รายการสินค้า/บริการในใบสั่งซื้อ
+export interface PurchaseOrderItem {
+    description: string;        // รายละเอียดสินค้า/บริการ
+    quantity: number;           // จำนวน
+    unit: string;               // หน่วย (เช่น ชิ้น, ชั่วโมง, งาน)
+    unitPrice: number;          // ราคาต่อหน่วย
+    amount: number;            // จำนวนเงิน (quantity * unitPrice)
+    notes?: string;             // หมายเหตุเพิ่มเติม (optional)
+}
+
+// Purchase Order Data - ข้อมูลใบสั่งซื้อ
+export interface PurchaseOrderData {
+    logo: string | null;           // Base64 string หรือ URL ของโลโก้
+    logoUrl?: string | null;       // URL จาก Firebase Storage (สำหรับบันทึกใน Firestore)
+    logoType?: LogoType;           // ประเภทของโลโก้
+    
+    // ข้อมูลบริษัทผู้สั่งซื้อ
+    companyName: string;            // ชื่อบริษัทผู้สั่งซื้อ
+    companyAddress: string;         // ที่อยู่บริษัทผู้สั่งซื้อ
+    companyPhone: string;          // เบอร์โทรศัพท์บริษัทผู้สั่งซื้อ
+    companyEmail?: string;         // อีเมลบริษัทผู้สั่งซื้อ (optional)
+    companyWebsite?: string;      // เว็บไซต์บริษัทผู้สั่งซื้อ (optional)
+    companyTaxId?: string;         // เลขประจำตัวผู้เสียภาษี (optional)
+    
+    // ข้อมูลผู้ขาย/ผู้จำหน่าย
+    supplierName: string;           // ชื่อผู้ขาย/บริษัทผู้จำหน่าย
+    supplierAddress: string;       // ที่อยู่ผู้ขาย
+    supplierPhone?: string;         // เบอร์โทรศัพท์ผู้ขาย (optional)
+    supplierEmail?: string;         // อีเมลผู้ขาย (optional)
+    supplierTaxId?: string;        // เลขประจำตัวผู้เสียภาษีผู้ขาย (optional)
+    
+    // ข้อมูลเอกสาร
+    purchaseOrderNumber: string;          // เลขที่ใบสั่งซื้อ
+    purchaseOrderDate: Date | null;       // วันที่ออกใบสั่งซื้อ
+    expectedDeliveryDate: Date | null;    // วันที่ต้องการรับสินค้า (optional)
+    referenceNumber?: string;        // เลขที่อ้างอิง (optional)
+    
+    // รายการสินค้า/บริการ
+    items: PurchaseOrderItem[];           // รายการสินค้า/บริการ
+    
+    // ข้อมูลการสั่งซื้อ
+    subtotal: number;               // ยอดรวมก่อนภาษี
+    taxRate: number;                // อัตราภาษีมูลค่าเพิ่ม (%) (เช่น 7)
+    taxAmount: number;              // จำนวนภาษีมูลค่าเพิ่ม
+    discount: number;               // ส่วนลด (optional, default 0)
+    total: number;                  // ยอดรวมทั้งสิ้น (subtotal + taxAmount - discount)
+    
+    // ข้อมูลเพิ่มเติม
+    paymentTerms?: string;          // เงื่อนไขการชำระเงิน (optional)
+    deliveryTerms?: string;          // เงื่อนไขการส่งมอบ (optional)
+    notes?: string;                 // หมายเหตุเพิ่มเติม (optional)
+    issuedBy?: string;             // ผู้ออกเอกสาร (optional)
+}
+
 // ข้อมูลคำเชิญเข้าองค์กร
 export interface Invitation {
     id?: string;                   // Document ID
