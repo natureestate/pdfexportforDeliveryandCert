@@ -368,6 +368,60 @@ export interface ReceiptData {
     issuedBy?: string;             // ผู้ออกเอกสาร (optional)
 }
 
+// Quotation Item - รายการสินค้า/บริการในใบเสนอราคา
+export interface QuotationItem {
+    description: string;        // รายละเอียดสินค้า/บริการ
+    quantity: number;           // จำนวน
+    unit: string;               // หน่วย (เช่น ชิ้น, ชั่วโมง, งาน)
+    unitPrice: number;          // ราคาต่อหน่วย
+    amount: number;            // จำนวนเงิน (quantity * unitPrice)
+    notes?: string;             // หมายเหตุเพิ่มเติม (optional)
+}
+
+// Quotation Data - ข้อมูลใบเสนอราคา
+export interface QuotationData {
+    logo: string | null;           // Base64 string หรือ URL ของโลโก้
+    logoUrl?: string | null;       // URL จาก Firebase Storage (สำหรับบันทึกใน Firestore)
+    logoType?: LogoType;           // ประเภทของโลโก้
+    
+    // ข้อมูลบริษัทผู้เสนอราคา
+    companyName: string;            // ชื่อบริษัทผู้เสนอราคา
+    companyAddress: string;         // ที่อยู่บริษัทผู้เสนอราคา
+    companyPhone: string;          // เบอร์โทรศัพท์บริษัทผู้เสนอราคา
+    companyEmail?: string;         // อีเมลบริษัทผู้เสนอราคา (optional)
+    companyWebsite?: string;      // เว็บไซต์บริษัทผู้เสนอราคา (optional)
+    companyTaxId?: string;         // เลขประจำตัวผู้เสียภาษี (optional)
+    
+    // ข้อมูลลูกค้า/ผู้รับเสนอราคา
+    customerName: string;           // ชื่อลูกค้า/บริษัทผู้รับเสนอราคา
+    customerAddress: string;       // ที่อยู่ลูกค้า
+    customerPhone?: string;         // เบอร์โทรศัพท์ลูกค้า (optional)
+    customerEmail?: string;         // อีเมลลูกค้า (optional)
+    customerTaxId?: string;        // เลขประจำตัวผู้เสียภาษีลูกค้า (optional)
+    
+    // ข้อมูลเอกสาร
+    quotationNumber: string;          // เลขที่ใบเสนอราคา
+    quotationDate: Date | null;       // วันที่ออกใบเสนอราคา
+    validUntilDate: Date | null;      // วันที่หมดอายุใบเสนอราคา (optional)
+    referenceNumber?: string;        // เลขที่อ้างอิง (optional)
+    
+    // รายการสินค้า/บริการ
+    items: QuotationItem[];           // รายการสินค้า/บริการ
+    
+    // ข้อมูลการเสนอราคา
+    subtotal: number;               // ยอดรวมก่อนภาษี
+    taxRate: number;                // อัตราภาษีมูลค่าเพิ่ม (%) (เช่น 7)
+    taxAmount: number;              // จำนวนภาษีมูลค่าเพิ่ม
+    discount: number;               // ส่วนลด (optional, default 0)
+    total: number;                  // ยอดรวมทั้งสิ้น (subtotal + taxAmount - discount)
+    
+    // ข้อมูลเพิ่มเติม
+    paymentTerms?: string;          // เงื่อนไขการชำระเงิน (optional)
+    deliveryTerms?: string;          // เงื่อนไขการส่งมอบ (optional)
+    notes?: string;                 // หมายเหตุเพิ่มเติม (optional)
+    issuedBy?: string;             // ผู้ออกเอกสาร (optional)
+}
+
 // ข้อมูลคำเชิญเข้าองค์กร
 export interface Invitation {
     id?: string;                   // Document ID

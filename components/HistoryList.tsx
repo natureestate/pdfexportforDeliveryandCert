@@ -1,17 +1,18 @@
 import React, { useEffect, useState, useCallback, useRef } from 'react';
-import { getDeliveryNotes, getWarrantyCards, getInvoices, getReceipts, deleteDeliveryNote, deleteWarrantyCard, deleteInvoice, deleteReceipt } from '../services/firestore';
-import type { DeliveryNoteDocument, WarrantyDocument, InvoiceDocument, ReceiptDocument } from '../services/firestore';
+import { getDeliveryNotes, getWarrantyCards, getInvoices, getReceipts, getQuotations, deleteDeliveryNote, deleteWarrantyCard, deleteInvoice, deleteReceipt, deleteQuotation } from '../services/firestore';
+import type { DeliveryNoteDocument, WarrantyDocument, InvoiceDocument, ReceiptDocument, QuotationDocument } from '../services/firestore';
 import { useCompany } from '../contexts/CompanyContext';
 import { generatePdf } from '../services/pdfGenerator';
 import DocumentPreview from './DocumentPreview';
 import WarrantyPreview from './WarrantyPreview';
 import InvoicePreview from './InvoicePreview';
 import ReceiptPreview from './ReceiptPreview';
-import type { DeliveryNoteData, WarrantyData, InvoiceData, ReceiptData } from '../types';
+import QuotationPreview from './QuotationPreview';
+import type { DeliveryNoteData, WarrantyData, InvoiceData, ReceiptData, QuotationData } from '../types';
 
 interface HistoryListProps {
-    activeDocType: 'delivery' | 'warranty' | 'invoice' | 'receipt';
-    onLoadDocument: (doc: DeliveryNoteDocument | WarrantyDocument | InvoiceDocument | ReceiptDocument) => void;
+    activeDocType: 'delivery' | 'warranty' | 'invoice' | 'receipt' | 'quotation';
+    onLoadDocument: (doc: DeliveryNoteDocument | WarrantyDocument | InvoiceDocument | ReceiptDocument | QuotationDocument) => void;
 }
 
 const HistoryList: React.FC<HistoryListProps> = ({ activeDocType, onLoadDocument }) => {
@@ -20,14 +21,15 @@ const HistoryList: React.FC<HistoryListProps> = ({ activeDocType, onLoadDocument
     const [warrantyCards, setWarrantyCards] = useState<WarrantyDocument[]>([]);
     const [invoices, setInvoices] = useState<InvoiceDocument[]>([]);
     const [receipts, setReceipts] = useState<ReceiptDocument[]>([]);
+    const [quotations, setQuotations] = useState<QuotationDocument[]>([]);
     const [loading, setLoading] = useState(true);
     const [error, setError] = useState<string | null>(null);
-    const [deleteConfirm, setDeleteConfirm] = useState<{ type: 'delivery' | 'warranty' | 'invoice' | 'receipt', id: string } | null>(null);
+    const [deleteConfirm, setDeleteConfirm] = useState<{ type: 'delivery' | 'warranty' | 'invoice' | 'receipt' | 'quotation', id: string } | null>(null);
     const [downloadingPdfId, setDownloadingPdfId] = useState<string | null>(null); // เก็บ ID ของเอกสารที่กำลัง download
     const previewRef = useRef<HTMLDivElement>(null); // Ref สำหรับ preview component ที่ซ่อนอยู่
-    const [previewData, setPreviewData] = useState<DeliveryNoteData | WarrantyData | InvoiceData | ReceiptData | null>(null); // ข้อมูลสำหรับ preview
+    const [previewData, setPreviewData] = useState<DeliveryNoteData | WarrantyData | InvoiceData | ReceiptData | QuotationData | null>(null); // ข้อมูลสำหรับ preview
     const [showPreviewModal, setShowPreviewModal] = useState(false); // แสดง preview modal หรือไม่
-    const [previewDoc, setPreviewDoc] = useState<DeliveryNoteDocument | WarrantyDocument | InvoiceDocument | ReceiptDocument | null>(null); // เอกสารที่กำลัง preview
+    const [previewDoc, setPreviewDoc] = useState<DeliveryNoteDocument | WarrantyDocument | InvoiceDocument | ReceiptDocument | QuotationDocument | null>(null); // เอกสารที่กำลัง preview
     const previewModalRef = useRef<HTMLDivElement>(null); // Ref สำหรับ preview component ใน modal
     
     // State สำหรับ filter และ pagination
@@ -54,9 +56,12 @@ const HistoryList: React.FC<HistoryListProps> = ({ activeDocType, onLoadDocument
             } else if (activeDocType === 'invoice') {
                 const invoiceList = await getInvoices(50, companyId);
                 setInvoices(invoiceList);
-            } else {
+            } else if (activeDocType === 'receipt') {
                 const receiptList = await getReceipts(50, companyId);
                 setReceipts(receiptList);
+            } else {
+                const quotationList = await getQuotations(50, companyId);
+                setQuotations(quotationList);
             }
         } catch (err) {
             console.error('Error fetching data:', err);
@@ -94,10 +99,14 @@ const HistoryList: React.FC<HistoryListProps> = ({ activeDocType, onLoadDocument
                 await deleteInvoice(id);
                 console.log('✅ ลบใบแจ้งหนี้สำเร็จ');
                 setInvoices(prev => prev.filter(invoice => invoice.id !== id));
-            } else {
+            } else if (type === 'receipt') {
                 await deleteReceipt(id);
                 console.log('✅ ลบใบเสร็จสำเร็จ');
                 setReceipts(prev => prev.filter(receipt => receipt.id !== id));
+            } else {
+                await deleteQuotation(id);
+                console.log('✅ ลบใบเสนอราคาสำเร็จ');
+                setQuotations(prev => prev.filter(quotation => quotation.id !== id));
             }
             
             setDeleteConfirm(null);
@@ -129,7 +138,7 @@ const HistoryList: React.FC<HistoryListProps> = ({ activeDocType, onLoadDocument
     };
 
     // ฟังก์ชันสร้างชื่อไฟล์ PDF
-    const generatePdfFilename = (type: 'delivery' | 'warranty' | 'invoice' | 'receipt', data: DeliveryNoteData | WarrantyData | InvoiceData | ReceiptData): string => {
+    const generatePdfFilename = (type: 'delivery' | 'warranty' | 'invoice' | 'receipt' | 'quotation', data: DeliveryNoteData | WarrantyData | InvoiceData | ReceiptData | QuotationData): string => {
         const now = new Date();
         const yy = String(now.getFullYear()).slice(-2);
         const mm = String(now.getMonth() + 1).padStart(2, '0');
@@ -150,18 +159,23 @@ const HistoryList: React.FC<HistoryListProps> = ({ activeDocType, onLoadDocument
             const customerName = invoiceData.customerName || 'Unknown';
             const cleanName = customerName.replace(/[^a-zA-Z0-9ก-๙]/g, '').substring(0, 20);
             return `IN_${cleanName}_${yy}${mm}${dd}.pdf`;
-        } else {
+        } else if (type === 'receipt') {
             const receiptData = data as ReceiptData;
             const customerName = receiptData.customerName || 'Unknown';
             const cleanName = customerName.replace(/[^a-zA-Z0-9ก-๙]/g, '').substring(0, 20);
             return `RC_${cleanName}_${yy}${mm}${dd}.pdf`;
+        } else {
+            const quotationData = data as QuotationData;
+            const customerName = quotationData.customerName || 'Unknown';
+            const cleanName = customerName.replace(/[^a-zA-Z0-9ก-๙]/g, '').substring(0, 20);
+            return `QT_${cleanName}_${yy}${mm}${dd}.pdf`;
         }
     };
 
     // ฟังก์ชันเปิด preview modal
-    const handleShowPreview = useCallback((doc: DeliveryNoteDocument | WarrantyDocument | InvoiceDocument | ReceiptDocument) => {
+    const handleShowPreview = useCallback((doc: DeliveryNoteDocument | WarrantyDocument | InvoiceDocument | ReceiptDocument | QuotationDocument) => {
         setPreviewDoc(doc);
-        setPreviewData(doc as DeliveryNoteData | WarrantyData | InvoiceData | ReceiptData);
+        setPreviewData(doc as DeliveryNoteData | WarrantyData | InvoiceData | ReceiptData | QuotationData);
         setShowPreviewModal(true);
     }, []);
 
@@ -215,7 +229,7 @@ const HistoryList: React.FC<HistoryListProps> = ({ activeDocType, onLoadDocument
             }
 
             // สร้างชื่อไฟล์
-            const filename = generatePdfFilename(activeDocType, previewDoc as DeliveryNoteData | WarrantyData | InvoiceData | ReceiptData);
+            const filename = generatePdfFilename(activeDocType, previewDoc as DeliveryNoteData | WarrantyData | InvoiceData | ReceiptData | QuotationData);
             
             // สร้าง PDF
             await generatePdf(previewModalRef.current, filename);
@@ -230,7 +244,7 @@ const HistoryList: React.FC<HistoryListProps> = ({ activeDocType, onLoadDocument
     }, [activeDocType, currentCompany, previewDoc]);
 
     // ฟังก์ชันดาวน์โหลด PDF
-    const handleDownloadPdf = useCallback(async (doc: DeliveryNoteDocument | WarrantyDocument | InvoiceDocument | ReceiptDocument) => {
+    const handleDownloadPdf = useCallback(async (doc: DeliveryNoteDocument | WarrantyDocument | InvoiceDocument | ReceiptDocument | QuotationDocument) => {
         try {
             setDownloadingPdfId(doc.id || null);
             
@@ -253,7 +267,7 @@ const HistoryList: React.FC<HistoryListProps> = ({ activeDocType, onLoadDocument
             }
 
             // ตั้งค่าข้อมูลสำหรับ preview
-            setPreviewData(doc as DeliveryNoteData | WarrantyData | InvoiceData | ReceiptData);
+            setPreviewData(doc as DeliveryNoteData | WarrantyData | InvoiceData | ReceiptData | QuotationData);
             
             // รอให้ React render preview component และ ref พร้อม
             // ใช้ polling เพื่อรอให้ ref พร้อม (รอสูงสุด 2 วินาที)
@@ -273,7 +287,7 @@ const HistoryList: React.FC<HistoryListProps> = ({ activeDocType, onLoadDocument
             }
 
             // สร้างชื่อไฟล์
-            const filename = generatePdfFilename(activeDocType, doc as DeliveryNoteData | WarrantyData | InvoiceData | ReceiptData);
+            const filename = generatePdfFilename(activeDocType, doc as DeliveryNoteData | WarrantyData | InvoiceData | ReceiptData | QuotationData);
             
             // สร้าง PDF
             await generatePdf(previewRef.current, filename);
@@ -315,7 +329,7 @@ const HistoryList: React.FC<HistoryListProps> = ({ activeDocType, onLoadDocument
         );
     }
 
-    const currentList = activeDocType === 'delivery' ? deliveryNotes : activeDocType === 'warranty' ? warrantyCards : activeDocType === 'invoice' ? invoices : receipts;
+    const currentList = activeDocType === 'delivery' ? deliveryNotes : activeDocType === 'warranty' ? warrantyCards : activeDocType === 'invoice' ? invoices : activeDocType === 'receipt' ? receipts : quotations;
 
     // ฟังก์ชัน filter รายการตาม search term
     const filteredList = currentList.filter((item) => {
@@ -351,7 +365,7 @@ const HistoryList: React.FC<HistoryListProps> = ({ activeDocType, onLoadDocument
                 (invoice.total ? invoice.total.toString().includes(searchLower) : false) ||
                 (invoice.invoiceDate ? formatDate(invoice.invoiceDate).toLowerCase().includes(searchLower) : false)
             );
-        } else {
+        } else if (activeDocType === 'receipt') {
             const receipt = item as ReceiptDocument;
             return (
                 (receipt.receiptNumber || '').toLowerCase().includes(searchLower) ||
@@ -360,6 +374,15 @@ const HistoryList: React.FC<HistoryListProps> = ({ activeDocType, onLoadDocument
                 (receipt.total ? receipt.total.toString().includes(searchLower) : false) ||
                 (receipt.paymentMethod || '').toLowerCase().includes(searchLower) ||
                 (receipt.receiptDate ? formatDate(receipt.receiptDate).toLowerCase().includes(searchLower) : false)
+            );
+        } else {
+            const quotation = item as QuotationDocument;
+            return (
+                (quotation.quotationNumber || '').toLowerCase().includes(searchLower) ||
+                (quotation.customerName || '').toLowerCase().includes(searchLower) ||
+                (quotation.companyName || '').toLowerCase().includes(searchLower) ||
+                (quotation.total ? quotation.total.toString().includes(searchLower) : false) ||
+                (quotation.quotationDate ? formatDate(quotation.quotationDate).toLowerCase().includes(searchLower) : false)
             );
         }
     });
@@ -403,6 +426,9 @@ const HistoryList: React.FC<HistoryListProps> = ({ activeDocType, onLoadDocument
                         {activeDocType === 'receipt' && (
                             <ReceiptPreview ref={previewRef} data={previewData as ReceiptData} />
                         )}
+                        {activeDocType === 'quotation' && (
+                            <QuotationPreview ref={previewRef} data={previewData as QuotationData} />
+                        )}
                     </>
                 )}
             </div>
@@ -414,7 +440,7 @@ const HistoryList: React.FC<HistoryListProps> = ({ activeDocType, onLoadDocument
                         {/* Header */}
                         <div className="flex justify-between items-center p-4 border-b border-gray-200">
                             <h2 className="text-xl font-semibold text-gray-900">
-                                {activeDocType === 'delivery' ? 'ตัวอย่างใบส่งมอบงาน' : activeDocType === 'warranty' ? 'ตัวอย่างใบรับประกันสินค้า' : activeDocType === 'invoice' ? 'ตัวอย่างใบแจ้งหนี้' : 'ตัวอย่างใบเสร็จ'}
+                                {activeDocType === 'delivery' ? 'ตัวอย่างใบส่งมอบงาน' : activeDocType === 'warranty' ? 'ตัวอย่างใบรับประกันสินค้า' : activeDocType === 'invoice' ? 'ตัวอย่างใบแจ้งหนี้' : activeDocType === 'receipt' ? 'ตัวอย่างใบเสร็จ' : 'ตัวอย่างใบเสนอราคา'}
                             </h2>
                             <div className="flex items-center gap-2">
                                 <button
@@ -460,8 +486,10 @@ const HistoryList: React.FC<HistoryListProps> = ({ activeDocType, onLoadDocument
                                     <WarrantyPreview ref={previewModalRef} data={previewData as WarrantyData} />
                                 ) : activeDocType === 'invoice' ? (
                                     <InvoicePreview ref={previewModalRef} data={previewData as InvoiceData} />
-                                ) : (
+                                ) : activeDocType === 'receipt' ? (
                                     <ReceiptPreview ref={previewModalRef} data={previewData as ReceiptData} />
+                                ) : (
+                                    <QuotationPreview ref={previewModalRef} data={previewData as QuotationData} />
                                 )}
                             </div>
                         </div>
@@ -823,7 +851,7 @@ const HistoryList: React.FC<HistoryListProps> = ({ activeDocType, onLoadDocument
                         </div>
                     );
                     })
-                ) : (
+                ) : activeDocType === 'receipt' ? (
                     // รายการใบเสร็จ
                     paginatedList.map((receipt) => {
                         const receiptItem = receipt as ReceiptDocument;
@@ -898,6 +926,93 @@ const HistoryList: React.FC<HistoryListProps> = ({ activeDocType, onLoadDocument
                                     </button>
                                     <button
                                         onClick={() => setDeleteConfirm({ type: 'receipt', id: receiptItem.id! })}
+                                        className="px-3 py-1 bg-red-600 text-white text-sm rounded hover:bg-red-700 flex items-center gap-1"
+                                    >
+                                        <svg className="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                            <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M19 7l-.867 12.142A2 2 0 0116.138 21H7.862a2 2 0 01-1.995-1.858L5 7m5 4v6m4-6v6m1-10V4a1 1 0 00-1-1h-4a1 1 0 00-1 1v3M4 7h16" />
+                                        </svg>
+                                        ลบ
+                                    </button>
+                                </div>
+                            </div>
+                        </div>
+                    );
+                    })
+                ) : (
+                    // รายการใบเสนอราคา
+                    paginatedList.map((quotation) => {
+                        const quotationItem = quotation as QuotationDocument;
+                        return (
+                        <div key={quotationItem.id} className="bg-white border border-gray-200 rounded-lg p-4 hover:shadow-md transition-shadow">
+                            <div className="flex justify-between items-start">
+                                <div className="flex-1">
+                                    <h3 className="text-lg font-semibold text-gray-900">{quotationItem.customerName || 'ไม่ระบุลูกค้า'}</h3>
+                                    <div className="mt-2 grid grid-cols-2 gap-2 text-sm text-gray-600">
+                                        <div>
+                                            <span className="font-medium">เลขที่:</span>{' '}
+                                            <button
+                                                onClick={() => handleShowPreview(quotationItem)}
+                                                className="text-blue-600 hover:text-blue-800 hover:underline cursor-pointer"
+                                                title="คลิกเพื่อดูตัวอย่าง"
+                                            >
+                                                {quotationItem.quotationNumber}
+                                            </button>
+                                        </div>
+                                        <div>
+                                            <span className="font-medium">วันที่ออก:</span> {quotationItem.quotationDate ? formatDate(quotationItem.quotationDate) : 'ไม่ระบุ'}
+                                        </div>
+                                        <div>
+                                            <span className="font-medium">ผู้เสนอราคา:</span> {quotationItem.companyName || 'ไม่ระบุ'}
+                                        </div>
+                                        <div>
+                                            <span className="font-medium">ยอดรวม:</span> <span className="font-bold text-green-600">{quotationItem.total.toLocaleString('th-TH', { minimumFractionDigits: 2, maximumFractionDigits: 2 })} บาท</span>
+                                        </div>
+                                        {quotationItem.validUntilDate && (
+                                            <div className="col-span-2">
+                                                <span className="font-medium">วันที่หมดอายุ:</span> {formatDate(quotationItem.validUntilDate)}
+                                            </div>
+                                        )}
+                                    </div>
+                                    <div className="mt-2 text-xs text-gray-400">
+                                        บันทึกเมื่อ: {formatDate(quotationItem.createdAt)}
+                                    </div>
+                                </div>
+                                <div className="flex flex-col gap-2 ml-4">
+                                    <button
+                                        onClick={() => onLoadDocument(quotationItem)}
+                                        className="px-3 py-1 bg-amber-600 text-white text-sm rounded hover:bg-amber-700 flex items-center gap-1"
+                                        title="โหลดเอกสารเพื่อแก้ไข"
+                                    >
+                                        <svg className="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                            <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M11 5H6a2 2 0 00-2 2v11a2 2 0 002 2h11a2 2 0 002-2v-5m-1.414-9.414a2 2 0 112.828 2.828L11.828 15H9v-2.828l8.586-8.586z" />
+                                        </svg>
+                                        ✏️ แก้ไข
+                                    </button>
+                                    <button
+                                        onClick={() => handleDownloadPdf(quotationItem)}
+                                        disabled={downloadingPdfId === quotationItem.id}
+                                        className="px-3 py-1 bg-blue-600 text-white text-sm rounded hover:bg-blue-700 flex items-center gap-1 disabled:opacity-50 disabled:cursor-not-allowed"
+                                        title="ดาวน์โหลด PDF"
+                                    >
+                                        {downloadingPdfId === quotationItem.id ? (
+                                            <>
+                                                <svg className="animate-spin h-4 w-4" xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24">
+                                                    <circle className="opacity-25" cx="12" cy="12" r="10" stroke="currentColor" strokeWidth="4"></circle>
+                                                    <path className="opacity-75" fill="currentColor" d="M4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4zm2 5.291A7.962 7.962 0 014 12H0c0 3.042 1.135 5.824 3 7.938l3-2.647z"></path>
+                                                </svg>
+                                                กำลังสร้าง...
+                                            </>
+                                        ) : (
+                                            <>
+                                                <svg className="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                                    <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M12 10v6m0 0l-3-3m3 3l3-3m2 8H7a2 2 0 01-2-2V5a2 2 0 012-2h5.586a1 1 0 01.707.293l5.414 5.414a1 1 0 01.293.707V19a2 2 0 01-2 2z" />
+                                                </svg>
+                                                ดาวน์โหลด PDF
+                                            </>
+                                        )}
+                                    </button>
+                                    <button
+                                        onClick={() => setDeleteConfirm({ type: 'quotation', id: quotationItem.id! })}
                                         className="px-3 py-1 bg-red-600 text-white text-sm rounded hover:bg-red-700 flex items-center gap-1"
                                     >
                                         <svg className="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">

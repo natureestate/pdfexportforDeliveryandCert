@@ -1,6 +1,6 @@
 import React, { useState, useRef, useCallback, useEffect } from 'react';
 import { Routes, Route, Navigate } from 'react-router-dom';
-import { DeliveryNoteData, WarrantyData, InvoiceData, ReceiptData, LogoType } from './types';
+import { DeliveryNoteData, WarrantyData, InvoiceData, ReceiptData, QuotationData, LogoType } from './types';
 import { AuthProvider } from './contexts/AuthContext';
 import { CompanyProvider, useCompany } from './contexts/CompanyContext';
 import ProtectedRoute from './components/ProtectedRoute';
@@ -13,13 +13,15 @@ import InvoiceForm from './components/InvoiceForm';
 import InvoicePreview from './components/InvoicePreview';
 import ReceiptForm from './components/ReceiptForm';
 import ReceiptPreview from './components/ReceiptPreview';
+import QuotationForm from './components/QuotationForm';
+import QuotationPreview from './components/QuotationPreview';
 import HistoryList from './components/HistoryList';
 import AcceptInvitationPage from './components/AcceptInvitationPage';
 import SuperAdminDashboard from './components/SuperAdminDashboard';
 import CookieConsentModal from './components/CookieConsentModal';
 import { generatePdf } from './services/pdfGenerator';
-import { saveDeliveryNote, saveWarrantyCard, saveInvoice, saveReceipt } from './services/firestore';
-import type { DeliveryNoteDocument, WarrantyDocument, InvoiceDocument, ReceiptDocument } from './services/firestore';
+import { saveDeliveryNote, saveWarrantyCard, saveInvoice, saveReceipt, saveQuotation } from './services/firestore';
+import type { DeliveryNoteDocument, WarrantyDocument, InvoiceDocument, ReceiptDocument, QuotationDocument } from './services/firestore';
 
 const getInitialDeliveryData = (): DeliveryNoteData => ({
     logo: null,
@@ -148,7 +150,44 @@ const initialReceiptData: ReceiptData = {
     issuedBy: '',
 };
 
-type DocType = 'delivery' | 'warranty' | 'invoice' | 'receipt';
+const initialQuotationData: QuotationData = {
+    logo: null,
+    // ข้อมูลบริษัทผู้เสนอราคา
+    companyName: '',
+    companyAddress: '',
+    companyPhone: '',
+    companyEmail: '',
+    companyWebsite: '',
+    companyTaxId: '',
+    // ข้อมูลลูกค้า/ผู้รับเสนอราคา
+    customerName: '',
+    customerAddress: '',
+    customerPhone: '',
+    customerEmail: '',
+    customerTaxId: '',
+    // ข้อมูลเอกสาร
+    quotationNumber: '', // จะถูก auto-generate ใน QuotationForm
+    quotationDate: new Date(),
+    validUntilDate: null,
+    referenceNumber: '',
+    // รายการสินค้า/บริการ
+    items: [
+        { description: '', quantity: 1, unit: 'ชิ้น', unitPrice: 0, amount: 0, notes: '' },
+    ],
+    // ข้อมูลการเสนอราคา
+    subtotal: 0,
+    taxRate: 7, // Default 7%
+    taxAmount: 0,
+    discount: 0,
+    total: 0,
+    // ข้อมูลเพิ่มเติม
+    paymentTerms: '',
+    deliveryTerms: '',
+    notes: '',
+    issuedBy: '',
+};
+
+type DocType = 'delivery' | 'warranty' | 'invoice' | 'receipt' | 'quotation';
 type ViewMode = 'form' | 'history';
 type Notification = { show: boolean; message: string; type: 'success' | 'info' | 'error' };
 
@@ -159,6 +198,7 @@ const AppContent: React.FC = () => {
     const [warrantyData, setWarrantyData] = useState<WarrantyData>(initialWarrantyData);
     const [invoiceData, setInvoiceData] = useState<InvoiceData>(initialInvoiceData);
     const [receiptData, setReceiptData] = useState<ReceiptData>(initialReceiptData);
+    const [quotationData, setQuotationData] = useState<QuotationData>(initialQuotationData);
     const [activeTab, setActiveTab] = useState<DocType>('delivery');
     const [viewMode, setViewMode] = useState<ViewMode>('form');
     const [isLoading, setIsLoading] = useState<boolean>(false);
@@ -195,6 +235,12 @@ const AppContent: React.FC = () => {
             logoType: sharedLogoType,
         }));
         setReceiptData(prev => ({
+            ...prev,
+            logo: sharedLogo,
+            logoUrl: sharedLogoUrl,
+            logoType: sharedLogoType,
+        }));
+        setQuotationData(prev => ({
             ...prev,
             logo: sharedLogo,
             logoUrl: sharedLogoUrl,
@@ -239,6 +285,16 @@ const AppContent: React.FC = () => {
 
             // Sync ไปยัง ReceiptForm (ข้อมูลบริษัทผู้ขาย)
             setReceiptData(prev => ({
+                ...prev,
+                companyName: currentCompany.name,
+                companyAddress: currentCompany.address || '',
+                companyPhone: currentCompany.phone || '',
+                companyEmail: currentCompany.email || '',
+                companyWebsite: currentCompany.website || '',
+            }));
+
+            // Sync ไปยัง QuotationForm (ข้อมูลบริษัทผู้เสนอราคา)
+            setQuotationData(prev => ({
                 ...prev,
                 companyName: currentCompany.name,
                 companyAddress: currentCompany.address || '',
@@ -383,6 +439,18 @@ const AppContent: React.FC = () => {
                     showToast(`บันทึกใบเสร็จสำเร็จ (ID: ${id})`, 'success');
                     setEditingDocumentId(id); // เปลี่ยนเป็น edit mode
                 }
+            } else if (activeTab === 'quotation') {
+                if (isEditMode) {
+                    // อัปเดตเอกสารเดิม
+                    const { updateQuotation } = await import('./services/firestore');
+                    await updateQuotation(editingDocumentId, quotationData);
+                    showToast(`อัปเดตใบเสนอราคาสำเร็จ`, 'success');
+                } else {
+                    // สร้างเอกสารใหม่
+                    const id = await saveQuotation(quotationData, companyId);
+                    showToast(`บันทึกใบเสนอราคาสำเร็จ (ID: ${id})`, 'success');
+                    setEditingDocumentId(id); // เปลี่ยนเป็น edit mode
+                }
             }
         } catch (error) {
             console.error('Failed to save to Firestore:', error);
@@ -390,7 +458,7 @@ const AppContent: React.FC = () => {
         } finally {
             setIsSaving(false);
         }
-    }, [activeTab, deliveryData, warrantyData, invoiceData, receiptData, currentCompany, editingDocumentId]);
+    }, [activeTab, deliveryData, warrantyData, invoiceData, receiptData, quotationData, currentCompany, editingDocumentId]);
 
     /**
      * สร้างชื่อไฟล์ PDF ตามรูปแบบ: prefix + ลูกค้า + Create date (YYMMDD) + UUID
@@ -398,7 +466,7 @@ const AppContent: React.FC = () => {
      * @param data - ข้อมูลเอกสาร
      * @returns ชื่อไฟล์ PDF
      */
-    const generatePdfFilename = useCallback((type: 'delivery' | 'warranty' | 'invoice' | 'receipt', data: DeliveryNoteData | WarrantyData | InvoiceData | ReceiptData): string => {
+    const generatePdfFilename = useCallback((type: 'delivery' | 'warranty' | 'invoice' | 'receipt' | 'quotation', data: DeliveryNoteData | WarrantyData | InvoiceData | ReceiptData | QuotationData): string => {
         // สร้าง UUID (ใช้ crypto.randomUUID() หรือ fallback)
         const generateUUID = (): string => {
             if (typeof crypto !== 'undefined' && crypto.randomUUID) {
@@ -462,11 +530,19 @@ const AppContent: React.FC = () => {
             const uuid = generateUUID().substring(0, 8); // ใช้แค่ 8 ตัวแรกของ UUID
             
             return `${prefix}_${customerName}_${dateStr}_${uuid}.pdf`;
-        } else {
+        } else if (type === 'receipt') {
             const receiptData = data as ReceiptData;
             const prefix = 'RC';
             const customerName = cleanCustomerName(receiptData.customerName || 'Customer');
             const dateStr = formatDateToYYMMDD(receiptData.receiptDate);
+            const uuid = generateUUID().substring(0, 8); // ใช้แค่ 8 ตัวแรกของ UUID
+            
+            return `${prefix}_${customerName}_${dateStr}_${uuid}.pdf`;
+        } else {
+            const quotationData = data as QuotationData;
+            const prefix = 'QT';
+            const customerName = cleanCustomerName(quotationData.customerName || 'Customer');
+            const dateStr = formatDateToYYMMDD(quotationData.quotationDate);
             const uuid = generateUUID().substring(0, 8); // ใช้แค่ 8 ตัวแรกของ UUID
             
             return `${prefix}_${customerName}_${dateStr}_${uuid}.pdf`;
@@ -498,7 +574,7 @@ const AppContent: React.FC = () => {
         showToast('กำลังสร้าง PDF...', 'info');
 
         // สร้างชื่อไฟล์ตามรูปแบบใหม่: prefix + ลูกค้า + Create date (YYMMDD) + UUID
-        const filename = generatePdfFilename(activeTab, activeTab === 'delivery' ? deliveryData : activeTab === 'warranty' ? warrantyData : activeTab === 'invoice' ? invoiceData : receiptData);
+        const filename = generatePdfFilename(activeTab, activeTab === 'delivery' ? deliveryData : activeTab === 'warranty' ? warrantyData : activeTab === 'invoice' ? invoiceData : activeTab === 'receipt' ? receiptData : quotationData);
 
         try {
             await generatePdf(printableAreaRef.current, filename);
@@ -509,10 +585,10 @@ const AppContent: React.FC = () => {
         } finally {
             setIsLoading(false);
         }
-    }, [activeTab, deliveryData, warrantyData, invoiceData, receiptData, currentCompany, generatePdfFilename]);
+    }, [activeTab, deliveryData, warrantyData, invoiceData, receiptData, quotationData, currentCompany, generatePdfFilename]);
 
     // ฟังก์ชันโหลดเอกสารจาก History (สำหรับ Edit)
-    const handleLoadDocument = useCallback((doc: DeliveryNoteDocument | WarrantyDocument | InvoiceDocument | ReceiptDocument) => {
+    const handleLoadDocument = useCallback((doc: DeliveryNoteDocument | WarrantyDocument | InvoiceDocument | ReceiptDocument | QuotationDocument) => {
         // โหลด logo จากเอกสาร
         if (doc.logoUrl || doc.logo) {
             setSharedLogo(doc.logo || null);
@@ -545,13 +621,21 @@ const AppContent: React.FC = () => {
                 dueDate: doc.dueDate || null,
             });
             setActiveTab('invoice');
-        } else {
+        } else if ('receiptNumber' in doc) {
             // เป็น ReceiptDocument
             setReceiptData({
                 ...doc,
                 receiptDate: doc.receiptDate || null,
             });
             setActiveTab('receipt');
+        } else {
+            // เป็น QuotationDocument
+            setQuotationData({
+                ...doc,
+                quotationDate: doc.quotationDate || null,
+                validUntilDate: doc.validUntilDate || null,
+            });
+            setActiveTab('quotation');
         }
         setViewMode('form');
         showToast('โหลดเอกสารสำเร็จ - โหมดแก้ไข', 'info');
@@ -602,9 +686,16 @@ const AppContent: React.FC = () => {
                 logoUrl: sharedLogoUrl,
                 logoType: sharedLogoType,
             });
-        } else {
+        } else if (activeTab === 'receipt') {
             setReceiptData({
                 ...initialReceiptData,
+                logo: sharedLogo,
+                logoUrl: sharedLogoUrl,
+                logoType: sharedLogoType,
+            });
+        } else {
+            setQuotationData({
+                ...initialQuotationData,
                 logo: sharedLogo,
                 logoUrl: sharedLogoUrl,
                 logoType: sharedLogoType,
@@ -700,6 +791,12 @@ const AppContent: React.FC = () => {
                                     >
                                         ใบเสร็จ
                                     </button>
+                                    <button
+                                        onClick={() => setActiveTab('quotation')}
+                                        className={`${activeTab === 'quotation' ? 'border-indigo-500 text-indigo-600' : 'border-transparent text-gray-500 hover:text-gray-700 hover:border-gray-300'} whitespace-nowrap py-4 px-1 border-b-2 font-medium text-sm transition-colors`}
+                                    >
+                                        ใบเสนอราคา
+                                    </button>
                                 </nav>
                             </div>
                             
@@ -748,10 +845,25 @@ const AppContent: React.FC = () => {
                                     }}
                                     onSetDefaultLogo={handleSetDefaultLogo}
                                 />
-                            ) : (
+                            ) : activeTab === 'receipt' ? (
                                 <ReceiptForm
                                     data={receiptData}
                                     setData={setReceiptData}
+                                    sharedLogo={sharedLogo}
+                                    sharedLogoUrl={sharedLogoUrl}
+                                    sharedLogoType={sharedLogoType}
+                                    companyDefaultLogoUrl={currentCompany?.defaultLogoUrl}
+                                    onLogoChange={(logo, logoUrl, logoType) => {
+                                        setSharedLogo(logo);
+                                        setSharedLogoUrl(logoUrl);
+                                        setSharedLogoType(logoType);
+                                    }}
+                                    onSetDefaultLogo={handleSetDefaultLogo}
+                                />
+                            ) : (
+                                <QuotationForm
+                                    data={quotationData}
+                                    setData={setQuotationData}
                                     sharedLogo={sharedLogo}
                                     sharedLogoUrl={sharedLogoUrl}
                                     sharedLogoType={sharedLogoType}
@@ -827,8 +939,10 @@ const AppContent: React.FC = () => {
                                         <WarrantyPreview ref={printableAreaRef} data={warrantyData} />
                                     ) : activeTab === 'invoice' ? (
                                         <InvoicePreview ref={printableAreaRef} data={invoiceData} />
-                                    ) : (
+                                    ) : activeTab === 'receipt' ? (
                                         <ReceiptPreview ref={printableAreaRef} data={receiptData} />
+                                    ) : (
+                                        <QuotationPreview ref={printableAreaRef} data={quotationData} />
                                     )}
                                 </div>
                             </div>

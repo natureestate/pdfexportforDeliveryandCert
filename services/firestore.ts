@@ -17,13 +17,14 @@ import {
     QueryConstraint
 } from "firebase/firestore";
 import { db, auth } from "../firebase.config";
-import { DeliveryNoteData, WarrantyData, InvoiceData, ReceiptData } from "../types";
+import { DeliveryNoteData, WarrantyData, InvoiceData, ReceiptData, QuotationData } from "../types";
 
 // Collection names
 const DELIVERY_NOTES_COLLECTION = "deliveryNotes";
 const WARRANTY_CARDS_COLLECTION = "warrantyCards";
 const INVOICES_COLLECTION = "invoices";
 const RECEIPTS_COLLECTION = "receipts";
+const QUOTATIONS_COLLECTION = "quotations";
 
 /**
  * สร้าง Document ID ที่อ่านง่าย สำหรับใบส่งมอบงาน
@@ -70,6 +71,21 @@ const generateReceiptId = (receiptNumber: string): string => {
     return `${yy}${mm}${dd}_RC-${cleanReceiptNumber}`;
 };
 
+/**
+ * สร้าง Document ID ที่อ่านง่าย สำหรับใบเสนอราคา
+ * รูปแบบ: YYMMDD_QT-XXXX (เช่น 251010_QT-2025-001)
+ */
+const generateQuotationId = (quotationNumber: string): string => {
+    const now = new Date();
+    const yy = String(now.getFullYear()).slice(-2);
+    const mm = String(now.getMonth() + 1).padStart(2, '0');
+    const dd = String(now.getDate()).padStart(2, '0');
+    
+    // ลบ "QT-" ออกจาก quotationNumber ถ้ามี แล้วใส่กลับในรูปแบบที่ต้องการ
+    const cleanQuotationNumber = quotationNumber.replace(/^QT-/i, '');
+    return `${yy}${mm}${dd}_QT-${cleanQuotationNumber}`;
+};
+
 // Interface สำหรับเอกสารที่บันทึกใน Firestore
 export interface FirestoreDocument {
     id?: string;
@@ -83,6 +99,7 @@ export interface DeliveryNoteDocument extends DeliveryNoteData, FirestoreDocumen
 export interface WarrantyDocument extends WarrantyData, FirestoreDocument {}
 export interface InvoiceDocument extends InvoiceData, FirestoreDocument {}
 export interface ReceiptDocument extends ReceiptData, FirestoreDocument {}
+export interface QuotationDocument extends QuotationData, FirestoreDocument {}
 
 // ==================== Delivery Notes Functions ====================
 
@@ -1185,5 +1202,240 @@ export const searchReceiptByReceiptNumber = async (receiptNumber: string, compan
     } catch (error) {
         console.error("Error searching receipt:", error);
         throw new Error("ไม่สามารถค้นหาใบเสร็จได้");
+    }
+};
+
+// ==================== Quotations Functions ====================
+
+/**
+ * บันทึกใบเสนอราคาใหม่ลง Firestore
+ * @param data - ข้อมูลใบเสนอราคา
+ * @param companyId - ID ของบริษัท (optional)
+ */
+export const saveQuotation = async (data: QuotationData, companyId?: string): Promise<string> => {
+    try {
+        // ตรวจสอบว่า user login แล้วหรือยัง
+        const currentUser = auth.currentUser;
+        if (!currentUser) {
+            throw new Error("กรุณา Login ก่อนบันทึกข้อมูล");
+        }
+        
+        // สร้าง Document ID ที่อ่านง่าย
+        const docId = generateQuotationId(data.quotationNumber);
+        const docRef = doc(db, QUOTATIONS_COLLECTION, docId);
+        
+        // เตรียมข้อมูลสำหรับบันทึก - ไม่บันทึก Base64 ถ้ามี logoUrl
+        const dataToSave = {
+            ...data,
+            // ถ้ามี logoUrl (อัปโหลดไปยัง Storage แล้ว) ให้ลบ Base64 ออก
+            logo: data.logoUrl ? null : data.logo,
+            userId: currentUser.uid, // เพิ่ม userId
+            companyId: companyId || null, // เพิ่ม companyId
+            isDeleted: false, // ตั้งค่า isDeleted เป็น false สำหรับเอกสารใหม่
+            createdAt: Timestamp.now(),
+            updatedAt: Timestamp.now(),
+        };
+        
+        await setDoc(docRef, dataToSave);
+        
+        return docId;
+    } catch (error) {
+        console.error("Error saving quotation:", error);
+        throw new Error("ไม่สามารถบันทึกใบเสนอราคาได้");
+    }
+};
+
+/**
+ * ดึงข้อมูลใบเสนอราคาตาม ID
+ */
+export const getQuotation = async (id: string): Promise<QuotationDocument | null> => {
+    try {
+        const docRef = doc(db, QUOTATIONS_COLLECTION, id);
+        const docSnap = await getDoc(docRef);
+        
+        if (docSnap.exists()) {
+            const data = docSnap.data();
+            // ถ้าเอกสารถูกลบ (soft delete) ให้ return null
+            if (data.isDeleted) {
+                return null;
+            }
+            return {
+                id: docSnap.id,
+                ...data,
+                quotationDate: data.quotationDate?.toDate() || null,
+                validUntilDate: data.validUntilDate?.toDate() || null,
+                createdAt: data.createdAt?.toDate(),
+                updatedAt: data.updatedAt?.toDate(),
+                deletedAt: data.deletedAt?.toDate() || null,
+            } as QuotationDocument;
+        }
+        return null;
+    } catch (error) {
+        console.error("Error getting quotation:", error);
+        throw new Error("ไม่สามารถดึงข้อมูลใบเสนอราคาได้");
+    }
+};
+
+/**
+ * ดึงรายการใบเสนอราคาทั้งหมด (มีการ limit) - เฉพาะของ user และ company ที่เลือก
+ * @param limitCount - จำนวนเอกสารที่ต้องการดึง
+ * @param companyId - ID ของบริษัท (optional) ถ้าไม่ระบุจะดึงทั้งหมด
+ */
+export const getQuotations = async (limitCount: number = 50, companyId?: string): Promise<QuotationDocument[]> => {
+    try {
+        // ตรวจสอบว่า user login แล้วหรือยัง
+        const currentUser = auth.currentUser;
+        if (!currentUser) {
+            throw new Error("กรุณา Login ก่อนดูข้อมูล");
+        }
+        
+        // สร้าง query constraints
+        const constraints: QueryConstraint[] = [
+            where("userId", "==", currentUser.uid), // กรองเฉพาะของ user นี้
+        ];
+        
+        // ถ้ามี companyId ให้กรองเฉพาะบริษัทนั้น
+        if (companyId) {
+            constraints.push(where("companyId", "==", companyId));
+        }
+        
+        // กรองเฉพาะเอกสารที่ยังไม่ถูกลบ (isDeleted != true)
+        constraints.push(where("isDeleted", "==", false));
+        
+        constraints.push(orderBy("createdAt", "desc"));
+        constraints.push(limit(limitCount));
+        
+        const q = query(collection(db, QUOTATIONS_COLLECTION), ...constraints);
+        
+        const querySnapshot = await getDocs(q);
+        return querySnapshot.docs
+            .map(doc => {
+                const data = doc.data();
+                // ตรวจสอบอีกครั้งที่ client-side เพื่อความแน่ใจ
+                if (data.isDeleted === true) {
+                    return null;
+                }
+                return {
+                    id: doc.id,
+                    ...data,
+                    quotationDate: data.quotationDate?.toDate() || null,
+                    validUntilDate: data.validUntilDate?.toDate() || null,
+                    createdAt: data.createdAt?.toDate(),
+                    updatedAt: data.updatedAt?.toDate(),
+                    deletedAt: data.deletedAt?.toDate() || null,
+                } as QuotationDocument;
+            })
+            .filter((doc): doc is QuotationDocument => doc !== null && !doc.isDeleted); // กรองเอกสารที่ถูกลบ (soft delete) ออก
+    } catch (error) {
+        console.error("Error getting quotations:", error);
+        throw new Error("ไม่สามารถดึงรายการใบเสนอราคาได้");
+    }
+};
+
+/**
+ * อัปเดตใบเสนอราคา
+ */
+export const updateQuotation = async (id: string, data: Partial<QuotationData>): Promise<void> => {
+    try {
+        // ตรวจสอบว่า user login แล้วหรือยัง
+        const currentUser = auth.currentUser;
+        if (!currentUser) {
+            throw new Error("กรุณา Login ก่อนอัปเดตข้อมูล");
+        }
+        
+        const docRef = doc(db, QUOTATIONS_COLLECTION, id);
+        
+        // เตรียมข้อมูลสำหรับอัปเดต - ไม่บันทึก Base64 ถ้ามี logoUrl
+        const dataToUpdate: any = {
+            ...data,
+            // ถ้ามี logoUrl (อัปโหลดไปยัง Storage แล้ว) ให้ลบ Base64 ออก
+            logo: data.logoUrl ? null : data.logo,
+            updatedAt: Timestamp.now(),
+        };
+        
+        await updateDoc(docRef, dataToUpdate);
+        console.log(`✅ อัปเดตใบเสนอราคาสำเร็จ: ${id}`);
+    } catch (error) {
+        console.error("Error updating quotation:", error);
+        throw error instanceof Error ? error : new Error("ไม่สามารถอัปเดตใบเสนอราคาได้");
+    }
+};
+
+/**
+ * ลบใบเสนอราคา (Soft Delete)
+ */
+export const deleteQuotation = async (id: string): Promise<void> => {
+    try {
+        // ตรวจสอบว่า user login แล้วหรือยัง
+        const currentUser = auth.currentUser;
+        if (!currentUser) {
+            throw new Error("กรุณา Login ก่อนลบข้อมูล");
+        }
+        
+        const docRef = doc(db, QUOTATIONS_COLLECTION, id);
+        
+        // Soft delete - ตั้งค่า isDeleted เป็น true และ deletedAt เป็นเวลาปัจจุบัน
+        await updateDoc(docRef, {
+            isDeleted: true,
+            deletedAt: Timestamp.now(),
+            updatedAt: Timestamp.now(),
+        });
+        
+        console.log(`✅ Soft delete quotation สำเร็จ: ${id}`);
+    } catch (error) {
+        console.error("Error deleting quotation:", error);
+        throw error instanceof Error ? error : new Error("ไม่สามารถลบใบเสนอราคาได้");
+    }
+};
+
+/**
+ * ค้นหาใบเสนอราคาตามเลขที่เอกสาร
+ * @param quotationNumber - เลขที่ใบเสนอราคาที่ต้องการค้นหา
+ * @param companyId - ID ของบริษัท (optional) ถ้าไม่ระบุจะค้นหาทั้งหมดของ user
+ */
+export const searchQuotationByQuotationNumber = async (quotationNumber: string, companyId?: string): Promise<QuotationDocument[]> => {
+    try {
+        // ตรวจสอบว่า user login แล้วหรือยัง
+        const currentUser = auth.currentUser;
+        if (!currentUser) {
+            throw new Error("กรุณา Login ก่อนค้นหาข้อมูล");
+        }
+
+        // สร้าง query constraints
+        const constraints: QueryConstraint[] = [
+            where("quotationNumber", "==", quotationNumber),
+            where("userId", "==", currentUser.uid), // กรองเฉพาะของ user นี้
+            where("isDeleted", "==", false), // กรองเฉพาะเอกสารที่ยังไม่ถูกลบ
+        ];
+
+        // ถ้ามี companyId ให้กรองเฉพาะบริษัทนั้น
+        if (companyId) {
+            constraints.push(where("companyId", "==", companyId));
+        }
+
+        const q = query(collection(db, QUOTATIONS_COLLECTION), ...constraints);
+        
+        const querySnapshot = await getDocs(q);
+        return querySnapshot.docs
+            .map(doc => {
+                const data = doc.data();
+                // ตรวจสอบอีกครั้งที่ client-side เพื่อความแน่ใจ
+                if (data.isDeleted === true) {
+                    return null;
+                }
+                return {
+                    id: doc.id,
+                    ...data,
+                    quotationDate: data.quotationDate?.toDate() || null,
+                    validUntilDate: data.validUntilDate?.toDate() || null,
+                    createdAt: data.createdAt?.toDate(),
+                    updatedAt: data.updatedAt?.toDate(),
+                    deletedAt: data.deletedAt?.toDate() || null,
+                } as QuotationDocument;
+            })
+            .filter((doc): doc is QuotationDocument => doc !== null && !doc.isDeleted); // กรองเอกสารที่ถูกลบ (soft delete) ออก
+    } catch (error) {
+        console.error("Error searching quotation:", error);
+        throw new Error("ไม่สามารถค้นหาใบเสนอราคาได้");
     }
 };
