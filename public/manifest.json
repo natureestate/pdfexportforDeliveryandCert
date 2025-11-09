@@ -1,0 +1,28 @@
+{
+  "name": "NE Doc Form - ระบบจัดการเอกสาร",
+  "short_name": "NE Doc Form",
+  "description": "ระบบสร้างและจัดการเอกสารใบส่งมอบงานและใบรับประกันสินค้า",
+  "start_url": "/",
+  "display": "standalone",
+  "background_color": "#ffffff",
+  "theme_color": "#4f46e5",
+  "orientation": "portrait-primary",
+  "icons": [
+    {
+      "src": "/icon-192x192.svg",
+      "sizes": "192x192",
+      "type": "image/svg+xml",
+      "purpose": "any maskable"
+    },
+    {
+      "src": "/icon-512x512.svg",
+      "sizes": "512x512",
+      "type": "image/svg+xml",
+      "purpose": "any maskable"
+    }
+  ],
+  "categories": ["business", "productivity"],
+  "lang": "th",
+  "dir": "ltr"
+}
+
