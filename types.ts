@@ -14,6 +14,9 @@ export type UserRole = 'admin' | 'member';
 // สถานะของสมาชิกในองค์กร
 export type MemberStatus = 'active' | 'pending' | 'inactive';
 
+// สถานะของคำเชิญ
+export type InvitationStatus = 'pending' | 'accepted' | 'rejected' | 'expired';
+
 // บทบาทระดับระบบ (System-wide roles)
 export type SystemRole = 'superadmin' | 'user';
 
@@ -530,6 +533,58 @@ export interface PurchaseOrderData {
     deliveryTerms?: string;          // เงื่อนไขการส่งมอบ (optional)
     notes?: string;                 // หมายเหตุเพิ่มเติม (optional)
     issuedBy?: string;             // ผู้ออกเอกสาร (optional)
+}
+
+// Memo Data - ข้อมูลใบบันทึก (Memo)
+export interface MemoData {
+    logo: string | null;           // Base64 string หรือ URL ของโลโก้
+    logoUrl?: string | null;       // URL จาก Firebase Storage (สำหรับบันทึกใน Firestore)
+    logoType?: LogoType;           // ประเภทของโลโก้
+    
+    // ข้อมูลบริษัทผู้ออกเอกสาร
+    companyName: string;            // ชื่อบริษัทผู้ออกเอกสาร
+    companyAddress: string;         // ที่อยู่บริษัทผู้ออกเอกสาร
+    companyPhone: string;           // เบอร์โทรศัพท์บริษัทผู้ออกเอกสาร
+    companyEmail?: string;         // อีเมลบริษัทผู้ออกเอกสาร (optional)
+    companyWebsite?: string;        // เว็บไซต์บริษัทผู้ออกเอกสาร (optional)
+    
+    // ส่วนที่ 1: หัวกระดาษ (Header)
+    memoNumber: string;             // เลขที่เอกสาร (Memo No.) เช่น MEMO-2025-101
+    date: Date | null;             // วันที่ออกเอกสาร
+    fromName: string;              // จาก (ชื่อ และ/หรือ ตำแหน่ง/ฝ่าย)
+    fromPosition?: string;          // ตำแหน่ง/ฝ่าย (optional)
+    toName: string;                 // ถึง (ชื่อผู้รับ)
+    toPosition?: string;           // ตำแหน่งผู้รับ (optional)
+    cc?: string;                    // สำเนาถึง (ถ้ามี) - รองรับหลายคนคั่นด้วย comma
+    subject: string;                // เรื่อง (ต้องชัดเจน)
+    
+    // ส่วนที่ 2: การอ้างอิงโครงการ (Project Reference)
+    projectName?: string;           // ชื่อโครงการ / ลูกค้า
+    projectId?: string;             // รหัสโครงการ (ถ้ามี)
+    referenceDocument?: string;     // อ้างอิงถึงเอกสารเดิม (เช่น "ตามใบเสนอราคาที่...")
+    
+    // ส่วนที่ 3: เนื้อหา (Body)
+    purpose: string;               // วัตถุประสงค์ (เพื่อแจ้งให้ทราบ, เพื่อขออนุมัติ, เพื่อยืนยันคำสั่ง, เพื่อสั่งการ)
+    details: string;                // รายละเอียด (เกิดอะไรขึ้น? มีอะไรเปลี่ยนแปลง? ข้อมูลคืออะไร?)
+    reason?: string;                // เหตุผล (ทำไมถึงต้องทำ/เปลี่ยน)
+    
+    // ส่วนที่ 4: การดำเนินการ (Action)
+    actionRequired: string;         // สิ่งที่ต้องดำเนินการ (เช่น "โปรดลงนามอนุมัติ", "โปรดตรวจสอบสต็อก")
+    deadline?: Date | null;         // กำหนดเสร็จ (ต้องดำเนินการภายในวันไหน)
+    contactPerson?: string;         // ผู้ประสานงาน (ชื่อ)
+    contactPhone?: string;          // เบอร์โทรผู้ประสานงาน
+    
+    // ส่วนที่ 5: การลงนาม (Signature)
+    issuedByName: string;          // ชื่อ-นามสกุลผู้ออก Memo
+    issuedByPosition: string;       // ตำแหน่งผู้ออก Memo
+    
+    // ส่วนสำหรับผู้รับ (ถ้าจำเป็นต้องมีการตอบกลับ)
+    requireResponse?: boolean;      // ต้องการการตอบกลับหรือไม่
+    responseReceived?: boolean;     // ได้รับการตอบกลับแล้วหรือไม่
+    responseStatus?: 'acknowledged' | 'approved' | 'rejected';  // สถานะการตอบกลับ
+    responseReason?: string;        // เหตุผล (ถ้าไม่อนุมัติ)
+    responseName?: string;          // ชื่อผู้รับทราบ/อนุมัติ
+    responseDate?: Date | null;     // วันที่รับทราบ/อนุมัติ
 }
 
 // ข้อมูลคำเชิญเข้าองค์กร

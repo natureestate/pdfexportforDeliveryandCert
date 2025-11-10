@@ -8,7 +8,8 @@ import {
     ReceiptData, 
     TaxInvoiceData,
     QuotationData, 
-    PurchaseOrderData 
+    PurchaseOrderData,
+    MemoData
 } from '../types';
 import {
     saveDeliveryNote,
@@ -25,6 +26,8 @@ import {
     updateQuotation,
     savePurchaseOrder,
     updatePurchaseOrder,
+    saveMemo,
+    updateMemo,
 } from '../services/firestore';
 import type {
     DeliveryNoteDocument,
@@ -34,9 +37,10 @@ import type {
     TaxInvoiceDocument,
     QuotationDocument,
     PurchaseOrderDocument,
+    MemoDocument,
 } from '../services/firestore';
 
-export type DocType = 'delivery' | 'warranty' | 'invoice' | 'receipt' | 'tax-invoice' | 'quotation' | 'purchase-order';
+export type DocType = 'delivery' | 'warranty' | 'invoice' | 'receipt' | 'tax-invoice' | 'quotation' | 'purchase-order' | 'memo';
 
 // Union type สำหรับ document data
 export type DocumentData = 
@@ -46,7 +50,8 @@ export type DocumentData =
     | ReceiptData 
     | TaxInvoiceData
     | QuotationData 
-    | PurchaseOrderData;
+    | PurchaseOrderData
+    | MemoData;
 
 // Union type สำหรับ document documents
 export type DocumentDocument = 
@@ -56,7 +61,8 @@ export type DocumentDocument =
     | ReceiptDocument
     | TaxInvoiceDocument
     | QuotationDocument
-    | PurchaseOrderDocument;
+    | PurchaseOrderDocument
+    | MemoDocument;
 
 // Helper function สำหรับดึงชื่อลูกค้า/ผู้ขายจาก document data
 type CustomerNameGetter<T extends DocumentData> = (data: T) => string;
@@ -160,6 +166,18 @@ export const DOCUMENT_REGISTRY = {
             update: 'อัปเดตใบสั่งซื้อสำเร็จ',
         },
     } as DocumentConfig<PurchaseOrderData>,
+    
+    'memo': {
+        prefix: 'MEMO',
+        saveFn: saveMemo,
+        updateFn: updateMemo,
+        getCustomerName: (data: MemoData) => data.toName || data.projectName || 'Recipient',
+        getDate: (data: MemoData) => data.date,
+        successMessages: {
+            save: 'บันทึกใบบันทึกสำเร็จ',
+            update: 'อัปเดตใบบันทึกสำเร็จ',
+        },
+    } as DocumentConfig<MemoData>,
 } as const;
 
 /**

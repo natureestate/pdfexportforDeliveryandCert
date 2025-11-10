@@ -12,6 +12,7 @@ import {
     getTaxInvoices,
     getQuotations,
     getPurchaseOrders,
+    getMemos,
     deleteDeliveryNote,
     deleteWarrantyCard,
     deleteInvoice,
@@ -19,6 +20,7 @@ import {
     deleteTaxInvoice,
     deleteQuotation,
     deletePurchaseOrder,
+    deleteMemo,
 } from '../services/firestore';
 import type {
     DeliveryNoteDocument,
@@ -28,6 +30,7 @@ import type {
     TaxInvoiceDocument,
     QuotationDocument,
     PurchaseOrderDocument,
+    MemoDocument,
 } from '../services/firestore';
 
 // Registry สำหรับ fetch และ delete functions
@@ -39,6 +42,7 @@ const FETCH_FUNCTIONS = {
     'tax-invoice': getTaxInvoices,
     'quotation': getQuotations,
     'purchase-order': getPurchaseOrders,
+    'memo': getMemos,
 } as const;
 
 const DELETE_FUNCTIONS = {
@@ -49,6 +53,7 @@ const DELETE_FUNCTIONS = {
     'tax-invoice': deleteTaxInvoice,
     'quotation': deleteQuotation,
     'purchase-order': deletePurchaseOrder,
+    'memo': deleteMemo,
 } as const;
 
 // Document type names สำหรับแสดงผล
@@ -60,6 +65,7 @@ const DOCUMENT_TYPE_NAMES = {
     'tax-invoice': 'ใบกำกับภาษี',
     'quotation': 'ใบเสนอราคา',
     'purchase-order': 'ใบสั่งซื้อ',
+    'memo': 'ใบบันทึก',
 } as const;
 
 interface UseDocumentListOptions {

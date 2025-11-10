@@ -1,6 +1,6 @@
 import React, { useState, useRef, useCallback, useEffect } from 'react';
 import { Routes, Route, Navigate } from 'react-router-dom';
-import { DeliveryNoteData, WarrantyData, InvoiceData, ReceiptData, TaxInvoiceData, QuotationData, PurchaseOrderData, LogoType } from './types';
+import { DeliveryNoteData, WarrantyData, InvoiceData, ReceiptData, TaxInvoiceData, QuotationData, PurchaseOrderData, MemoData, LogoType } from './types';
 import { AuthProvider } from './contexts/AuthContext';
 import { CompanyProvider, useCompany } from './contexts/CompanyContext';
 import ProtectedRoute from './components/ProtectedRoute';
@@ -19,13 +19,15 @@ import QuotationForm from './components/QuotationForm';
 import QuotationPreview from './components/QuotationPreview';
 import PurchaseOrderForm from './components/PurchaseOrderForm';
 import PurchaseOrderPreview from './components/PurchaseOrderPreview';
+import MemoForm from './components/MemoForm';
+import MemoPreview from './components/MemoPreview';
 import HistoryList from './components/HistoryList';
 import AcceptInvitationPage from './components/AcceptInvitationPage';
 import SuperAdminDashboard from './components/SuperAdminDashboard';
 import CookieConsentModal from './components/CookieConsentModal';
 import { generatePdf } from './services/pdfGenerator';
 import { saveDeliveryNote, saveWarrantyCard, saveInvoice, saveReceipt, saveTaxInvoice, saveQuotation, savePurchaseOrder } from './services/firestore';
-import type { DeliveryNoteDocument, WarrantyDocument, InvoiceDocument, ReceiptDocument, TaxInvoiceDocument, QuotationDocument, PurchaseOrderDocument } from './services/firestore';
+import type { DeliveryNoteDocument, WarrantyDocument, InvoiceDocument, ReceiptDocument, TaxInvoiceDocument, QuotationDocument, PurchaseOrderDocument, MemoDocument } from './services/firestore';
 import { DOCUMENT_REGISTRY, generatePdfFilename as generatePdfFilenameFromRegistry, saveOrUpdateDocument, type DocType } from './utils/documentRegistry';
 
 const getInitialDeliveryData = (): DeliveryNoteData => ({
@@ -267,6 +269,44 @@ const initialPurchaseOrderData: PurchaseOrderData = {
     issuedBy: '',
 };
 
+const initialMemoData: MemoData = {
+    logo: null,
+    // ข้อมูลบริษัทผู้ออกเอกสาร
+    companyName: '',
+    companyAddress: '',
+    companyPhone: '',
+    companyEmail: '',
+    companyWebsite: '',
+    // ส่วนที่ 1: หัวกระดาษ
+    memoNumber: '', // จะถูก auto-generate ใน MemoForm
+    date: new Date(),
+    fromName: '',
+    fromPosition: '',
+    toName: '',
+    toPosition: '',
+    cc: '',
+    subject: '',
+    // ส่วนที่ 2: การอ้างอิงโครงการ
+    projectName: '',
+    projectId: '',
+    referenceDocument: '',
+    // ส่วนที่ 3: เนื้อหา
+    purpose: '',
+    details: '',
+    reason: '',
+    // ส่วนที่ 4: การดำเนินการ
+    actionRequired: '',
+    deadline: null,
+    contactPerson: '',
+    contactPhone: '',
+    // ส่วนที่ 5: การลงนาม
+    issuedByName: '',
+    issuedByPosition: '',
+    // ส่วนสำหรับผู้รับ
+    requireResponse: false,
+    responseReceived: false,
+};
+
 type ViewMode = 'form' | 'history';
 type Notification = { show: boolean; message: string; type: 'success' | 'info' | 'error' };
 
@@ -280,6 +320,7 @@ const AppContent: React.FC = () => {
     const [taxInvoiceData, setTaxInvoiceData] = useState<TaxInvoiceData>(initialTaxInvoiceData);
     const [quotationData, setQuotationData] = useState<QuotationData>(initialQuotationData);
     const [purchaseOrderData, setPurchaseOrderData] = useState<PurchaseOrderData>(initialPurchaseOrderData);
+    const [memoData, setMemoData] = useState<MemoData>(initialMemoData);
     const [activeTab, setActiveTab] = useState<DocType>('delivery');
     const [viewMode, setViewMode] = useState<ViewMode>('form');
     const [isLoading, setIsLoading] = useState<boolean>(false);
@@ -312,6 +353,7 @@ const AppContent: React.FC = () => {
         setTaxInvoiceData(updateLogo);
         setQuotationData(updateLogo);
         setPurchaseOrderData(updateLogo);
+        setMemoData(updateLogo);
     }, [sharedLogo, sharedLogoUrl, sharedLogoType]);
 
     // Sync ข้อมูลบริษัทจาก currentCompany ไปยัง form data
@@ -381,6 +423,16 @@ const AppContent: React.FC = () => {
 
             // Sync ไปยัง PurchaseOrderForm (ข้อมูลบริษัทผู้สั่งซื้อ)
             setPurchaseOrderData(prev => ({
+                ...prev,
+                companyName: currentCompany.name,
+                companyAddress: currentCompany.address || '',
+                companyPhone: currentCompany.phone || '',
+                companyEmail: currentCompany.email || '',
+                companyWebsite: currentCompany.website || '',
+            }));
+
+            // Sync ไปยัง MemoForm (ข้อมูลบริษัทผู้ออกเอกสาร)
+            setMemoData(prev => ({
                 ...prev,
                 companyName: currentCompany.name,
                 companyAddress: currentCompany.address || '',
@@ -485,8 +537,10 @@ const AppContent: React.FC = () => {
                 return quotationData;
             case 'purchase-order':
                 return purchaseOrderData;
+            case 'memo':
+                return memoData;
         }
-    }, [activeTab, deliveryData, warrantyData, invoiceData, receiptData, taxInvoiceData, quotationData, purchaseOrderData]);
+    }, [activeTab, deliveryData, warrantyData, invoiceData, receiptData, taxInvoiceData, quotationData, purchaseOrderData, memoData]);
 
     // ฟังก์ชันบันทึกข้อมูลลง Firestore พร้อม companyId (รองรับทั้ง create และ update)
     // Refactored: ใช้ Document Registry Pattern
@@ -566,7 +620,7 @@ const AppContent: React.FC = () => {
     }, [activeTab, getCurrentData, currentCompany, generatePdfFilename]);
 
     // ฟังก์ชันโหลดเอกสารจาก History (สำหรับ Edit)
-    const handleLoadDocument = useCallback((doc: DeliveryNoteDocument | WarrantyDocument | InvoiceDocument | ReceiptDocument | TaxInvoiceDocument | QuotationDocument | PurchaseOrderDocument) => {
+    const handleLoadDocument = useCallback((doc: DeliveryNoteDocument | WarrantyDocument | InvoiceDocument | ReceiptDocument | TaxInvoiceDocument | QuotationDocument | PurchaseOrderDocument | MemoDocument) => {
         // โหลด logo จากเอกสาร
         if (doc.logoUrl || doc.logo) {
             setSharedLogo(doc.logo || null);
@@ -621,7 +675,7 @@ const AppContent: React.FC = () => {
                 validUntilDate: doc.validUntilDate || null,
             });
             setActiveTab('quotation');
-        } else {
+        } else if ('purchaseOrderNumber' in doc) {
             // เป็น PurchaseOrderDocument
             setPurchaseOrderData({
                 ...doc,
@@ -629,6 +683,15 @@ const AppContent: React.FC = () => {
                 expectedDeliveryDate: doc.expectedDeliveryDate || null,
             });
             setActiveTab('purchase-order');
+        } else if ('memoNumber' in doc) {
+            // เป็น MemoDocument
+            setMemoData({
+                ...doc,
+                date: doc.date || null,
+                deadline: doc.deadline || null,
+                responseDate: doc.responseDate || null,
+            });
+            setActiveTab('memo');
         }
         setViewMode('form');
         showToast('โหลดเอกสารสำเร็จ - โหมดแก้ไข', 'info');
@@ -672,6 +735,9 @@ const AppContent: React.FC = () => {
                 break;
             case 'purchase-order':
                 setPurchaseOrderData(withLogo(initialPurchaseOrderData));
+                break;
+            case 'memo':
+                setMemoData(withLogo(initialMemoData));
                 break;
         }
         showToast('สร้างฟอร์มใหม่สำเร็จ', 'success');
@@ -782,6 +848,12 @@ const AppContent: React.FC = () => {
                                     >
                                         ใบสั่งซื้อ
                                     </button>
+                                    <button
+                                        onClick={() => setActiveTab('memo')}
+                                        className={`${activeTab === 'memo' ? 'border-indigo-500 text-indigo-600' : 'border-transparent text-gray-500 hover:text-gray-700 hover:border-gray-300'} whitespace-nowrap py-3 sm:py-4 px-2 sm:px-1 border-b-2 font-medium text-xs sm:text-sm transition-colors flex-shrink-0`}
+                                    >
+                                        ใบบันทึก
+                                    </button>
                                 </nav>
                             </div>
                             
@@ -875,10 +947,25 @@ const AppContent: React.FC = () => {
                                     }}
                                     onSetDefaultLogo={handleSetDefaultLogo}
                                 />
-                            ) : (
+                            ) : activeTab === 'purchase-order' ? (
                                 <PurchaseOrderForm
                                     data={purchaseOrderData}
                                     setData={setPurchaseOrderData}
+                                    sharedLogo={sharedLogo}
+                                    sharedLogoUrl={sharedLogoUrl}
+                                    sharedLogoType={sharedLogoType}
+                                    companyDefaultLogoUrl={currentCompany?.defaultLogoUrl}
+                                    onLogoChange={(logo, logoUrl, logoType) => {
+                                        setSharedLogo(logo);
+                                        setSharedLogoUrl(logoUrl);
+                                        setSharedLogoType(logoType);
+                                    }}
+                                    onSetDefaultLogo={handleSetDefaultLogo}
+                                />
+                            ) : (
+                                <MemoForm
+                                    data={memoData}
+                                    setData={setMemoData}
                                     sharedLogo={sharedLogo}
                                     sharedLogoUrl={sharedLogoUrl}
                                     sharedLogoType={sharedLogoType}
@@ -960,8 +1047,10 @@ const AppContent: React.FC = () => {
                                         <TaxInvoicePreview ref={printableAreaRef} data={taxInvoiceData} />
                                     ) : activeTab === 'quotation' ? (
                                         <QuotationPreview ref={printableAreaRef} data={quotationData} />
-                                    ) : (
+                                    ) : activeTab === 'purchase-order' ? (
                                         <PurchaseOrderPreview ref={printableAreaRef} data={purchaseOrderData} />
+                                    ) : (
+                                        <MemoPreview ref={printableAreaRef} data={memoData} />
                                     )}
                                 </div>
                             </div>

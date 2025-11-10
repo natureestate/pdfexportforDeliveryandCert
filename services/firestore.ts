@@ -18,7 +18,7 @@ import {
     QueryConstraint
 } from "firebase/firestore";
 import { db, auth } from "../firebase.config";
-import { DeliveryNoteData, WarrantyData, InvoiceData, ReceiptData, QuotationData, PurchaseOrderData, TaxInvoiceData } from "../types";
+import { DeliveryNoteData, WarrantyData, InvoiceData, ReceiptData, QuotationData, PurchaseOrderData, TaxInvoiceData, MemoData } from "../types";
 import { createDocumentService, createIdGenerator, FirestoreDocument } from "./documentService";
 
 // Collection names
@@ -29,6 +29,7 @@ const RECEIPTS_COLLECTION = "receipts";
 const TAX_INVOICES_COLLECTION = "taxInvoices";
 const QUOTATIONS_COLLECTION = "quotations";
 const PURCHASE_ORDERS_COLLECTION = "purchaseOrders";
+const MEMOS_COLLECTION = "memos";
 
 // Re-export FirestoreDocument interface from documentService
 export type { FirestoreDocument };
@@ -168,6 +169,23 @@ const purchaseOrderService = createDocumentService<PurchaseOrderData>({
     },
 });
 
+// Memo Service
+const memoService = createDocumentService<MemoData>({
+    collection: MEMOS_COLLECTION,
+    prefix: 'MEMO',
+    documentNumberField: 'memoNumber',
+    generateId: createIdGenerator('MEMO'),
+    dateFields: ['date', 'deadline', 'responseDate'],
+    errorMessages: {
+        save: 'ไม่สามารถบันทึกใบบันทึกได้',
+        get: 'ไม่สามารถดึงข้อมูลใบบันทึกได้',
+        getAll: 'ไม่สามารถดึงรายการใบบันทึกได้',
+        update: 'ไม่สามารถอัปเดตใบบันทึกได้',
+        delete: 'ไม่สามารถลบใบบันทึกได้',
+        search: 'ไม่สามารถค้นหาใบบันทึกได้',
+    },
+});
+
 export interface DeliveryNoteDocument extends DeliveryNoteData, FirestoreDocument {}
 export interface WarrantyDocument extends WarrantyData, FirestoreDocument {}
 export interface InvoiceDocument extends InvoiceData, FirestoreDocument {}
@@ -175,6 +193,7 @@ export interface ReceiptDocument extends ReceiptData, FirestoreDocument {}
 export interface TaxInvoiceDocument extends TaxInvoiceData, FirestoreDocument {}
 export interface QuotationDocument extends QuotationData, FirestoreDocument {}
 export interface PurchaseOrderDocument extends PurchaseOrderData, FirestoreDocument {}
+export interface MemoDocument extends MemoData, FirestoreDocument {}
 
 // ==================== Delivery Notes Functions ====================
 // Refactored: ใช้ Generic Document Service
@@ -539,4 +558,35 @@ export const updatePurchaseOrder = async (id: string, data: Partial<PurchaseOrde
 
 export const deletePurchaseOrder = async (id: string): Promise<void> => {
     return purchaseOrderService.delete(id);
+};
+
+export const searchPurchaseOrderByPurchaseOrderNumber = async (purchaseOrderNumber: string, companyId?: string): Promise<PurchaseOrderDocument[]> => {
+    return purchaseOrderService.searchByDocumentNumber(purchaseOrderNumber, companyId) as Promise<PurchaseOrderDocument[]>;
+};
+
+// ==================== Memos Functions ====================
+// Refactored: ใช้ Generic Document Service
+
+export const saveMemo = async (data: MemoData, companyId?: string): Promise<string> => {
+    return memoService.save(data, companyId);
+};
+
+export const getMemo = async (id: string): Promise<MemoDocument | null> => {
+    return memoService.get(id) as Promise<MemoDocument | null>;
+};
+
+export const getMemos = async (limitCount: number = 50, companyId?: string): Promise<MemoDocument[]> => {
+    return memoService.getAll(limitCount, companyId) as Promise<MemoDocument[]>;
+};
+
+export const updateMemo = async (id: string, data: Partial<MemoData>): Promise<void> => {
+    return memoService.update(id, data);
+};
+
+export const deleteMemo = async (id: string): Promise<void> => {
+    return memoService.delete(id);
+};
+
+export const searchMemoByMemoNumber = async (memoNumber: string, companyId?: string): Promise<MemoDocument[]> => {
+    return memoService.searchByDocumentNumber(memoNumber, companyId) as Promise<MemoDocument[]>;
 };

@@ -15,7 +15,7 @@ import { db, auth } from "../firebase.config";
 const DOC_NUMBERS_COLLECTION = "documentNumbers";
 
 // ประเภทของเอกสาร
-export type DocumentType = 'delivery' | 'warranty' | 'invoice' | 'receipt' | 'tax-invoice' | 'quotation' | 'purchase-order';
+export type DocumentType = 'delivery' | 'warranty' | 'invoice' | 'receipt' | 'tax-invoice' | 'quotation' | 'purchase-order' | 'memo';
 
 // Interface สำหรับ document number counter
 interface DocumentNumberCounter {
@@ -59,6 +59,8 @@ const getDocumentPrefix = (type: DocumentType): string => {
             return 'QT'; // Quotation
         case 'purchase-order':
             return 'PO'; // Purchase Order
+        case 'memo':
+            return 'MEMO'; // Memo
         default:
             return 'DOC';
     }
