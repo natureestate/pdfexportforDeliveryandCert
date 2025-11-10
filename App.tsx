@@ -674,41 +674,41 @@ const AppContent: React.FC = () => {
                                 </div>
                             )}
                             
-                            <div className="border-b border-gray-200">
-                                <nav className="-mb-px flex space-x-4" aria-label="Tabs">
+                            <div className="border-b border-gray-200 overflow-x-auto -mx-4 sm:mx-0 px-4 sm:px-0 tab-menu-scroll">
+                                <nav className="-mb-px flex space-x-2 sm:space-x-4 min-w-max" aria-label="Tabs">
                                     <button
                                         onClick={() => setActiveTab('delivery')}
-                                        className={`${activeTab === 'delivery' ? 'border-indigo-500 text-indigo-600' : 'border-transparent text-gray-500 hover:text-gray-700 hover:border-gray-300'} whitespace-nowrap py-4 px-1 border-b-2 font-medium text-sm transition-colors`}
+                                        className={`${activeTab === 'delivery' ? 'border-indigo-500 text-indigo-600' : 'border-transparent text-gray-500 hover:text-gray-700 hover:border-gray-300'} whitespace-nowrap py-3 sm:py-4 px-2 sm:px-1 border-b-2 font-medium text-xs sm:text-sm transition-colors flex-shrink-0`}
                                     >
                                         ใบส่งมอบงาน
                                     </button>
                                     <button
                                         onClick={() => setActiveTab('warranty')}
-                                        className={`${activeTab === 'warranty' ? 'border-indigo-500 text-indigo-600' : 'border-transparent text-gray-500 hover:text-gray-700 hover:border-gray-300'} whitespace-nowrap py-4 px-1 border-b-2 font-medium text-sm transition-colors`}
+                                        className={`${activeTab === 'warranty' ? 'border-indigo-500 text-indigo-600' : 'border-transparent text-gray-500 hover:text-gray-700 hover:border-gray-300'} whitespace-nowrap py-3 sm:py-4 px-2 sm:px-1 border-b-2 font-medium text-xs sm:text-sm transition-colors flex-shrink-0`}
                                     >
                                         ใบรับประกันสินค้า
                                     </button>
                                     <button
                                         onClick={() => setActiveTab('invoice')}
-                                        className={`${activeTab === 'invoice' ? 'border-indigo-500 text-indigo-600' : 'border-transparent text-gray-500 hover:text-gray-700 hover:border-gray-300'} whitespace-nowrap py-4 px-1 border-b-2 font-medium text-sm transition-colors`}
+                                        className={`${activeTab === 'invoice' ? 'border-indigo-500 text-indigo-600' : 'border-transparent text-gray-500 hover:text-gray-700 hover:border-gray-300'} whitespace-nowrap py-3 sm:py-4 px-2 sm:px-1 border-b-2 font-medium text-xs sm:text-sm transition-colors flex-shrink-0`}
                                     >
                                         ใบแจ้งหนี้
                                     </button>
                                     <button
                                         onClick={() => setActiveTab('receipt')}
-                                        className={`${activeTab === 'receipt' ? 'border-indigo-500 text-indigo-600' : 'border-transparent text-gray-500 hover:text-gray-700 hover:border-gray-300'} whitespace-nowrap py-4 px-1 border-b-2 font-medium text-sm transition-colors`}
+                                        className={`${activeTab === 'receipt' ? 'border-indigo-500 text-indigo-600' : 'border-transparent text-gray-500 hover:text-gray-700 hover:border-gray-300'} whitespace-nowrap py-3 sm:py-4 px-2 sm:px-1 border-b-2 font-medium text-xs sm:text-sm transition-colors flex-shrink-0`}
                                     >
                                         ใบเสร็จ
                                     </button>
                                     <button
                                         onClick={() => setActiveTab('quotation')}
-                                        className={`${activeTab === 'quotation' ? 'border-indigo-500 text-indigo-600' : 'border-transparent text-gray-500 hover:text-gray-700 hover:border-gray-300'} whitespace-nowrap py-4 px-1 border-b-2 font-medium text-sm transition-colors`}
+                                        className={`${activeTab === 'quotation' ? 'border-indigo-500 text-indigo-600' : 'border-transparent text-gray-500 hover:text-gray-700 hover:border-gray-300'} whitespace-nowrap py-3 sm:py-4 px-2 sm:px-1 border-b-2 font-medium text-xs sm:text-sm transition-colors flex-shrink-0`}
                                     >
                                         ใบเสนอราคา
                                     </button>
                                     <button
                                         onClick={() => setActiveTab('purchase-order')}
-                                        className={`${activeTab === 'purchase-order' ? 'border-indigo-500 text-indigo-600' : 'border-transparent text-gray-500 hover:text-gray-700 hover:border-gray-300'} whitespace-nowrap py-4 px-1 border-b-2 font-medium text-sm transition-colors`}
+                                        className={`${activeTab === 'purchase-order' ? 'border-indigo-500 text-indigo-600' : 'border-transparent text-gray-500 hover:text-gray-700 hover:border-gray-300'} whitespace-nowrap py-3 sm:py-4 px-2 sm:px-1 border-b-2 font-medium text-xs sm:text-sm transition-colors flex-shrink-0`}
                                     >
                                         ใบสั่งซื้อ
                                     </button>
