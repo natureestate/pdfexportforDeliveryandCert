@@ -207,7 +207,6 @@ const PurchaseOrderForm: React.FC<PurchaseOrderFormProps> = ({
                 {/* เลขที่เอกสาร */}
                 <div className="text-xs sm:text-sm text-gray-600">
                     <span className="font-medium">เลขที่ใบสั่งซื้อ:</span> <span className="font-mono">{data.purchaseOrderNumber || 'กำลังสร้าง...'}</span>
-                    <span className="text-xs text-gray-500 ml-2 hidden sm:inline">(รูปแบบ: PO-YYMMDDXX)</span>
                 </div>
                 
                 <FormDivider title="ข้อมูลผู้ขาย/ผู้จำหน่าย" />

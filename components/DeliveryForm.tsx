@@ -158,7 +158,6 @@ const DeliveryForm: React.FC<DeliveryFormProps> = ({
                 {/* เลขที่เอกสาร - แสดงด้านบนสุด */}
                 <div className="text-xs sm:text-sm text-gray-600">
                     <span className="font-medium">เลขที่เอกสาร:</span> <span className="font-mono">{data.docNumber || 'กำลังสร้าง...'}</span>
-                    <span className="text-xs text-gray-500 ml-2 hidden sm:inline">(รูปแบบ: DN-YYMMDDXX)</span>
                 </div>
                 
                 <FormDivider title="ข้อมูลผู้รับมอบ/ลูกค้า" />

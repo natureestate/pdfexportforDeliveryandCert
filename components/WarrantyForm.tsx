@@ -131,7 +131,6 @@ const WarrantyForm: React.FC<WarrantyFormProps> = ({
                 {/* เลขที่ใบรับประกัน - แสดงด้านบนสุด */}
                 <div className="text-xs sm:text-sm text-gray-600">
                     <span className="font-medium">เลขที่ใบรับประกัน:</span> <span className="font-mono">{data.warrantyNumber || 'กำลังสร้าง...'}</span>
-                    <span className="text-xs text-gray-500 ml-2 hidden sm:inline">(รูปแบบ: WR-YYMMDDXX)</span>
                 </div>
                 
                 <FormDivider title="ข้อมูลลูกค้า/โครงการ" />

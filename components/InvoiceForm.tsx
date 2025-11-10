@@ -208,7 +208,6 @@ const InvoiceForm: React.FC<InvoiceFormProps> = ({
                 {/* เลขที่เอกสาร */}
                 <div className="text-xs sm:text-sm text-gray-600">
                     <span className="font-medium">เลขที่ใบแจ้งหนี้:</span> <span className="font-mono">{data.invoiceNumber || 'กำลังสร้าง...'}</span>
-                    <span className="text-xs text-gray-500 ml-2 hidden sm:inline">(รูปแบบ: IN-YYMMDDXX)</span>
                 </div>
                 
                 <FormDivider title="ข้อมูลลูกค้า/ผู้ซื้อ" />

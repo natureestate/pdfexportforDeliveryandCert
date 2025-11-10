@@ -207,7 +207,6 @@ const QuotationForm: React.FC<QuotationFormProps> = ({
                 {/* เลขที่เอกสาร */}
                 <div className="text-xs sm:text-sm text-gray-600">
                     <span className="font-medium">เลขที่ใบเสนอราคา:</span> <span className="font-mono">{data.quotationNumber || 'กำลังสร้าง...'}</span>
-                    <span className="text-xs text-gray-500 ml-2 hidden sm:inline">(รูปแบบ: QT-YYMMDDXX)</span>
                 </div>
                 
                 <FormDivider title="ข้อมูลลูกค้า/ผู้รับเสนอราคา" />
