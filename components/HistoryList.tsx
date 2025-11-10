@@ -456,8 +456,8 @@ const HistoryList: React.FC<HistoryListProps> = ({ activeDocType, onLoadDocument
             )}
 
             {/* Header */}
-            <div className="flex flex-col sm:flex-row justify-between items-start sm:items-center gap-4 mb-4">
-                <h2 className="text-xl font-semibold text-slate-700">
+            <div className="flex flex-col sm:flex-row justify-between items-start sm:items-center gap-3 sm:gap-4 mb-4">
+                <h2 className="text-lg sm:text-xl font-semibold text-slate-700">
                     ประวัติ{documentTypeName}
                 </h2>
                 <div className="flex items-center gap-2 w-full sm:w-auto">
@@ -468,10 +468,10 @@ const HistoryList: React.FC<HistoryListProps> = ({ activeDocType, onLoadDocument
                             placeholder={`ค้นหา${activeDocType === 'delivery' ? 'เลขที่, โครงการ, จาก, ถึง' : activeDocType === 'warranty' ? 'หมายเลข, สินค้า, ลูกค้า' : activeDocType === 'invoice' ? 'เลขที่, ลูกค้า, ยอดรวม' : activeDocType === 'receipt' ? 'เลขที่, ลูกค้า, ยอดรวม, วิธีการชำระเงิน' : activeDocType === 'quotation' ? 'เลขที่, ลูกค้า, ยอดรวม' : 'เลขที่, ผู้ขาย, ยอดรวม'}`}
                             value={searchTerm}
                             onChange={(e) => setSearchTerm(e.target.value)}
-                            className="w-full sm:w-64 px-4 py-2 pl-10 text-sm border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-indigo-500 focus:border-transparent"
+                            className="w-full sm:w-64 px-3 sm:px-4 py-2 pl-9 sm:pl-10 text-xs sm:text-sm border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-indigo-500 focus:border-transparent"
                         />
                         <svg 
-                            className="absolute left-3 top-2.5 h-5 w-5 text-gray-400" 
+                            className="absolute left-2.5 sm:left-3 top-2.5 h-4 w-4 sm:h-5 sm:w-5 text-gray-400" 
                             fill="none" 
                             stroke="currentColor" 
                             viewBox="0 0 24 24"
@@ -481,10 +481,10 @@ const HistoryList: React.FC<HistoryListProps> = ({ activeDocType, onLoadDocument
                         {searchTerm && (
                             <button
                                 onClick={() => setSearchTerm('')}
-                                className="absolute right-3 top-2.5 text-gray-400 hover:text-gray-600"
+                                className="absolute right-2.5 sm:right-3 top-2.5 text-gray-400 hover:text-gray-600"
                                 title="ล้างการค้นหา"
                             >
-                                <svg className="h-5 w-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                <svg className="h-4 w-4 sm:h-5 sm:w-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                                     <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M6 18L18 6M6 6l12 12" />
                                 </svg>
                             </button>
@@ -492,12 +492,12 @@ const HistoryList: React.FC<HistoryListProps> = ({ activeDocType, onLoadDocument
                     </div>
                     <button
                         onClick={fetchData}
-                        className="px-3 py-2 text-sm bg-white border border-gray-300 rounded-md hover:bg-gray-50 flex items-center gap-2"
+                        className="px-2 sm:px-3 py-2 text-xs sm:text-sm bg-white border border-gray-300 rounded-md hover:bg-gray-50 flex items-center gap-1 sm:gap-2"
                     >
-                        <svg className="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                        <svg className="w-3 h-3 sm:w-4 sm:h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                             <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M4 4v5h.582m15.356 2A8.001 8.001 0 004.582 9m0 0H9m11 11v-5h-.581m0 0a8.003 8.003 0 01-15.357-2m15.357 2H15" />
                         </svg>
-                        รีเฟรช
+                        <span className="hidden sm:inline">รีเฟรช</span>
                     </button>
                 </div>
             </div>
@@ -529,16 +529,16 @@ const HistoryList: React.FC<HistoryListProps> = ({ activeDocType, onLoadDocument
                     paginatedList.map((note) => {
                         const noteItem = note as DeliveryNoteDocument;
                         return (
-                        <div key={noteItem.id} className="bg-white border border-gray-200 rounded-lg p-4 hover:shadow-md transition-shadow">
-                            <div className="flex justify-between items-start">
-                                <div className="flex-1">
-                                    <h3 className="text-lg font-semibold text-gray-900">{noteItem.project || 'ไม่ระบุโครงการ'}</h3>
-                                    <div className="mt-2 grid grid-cols-2 gap-2 text-sm text-gray-600">
+                        <div key={noteItem.id} className="bg-white border border-gray-200 rounded-lg p-3 sm:p-4 hover:shadow-md transition-shadow">
+                            <div className="flex flex-col sm:flex-row sm:justify-between sm:items-start gap-3">
+                                <div className="flex-1 min-w-0">
+                                    <h3 className="text-base sm:text-lg font-semibold text-gray-900 break-words">{noteItem.project || 'ไม่ระบุโครงการ'}</h3>
+                                    <div className="mt-2 grid grid-cols-1 sm:grid-cols-2 gap-2 text-xs sm:text-sm text-gray-600">
                                         <div>
                                             <span className="font-medium">เลขที่:</span>{' '}
                                             <button
                                                 onClick={() => handleShowPreview(noteItem)}
-                                                className="text-blue-600 hover:text-blue-800 hover:underline cursor-pointer"
+                                                className="text-blue-600 hover:text-blue-800 hover:underline cursor-pointer break-all"
                                                 title="คลิกเพื่อดูตัวอย่าง"
                                             >
                                                 {noteItem.docNumber}
@@ -548,53 +548,56 @@ const HistoryList: React.FC<HistoryListProps> = ({ activeDocType, onLoadDocument
                                             <span className="font-medium">วันที่:</span> {noteItem.date ? formatDate(noteItem.date) : 'ไม่ระบุ'}
                                         </div>
                                         <div>
-                                            <span className="font-medium">จาก:</span> {noteItem.fromCompany}
+                                            <span className="font-medium">จาก:</span> <span className="break-words">{noteItem.fromCompany}</span>
                                         </div>
                                         <div>
-                                            <span className="font-medium">ถึง:</span> {noteItem.toCompany}
+                                            <span className="font-medium">ถึง:</span> <span className="break-words">{noteItem.toCompany}</span>
                                         </div>
                                     </div>
                                     <div className="mt-2 text-xs text-gray-400">
                                         บันทึกเมื่อ: {formatDate(noteItem.createdAt)}
                                     </div>
                                 </div>
-                                <div className="flex flex-col gap-2 ml-4">
+                                <div className="flex flex-row sm:flex-col gap-2 sm:ml-4">
                                     <button
                                         onClick={() => onLoadDocument(noteItem)}
-                                        className="px-3 py-1 bg-amber-600 text-white text-sm rounded hover:bg-amber-700 flex items-center gap-1"
+                                        className="flex-1 sm:flex-none px-2 sm:px-3 py-1.5 sm:py-1 bg-amber-600 text-white text-xs sm:text-sm rounded hover:bg-amber-700 flex items-center justify-center gap-1"
                                         title="โหลดเอกสารเพื่อแก้ไข"
                                     >
-                                        <svg className="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                        <svg className="w-3 h-3 sm:w-4 sm:h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                                             <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M11 5H6a2 2 0 00-2 2v11a2 2 0 002 2h11a2 2 0 002-2v-5m-1.414-9.414a2 2 0 112.828 2.828L11.828 15H9v-2.828l8.586-8.586z" />
                                         </svg>
-                                        ✏️ แก้ไข
+                                        <span className="hidden sm:inline">✏️ แก้ไข</span>
+                                        <span className="sm:hidden">แก้ไข</span>
                                     </button>
                                     <button
                                         onClick={() => handleDownloadPdf(noteItem)}
                                         disabled={downloadingPdfId === noteItem.id}
-                                        className="px-3 py-1 bg-blue-600 text-white text-sm rounded hover:bg-blue-700 flex items-center gap-1 disabled:opacity-50 disabled:cursor-not-allowed"
+                                        className="flex-1 sm:flex-none px-2 sm:px-3 py-1.5 sm:py-1 bg-blue-600 text-white text-xs sm:text-sm rounded hover:bg-blue-700 flex items-center justify-center gap-1 disabled:opacity-50 disabled:cursor-not-allowed"
                                         title="ดาวน์โหลด PDF"
                                     >
                                         {downloadingPdfId === noteItem.id ? (
                                             <>
-                                                <svg className="animate-spin h-4 w-4" xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24">
+                                                <svg className="animate-spin h-3 w-3 sm:h-4 sm:w-4" xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24">
                                                     <circle className="opacity-25" cx="12" cy="12" r="10" stroke="currentColor" strokeWidth="4"></circle>
                                                     <path className="opacity-75" fill="currentColor" d="M4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4zm2 5.291A7.962 7.962 0 014 12H0c0 3.042 1.135 5.824 3 7.938l3-2.647z"></path>
                                                 </svg>
-                                                กำลังสร้าง...
+                                                <span className="hidden sm:inline">กำลังสร้าง...</span>
+                                                <span className="sm:hidden">กำลังสร้าง</span>
                                             </>
                                         ) : (
                                             <>
-                                                <svg className="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                                <svg className="w-3 h-3 sm:w-4 sm:h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                                                     <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M12 10v6m0 0l-3-3m3 3l3-3m2 8H7a2 2 0 01-2-2V5a2 2 0 012-2h5.586a1 1 0 01.707.293l5.414 5.414a1 1 0 01.293.707V19a2 2 0 01-2 2z" />
                                                 </svg>
-                                                ดาวน์โหลด PDF
+                                                <span className="hidden sm:inline">ดาวน์โหลด PDF</span>
+                                                <span className="sm:hidden">PDF</span>
                                             </>
                                         )}
                                     </button>
                                     <button
                                         onClick={() => setDeleteConfirm({ type: 'delivery', id: noteItem.id! })}
-                                        className="px-3 py-1 bg-red-600 text-white text-sm rounded hover:bg-red-700 flex items-center gap-1"
+                                        className="flex-1 sm:flex-none px-2 sm:px-3 py-1.5 sm:py-1 bg-red-600 text-white text-xs sm:text-sm rounded hover:bg-red-700 flex items-center justify-center gap-1"
                                     >
                                         <svg className="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                                             <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M19 7l-.867 12.142A2 2 0 0116.138 21H7.862a2 2 0 01-1.995-1.858L5 7m5 4v6m4-6v6m1-10V4a1 1 0 00-1-1h-4a1 1 0 00-1 1v3M4 7h16" />
@@ -611,17 +614,17 @@ const HistoryList: React.FC<HistoryListProps> = ({ activeDocType, onLoadDocument
                     paginatedList.map((card) => {
                         const cardItem = card as WarrantyDocument;
                         return (
-                        <div key={cardItem.id} className="bg-white border border-gray-200 rounded-lg p-4 hover:shadow-md transition-shadow">
-                            <div className="flex justify-between items-start">
-                                <div className="flex-1">
-                                    <h3 className="text-lg font-semibold text-gray-900">{cardItem.serviceName || cardItem.projectName || 'ไม่ระบุสินค้า'}</h3>
-                                    <div className="mt-2 grid grid-cols-2 gap-2 text-sm text-gray-600">
+                        <div key={cardItem.id} className="bg-white border border-gray-200 rounded-lg p-3 sm:p-4 hover:shadow-md transition-shadow">
+                            <div className="flex flex-col sm:flex-row sm:justify-between sm:items-start gap-3">
+                                <div className="flex-1 min-w-0">
+                                    <h3 className="text-base sm:text-lg font-semibold text-gray-900 break-words">{cardItem.serviceName || cardItem.projectName || 'ไม่ระบุสินค้า'}</h3>
+                                    <div className="mt-2 grid grid-cols-1 sm:grid-cols-2 gap-2 text-xs sm:text-sm text-gray-600">
                                         <div>
                                             <span className="font-medium">หมายเลข:</span>{' '}
                                             {cardItem.warrantyNumber ? (
                                                 <button
                                                     onClick={() => handleShowPreview(cardItem)}
-                                                    className="text-blue-600 hover:text-blue-800 hover:underline cursor-pointer"
+                                                    className="text-blue-600 hover:text-blue-800 hover:underline cursor-pointer break-all"
                                                     title="คลิกเพื่อดูตัวอย่าง"
                                                 >
                                                     {cardItem.warrantyNumber}
@@ -631,7 +634,7 @@ const HistoryList: React.FC<HistoryListProps> = ({ activeDocType, onLoadDocument
                                             )}
                                         </div>
                                         <div>
-                                            <span className="font-medium">ลูกค้า:</span> {cardItem.customerName || 'ไม่ระบุ'}
+                                            <span className="font-medium">ลูกค้า:</span> <span className="break-words">{cardItem.customerName || 'ไม่ระบุ'}</span>
                                         </div>
                                         <div>
                                             <span className="font-medium">วันซื้อ:</span> {cardItem.purchaseDate ? formatDate(cardItem.purchaseDate) : 'ไม่ระบุ'}
@@ -644,45 +647,48 @@ const HistoryList: React.FC<HistoryListProps> = ({ activeDocType, onLoadDocument
                                         บันทึกเมื่อ: {formatDate(cardItem.createdAt)}
                                     </div>
                                 </div>
-                                <div className="flex flex-col gap-2 ml-4">
+                                <div className="flex flex-row sm:flex-col gap-2 sm:ml-4">
                                     <button
                                         onClick={() => onLoadDocument(cardItem)}
-                                        className="px-3 py-1 bg-amber-600 text-white text-sm rounded hover:bg-amber-700 flex items-center gap-1"
+                                        className="flex-1 sm:flex-none px-2 sm:px-3 py-1.5 sm:py-1 bg-amber-600 text-white text-xs sm:text-sm rounded hover:bg-amber-700 flex items-center justify-center gap-1"
                                         title="โหลดเอกสารเพื่อแก้ไข"
                                     >
-                                        <svg className="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                        <svg className="w-3 h-3 sm:w-4 sm:h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                                             <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M11 5H6a2 2 0 00-2 2v11a2 2 0 002 2h11a2 2 0 002-2v-5m-1.414-9.414a2 2 0 112.828 2.828L11.828 15H9v-2.828l8.586-8.586z" />
                                         </svg>
-                                        ✏️ แก้ไข
+                                        <span className="hidden sm:inline">✏️ แก้ไข</span>
+                                        <span className="sm:hidden">แก้ไข</span>
                                     </button>
                                     <button
                                         onClick={() => handleDownloadPdf(cardItem)}
                                         disabled={downloadingPdfId === cardItem.id}
-                                        className="px-3 py-1 bg-blue-600 text-white text-sm rounded hover:bg-blue-700 flex items-center gap-1 disabled:opacity-50 disabled:cursor-not-allowed"
+                                        className="flex-1 sm:flex-none px-2 sm:px-3 py-1.5 sm:py-1 bg-blue-600 text-white text-xs sm:text-sm rounded hover:bg-blue-700 flex items-center justify-center gap-1 disabled:opacity-50 disabled:cursor-not-allowed"
                                         title="ดาวน์โหลด PDF"
                                     >
                                         {downloadingPdfId === cardItem.id ? (
                                             <>
-                                                <svg className="animate-spin h-4 w-4" xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24">
+                                                <svg className="animate-spin h-3 w-3 sm:h-4 sm:w-4" xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24">
                                                     <circle className="opacity-25" cx="12" cy="12" r="10" stroke="currentColor" strokeWidth="4"></circle>
                                                     <path className="opacity-75" fill="currentColor" d="M4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4zm2 5.291A7.962 7.962 0 014 12H0c0 3.042 1.135 5.824 3 7.938l3-2.647z"></path>
                                                 </svg>
-                                                กำลังสร้าง...
+                                                <span className="hidden sm:inline">กำลังสร้าง...</span>
+                                                <span className="sm:hidden">กำลังสร้าง</span>
                                             </>
                                         ) : (
                                             <>
-                                                <svg className="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                                <svg className="w-3 h-3 sm:w-4 sm:h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                                                     <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M12 10v6m0 0l-3-3m3 3l3-3m2 8H7a2 2 0 01-2-2V5a2 2 0 012-2h5.586a1 1 0 01.707.293l5.414 5.414a1 1 0 01.293.707V19a2 2 0 01-2 2z" />
                                                 </svg>
-                                                ดาวน์โหลด PDF
+                                                <span className="hidden sm:inline">ดาวน์โหลด PDF</span>
+                                                <span className="sm:hidden">PDF</span>
                                             </>
                                         )}
                                     </button>
                                     <button
                                         onClick={() => setDeleteConfirm({ type: 'warranty', id: cardItem.id! })}
-                                        className="px-3 py-1 bg-red-600 text-white text-sm rounded hover:bg-red-700 flex items-center gap-1"
+                                        className="flex-1 sm:flex-none px-2 sm:px-3 py-1.5 sm:py-1 bg-red-600 text-white text-xs sm:text-sm rounded hover:bg-red-700 flex items-center justify-center gap-1"
                                     >
-                                        <svg className="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                        <svg className="w-3 h-3 sm:w-4 sm:h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                                             <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M19 7l-.867 12.142A2 2 0 0116.138 21H7.862a2 2 0 01-1.995-1.858L5 7m5 4v6m4-6v6m1-10V4a1 1 0 00-1-1h-4a1 1 0 00-1 1v3M4 7h16" />
                                         </svg>
                                         ลบ
@@ -697,16 +703,16 @@ const HistoryList: React.FC<HistoryListProps> = ({ activeDocType, onLoadDocument
                     paginatedList.map((invoice) => {
                         const invoiceItem = invoice as InvoiceDocument;
                         return (
-                        <div key={invoiceItem.id} className="bg-white border border-gray-200 rounded-lg p-4 hover:shadow-md transition-shadow">
-                            <div className="flex justify-between items-start">
-                                <div className="flex-1">
-                                    <h3 className="text-lg font-semibold text-gray-900">{invoiceItem.customerName || 'ไม่ระบุลูกค้า'}</h3>
-                                    <div className="mt-2 grid grid-cols-2 gap-2 text-sm text-gray-600">
+                        <div key={invoiceItem.id} className="bg-white border border-gray-200 rounded-lg p-3 sm:p-4 hover:shadow-md transition-shadow">
+                            <div className="flex flex-col sm:flex-row sm:justify-between sm:items-start gap-3">
+                                <div className="flex-1 min-w-0">
+                                    <h3 className="text-base sm:text-lg font-semibold text-gray-900 break-words">{invoiceItem.customerName || 'ไม่ระบุลูกค้า'}</h3>
+                                    <div className="mt-2 grid grid-cols-1 sm:grid-cols-2 gap-2 text-xs sm:text-sm text-gray-600">
                                         <div>
                                             <span className="font-medium">เลขที่:</span>{' '}
                                             <button
                                                 onClick={() => handleShowPreview(invoiceItem)}
-                                                className="text-blue-600 hover:text-blue-800 hover:underline cursor-pointer"
+                                                className="text-blue-600 hover:text-blue-800 hover:underline cursor-pointer break-all"
                                                 title="คลิกเพื่อดูตัวอย่าง"
                                             >
                                                 {invoiceItem.invoiceNumber}
@@ -716,7 +722,7 @@ const HistoryList: React.FC<HistoryListProps> = ({ activeDocType, onLoadDocument
                                             <span className="font-medium">วันที่ออก:</span> {invoiceItem.invoiceDate ? formatDate(invoiceItem.invoiceDate) : 'ไม่ระบุ'}
                                         </div>
                                         <div>
-                                            <span className="font-medium">ผู้ขาย:</span> {invoiceItem.companyName || 'ไม่ระบุ'}
+                                            <span className="font-medium">ผู้ขาย:</span> <span className="break-words">{invoiceItem.companyName || 'ไม่ระบุ'}</span>
                                         </div>
                                         <div>
                                             <span className="font-medium">ยอดรวม:</span> <span className="font-bold text-indigo-600">{invoiceItem.total.toLocaleString('th-TH', { minimumFractionDigits: 2, maximumFractionDigits: 2 })} บาท</span>
@@ -726,45 +732,48 @@ const HistoryList: React.FC<HistoryListProps> = ({ activeDocType, onLoadDocument
                                         บันทึกเมื่อ: {formatDate(invoiceItem.createdAt)}
                                     </div>
                                 </div>
-                                <div className="flex flex-col gap-2 ml-4">
+                                <div className="flex flex-row sm:flex-col gap-2 sm:ml-4">
                                     <button
                                         onClick={() => onLoadDocument(invoiceItem)}
-                                        className="px-3 py-1 bg-amber-600 text-white text-sm rounded hover:bg-amber-700 flex items-center gap-1"
+                                        className="flex-1 sm:flex-none px-2 sm:px-3 py-1.5 sm:py-1 bg-amber-600 text-white text-xs sm:text-sm rounded hover:bg-amber-700 flex items-center justify-center gap-1"
                                         title="โหลดเอกสารเพื่อแก้ไข"
                                     >
-                                        <svg className="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                        <svg className="w-3 h-3 sm:w-4 sm:h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                                             <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M11 5H6a2 2 0 00-2 2v11a2 2 0 002 2h11a2 2 0 002-2v-5m-1.414-9.414a2 2 0 112.828 2.828L11.828 15H9v-2.828l8.586-8.586z" />
                                         </svg>
-                                        ✏️ แก้ไข
+                                        <span className="hidden sm:inline">✏️ แก้ไข</span>
+                                        <span className="sm:hidden">แก้ไข</span>
                                     </button>
                                     <button
                                         onClick={() => handleDownloadPdf(invoiceItem)}
                                         disabled={downloadingPdfId === invoiceItem.id}
-                                        className="px-3 py-1 bg-blue-600 text-white text-sm rounded hover:bg-blue-700 flex items-center gap-1 disabled:opacity-50 disabled:cursor-not-allowed"
+                                        className="flex-1 sm:flex-none px-2 sm:px-3 py-1.5 sm:py-1 bg-blue-600 text-white text-xs sm:text-sm rounded hover:bg-blue-700 flex items-center justify-center gap-1 disabled:opacity-50 disabled:cursor-not-allowed"
                                         title="ดาวน์โหลด PDF"
                                     >
                                         {downloadingPdfId === invoiceItem.id ? (
                                             <>
-                                                <svg className="animate-spin h-4 w-4" xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24">
+                                                <svg className="animate-spin h-3 w-3 sm:h-4 sm:w-4" xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24">
                                                     <circle className="opacity-25" cx="12" cy="12" r="10" stroke="currentColor" strokeWidth="4"></circle>
                                                     <path className="opacity-75" fill="currentColor" d="M4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4zm2 5.291A7.962 7.962 0 014 12H0c0 3.042 1.135 5.824 3 7.938l3-2.647z"></path>
                                                 </svg>
-                                                กำลังสร้าง...
+                                                <span className="hidden sm:inline">กำลังสร้าง...</span>
+                                                <span className="sm:hidden">กำลังสร้าง</span>
                                             </>
                                         ) : (
                                             <>
-                                                <svg className="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                                <svg className="w-3 h-3 sm:w-4 sm:h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                                                     <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M12 10v6m0 0l-3-3m3 3l3-3m2 8H7a2 2 0 01-2-2V5a2 2 0 012-2h5.586a1 1 0 01.707.293l5.414 5.414a1 1 0 01.293.707V19a2 2 0 01-2 2z" />
                                                 </svg>
-                                                ดาวน์โหลด PDF
+                                                <span className="hidden sm:inline">ดาวน์โหลด PDF</span>
+                                                <span className="sm:hidden">PDF</span>
                                             </>
                                         )}
                                     </button>
                                     <button
                                         onClick={() => setDeleteConfirm({ type: 'invoice', id: invoiceItem.id! })}
-                                        className="px-3 py-1 bg-red-600 text-white text-sm rounded hover:bg-red-700 flex items-center gap-1"
+                                        className="flex-1 sm:flex-none px-2 sm:px-3 py-1.5 sm:py-1 bg-red-600 text-white text-xs sm:text-sm rounded hover:bg-red-700 flex items-center justify-center gap-1"
                                     >
-                                        <svg className="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                        <svg className="w-3 h-3 sm:w-4 sm:h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                                             <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M19 7l-.867 12.142A2 2 0 0116.138 21H7.862a2 2 0 01-1.995-1.858L5 7m5 4v6m4-6v6m1-10V4a1 1 0 00-1-1h-4a1 1 0 00-1 1v3M4 7h16" />
                                         </svg>
                                         ลบ
@@ -779,16 +788,16 @@ const HistoryList: React.FC<HistoryListProps> = ({ activeDocType, onLoadDocument
                     paginatedList.map((receipt) => {
                         const receiptItem = receipt as ReceiptDocument;
                         return (
-                        <div key={receiptItem.id} className="bg-white border border-gray-200 rounded-lg p-4 hover:shadow-md transition-shadow">
-                            <div className="flex justify-between items-start">
-                                <div className="flex-1">
-                                    <h3 className="text-lg font-semibold text-gray-900">{receiptItem.customerName || 'ไม่ระบุลูกค้า'}</h3>
-                                    <div className="mt-2 grid grid-cols-2 gap-2 text-sm text-gray-600">
+                        <div key={receiptItem.id} className="bg-white border border-gray-200 rounded-lg p-3 sm:p-4 hover:shadow-md transition-shadow">
+                            <div className="flex flex-col sm:flex-row sm:justify-between sm:items-start gap-3">
+                                <div className="flex-1 min-w-0">
+                                    <h3 className="text-base sm:text-lg font-semibold text-gray-900 break-words">{receiptItem.customerName || 'ไม่ระบุลูกค้า'}</h3>
+                                    <div className="mt-2 grid grid-cols-1 sm:grid-cols-2 gap-2 text-xs sm:text-sm text-gray-600">
                                         <div>
                                             <span className="font-medium">เลขที่:</span>{' '}
                                             <button
                                                 onClick={() => handleShowPreview(receiptItem)}
-                                                className="text-blue-600 hover:text-blue-800 hover:underline cursor-pointer"
+                                                className="text-blue-600 hover:text-blue-800 hover:underline cursor-pointer break-all"
                                                 title="คลิกเพื่อดูตัวอย่าง"
                                             >
                                                 {receiptItem.receiptNumber}
@@ -798,7 +807,7 @@ const HistoryList: React.FC<HistoryListProps> = ({ activeDocType, onLoadDocument
                                             <span className="font-medium">วันที่ออก:</span> {receiptItem.receiptDate ? formatDate(receiptItem.receiptDate) : 'ไม่ระบุ'}
                                         </div>
                                         <div>
-                                            <span className="font-medium">ผู้ขาย:</span> {receiptItem.companyName || 'ไม่ระบุ'}
+                                            <span className="font-medium">ผู้ขาย:</span> <span className="break-words">{receiptItem.companyName || 'ไม่ระบุ'}</span>
                                         </div>
                                         <div>
                                             <span className="font-medium">ยอดรวม:</span> <span className="font-bold text-green-600">{receiptItem.total.toLocaleString('th-TH', { minimumFractionDigits: 2, maximumFractionDigits: 2 })} บาท</span>
@@ -813,45 +822,48 @@ const HistoryList: React.FC<HistoryListProps> = ({ activeDocType, onLoadDocument
                                         บันทึกเมื่อ: {formatDate(receiptItem.createdAt)}
                                     </div>
                                 </div>
-                                <div className="flex flex-col gap-2 ml-4">
+                                <div className="flex flex-row sm:flex-col gap-2 sm:ml-4">
                                     <button
                                         onClick={() => onLoadDocument(receiptItem)}
-                                        className="px-3 py-1 bg-amber-600 text-white text-sm rounded hover:bg-amber-700 flex items-center gap-1"
+                                        className="flex-1 sm:flex-none px-2 sm:px-3 py-1.5 sm:py-1 bg-amber-600 text-white text-xs sm:text-sm rounded hover:bg-amber-700 flex items-center justify-center gap-1"
                                         title="โหลดเอกสารเพื่อแก้ไข"
                                     >
-                                        <svg className="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                        <svg className="w-3 h-3 sm:w-4 sm:h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                                             <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M11 5H6a2 2 0 00-2 2v11a2 2 0 002 2h11a2 2 0 002-2v-5m-1.414-9.414a2 2 0 112.828 2.828L11.828 15H9v-2.828l8.586-8.586z" />
                                         </svg>
-                                        ✏️ แก้ไข
+                                        <span className="hidden sm:inline">✏️ แก้ไข</span>
+                                        <span className="sm:hidden">แก้ไข</span>
                                     </button>
                                     <button
                                         onClick={() => handleDownloadPdf(receiptItem)}
                                         disabled={downloadingPdfId === receiptItem.id}
-                                        className="px-3 py-1 bg-blue-600 text-white text-sm rounded hover:bg-blue-700 flex items-center gap-1 disabled:opacity-50 disabled:cursor-not-allowed"
+                                        className="flex-1 sm:flex-none px-2 sm:px-3 py-1.5 sm:py-1 bg-blue-600 text-white text-xs sm:text-sm rounded hover:bg-blue-700 flex items-center justify-center gap-1 disabled:opacity-50 disabled:cursor-not-allowed"
                                         title="ดาวน์โหลด PDF"
                                     >
                                         {downloadingPdfId === receiptItem.id ? (
                                             <>
-                                                <svg className="animate-spin h-4 w-4" xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24">
+                                                <svg className="animate-spin h-3 w-3 sm:h-4 sm:w-4" xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24">
                                                     <circle className="opacity-25" cx="12" cy="12" r="10" stroke="currentColor" strokeWidth="4"></circle>
                                                     <path className="opacity-75" fill="currentColor" d="M4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4zm2 5.291A7.962 7.962 0 014 12H0c0 3.042 1.135 5.824 3 7.938l3-2.647z"></path>
                                                 </svg>
-                                                กำลังสร้าง...
+                                                <span className="hidden sm:inline">กำลังสร้าง...</span>
+                                                <span className="sm:hidden">กำลังสร้าง</span>
                                             </>
                                         ) : (
                                             <>
-                                                <svg className="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                                <svg className="w-3 h-3 sm:w-4 sm:h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                                                     <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M12 10v6m0 0l-3-3m3 3l3-3m2 8H7a2 2 0 01-2-2V5a2 2 0 012-2h5.586a1 1 0 01.707.293l5.414 5.414a1 1 0 01.293.707V19a2 2 0 01-2 2z" />
                                                 </svg>
-                                                ดาวน์โหลด PDF
+                                                <span className="hidden sm:inline">ดาวน์โหลด PDF</span>
+                                                <span className="sm:hidden">PDF</span>
                                             </>
                                         )}
                                     </button>
                                     <button
                                         onClick={() => setDeleteConfirm({ type: 'receipt', id: receiptItem.id! })}
-                                        className="px-3 py-1 bg-red-600 text-white text-sm rounded hover:bg-red-700 flex items-center gap-1"
+                                        className="flex-1 sm:flex-none px-2 sm:px-3 py-1.5 sm:py-1 bg-red-600 text-white text-xs sm:text-sm rounded hover:bg-red-700 flex items-center justify-center gap-1"
                                     >
-                                        <svg className="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                        <svg className="w-3 h-3 sm:w-4 sm:h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                                             <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M19 7l-.867 12.142A2 2 0 0116.138 21H7.862a2 2 0 01-1.995-1.858L5 7m5 4v6m4-6v6m1-10V4a1 1 0 00-1-1h-4a1 1 0 00-1 1v3M4 7h16" />
                                         </svg>
                                         ลบ
@@ -866,16 +878,16 @@ const HistoryList: React.FC<HistoryListProps> = ({ activeDocType, onLoadDocument
                     paginatedList.map((quotation) => {
                         const quotationItem = quotation as QuotationDocument;
                         return (
-                        <div key={quotationItem.id} className="bg-white border border-gray-200 rounded-lg p-4 hover:shadow-md transition-shadow">
-                            <div className="flex justify-between items-start">
-                                <div className="flex-1">
-                                    <h3 className="text-lg font-semibold text-gray-900">{quotationItem.customerName || 'ไม่ระบุลูกค้า'}</h3>
-                                    <div className="mt-2 grid grid-cols-2 gap-2 text-sm text-gray-600">
+                        <div key={quotationItem.id} className="bg-white border border-gray-200 rounded-lg p-3 sm:p-4 hover:shadow-md transition-shadow">
+                            <div className="flex flex-col sm:flex-row sm:justify-between sm:items-start gap-3">
+                                <div className="flex-1 min-w-0">
+                                    <h3 className="text-base sm:text-lg font-semibold text-gray-900 break-words">{quotationItem.customerName || 'ไม่ระบุลูกค้า'}</h3>
+                                    <div className="mt-2 grid grid-cols-1 sm:grid-cols-2 gap-2 text-xs sm:text-sm text-gray-600">
                                         <div>
                                             <span className="font-medium">เลขที่:</span>{' '}
                                             <button
                                                 onClick={() => handleShowPreview(quotationItem)}
-                                                className="text-blue-600 hover:text-blue-800 hover:underline cursor-pointer"
+                                                className="text-blue-600 hover:text-blue-800 hover:underline cursor-pointer break-all"
                                                 title="คลิกเพื่อดูตัวอย่าง"
                                             >
                                                 {quotationItem.quotationNumber}
@@ -885,13 +897,13 @@ const HistoryList: React.FC<HistoryListProps> = ({ activeDocType, onLoadDocument
                                             <span className="font-medium">วันที่ออก:</span> {quotationItem.quotationDate ? formatDate(quotationItem.quotationDate) : 'ไม่ระบุ'}
                                         </div>
                                         <div>
-                                            <span className="font-medium">ผู้เสนอราคา:</span> {quotationItem.companyName || 'ไม่ระบุ'}
+                                            <span className="font-medium">ผู้เสนอราคา:</span> <span className="break-words">{quotationItem.companyName || 'ไม่ระบุ'}</span>
                                         </div>
                                         <div>
                                             <span className="font-medium">ยอดรวม:</span> <span className="font-bold text-green-600">{quotationItem.total.toLocaleString('th-TH', { minimumFractionDigits: 2, maximumFractionDigits: 2 })} บาท</span>
                                         </div>
                                         {quotationItem.validUntilDate && (
-                                            <div className="col-span-2">
+                                            <div className="col-span-1 sm:col-span-2">
                                                 <span className="font-medium">วันที่หมดอายุ:</span> {formatDate(quotationItem.validUntilDate)}
                                             </div>
                                         )}
@@ -900,45 +912,48 @@ const HistoryList: React.FC<HistoryListProps> = ({ activeDocType, onLoadDocument
                                         บันทึกเมื่อ: {formatDate(quotationItem.createdAt)}
                                     </div>
                                 </div>
-                                <div className="flex flex-col gap-2 ml-4">
+                                <div className="flex flex-row sm:flex-col gap-2 sm:ml-4">
                                     <button
                                         onClick={() => onLoadDocument(quotationItem)}
-                                        className="px-3 py-1 bg-amber-600 text-white text-sm rounded hover:bg-amber-700 flex items-center gap-1"
+                                        className="flex-1 sm:flex-none px-2 sm:px-3 py-1.5 sm:py-1 bg-amber-600 text-white text-xs sm:text-sm rounded hover:bg-amber-700 flex items-center justify-center gap-1"
                                         title="โหลดเอกสารเพื่อแก้ไข"
                                     >
-                                        <svg className="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                        <svg className="w-3 h-3 sm:w-4 sm:h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                                             <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M11 5H6a2 2 0 00-2 2v11a2 2 0 002 2h11a2 2 0 002-2v-5m-1.414-9.414a2 2 0 112.828 2.828L11.828 15H9v-2.828l8.586-8.586z" />
                                         </svg>
-                                        ✏️ แก้ไข
+                                        <span className="hidden sm:inline">✏️ แก้ไข</span>
+                                        <span className="sm:hidden">แก้ไข</span>
                                     </button>
                                     <button
                                         onClick={() => handleDownloadPdf(quotationItem)}
                                         disabled={downloadingPdfId === quotationItem.id}
-                                        className="px-3 py-1 bg-blue-600 text-white text-sm rounded hover:bg-blue-700 flex items-center gap-1 disabled:opacity-50 disabled:cursor-not-allowed"
+                                        className="flex-1 sm:flex-none px-2 sm:px-3 py-1.5 sm:py-1 bg-blue-600 text-white text-xs sm:text-sm rounded hover:bg-blue-700 flex items-center justify-center gap-1 disabled:opacity-50 disabled:cursor-not-allowed"
                                         title="ดาวน์โหลด PDF"
                                     >
                                         {downloadingPdfId === quotationItem.id ? (
                                             <>
-                                                <svg className="animate-spin h-4 w-4" xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24">
+                                                <svg className="animate-spin h-3 w-3 sm:h-4 sm:w-4" xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24">
                                                     <circle className="opacity-25" cx="12" cy="12" r="10" stroke="currentColor" strokeWidth="4"></circle>
                                                     <path className="opacity-75" fill="currentColor" d="M4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4zm2 5.291A7.962 7.962 0 014 12H0c0 3.042 1.135 5.824 3 7.938l3-2.647z"></path>
                                                 </svg>
-                                                กำลังสร้าง...
+                                                <span className="hidden sm:inline">กำลังสร้าง...</span>
+                                                <span className="sm:hidden">กำลังสร้าง</span>
                                             </>
                                         ) : (
                                             <>
-                                                <svg className="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                                <svg className="w-3 h-3 sm:w-4 sm:h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                                                     <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M12 10v6m0 0l-3-3m3 3l3-3m2 8H7a2 2 0 01-2-2V5a2 2 0 012-2h5.586a1 1 0 01.707.293l5.414 5.414a1 1 0 01.293.707V19a2 2 0 01-2 2z" />
                                                 </svg>
-                                                ดาวน์โหลด PDF
+                                                <span className="hidden sm:inline">ดาวน์โหลด PDF</span>
+                                                <span className="sm:hidden">PDF</span>
                                             </>
                                         )}
                                     </button>
                                     <button
                                         onClick={() => setDeleteConfirm({ type: 'quotation', id: quotationItem.id! })}
-                                        className="px-3 py-1 bg-red-600 text-white text-sm rounded hover:bg-red-700 flex items-center gap-1"
+                                        className="flex-1 sm:flex-none px-2 sm:px-3 py-1.5 sm:py-1 bg-red-600 text-white text-xs sm:text-sm rounded hover:bg-red-700 flex items-center justify-center gap-1"
                                     >
-                                        <svg className="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                        <svg className="w-3 h-3 sm:w-4 sm:h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                                             <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M19 7l-.867 12.142A2 2 0 0116.138 21H7.862a2 2 0 01-1.995-1.858L5 7m5 4v6m4-6v6m1-10V4a1 1 0 00-1-1h-4a1 1 0 00-1 1v3M4 7h16" />
                                         </svg>
                                         ลบ
@@ -953,16 +968,16 @@ const HistoryList: React.FC<HistoryListProps> = ({ activeDocType, onLoadDocument
                     paginatedList.map((po) => {
                         const poItem = po as PurchaseOrderDocument;
                         return (
-                        <div key={poItem.id} className="bg-white border border-gray-200 rounded-lg p-4 hover:shadow-md transition-shadow">
-                            <div className="flex justify-between items-start">
-                                <div className="flex-1">
-                                    <h3 className="text-lg font-semibold text-gray-900">{poItem.supplierName || 'ไม่ระบุผู้ขาย'}</h3>
-                                    <div className="mt-2 grid grid-cols-2 gap-2 text-sm text-gray-600">
+                        <div key={poItem.id} className="bg-white border border-gray-200 rounded-lg p-3 sm:p-4 hover:shadow-md transition-shadow">
+                            <div className="flex flex-col sm:flex-row sm:justify-between sm:items-start gap-3">
+                                <div className="flex-1 min-w-0">
+                                    <h3 className="text-base sm:text-lg font-semibold text-gray-900 break-words">{poItem.supplierName || 'ไม่ระบุผู้ขาย'}</h3>
+                                    <div className="mt-2 grid grid-cols-1 sm:grid-cols-2 gap-2 text-xs sm:text-sm text-gray-600">
                                         <div>
                                             <span className="font-medium">เลขที่:</span>{' '}
                                             <button
                                                 onClick={() => handleShowPreview(poItem)}
-                                                className="text-blue-600 hover:text-blue-800 hover:underline cursor-pointer"
+                                                className="text-blue-600 hover:text-blue-800 hover:underline cursor-pointer break-all"
                                                 title="คลิกเพื่อดูตัวอย่าง"
                                             >
                                                 {poItem.purchaseOrderNumber}
@@ -972,13 +987,13 @@ const HistoryList: React.FC<HistoryListProps> = ({ activeDocType, onLoadDocument
                                             <span className="font-medium">วันที่ออก:</span> {poItem.purchaseOrderDate ? formatDate(poItem.purchaseOrderDate) : 'ไม่ระบุ'}
                                         </div>
                                         <div>
-                                            <span className="font-medium">ผู้สั่งซื้อ:</span> {poItem.companyName || 'ไม่ระบุ'}
+                                            <span className="font-medium">ผู้สั่งซื้อ:</span> <span className="break-words">{poItem.companyName || 'ไม่ระบุ'}</span>
                                         </div>
                                         <div>
                                             <span className="font-medium">ยอดรวม:</span> <span className="font-bold text-indigo-600">{poItem.total.toLocaleString('th-TH', { minimumFractionDigits: 2, maximumFractionDigits: 2 })} บาท</span>
                                         </div>
                                         {poItem.expectedDeliveryDate && (
-                                            <div className="col-span-2">
+                                            <div className="col-span-1 sm:col-span-2">
                                                 <span className="font-medium">วันที่ต้องการรับสินค้า:</span> {formatDate(poItem.expectedDeliveryDate)}
                                             </div>
                                         )}
@@ -987,45 +1002,48 @@ const HistoryList: React.FC<HistoryListProps> = ({ activeDocType, onLoadDocument
                                         บันทึกเมื่อ: {formatDate(poItem.createdAt)}
                                     </div>
                                 </div>
-                                <div className="flex flex-col gap-2 ml-4">
+                                <div className="flex flex-row sm:flex-col gap-2 sm:ml-4">
                                     <button
                                         onClick={() => onLoadDocument(poItem)}
-                                        className="px-3 py-1 bg-amber-600 text-white text-sm rounded hover:bg-amber-700 flex items-center gap-1"
+                                        className="flex-1 sm:flex-none px-2 sm:px-3 py-1.5 sm:py-1 bg-amber-600 text-white text-xs sm:text-sm rounded hover:bg-amber-700 flex items-center justify-center gap-1"
                                         title="โหลดเอกสารเพื่อแก้ไข"
                                     >
-                                        <svg className="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                        <svg className="w-3 h-3 sm:w-4 sm:h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                                             <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M11 5H6a2 2 0 00-2 2v11a2 2 0 002 2h11a2 2 0 002-2v-5m-1.414-9.414a2 2 0 112.828 2.828L11.828 15H9v-2.828l8.586-8.586z" />
                                         </svg>
-                                        ✏️ แก้ไข
+                                        <span className="hidden sm:inline">✏️ แก้ไข</span>
+                                        <span className="sm:hidden">แก้ไข</span>
                                     </button>
                                     <button
                                         onClick={() => handleDownloadPdf(poItem)}
                                         disabled={downloadingPdfId === poItem.id}
-                                        className="px-3 py-1 bg-blue-600 text-white text-sm rounded hover:bg-blue-700 flex items-center gap-1 disabled:opacity-50 disabled:cursor-not-allowed"
+                                        className="flex-1 sm:flex-none px-2 sm:px-3 py-1.5 sm:py-1 bg-blue-600 text-white text-xs sm:text-sm rounded hover:bg-blue-700 flex items-center justify-center gap-1 disabled:opacity-50 disabled:cursor-not-allowed"
                                         title="ดาวน์โหลด PDF"
                                     >
                                         {downloadingPdfId === poItem.id ? (
                                             <>
-                                                <svg className="animate-spin h-4 w-4" xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24">
+                                                <svg className="animate-spin h-3 w-3 sm:h-4 sm:w-4" xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24">
                                                     <circle className="opacity-25" cx="12" cy="12" r="10" stroke="currentColor" strokeWidth="4"></circle>
                                                     <path className="opacity-75" fill="currentColor" d="M4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4zm2 5.291A7.962 7.962 0 014 12H0c0 3.042 1.135 5.824 3 7.938l3-2.647z"></path>
                                                 </svg>
-                                                กำลังสร้าง...
+                                                <span className="hidden sm:inline">กำลังสร้าง...</span>
+                                                <span className="sm:hidden">กำลังสร้าง</span>
                                             </>
                                         ) : (
                                             <>
-                                                <svg className="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                                <svg className="w-3 h-3 sm:w-4 sm:h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                                                     <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M12 10v6m0 0l-3-3m3 3l3-3m2 8H7a2 2 0 01-2-2V5a2 2 0 012-2h5.586a1 1 0 01.707.293l5.414 5.414a1 1 0 01.293.707V19a2 2 0 01-2 2z" />
                                                 </svg>
-                                                ดาวน์โหลด PDF
+                                                <span className="hidden sm:inline">ดาวน์โหลด PDF</span>
+                                                <span className="sm:hidden">PDF</span>
                                             </>
                                         )}
                                     </button>
                                     <button
                                         onClick={() => setDeleteConfirm({ type: 'purchase-order', id: poItem.id! })}
-                                        className="px-3 py-1 bg-red-600 text-white text-sm rounded hover:bg-red-700 flex items-center gap-1"
+                                        className="flex-1 sm:flex-none px-2 sm:px-3 py-1.5 sm:py-1 bg-red-600 text-white text-xs sm:text-sm rounded hover:bg-red-700 flex items-center justify-center gap-1"
                                     >
-                                        <svg className="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                        <svg className="w-3 h-3 sm:w-4 sm:h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                                             <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M19 7l-.867 12.142A2 2 0 0116.138 21H7.862a2 2 0 01-1.995-1.858L5 7m5 4v6m4-6v6m1-10V4a1 1 0 00-1-1h-4a1 1 0 00-1 1v3M4 7h16" />
                                         </svg>
                                         ลบ
@@ -1040,21 +1058,21 @@ const HistoryList: React.FC<HistoryListProps> = ({ activeDocType, onLoadDocument
 
             {/* Pagination Controls */}
             {totalPages > 1 && (
-                <div className="flex flex-col sm:flex-row justify-between items-center gap-4 mt-6 pt-4 border-t border-gray-200">
-                    <div className="text-sm text-gray-600">
+                <div className="flex flex-col sm:flex-row justify-between items-center gap-3 sm:gap-4 mt-4 sm:mt-6 pt-4 border-t border-gray-200">
+                    <div className="text-xs sm:text-sm text-gray-600">
                         แสดง {startIndex + 1}-{Math.min(endIndex, filteredList.length)} จาก {filteredList.length} รายการ
                     </div>
-                    <div className="flex items-center gap-2">
+                    <div className="flex items-center gap-1 sm:gap-2">
                         {/* ปุ่มไปหน้าหลัง */}
                         <button
                             onClick={() => setCurrentPage(prev => Math.max(1, prev - 1))}
                             disabled={currentPage === 1}
-                            className="px-3 py-2 text-sm bg-white border border-gray-300 rounded-md hover:bg-gray-50 disabled:opacity-50 disabled:cursor-not-allowed flex items-center gap-1"
+                            className="px-2 sm:px-3 py-1.5 sm:py-2 text-xs sm:text-sm bg-white border border-gray-300 rounded-md hover:bg-gray-50 disabled:opacity-50 disabled:cursor-not-allowed flex items-center gap-1"
                         >
-                            <svg className="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                            <svg className="w-3 h-3 sm:w-4 sm:h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                                 <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M15 19l-7-7 7-7" />
                             </svg>
-                            ก่อนหน้า
+                            <span className="hidden sm:inline">ก่อนหน้า</span>
                         </button>
 
                         {/* หมายเลขหน้า */}
@@ -1070,7 +1088,7 @@ const HistoryList: React.FC<HistoryListProps> = ({ activeDocType, onLoadDocument
                                         <button
                                             key={page}
                                             onClick={() => setCurrentPage(page)}
-                                            className={`px-3 py-2 text-sm rounded-md ${
+                                            className={`px-2 sm:px-3 py-1.5 sm:py-2 text-xs sm:text-sm rounded-md ${
                                                 currentPage === page
                                                     ? 'bg-indigo-600 text-white'
                                                     : 'bg-white border border-gray-300 text-gray-700 hover:bg-gray-50'
@@ -1084,7 +1102,7 @@ const HistoryList: React.FC<HistoryListProps> = ({ activeDocType, onLoadDocument
                                     page === currentPage + 2
                                 ) {
                                     return (
-                                        <span key={page} className="px-2 text-gray-400">
+                                        <span key={page} className="px-1 sm:px-2 text-xs sm:text-sm text-gray-500">
                                             ...
                                         </span>
                                     );
@@ -1097,10 +1115,10 @@ const HistoryList: React.FC<HistoryListProps> = ({ activeDocType, onLoadDocument
                         <button
                             onClick={() => setCurrentPage(prev => Math.min(totalPages, prev + 1))}
                             disabled={currentPage === totalPages}
-                            className="px-3 py-2 text-sm bg-white border border-gray-300 rounded-md hover:bg-gray-50 disabled:opacity-50 disabled:cursor-not-allowed flex items-center gap-1"
+                            className="px-2 sm:px-3 py-1.5 sm:py-2 text-xs sm:text-sm bg-white border border-gray-300 rounded-md hover:bg-gray-50 disabled:opacity-50 disabled:cursor-not-allowed flex items-center gap-1"
                         >
-                            ถัดไป
-                            <svg className="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                            <span className="hidden sm:inline">ถัดไป</span>
+                            <svg className="w-3 h-3 sm:w-4 sm:h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                                 <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M9 5l7 7-7 7" />
                             </svg>
                         </button>

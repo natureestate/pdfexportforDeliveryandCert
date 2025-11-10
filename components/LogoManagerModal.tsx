@@ -348,29 +348,29 @@ const LogoManagerModal: React.FC<LogoManagerModalProps> = ({
         <>
             {/* Modal Overlay */}
             <div 
-                className="fixed inset-0 bg-black bg-opacity-50 z-50 flex items-center justify-center p-4"
+                className="fixed inset-0 bg-black bg-opacity-50 z-50 flex items-center justify-center p-2 sm:p-4"
                 onClick={onClose}
             >
                 {/* Modal Content */}
                 <div 
-                    className="bg-white rounded-lg shadow-xl max-w-2xl w-full max-h-[90vh] overflow-y-auto"
+                    className="bg-white rounded-lg shadow-xl max-w-2xl w-full max-h-[95vh] sm:max-h-[90vh] overflow-y-auto"
                     onClick={(e) => e.stopPropagation()}
                 >
                     {/* Modal Header */}
-                    <div className="sticky top-0 bg-white border-b border-gray-200 px-6 py-4 flex items-center justify-between z-10">
-                        <h2 className="text-xl font-bold text-gray-800">จัดการโลโก้บริษัท</h2>
+                    <div className="sticky top-0 bg-white border-b border-gray-200 px-3 sm:px-6 py-3 sm:py-4 flex items-center justify-between z-10">
+                        <h2 className="text-base sm:text-xl font-bold text-gray-800">จัดการโลโก้บริษัท</h2>
                         <button
                             onClick={onClose}
-                            className="text-gray-400 hover:text-gray-600 transition-colors"
+                            className="text-gray-400 hover:text-gray-600 transition-colors p-1"
                         >
-                            <svg className="w-6 h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                            <svg className="w-5 h-5 sm:w-6 sm:h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                                 <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M6 18L18 6M6 6l12 12" />
                             </svg>
                         </button>
                     </div>
 
                     {/* Modal Body */}
-                    <div className="p-6 space-y-4">
+                    <div className="p-3 sm:p-6 space-y-3 sm:space-y-4">
                         {/* Hidden File Input */}
                         <input
                             type="file"
@@ -392,42 +392,42 @@ const LogoManagerModal: React.FC<LogoManagerModalProps> = ({
                                     <img 
                                         src={displayLogo} 
                                         alt="Default Logo" 
-                                        className="max-h-32 mx-auto mb-4 object-contain opacity-60"
+                                        className="max-h-24 sm:max-h-32 mx-auto mb-3 sm:mb-4 object-contain opacity-60"
                                     />
-                                    <svg className="mx-auto h-12 w-12 text-slate-400 mb-3" stroke="currentColor" fill="none" viewBox="0 0 48 48">
+                                    <svg className="mx-auto h-8 w-8 sm:h-12 sm:w-12 text-slate-400 mb-2 sm:mb-3" stroke="currentColor" fill="none" viewBox="0 0 48 48">
                                         <path d="M28 8H12a4 4 0 00-4 4v20m32-12v8m0 0v8a4 4 0 01-4 4H12a4 4 0 01-4-4v-4m32-4l-3.172-3.172a4 4 0 00-5.656 0L28 28M8 32l9.172-9.172a4 4 0 015.656 0L28 28m0 0l4 4m4-24h8m-4-4v8" strokeWidth={2} strokeLinecap="round" strokeLinejoin="round" />
                                     </svg>
-                                    <p className="text-base text-slate-600 font-medium">คลิกเพื่ออัปโหลดโลโก้ของคุณ</p>
-                                    <small className="text-sm text-slate-400">หรือใช้โลโก้ default</small>
+                                    <p className="text-sm sm:text-base text-slate-600 font-medium">คลิกเพื่ออัปโหลดโลโก้ของคุณ</p>
+                                    <small className="text-xs sm:text-sm text-slate-400">หรือใช้โลโก้ default</small>
                                     <div className="mt-2">
                                         <small className="text-xs text-slate-500">PNG, JPG, SVG (สูงสุด 2MB)</small>
                                     </div>
                                 </div>
                             ) : (
                                 // แสดง Custom Logo พร้อมปุ่มจัดการ
-                                <div className="relative border rounded-lg p-6 bg-slate-50">
-                                    <div className="flex items-center justify-center min-h-[150px]">
+                                <div className="relative border rounded-lg p-3 sm:p-6 bg-slate-50">
+                                    <div className="flex items-center justify-center min-h-[120px] sm:min-h-[150px]">
                                         <img 
                                             src={displayLogo} 
                                             alt="Company Logo" 
-                                            className="max-h-32 max-w-full object-contain"
+                                            className="max-h-24 sm:max-h-32 max-w-full object-contain"
                                             crossOrigin="anonymous"
                                         />
                                     </div>
                                     
                                     {/* Action Buttons */}
-                                    <div className="mt-4 flex gap-2 justify-center flex-wrap">
+                                    <div className="mt-3 sm:mt-4 flex flex-col sm:flex-row gap-2 justify-center flex-wrap">
                                         {/* ปุ่มเปลี่ยนโลโก้ */}
                                         <button
                                             type="button"
                                             onClick={handleClickUpload}
                                             disabled={isUploading}
-                                            className="px-4 py-2 bg-blue-500 text-white rounded-lg shadow hover:bg-blue-600 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-blue-500 disabled:bg-blue-300 disabled:cursor-not-allowed flex items-center gap-2"
+                                            className="px-3 sm:px-4 py-1.5 sm:py-2 bg-blue-500 text-white rounded-lg shadow hover:bg-blue-600 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-blue-500 disabled:bg-blue-300 disabled:cursor-not-allowed flex items-center justify-center gap-1.5 sm:gap-2 text-xs sm:text-sm"
                                         >
-                                            <svg className="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                            <svg className="w-4 h-4 sm:w-5 sm:h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                                                 <path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M15.232 5.232l3.536 3.536m-2.036-5.036a2.5 2.5 0 113.536 3.536L6.5 21.036H3v-3.5L16.732 3.732z" />
                                             </svg>
-                                            <span className="text-sm font-medium">เปลี่ยนโลโก้</span>
+                                            <span className="font-medium">เปลี่ยนโลโก้</span>
                                         </button>
                                         
                                         {/* ปุ่มตั้งเป็น Default (แสดงเฉพาะเมื่อมี callback และโลโก้ถูกอัปโหลดแล้ว) */}
@@ -436,12 +436,12 @@ const LogoManagerModal: React.FC<LogoManagerModalProps> = ({
                                                 type="button"
                                                 onClick={handleSetAsDefaultLogo}
                                                 disabled={isUploading}
-                                                className="px-4 py-2 bg-purple-500 text-white rounded-lg shadow hover:bg-purple-600 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-purple-500 disabled:bg-purple-300 disabled:cursor-not-allowed flex items-center gap-2"
+                                                className="px-3 sm:px-4 py-1.5 sm:py-2 bg-purple-500 text-white rounded-lg shadow hover:bg-purple-600 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-purple-500 disabled:bg-purple-300 disabled:cursor-not-allowed flex items-center justify-center gap-1.5 sm:gap-2 text-xs sm:text-sm"
                                             >
-                                                <svg className="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                                <svg className="w-4 h-4 sm:w-5 sm:h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                                                     <path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M5 13l4 4L19 7" />
                                                 </svg>
-                                                <span className="text-sm font-medium">ตั้งเป็น Default</span>
+                                                <span className="font-medium">ตั้งเป็น Default</span>
                                             </button>
                                         )}
                                         
@@ -450,12 +450,12 @@ const LogoManagerModal: React.FC<LogoManagerModalProps> = ({
                                             type="button"
                                             onClick={handleUseDefaultLogo}
                                             disabled={isUploading}
-                                            className="px-4 py-2 bg-gray-500 text-white rounded-lg shadow hover:bg-gray-600 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-gray-500 disabled:bg-gray-300 disabled:cursor-not-allowed flex items-center gap-2"
+                                            className="px-3 sm:px-4 py-1.5 sm:py-2 bg-gray-500 text-white rounded-lg shadow hover:bg-gray-600 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-gray-500 disabled:bg-gray-300 disabled:cursor-not-allowed flex items-center justify-center gap-1.5 sm:gap-2 text-xs sm:text-sm"
                                         >
-                                            <svg className="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                            <svg className="w-4 h-4 sm:w-5 sm:h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                                                 <path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M4 4v5h.582m15.356 2A8.001 8.001 0 004.582 9m0 0H9m11 11v-5h-.581m0 0a8.003 8.003 0 01-15.357-2m15.357 2H15" />
                                             </svg>
-                                            <span className="text-sm font-medium">ใช้ Default</span>
+                                            <span className="font-medium">ใช้ Default</span>
                                         </button>
                                         
                                         {/* ปุ่มลบ */}
@@ -463,12 +463,12 @@ const LogoManagerModal: React.FC<LogoManagerModalProps> = ({
                                             type="button"
                                             onClick={handleRemoveLogo}
                                             disabled={isUploading}
-                                            className="px-4 py-2 bg-red-500 text-white rounded-lg shadow hover:bg-red-600 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-red-500 disabled:bg-red-300 disabled:cursor-not-allowed flex items-center gap-2"
+                                            className="px-3 sm:px-4 py-1.5 sm:py-2 bg-red-500 text-white rounded-lg shadow hover:bg-red-600 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-red-500 disabled:bg-red-300 disabled:cursor-not-allowed flex items-center justify-center gap-1.5 sm:gap-2 text-xs sm:text-sm"
                                         >
-                                            <svg className="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                            <svg className="w-4 h-4 sm:w-5 sm:h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                                                 <path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M6 18L18 6M6 6l12 12" />
                                             </svg>
-                                            <span className="text-sm font-medium">ลบโลโก้</span>
+                                            <span className="font-medium">ลบโลโก้</span>
                                         </button>
                                     </div>
 
@@ -517,9 +517,9 @@ const LogoManagerModal: React.FC<LogoManagerModalProps> = ({
                         <button
                             type="button"
                             onClick={handleToggleGallery}
-                            className="w-full px-4 py-3 bg-indigo-50 text-indigo-700 rounded-lg hover:bg-indigo-100 transition-colors flex items-center justify-center gap-2 text-sm font-medium"
+                            className="w-full px-3 sm:px-4 py-2 sm:py-3 bg-indigo-50 text-indigo-700 rounded-lg hover:bg-indigo-100 transition-colors flex items-center justify-center gap-2 text-xs sm:text-sm font-medium"
                         >
-                            <svg className="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                            <svg className="w-4 h-4 sm:w-5 sm:h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                                 <path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M4 16l4.586-4.586a2 2 0 012.828 0L16 16m-2-2l1.586-1.586a2 2 0 012.828 0L20 14m-6-6h.01M6 20h12a2 2 0 002-2V6a2 2 0 00-2-2H6a2 2 0 00-2 2v12a2 2 0 002 2z" />
                             </svg>
                             {showGallery ? 'ซ่อนคลังโลโก้' : 'เลือกจากคลังโลโก้'}
@@ -527,9 +527,9 @@ const LogoManagerModal: React.FC<LogoManagerModalProps> = ({
 
                         {/* Logo Gallery */}
                         {showGallery && (
-                            <div className="border rounded-lg p-4 bg-slate-50 max-h-96 overflow-y-auto">
-                                <div className="flex items-center justify-between mb-3">
-                                    <h3 className="text-sm font-semibold text-slate-700">คลังโลโก้ ({availableLogos.length})</h3>
+                            <div className="border rounded-lg p-2 sm:p-4 bg-slate-50 max-h-80 sm:max-h-96 overflow-y-auto">
+                                <div className="flex items-center justify-between mb-2 sm:mb-3">
+                                    <h3 className="text-xs sm:text-sm font-semibold text-slate-700">คลังโลโก้ ({availableLogos.length})</h3>
                                     <button
                                         type="button"
                                         onClick={loadAvailableLogos}
@@ -541,23 +541,23 @@ const LogoManagerModal: React.FC<LogoManagerModalProps> = ({
                                 </div>
 
                                 {isLoadingGallery ? (
-                                    <div className="flex items-center justify-center py-8">
-                                        <svg className="animate-spin h-6 w-6 text-indigo-600" xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24">
+                                    <div className="flex items-center justify-center py-6 sm:py-8">
+                                        <svg className="animate-spin h-5 w-5 sm:h-6 sm:w-6 text-indigo-600" xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24">
                                             <circle className="opacity-25" cx="12" cy="12" r="10" stroke="currentColor" strokeWidth="4"></circle>
                                             <path className="opacity-75" fill="currentColor" d="M4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4zm2 5.291A7.962 7.962 0 014 12H0c0 3.042 1.135 5.824 3 7.938l3-2.647z"></path>
                                         </svg>
-                                        <span className="ml-2 text-sm text-slate-600">กำลังโหลด...</span>
+                                        <span className="ml-2 text-xs sm:text-sm text-slate-600">กำลังโหลด...</span>
                                     </div>
                                 ) : availableLogos.length === 0 ? (
-                                    <div className="text-center py-8 text-slate-500">
-                                        <svg className="mx-auto h-12 w-12 text-slate-400 mb-2" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                    <div className="text-center py-6 sm:py-8 text-slate-500">
+                                        <svg className="mx-auto h-8 w-8 sm:h-12 sm:w-12 text-slate-400 mb-2" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                                             <path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M4 16l4.586-4.586a2 2 0 012.828 0L16 16m-2-2l1.586-1.586a2 2 0 012.828 0L20 14m-6-6h.01M6 20h12a2 2 0 002-2V6a2 2 0 00-2-2H6a2 2 0 00-2 2v12a2 2 0 002 2z" />
                                         </svg>
-                                        <p className="text-sm">ยังไม่มีโลโก้ในคลัง</p>
+                                        <p className="text-xs sm:text-sm">ยังไม่มีโลโก้ในคลัง</p>
                                         <p className="text-xs text-slate-400 mt-1">อัปโหลดโลโก้เพื่อเริ่มต้นใช้งาน</p>
                                     </div>
                                 ) : (
-                                    <div className="grid grid-cols-2 gap-3">
+                                    <div className="grid grid-cols-2 sm:grid-cols-2 gap-2 sm:gap-3">
                                         {availableLogos.map((logo) => {
                                             const isCurrentLogo = logoUrl === logo.url;
                                             return (
@@ -639,10 +639,10 @@ const LogoManagerModal: React.FC<LogoManagerModalProps> = ({
                     </div>
 
                     {/* Modal Footer */}
-                    <div className="sticky bottom-0 bg-gray-50 border-t border-gray-200 px-6 py-4 flex justify-end gap-3">
+                    <div className="sticky bottom-0 bg-gray-50 border-t border-gray-200 px-3 sm:px-6 py-3 sm:py-4 flex justify-end gap-2 sm:gap-3">
                         <button
                             onClick={onClose}
-                            className="px-6 py-2 bg-gray-200 text-gray-700 rounded-lg hover:bg-gray-300 transition-colors font-medium"
+                            className="px-4 sm:px-6 py-1.5 sm:py-2 bg-gray-200 text-gray-700 rounded-lg hover:bg-gray-300 transition-colors font-medium text-xs sm:text-sm"
                         >
                             ปิด
                         </button>

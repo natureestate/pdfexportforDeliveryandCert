@@ -622,18 +622,18 @@ const AppContent: React.FC = () => {
     return (
         <div className="bg-slate-100 min-h-screen text-slate-800">
             {notification.show && (
-                <div className={`fixed top-5 right-5 ${notificationColors[notification.type]} text-white py-2 px-4 rounded-lg shadow-lg z-50 animate-fade-in-down`}>
+                <div className={`fixed top-5 right-2 sm:right-5 ${notificationColors[notification.type]} text-white py-2 px-3 sm:px-4 rounded-lg shadow-lg z-50 animate-fade-in-down text-sm sm:text-base max-w-[calc(100vw-1rem)] sm:max-w-none`}>
                     {notification.message}
                 </div>
             )}
             <Header />
-            <main className="p-4 md:p-8 max-w-7xl mx-auto">
+            <main className="p-3 sm:p-4 md:p-8 max-w-7xl mx-auto">
                 {/* View Mode Selector */}
-                <div className="mb-6 flex justify-center">
-                    <div className="inline-flex rounded-md shadow-sm" role="group">
+                <div className="mb-4 sm:mb-6 flex justify-center">
+                    <div className="inline-flex rounded-md shadow-sm w-full sm:w-auto" role="group">
                         <button
                             onClick={() => setViewMode('form')}
-                            className={`px-6 py-2 text-sm font-medium rounded-l-lg border ${
+                            className={`flex-1 sm:flex-none px-4 sm:px-6 py-2 text-xs sm:text-sm font-medium rounded-l-lg border ${
                                 viewMode === 'form'
                                     ? 'bg-indigo-600 text-white border-indigo-600'
                                     : 'bg-white text-gray-700 border-gray-300 hover:bg-gray-50'
@@ -643,7 +643,7 @@ const AppContent: React.FC = () => {
                         </button>
                         <button
                             onClick={() => setViewMode('history')}
-                            className={`px-6 py-2 text-sm font-medium rounded-r-lg border-t border-r border-b ${
+                            className={`flex-1 sm:flex-none px-4 sm:px-6 py-2 text-xs sm:text-sm font-medium rounded-r-lg border-t border-r border-b ${
                                 viewMode === 'history'
                                     ? 'bg-indigo-600 text-white border-indigo-600'
                                     : 'bg-white text-gray-700 border-gray-300 hover:bg-gray-50'
@@ -655,19 +655,19 @@ const AppContent: React.FC = () => {
                 </div>
 
                 {viewMode === 'form' ? (
-                    <div className="grid grid-cols-1 lg:grid-cols-2 lg:gap-8">
+                    <div className="grid grid-cols-1 lg:grid-cols-2 lg:gap-6 xl:gap-8">
                         {/* Form Section */}
-                        <div className="bg-white p-4 sm:p-6 rounded-lg shadow-lg mb-8 lg:mb-0">
+                        <div className="bg-white p-3 sm:p-4 md:p-6 rounded-lg shadow-lg mb-6 lg:mb-0">
                             {/* Edit Mode Indicator */}
                             {editingDocumentId && (
-                                <div className="mb-4 p-3 bg-amber-50 border border-amber-200 rounded-lg flex items-center justify-between">
-                                    <div className="flex items-center">
-                                        <span className="text-amber-700 font-medium">✏️ โหมดแก้ไข</span>
-                                        <span className="ml-2 text-sm text-amber-600">กำลังแก้ไขเอกสาร: {editingDocumentId}</span>
+                                <div className="mb-3 sm:mb-4 p-2 sm:p-3 bg-amber-50 border border-amber-200 rounded-lg flex flex-col sm:flex-row sm:items-center sm:justify-between gap-2">
+                                    <div className="flex flex-col sm:flex-row sm:items-center min-w-0">
+                                        <span className="text-amber-700 font-medium text-sm">✏️ โหมดแก้ไข</span>
+                                        <span className="ml-0 sm:ml-2 text-xs sm:text-sm text-amber-600 truncate">กำลังแก้ไขเอกสาร: {editingDocumentId}</span>
                                     </div>
                                     <button
                                         onClick={handleCreateNewForm}
-                                        className="text-sm px-3 py-1 bg-white border border-amber-300 rounded hover:bg-amber-50 text-amber-700"
+                                        className="text-xs sm:text-sm px-2 sm:px-3 py-1 bg-white border border-amber-300 rounded hover:bg-amber-50 text-amber-700 whitespace-nowrap"
                                     >
                                         🆕 สร้างเอกสารใหม่
                                     </button>
@@ -810,16 +810,16 @@ const AppContent: React.FC = () => {
                         
                         {/* Preview Section */}
                         <div>
-                            <div className="sticky top-8">
-                                <div className="flex justify-between items-center mb-4 gap-2">
-                                    <h2 className="text-xl font-semibold text-slate-700">ตัวอย่างเอกสาร</h2>
-                                    <div className="flex gap-2 flex-wrap">
+                            <div className="sticky top-4 lg:top-8">
+                                <div className="flex flex-col sm:flex-row sm:justify-between sm:items-center mb-3 sm:mb-4 gap-2 sm:gap-2">
+                                    <h2 className="text-lg sm:text-xl font-semibold text-slate-700">ตัวอย่างเอกสาร</h2>
+                                    <div className="flex flex-col sm:flex-row gap-2 flex-wrap">
                                         <button
                                             type="button"
                                             onClick={handleCreateNewForm}
-                                            className="inline-flex items-center px-3 py-2 border border-gray-300 text-sm font-medium rounded-md shadow-sm text-gray-700 bg-white hover:bg-gray-50 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-indigo-500"
+                                            className="inline-flex items-center justify-center px-3 py-2 border border-gray-300 text-xs sm:text-sm font-medium rounded-md shadow-sm text-gray-700 bg-white hover:bg-gray-50 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-indigo-500"
                                         >
-                                            <svg xmlns="http://www.w3.org/2000/svg" className="h-4 w-4 mr-2" viewBox="0 0 20 20" fill="currentColor">
+                                            <svg xmlns="http://www.w3.org/2000/svg" className="h-4 w-4 mr-1 sm:mr-2" viewBox="0 0 20 20" fill="currentColor">
                                                 <path fillRule="evenodd" d="M10 3a1 1 0 011 1v5h5a1 1 0 110 2h-5v5a1 1 0 11-2 0v-5H4a1 1 0 110-2h5V4a1 1 0 011-1z" clipRule="evenodd" />
                                             </svg>
                                             ฟอร์มใหม่
@@ -828,7 +828,7 @@ const AppContent: React.FC = () => {
                                             type="button"
                                             onClick={handleSaveToFirestore}
                                             disabled={isSaving}
-                                            className="inline-flex items-center px-4 py-2 border border-transparent text-sm font-medium rounded-md shadow-sm text-white bg-green-600 hover:bg-green-700 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-green-500 disabled:bg-green-300 disabled:cursor-not-allowed"
+                                            className="inline-flex items-center justify-center px-3 sm:px-4 py-2 border border-transparent text-xs sm:text-sm font-medium rounded-md shadow-sm text-white bg-green-600 hover:bg-green-700 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-green-500 disabled:bg-green-300 disabled:cursor-not-allowed"
                                         >
                                             {isSaving ? (
                                                 <svg className="animate-spin -ml-1 mr-2 h-4 w-4 text-white" xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24">
@@ -836,7 +836,7 @@ const AppContent: React.FC = () => {
                                                     <path className="opacity-75" fill="currentColor" d="M4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4zm2 5.291A7.962 7.962 0 014 12H0c0 3.042 1.135 5.824 3 7.938l3-2.647z"></path>
                                                 </svg>
                                             ) : (
-                                                <svg xmlns="http://www.w3.org/2000/svg" className="h-4 w-4 mr-2" viewBox="0 0 20 20" fill="currentColor">
+                                                <svg xmlns="http://www.w3.org/2000/svg" className="h-4 w-4 mr-1 sm:mr-2" viewBox="0 0 20 20" fill="currentColor">
                                                     <path d="M7.707 10.293a1 1 0 10-1.414 1.414l3 3a1 1 0 001.414 0l3-3a1 1 0 00-1.414-1.414L11 11.586V6h5a2 2 0 012 2v7a2 2 0 01-2 2H4a2 2 0 01-2-2V8a2 2 0 012-2h5v5.586l-1.293-1.293zM9 4a1 1 0 012 0v2H9V4z" />
                                                 </svg>
                                             )}
@@ -846,7 +846,7 @@ const AppContent: React.FC = () => {
                                             type="button"
                                             onClick={handleExportPdf}
                                             disabled={isLoading}
-                                            className="inline-flex items-center px-4 py-2 border border-transparent text-sm font-medium rounded-md shadow-sm text-white bg-indigo-600 hover:bg-indigo-700 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-indigo-500 disabled:bg-indigo-300 disabled:cursor-not-allowed"
+                                            className="inline-flex items-center justify-center px-3 sm:px-4 py-2 border border-transparent text-xs sm:text-sm font-medium rounded-md shadow-sm text-white bg-indigo-600 hover:bg-indigo-700 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-indigo-500 disabled:bg-indigo-300 disabled:cursor-not-allowed"
                                         >
                                             {isLoading ? (
                                                 <svg className="animate-spin -ml-1 mr-2 h-4 w-4 text-white" xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24">
@@ -854,7 +854,7 @@ const AppContent: React.FC = () => {
                                                     <path className="opacity-75" fill="currentColor" d="M4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4zm2 5.291A7.962 7.962 0 014 12H0c0 3.042 1.135 5.824 3 7.938l3-2.647z"></path>
                                                 </svg>
                                             ) : (
-                                                <svg xmlns="http://www.w3.org/2000/svg" className="h-4 w-4 mr-2" viewBox="0 0 20 20" fill="currentColor">
+                                                <svg xmlns="http://www.w3.org/2000/svg" className="h-4 w-4 mr-1 sm:mr-2" viewBox="0 0 20 20" fill="currentColor">
                                                     <path fillRule="evenodd" d="M3 17a1 1 0 011-1h12a1 1 0 110 2H4a1 1 0 01-1-1zm3.293-7.707a1 1 0 011.414 0L9 10.586V3a1 1 0 112 0v7.586l1.293-1.293a1 1 0 111.414 1.414l-3 3a1 1 0 01-1.414 0l-3-3a1 1 0 010-1.414z" clipRule="evenodd" />
                                                 </svg>
                                             )}
@@ -882,7 +882,7 @@ const AppContent: React.FC = () => {
                     </div>
                 ) : (
                     // History View
-                    <div className="bg-white p-6 rounded-lg shadow-lg">
+                    <div className="bg-white p-3 sm:p-4 md:p-6 rounded-lg shadow-lg">
                         <HistoryList 
                             activeDocType={activeTab} 
                             onLoadDocument={handleLoadDocument}

@@ -156,9 +156,9 @@ const DeliveryForm: React.FC<DeliveryFormProps> = ({
             {/* Form Fields */}
             <div className="space-y-6">
                 {/* เลขที่เอกสาร - แสดงด้านบนสุด */}
-                <div className="text-sm text-gray-600">
+                <div className="text-xs sm:text-sm text-gray-600">
                     <span className="font-medium">เลขที่เอกสาร:</span> <span className="font-mono">{data.docNumber || 'กำลังสร้าง...'}</span>
-                    <span className="text-xs text-gray-500 ml-2">(รูปแบบ: DN-YYMMDDXX)</span>
+                    <span className="text-xs text-gray-500 ml-2 hidden sm:inline">(รูปแบบ: DN-YYMMDDXX)</span>
                 </div>
                 
                 <FormDivider title="ข้อมูลผู้รับมอบ/ลูกค้า" />
@@ -182,57 +182,57 @@ const DeliveryForm: React.FC<DeliveryFormProps> = ({
                     />
 
                     <div>
-                        <label htmlFor="toCompany" className="block text-sm font-medium text-slate-700">ชื่อบริษัท/ผู้รับ</label>
-                        <input type="text" id="toCompany" value={data.toCompany} onChange={(e) => handleDataChange('toCompany', e.target.value)} className="mt-1 block w-full rounded-md border-gray-300 shadow-sm focus:border-indigo-500 focus:ring-indigo-500 sm:text-sm bg-gray-50" />
+                        <label htmlFor="toCompany" className="block text-xs sm:text-sm font-medium text-slate-700">ชื่อบริษัท/ผู้รับ</label>
+                        <input type="text" id="toCompany" value={data.toCompany} onChange={(e) => handleDataChange('toCompany', e.target.value)} className="mt-1 block w-full rounded-md border-gray-300 shadow-sm focus:border-indigo-500 focus:ring-indigo-500 text-xs sm:text-sm bg-gray-50" />
                     </div>
                     <div>
-                        <label htmlFor="toAddress" className="block text-sm font-medium text-slate-700">ที่อยู่</label>
-                        <textarea id="toAddress" value={data.toAddress} onChange={(e) => handleDataChange('toAddress', e.target.value)} rows={3} className="mt-1 block w-full rounded-md border-gray-300 shadow-sm focus:border-indigo-500 focus:ring-indigo-500 sm:text-sm bg-gray-50" />
+                        <label htmlFor="toAddress" className="block text-xs sm:text-sm font-medium text-slate-700">ที่อยู่</label>
+                        <textarea id="toAddress" value={data.toAddress} onChange={(e) => handleDataChange('toAddress', e.target.value)} rows={3} className="mt-1 block w-full rounded-md border-gray-300 shadow-sm focus:border-indigo-500 focus:ring-indigo-500 text-xs sm:text-sm bg-gray-50" />
                     </div>
                 </div>
 
                 <FormDivider title="รายละเอียดเอกสาร" />
-                <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+                <div className="grid grid-cols-1 md:grid-cols-2 gap-3 sm:gap-4">
                     <div>
-                        <label htmlFor="date" className="block text-sm font-medium text-slate-700">วันที่</label>
-                        <input type="date" id="date" value={formatDateForInput(data.date)} onChange={(e) => handleDataChange('date', e.target.value ? new Date(e.target.value) : null)} className="mt-1 block w-full rounded-md border-gray-300 shadow-sm focus:border-indigo-500 focus:ring-indigo-500 sm:text-sm bg-gray-50" />
+                        <label htmlFor="date" className="block text-xs sm:text-sm font-medium text-slate-700">วันที่</label>
+                        <input type="date" id="date" value={formatDateForInput(data.date)} onChange={(e) => handleDataChange('date', e.target.value ? new Date(e.target.value) : null)} className="mt-1 block w-full rounded-md border-gray-300 shadow-sm focus:border-indigo-500 focus:ring-indigo-500 text-xs sm:text-sm bg-gray-50" />
                     </div>
                     <div>
-                        <label htmlFor="project" className="block text-sm font-medium text-slate-700">โครงการ/เรื่อง</label>
-                        <input type="text" id="project" value={data.project} onChange={(e) => handleDataChange('project', e.target.value)} className="mt-1 block w-full rounded-md border-gray-300 shadow-sm focus:border-indigo-500 focus:ring-indigo-500 sm:text-sm bg-gray-50" />
+                        <label htmlFor="project" className="block text-xs sm:text-sm font-medium text-slate-700">โครงการ/เรื่อง</label>
+                        <input type="text" id="project" value={data.project} onChange={(e) => handleDataChange('project', e.target.value)} className="mt-1 block w-full rounded-md border-gray-300 shadow-sm focus:border-indigo-500 focus:ring-indigo-500 text-xs sm:text-sm bg-gray-50" />
                     </div>
                 </div>
 
                 <FormDivider title="รายการส่งมอบ" />
-                <div className="overflow-x-auto">
-                    <table className="min-w-full divide-y divide-gray-200">
+                <div className="overflow-x-auto -mx-3 sm:mx-0">
+                    <table className="min-w-full divide-y divide-gray-200 text-xs sm:text-sm">
                         <thead className="bg-gray-50">
                             <tr>
-                                <th scope="col" className="px-3 py-2 text-left text-xs font-medium text-gray-500 uppercase tracking-wider w-2/5">รายละเอียด</th>
-                                <th scope="col" className="px-3 py-2 text-left text-xs font-medium text-gray-500 uppercase tracking-wider w-1/5">จำนวน</th>
-                                <th scope="col" className="px-3 py-2 text-left text-xs font-medium text-gray-500 uppercase tracking-wider w-1/5">หน่วย</th>
-                                <th scope="col" className="px-3 py-2 text-left text-xs font-medium text-gray-500 uppercase tracking-wider w-1/5">หมายเหตุ</th>
-                                <th scope="col" className="relative px-3 py-2 w-12"><span className="sr-only">ลบ</span></th>
+                                <th scope="col" className="px-2 sm:px-3 py-1.5 sm:py-2 text-left text-xs font-medium text-gray-500 uppercase tracking-wider w-2/5">รายละเอียด</th>
+                                <th scope="col" className="px-2 sm:px-3 py-1.5 sm:py-2 text-left text-xs font-medium text-gray-500 uppercase tracking-wider w-1/5">จำนวน</th>
+                                <th scope="col" className="px-2 sm:px-3 py-1.5 sm:py-2 text-left text-xs font-medium text-gray-500 uppercase tracking-wider w-1/5">หน่วย</th>
+                                <th scope="col" className="px-2 sm:px-3 py-1.5 sm:py-2 text-left text-xs font-medium text-gray-500 uppercase tracking-wider w-1/5">หมายเหตุ</th>
+                                <th scope="col" className="relative px-2 sm:px-3 py-1.5 sm:py-2 w-10 sm:w-12"><span className="sr-only">ลบ</span></th>
                             </tr>
                         </thead>
                         <tbody className="bg-white divide-y divide-gray-200">
                             {data.items.map((item, index) => (
                                 <tr key={index}>
-                                    <td className="px-2 py-1 whitespace-nowrap">
-                                        <textarea value={item.description} onChange={(e) => handleItemChange(index, 'description', e.target.value)} rows={2} className="w-full rounded-md border-gray-300 shadow-sm focus:border-indigo-300 focus:ring-indigo-200 focus:ring-opacity-50 sm:text-sm bg-gray-50 text-gray-900"></textarea>
+                                    <td className="px-1 sm:px-2 py-1 whitespace-nowrap">
+                                        <textarea value={item.description} onChange={(e) => handleItemChange(index, 'description', e.target.value)} rows={2} className="w-full rounded-md border-gray-300 shadow-sm focus:border-indigo-300 focus:ring-indigo-200 focus:ring-opacity-50 text-xs sm:text-sm bg-gray-50 text-gray-900"></textarea>
                                     </td>
-                                    <td className="px-2 py-1 whitespace-nowrap">
-                                        <input type="number" value={item.quantity} onChange={(e) => handleItemChange(index, 'quantity', parseFloat(e.target.value) || 0)} className="w-full rounded-md border-gray-300 shadow-sm focus:border-indigo-300 focus:ring-indigo-200 focus:ring-opacity-50 sm:text-sm bg-gray-50 text-gray-900" />
+                                    <td className="px-1 sm:px-2 py-1 whitespace-nowrap">
+                                        <input type="number" value={item.quantity} onChange={(e) => handleItemChange(index, 'quantity', parseFloat(e.target.value) || 0)} className="w-full rounded-md border-gray-300 shadow-sm focus:border-indigo-300 focus:ring-indigo-200 focus:ring-opacity-50 text-xs sm:text-sm bg-gray-50 text-gray-900" />
                                     </td>
-                                    <td className="px-2 py-1 whitespace-nowrap">
-                                        <input type="text" value={item.unit} onChange={(e) => handleItemChange(index, 'unit', e.target.value)} className="w-full rounded-md border-gray-300 shadow-sm focus:border-indigo-300 focus:ring-indigo-200 focus:ring-opacity-50 sm:text-sm bg-gray-50 text-gray-900" />
+                                    <td className="px-1 sm:px-2 py-1 whitespace-nowrap">
+                                        <input type="text" value={item.unit} onChange={(e) => handleItemChange(index, 'unit', e.target.value)} className="w-full rounded-md border-gray-300 shadow-sm focus:border-indigo-300 focus:ring-indigo-200 focus:ring-opacity-50 text-xs sm:text-sm bg-gray-50 text-gray-900" />
                                     </td>
-                                    <td className="px-2 py-1 whitespace-nowrap">
-                                         <input type="text" value={item.notes} onChange={(e) => handleItemChange(index, 'notes', e.target.value)} className="w-full rounded-md border-gray-300 shadow-sm focus:border-indigo-300 focus:ring-indigo-200 focus:ring-opacity-50 sm:text-sm bg-gray-50 text-gray-900" />
+                                    <td className="px-1 sm:px-2 py-1 whitespace-nowrap">
+                                         <input type="text" value={item.notes} onChange={(e) => handleItemChange(index, 'notes', e.target.value)} className="w-full rounded-md border-gray-300 shadow-sm focus:border-indigo-300 focus:ring-indigo-200 focus:ring-opacity-50 text-xs sm:text-sm bg-gray-50 text-gray-900" />
                                     </td>
-                                    <td className="px-2 py-1 whitespace-nowrap text-center">
+                                    <td className="px-1 sm:px-2 py-1 whitespace-nowrap text-center">
                                         <button type="button" onClick={() => openConfirmModal(index)} className="text-red-600 hover:text-red-900 p-1 rounded-full hover:bg-red-100">
-                                            <svg className="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M19 7l-.867 12.142A2 2 0 0116.138 21H7.862a2 2 0 01-1.995-1.858L5 7m5 4v6m4-6v6m1-10V4a1 1 0 00-1-1h-4a1 1 0 00-1 1v3M4 7h16"></path></svg>
+                                            <svg className="w-4 h-4 sm:w-5 sm:h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M19 7l-.867 12.142A2 2 0 0116.138 21H7.862a2 2 0 01-1.995-1.858L5 7m5 4v6m4-6v6m1-10V4a1 1 0 00-1-1h-4a1 1 0 00-1 1v3M4 7h16"></path></svg>
                                         </button>
                                     </td>
                                 </tr>
@@ -240,8 +240,8 @@ const DeliveryForm: React.FC<DeliveryFormProps> = ({
                         </tbody>
                     </table>
                 </div>
-                 <button type="button" onClick={addItem} className="mt-4 inline-flex items-center px-3 py-2 border border-gray-300 shadow-sm text-sm leading-4 font-medium rounded-md text-gray-700 bg-white hover:bg-gray-50 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-indigo-500">
-                    <svg className="-ml-0.5 mr-2 h-4 w-4" xmlns="http://www.w3.org/2000/svg" viewBox="0 0 20 20" fill="currentColor" aria-hidden="true">
+                 <button type="button" onClick={addItem} className="mt-3 sm:mt-4 inline-flex items-center px-2 sm:px-3 py-1.5 sm:py-2 border border-gray-300 shadow-sm text-xs sm:text-sm leading-4 font-medium rounded-md text-gray-700 bg-white hover:bg-gray-50 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-indigo-500">
+                    <svg className="-ml-0.5 mr-1 sm:mr-2 h-3 w-3 sm:h-4 sm:w-4" xmlns="http://www.w3.org/2000/svg" viewBox="0 0 20 20" fill="currentColor" aria-hidden="true">
                         <path fillRule="evenodd" d="M10 3a1 1 0 011 1v5h5a1 1 0 110 2h-5v5a1 1 0 11-2 0v-5H4a1 1 0 110-2h5V4a1 1 0 011-1z" clipRule="evenodd" />
                     </svg>
                     เพิ่มรายการ
@@ -249,14 +249,14 @@ const DeliveryForm: React.FC<DeliveryFormProps> = ({
             </div>
             
             <FormDivider title="ข้อมูลผู้ลงนาม" />
-            <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+            <div className="grid grid-cols-1 md:grid-cols-2 gap-3 sm:gap-4">
                 <div>
-                    <label htmlFor="senderName" className="block text-sm font-medium text-slate-700">ชื่อผู้ส่งมอบ</label>
-                    <input type="text" id="senderName" value={data.senderName} onChange={(e) => handleDataChange('senderName', e.target.value)} className="mt-1 block w-full rounded-md border-gray-300 shadow-sm focus:border-indigo-500 focus:ring-indigo-500 sm:text-sm bg-gray-50" />
+                    <label htmlFor="senderName" className="block text-xs sm:text-sm font-medium text-slate-700">ชื่อผู้ส่งมอบ</label>
+                    <input type="text" id="senderName" value={data.senderName} onChange={(e) => handleDataChange('senderName', e.target.value)} className="mt-1 block w-full rounded-md border-gray-300 shadow-sm focus:border-indigo-500 focus:ring-indigo-500 text-xs sm:text-sm bg-gray-50" />
                 </div>
                 <div>
-                    <label htmlFor="receiverName" className="block text-sm font-medium text-slate-700">ชื่อผู้รับมอบ</label>
-                    <input type="text" id="receiverName" value={data.receiverName} onChange={(e) => handleDataChange('receiverName', e.target.value)} placeholder="เว้นว่างไว้เพื่อลงนาม" className="mt-1 block w-full rounded-md border-gray-300 shadow-sm focus:border-indigo-500 focus:ring-indigo-500 sm:text-sm bg-gray-50" />
+                    <label htmlFor="receiverName" className="block text-xs sm:text-sm font-medium text-slate-700">ชื่อผู้รับมอบ</label>
+                    <input type="text" id="receiverName" value={data.receiverName} onChange={(e) => handleDataChange('receiverName', e.target.value)} placeholder="เว้นว่างไว้เพื่อลงนาม" className="mt-1 block w-full rounded-md border-gray-300 shadow-sm focus:border-indigo-500 focus:ring-indigo-500 text-xs sm:text-sm bg-gray-50" />
                 </div>
             </div>
         </div>

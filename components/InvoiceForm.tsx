@@ -206,9 +206,9 @@ const InvoiceForm: React.FC<InvoiceFormProps> = ({
             {/* Form Fields */}
             <div className="space-y-6">
                 {/* เลขที่เอกสาร */}
-                <div className="text-sm text-gray-600">
+                <div className="text-xs sm:text-sm text-gray-600">
                     <span className="font-medium">เลขที่ใบแจ้งหนี้:</span> <span className="font-mono">{data.invoiceNumber || 'กำลังสร้าง...'}</span>
-                    <span className="text-xs text-gray-500 ml-2">(รูปแบบ: IN-YYMMDDXX)</span>
+                    <span className="text-xs text-gray-500 ml-2 hidden sm:inline">(รูปแบบ: IN-YYMMDDXX)</span>
                 </div>
                 
                 <FormDivider title="ข้อมูลลูกค้า/ผู้ซื้อ" />
@@ -236,79 +236,79 @@ const InvoiceForm: React.FC<InvoiceFormProps> = ({
                     />
 
                     <div>
-                        <label htmlFor="customerName" className="block text-sm font-medium text-slate-700">ชื่อลูกค้า/บริษัท</label>
-                        <input type="text" id="customerName" value={data.customerName} onChange={(e) => handleDataChange('customerName', e.target.value)} className="mt-1 block w-full rounded-md border-gray-300 shadow-sm focus:border-indigo-500 focus:ring-indigo-500 sm:text-sm bg-gray-50" />
+                        <label htmlFor="customerName" className="block text-xs sm:text-sm font-medium text-slate-700">ชื่อลูกค้า/บริษัท</label>
+                        <input type="text" id="customerName" value={data.customerName} onChange={(e) => handleDataChange('customerName', e.target.value)} className="mt-1 block w-full rounded-md border-gray-300 shadow-sm focus:border-indigo-500 focus:ring-indigo-500 text-xs sm:text-sm bg-gray-50" />
                     </div>
                     <div>
-                        <label htmlFor="customerAddress" className="block text-sm font-medium text-slate-700">ที่อยู่</label>
-                        <textarea id="customerAddress" value={data.customerAddress} onChange={(e) => handleDataChange('customerAddress', e.target.value)} rows={3} className="mt-1 block w-full rounded-md border-gray-300 shadow-sm focus:border-indigo-500 focus:ring-indigo-500 sm:text-sm bg-gray-50" />
+                        <label htmlFor="customerAddress" className="block text-xs sm:text-sm font-medium text-slate-700">ที่อยู่</label>
+                        <textarea id="customerAddress" value={data.customerAddress} onChange={(e) => handleDataChange('customerAddress', e.target.value)} rows={3} className="mt-1 block w-full rounded-md border-gray-300 shadow-sm focus:border-indigo-500 focus:ring-indigo-500 text-xs sm:text-sm bg-gray-50" />
                     </div>
-                    <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
+                    <div className="grid grid-cols-1 md:grid-cols-3 gap-3 sm:gap-4">
                         <div>
-                            <label htmlFor="customerPhone" className="block text-sm font-medium text-slate-700">เบอร์โทรศัพท์</label>
-                            <input type="text" id="customerPhone" value={data.customerPhone || ''} onChange={(e) => handleDataChange('customerPhone', e.target.value)} className="mt-1 block w-full rounded-md border-gray-300 shadow-sm focus:border-indigo-500 focus:ring-indigo-500 sm:text-sm bg-gray-50" />
+                            <label htmlFor="customerPhone" className="block text-xs sm:text-sm font-medium text-slate-700">เบอร์โทรศัพท์</label>
+                            <input type="text" id="customerPhone" value={data.customerPhone || ''} onChange={(e) => handleDataChange('customerPhone', e.target.value)} className="mt-1 block w-full rounded-md border-gray-300 shadow-sm focus:border-indigo-500 focus:ring-indigo-500 text-xs sm:text-sm bg-gray-50" />
                         </div>
                         <div>
-                            <label htmlFor="customerEmail" className="block text-sm font-medium text-slate-700">อีเมล</label>
-                            <input type="email" id="customerEmail" value={data.customerEmail || ''} onChange={(e) => handleDataChange('customerEmail', e.target.value)} className="mt-1 block w-full rounded-md border-gray-300 shadow-sm focus:border-indigo-500 focus:ring-indigo-500 sm:text-sm bg-gray-50" />
+                            <label htmlFor="customerEmail" className="block text-xs sm:text-sm font-medium text-slate-700">อีเมล</label>
+                            <input type="email" id="customerEmail" value={data.customerEmail || ''} onChange={(e) => handleDataChange('customerEmail', e.target.value)} className="mt-1 block w-full rounded-md border-gray-300 shadow-sm focus:border-indigo-500 focus:ring-indigo-500 text-xs sm:text-sm bg-gray-50" />
                         </div>
                         <div>
-                            <label htmlFor="customerTaxId" className="block text-sm font-medium text-slate-700">เลขประจำตัวผู้เสียภาษี</label>
-                            <input type="text" id="customerTaxId" value={data.customerTaxId || ''} onChange={(e) => handleDataChange('customerTaxId', e.target.value)} className="mt-1 block w-full rounded-md border-gray-300 shadow-sm focus:border-indigo-500 focus:ring-indigo-500 sm:text-sm bg-gray-50" />
+                            <label htmlFor="customerTaxId" className="block text-xs sm:text-sm font-medium text-slate-700">เลขประจำตัวผู้เสียภาษี</label>
+                            <input type="text" id="customerTaxId" value={data.customerTaxId || ''} onChange={(e) => handleDataChange('customerTaxId', e.target.value)} className="mt-1 block w-full rounded-md border-gray-300 shadow-sm focus:border-indigo-500 focus:ring-indigo-500 text-xs sm:text-sm bg-gray-50" />
                         </div>
                     </div>
                 </div>
 
                 <FormDivider title="รายละเอียดเอกสาร" />
-                <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
+                <div className="grid grid-cols-1 md:grid-cols-3 gap-3 sm:gap-4">
                     <div>
-                        <label htmlFor="invoiceDate" className="block text-sm font-medium text-slate-700">วันที่ออกใบแจ้งหนี้</label>
-                        <input type="date" id="invoiceDate" value={formatDateForInput(data.invoiceDate)} onChange={(e) => handleDataChange('invoiceDate', e.target.value ? new Date(e.target.value) : null)} className="mt-1 block w-full rounded-md border-gray-300 shadow-sm focus:border-indigo-500 focus:ring-indigo-500 sm:text-sm bg-gray-50" />
+                        <label htmlFor="invoiceDate" className="block text-xs sm:text-sm font-medium text-slate-700">วันที่ออกใบแจ้งหนี้</label>
+                        <input type="date" id="invoiceDate" value={formatDateForInput(data.invoiceDate)} onChange={(e) => handleDataChange('invoiceDate', e.target.value ? new Date(e.target.value) : null)} className="mt-1 block w-full rounded-md border-gray-300 shadow-sm focus:border-indigo-500 focus:ring-indigo-500 text-xs sm:text-sm bg-gray-50" />
                     </div>
                     <div>
-                        <label htmlFor="dueDate" className="block text-sm font-medium text-slate-700">วันที่ครบกำหนดชำระ</label>
-                        <input type="date" id="dueDate" value={formatDateForInput(data.dueDate)} onChange={(e) => handleDataChange('dueDate', e.target.value ? new Date(e.target.value) : null)} className="mt-1 block w-full rounded-md border-gray-300 shadow-sm focus:border-indigo-500 focus:ring-indigo-500 sm:text-sm bg-gray-50" />
+                        <label htmlFor="dueDate" className="block text-xs sm:text-sm font-medium text-slate-700">วันที่ครบกำหนดชำระ</label>
+                        <input type="date" id="dueDate" value={formatDateForInput(data.dueDate)} onChange={(e) => handleDataChange('dueDate', e.target.value ? new Date(e.target.value) : null)} className="mt-1 block w-full rounded-md border-gray-300 shadow-sm focus:border-indigo-500 focus:ring-indigo-500 text-xs sm:text-sm bg-gray-50" />
                     </div>
                     <div>
-                        <label htmlFor="referenceNumber" className="block text-sm font-medium text-slate-700">เลขที่อ้างอิง</label>
-                        <input type="text" id="referenceNumber" value={data.referenceNumber || ''} onChange={(e) => handleDataChange('referenceNumber', e.target.value)} className="mt-1 block w-full rounded-md border-gray-300 shadow-sm focus:border-indigo-500 focus:ring-indigo-500 sm:text-sm bg-gray-50" />
+                        <label htmlFor="referenceNumber" className="block text-xs sm:text-sm font-medium text-slate-700">เลขที่อ้างอิง</label>
+                        <input type="text" id="referenceNumber" value={data.referenceNumber || ''} onChange={(e) => handleDataChange('referenceNumber', e.target.value)} className="mt-1 block w-full rounded-md border-gray-300 shadow-sm focus:border-indigo-500 focus:ring-indigo-500 text-xs sm:text-sm bg-gray-50" />
                     </div>
                 </div>
 
                 <FormDivider title="รายการสินค้า/บริการ" />
-                <div className="overflow-x-auto">
-                    <table className="min-w-full divide-y divide-gray-200">
+                <div className="overflow-x-auto -mx-3 sm:mx-0">
+                    <table className="min-w-full divide-y divide-gray-200 text-xs sm:text-sm">
                         <thead className="bg-gray-50">
                             <tr>
-                                <th scope="col" className="px-3 py-2 text-left text-xs font-medium text-gray-500 uppercase tracking-wider w-2/5">รายละเอียด</th>
-                                <th scope="col" className="px-3 py-2 text-left text-xs font-medium text-gray-500 uppercase tracking-wider w-1/6">จำนวน</th>
-                                <th scope="col" className="px-3 py-2 text-left text-xs font-medium text-gray-500 uppercase tracking-wider w-1/6">หน่วย</th>
-                                <th scope="col" className="px-3 py-2 text-left text-xs font-medium text-gray-500 uppercase tracking-wider w-1/6">ราคาต่อหน่วย</th>
-                                <th scope="col" className="px-3 py-2 text-left text-xs font-medium text-gray-500 uppercase tracking-wider w-1/6">จำนวนเงิน</th>
-                                <th scope="col" className="relative px-3 py-2 w-12"><span className="sr-only">ลบ</span></th>
+                                <th scope="col" className="px-2 sm:px-3 py-1.5 sm:py-2 text-left text-xs font-medium text-gray-500 uppercase tracking-wider w-2/5">รายละเอียด</th>
+                                <th scope="col" className="px-2 sm:px-3 py-1.5 sm:py-2 text-left text-xs font-medium text-gray-500 uppercase tracking-wider w-1/6">จำนวน</th>
+                                <th scope="col" className="px-2 sm:px-3 py-1.5 sm:py-2 text-left text-xs font-medium text-gray-500 uppercase tracking-wider w-1/6">หน่วย</th>
+                                <th scope="col" className="px-2 sm:px-3 py-1.5 sm:py-2 text-left text-xs font-medium text-gray-500 uppercase tracking-wider w-1/6">ราคาต่อหน่วย</th>
+                                <th scope="col" className="px-2 sm:px-3 py-1.5 sm:py-2 text-left text-xs font-medium text-gray-500 uppercase tracking-wider w-1/6">จำนวนเงิน</th>
+                                <th scope="col" className="relative px-2 sm:px-3 py-1.5 sm:py-2 w-10 sm:w-12"><span className="sr-only">ลบ</span></th>
                             </tr>
                         </thead>
                         <tbody className="bg-white divide-y divide-gray-200">
                             {data.items.map((item, index) => (
                                 <tr key={index}>
-                                    <td className="px-2 py-1 whitespace-nowrap">
-                                        <textarea value={item.description} onChange={(e) => handleItemChange(index, 'description', e.target.value)} rows={2} className="w-full rounded-md border-gray-300 shadow-sm focus:border-indigo-300 focus:ring-indigo-200 focus:ring-opacity-50 sm:text-sm bg-gray-50 text-gray-900"></textarea>
+                                    <td className="px-1 sm:px-2 py-1 whitespace-nowrap">
+                                        <textarea value={item.description} onChange={(e) => handleItemChange(index, 'description', e.target.value)} rows={2} className="w-full rounded-md border-gray-300 shadow-sm focus:border-indigo-300 focus:ring-indigo-200 focus:ring-opacity-50 text-xs sm:text-sm bg-gray-50 text-gray-900"></textarea>
                                     </td>
-                                    <td className="px-2 py-1 whitespace-nowrap">
-                                        <input type="number" value={item.quantity} onChange={(e) => handleItemChange(index, 'quantity', parseFloat(e.target.value) || 0)} className="w-full rounded-md border-gray-300 shadow-sm focus:border-indigo-300 focus:ring-indigo-200 focus:ring-opacity-50 sm:text-sm bg-gray-50 text-gray-900" />
+                                    <td className="px-1 sm:px-2 py-1 whitespace-nowrap">
+                                        <input type="number" value={item.quantity} onChange={(e) => handleItemChange(index, 'quantity', parseFloat(e.target.value) || 0)} className="w-full rounded-md border-gray-300 shadow-sm focus:border-indigo-300 focus:ring-indigo-200 focus:ring-opacity-50 text-xs sm:text-sm bg-gray-50 text-gray-900" />
                                     </td>
-                                    <td className="px-2 py-1 whitespace-nowrap">
-                                        <input type="text" value={item.unit} onChange={(e) => handleItemChange(index, 'unit', e.target.value)} className="w-full rounded-md border-gray-300 shadow-sm focus:border-indigo-300 focus:ring-indigo-200 focus:ring-opacity-50 sm:text-sm bg-gray-50 text-gray-900" />
+                                    <td className="px-1 sm:px-2 py-1 whitespace-nowrap">
+                                        <input type="text" value={item.unit} onChange={(e) => handleItemChange(index, 'unit', e.target.value)} className="w-full rounded-md border-gray-300 shadow-sm focus:border-indigo-300 focus:ring-indigo-200 focus:ring-opacity-50 text-xs sm:text-sm bg-gray-50 text-gray-900" />
                                     </td>
-                                    <td className="px-2 py-1 whitespace-nowrap">
-                                        <input type="number" step="0.01" value={item.unitPrice} onChange={(e) => handleItemChange(index, 'unitPrice', parseFloat(e.target.value) || 0)} className="w-full rounded-md border-gray-300 shadow-sm focus:border-indigo-300 focus:ring-indigo-200 focus:ring-opacity-50 sm:text-sm bg-gray-50 text-gray-900" />
+                                    <td className="px-1 sm:px-2 py-1 whitespace-nowrap">
+                                        <input type="number" step="0.01" value={item.unitPrice} onChange={(e) => handleItemChange(index, 'unitPrice', parseFloat(e.target.value) || 0)} className="w-full rounded-md border-gray-300 shadow-sm focus:border-indigo-300 focus:ring-indigo-200 focus:ring-opacity-50 text-xs sm:text-sm bg-gray-50 text-gray-900" />
                                     </td>
-                                    <td className="px-2 py-1 whitespace-nowrap">
-                                        <input type="number" step="0.01" value={item.amount} readOnly className="w-full rounded-md border-gray-300 shadow-sm sm:text-sm bg-gray-100 text-gray-900 font-medium" />
+                                    <td className="px-1 sm:px-2 py-1 whitespace-nowrap">
+                                        <input type="number" step="0.01" value={item.amount} readOnly className="w-full rounded-md border-gray-300 shadow-sm text-xs sm:text-sm bg-gray-100 text-gray-900 font-medium" />
                                     </td>
-                                    <td className="px-2 py-1 whitespace-nowrap text-center">
+                                    <td className="px-1 sm:px-2 py-1 whitespace-nowrap text-center">
                                         <button type="button" onClick={() => openConfirmModal(index)} className="text-red-600 hover:text-red-900 p-1 rounded-full hover:bg-red-100">
-                                            <svg className="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M19 7l-.867 12.142A2 2 0 0116.138 21H7.862a2 2 0 01-1.995-1.858L5 7m5 4v6m4-6v6m1-10V4a1 1 0 00-1-1h-4a1 1 0 00-1 1v3M4 7h16"></path></svg>
+                                            <svg className="w-4 h-4 sm:w-5 sm:h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M19 7l-.867 12.142A2 2 0 0116.138 21H7.862a2 2 0 01-1.995-1.858L5 7m5 4v6m4-6v6m1-10V4a1 1 0 00-1-1h-4a1 1 0 00-1 1v3M4 7h16"></path></svg>
                                         </button>
                                     </td>
                                 </tr>
@@ -316,7 +316,7 @@ const InvoiceForm: React.FC<InvoiceFormProps> = ({
                         </tbody>
                     </table>
                 </div>
-                <button type="button" onClick={addItem} className="mt-4 inline-flex items-center px-3 py-2 border border-gray-300 shadow-sm text-sm leading-4 font-medium rounded-md text-gray-700 bg-white hover:bg-gray-50 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-indigo-500">
+                <button type="button" onClick={addItem} className="mt-3 sm:mt-4 inline-flex items-center px-2 sm:px-3 py-1.5 sm:py-2 border border-gray-300 shadow-sm text-xs sm:text-sm leading-4 font-medium rounded-md text-gray-700 bg-white hover:bg-gray-50 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-indigo-500">
                     <svg className="-ml-0.5 mr-2 h-4 w-4" xmlns="http://www.w3.org/2000/svg" viewBox="0 0 20 20" fill="currentColor" aria-hidden="true">
                         <path fillRule="evenodd" d="M10 3a1 1 0 011 1v5h5a1 1 0 110 2h-5v5a1 1 0 11-2 0v-5H4a1 1 0 110-2h5V4a1 1 0 011-1z" clipRule="evenodd" />
                     </svg>
@@ -324,15 +324,15 @@ const InvoiceForm: React.FC<InvoiceFormProps> = ({
                 </button>
 
                 <FormDivider title="สรุปยอดเงิน" />
-                <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
-                    <div className="space-y-4">
-                        <div className="flex justify-between items-center">
-                            <label htmlFor="taxRate" className="block text-sm font-medium text-slate-700">อัตราภาษีมูลค่าเพิ่ม (%)</label>
-                            <input type="number" id="taxRate" value={data.taxRate} onChange={(e) => handleDataChange('taxRate', parseFloat(e.target.value) || 0)} step="0.01" className="w-24 rounded-md border-gray-300 shadow-sm focus:border-indigo-500 focus:ring-indigo-500 sm:text-sm bg-gray-50" />
+                <div className="grid grid-cols-1 md:grid-cols-2 gap-3 sm:gap-4">
+                    <div className="space-y-3 sm:space-y-4">
+                        <div className="flex flex-col sm:flex-row sm:justify-between sm:items-center gap-2">
+                            <label htmlFor="taxRate" className="block text-xs sm:text-sm font-medium text-slate-700">อัตราภาษีมูลค่าเพิ่ม (%)</label>
+                            <input type="number" id="taxRate" value={data.taxRate} onChange={(e) => handleDataChange('taxRate', parseFloat(e.target.value) || 0)} step="0.01" className="w-full sm:w-24 rounded-md border-gray-300 shadow-sm focus:border-indigo-500 focus:ring-indigo-500 text-xs sm:text-sm bg-gray-50" />
                         </div>
-                        <div className="flex justify-between items-center">
-                            <label htmlFor="discount" className="block text-sm font-medium text-slate-700">ส่วนลด (บาท)</label>
-                            <input type="number" id="discount" value={data.discount} onChange={(e) => handleDataChange('discount', parseFloat(e.target.value) || 0)} step="0.01" className="w-32 rounded-md border-gray-300 shadow-sm focus:border-indigo-500 focus:ring-indigo-500 sm:text-sm bg-gray-50" />
+                        <div className="flex flex-col sm:flex-row sm:justify-between sm:items-center gap-2">
+                            <label htmlFor="discount" className="block text-xs sm:text-sm font-medium text-slate-700">ส่วนลด (บาท)</label>
+                            <input type="number" id="discount" value={data.discount} onChange={(e) => handleDataChange('discount', parseFloat(e.target.value) || 0)} step="0.01" className="w-full sm:w-32 rounded-md border-gray-300 shadow-sm focus:border-indigo-500 focus:ring-indigo-500 text-xs sm:text-sm bg-gray-50" />
                         </div>
                     </div>
                     <div className="space-y-2 bg-gray-50 p-4 rounded-lg">
@@ -358,18 +358,18 @@ const InvoiceForm: React.FC<InvoiceFormProps> = ({
                 </div>
 
                 <FormDivider title="ข้อมูลเพิ่มเติม" />
-                <div className="space-y-4">
+                <div className="space-y-3 sm:space-y-4">
                     <div>
-                        <label htmlFor="paymentTerms" className="block text-sm font-medium text-slate-700">เงื่อนไขการชำระเงิน</label>
-                        <textarea id="paymentTerms" value={data.paymentTerms || ''} onChange={(e) => handleDataChange('paymentTerms', e.target.value)} rows={2} className="mt-1 block w-full rounded-md border-gray-300 shadow-sm focus:border-indigo-500 focus:ring-indigo-500 sm:text-sm bg-gray-50" placeholder="เช่น ชำระภายใน 30 วัน, ชำระเงินสด" />
+                        <label htmlFor="paymentTerms" className="block text-xs sm:text-sm font-medium text-slate-700">เงื่อนไขการชำระเงิน</label>
+                        <textarea id="paymentTerms" value={data.paymentTerms || ''} onChange={(e) => handleDataChange('paymentTerms', e.target.value)} rows={2} className="mt-1 block w-full rounded-md border-gray-300 shadow-sm focus:border-indigo-500 focus:ring-indigo-500 text-xs sm:text-sm bg-gray-50" placeholder="เช่น ชำระภายใน 30 วัน, ชำระเงินสด" />
                     </div>
                     <div>
-                        <label htmlFor="notes" className="block text-sm font-medium text-slate-700">หมายเหตุ</label>
-                        <textarea id="notes" value={data.notes || ''} onChange={(e) => handleDataChange('notes', e.target.value)} rows={3} className="mt-1 block w-full rounded-md border-gray-300 shadow-sm focus:border-indigo-500 focus:ring-indigo-500 sm:text-sm bg-gray-50" />
+                        <label htmlFor="notes" className="block text-xs sm:text-sm font-medium text-slate-700">หมายเหตุ</label>
+                        <textarea id="notes" value={data.notes || ''} onChange={(e) => handleDataChange('notes', e.target.value)} rows={3} className="mt-1 block w-full rounded-md border-gray-300 shadow-sm focus:border-indigo-500 focus:ring-indigo-500 text-xs sm:text-sm bg-gray-50" />
                     </div>
                     <div>
-                        <label htmlFor="issuedBy" className="block text-sm font-medium text-slate-700">ผู้ออกเอกสาร</label>
-                        <input type="text" id="issuedBy" value={data.issuedBy || ''} onChange={(e) => handleDataChange('issuedBy', e.target.value)} className="mt-1 block w-full rounded-md border-gray-300 shadow-sm focus:border-indigo-500 focus:ring-indigo-500 sm:text-sm bg-gray-50" />
+                        <label htmlFor="issuedBy" className="block text-xs sm:text-sm font-medium text-slate-700">ผู้ออกเอกสาร</label>
+                        <input type="text" id="issuedBy" value={data.issuedBy || ''} onChange={(e) => handleDataChange('issuedBy', e.target.value)} className="mt-1 block w-full rounded-md border-gray-300 shadow-sm focus:border-indigo-500 focus:ring-indigo-500 text-xs sm:text-sm bg-gray-50" />
                     </div>
                 </div>
             </div>
