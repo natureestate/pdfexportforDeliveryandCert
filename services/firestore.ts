@@ -18,7 +18,7 @@ import {
     QueryConstraint
 } from "firebase/firestore";
 import { db, auth } from "../firebase.config";
-import { DeliveryNoteData, WarrantyData, InvoiceData, ReceiptData, QuotationData, PurchaseOrderData } from "../types";
+import { DeliveryNoteData, WarrantyData, InvoiceData, ReceiptData, QuotationData, PurchaseOrderData, TaxInvoiceData } from "../types";
 import { createDocumentService, createIdGenerator, FirestoreDocument } from "./documentService";
 
 // Collection names
@@ -26,6 +26,7 @@ const DELIVERY_NOTES_COLLECTION = "deliveryNotes";
 const WARRANTY_CARDS_COLLECTION = "warrantyCards";
 const INVOICES_COLLECTION = "invoices";
 const RECEIPTS_COLLECTION = "receipts";
+const TAX_INVOICES_COLLECTION = "taxInvoices";
 const QUOTATIONS_COLLECTION = "quotations";
 const PURCHASE_ORDERS_COLLECTION = "purchaseOrders";
 
@@ -116,6 +117,23 @@ const receiptService = createDocumentService<ReceiptData>({
     },
 });
 
+// Tax Invoice Service
+const taxInvoiceService = createDocumentService<TaxInvoiceData>({
+    collection: TAX_INVOICES_COLLECTION,
+    prefix: 'TI',
+    documentNumberField: 'taxInvoiceNumber',
+    generateId: createIdGenerator('TI'),
+    dateFields: ['taxInvoiceDate'],
+    errorMessages: {
+        save: 'ไม่สามารถบันทึกใบกำกับภาษีได้',
+        get: 'ไม่สามารถดึงข้อมูลใบกำกับภาษีได้',
+        getAll: 'ไม่สามารถดึงรายการใบกำกับภาษีได้',
+        update: 'ไม่สามารถอัปเดตใบกำกับภาษีได้',
+        delete: 'ไม่สามารถลบใบกำกับภาษีได้',
+        search: 'ไม่สามารถค้นหาใบกำกับภาษีได้',
+    },
+});
+
 // Quotation Service
 const quotationService = createDocumentService<QuotationData>({
     collection: QUOTATIONS_COLLECTION,
@@ -154,6 +172,7 @@ export interface DeliveryNoteDocument extends DeliveryNoteData, FirestoreDocumen
 export interface WarrantyDocument extends WarrantyData, FirestoreDocument {}
 export interface InvoiceDocument extends InvoiceData, FirestoreDocument {}
 export interface ReceiptDocument extends ReceiptData, FirestoreDocument {}
+export interface TaxInvoiceDocument extends TaxInvoiceData, FirestoreDocument {}
 export interface QuotationDocument extends QuotationData, FirestoreDocument {}
 export interface PurchaseOrderDocument extends PurchaseOrderData, FirestoreDocument {}
 
@@ -416,6 +435,60 @@ export const deleteReceipt = async (id: string): Promise<void> => {
 
 export const searchReceiptByReceiptNumber = async (receiptNumber: string, companyId?: string): Promise<ReceiptDocument[]> => {
     return receiptService.searchByDocumentNumber(receiptNumber, companyId) as Promise<ReceiptDocument[]>;
+};
+
+// ==================== Tax Invoice Functions ====================
+// Refactored: ใช้ Generic Document Service
+
+/**
+ * บันทึกใบกำกับภาษีใหม่ลง Firestore
+ * @param data - ข้อมูลใบกำกับภาษี
+ * @param companyId - ID ของบริษัท (optional)
+ */
+export const saveTaxInvoice = async (data: TaxInvoiceData, companyId?: string): Promise<string> => {
+    return taxInvoiceService.save(data, companyId);
+};
+
+/**
+ * ดึงข้อมูลใบกำกับภาษีตาม ID
+ */
+export const getTaxInvoice = async (id: string): Promise<TaxInvoiceDocument | null> => {
+    return taxInvoiceService.get(id) as Promise<TaxInvoiceDocument | null>;
+};
+
+/**
+ * ดึงรายการใบกำกับภาษีทั้งหมด (มีการ limit) - เฉพาะของ user และ company ที่เลือก
+ * @param limitCount - จำนวนเอกสารที่ต้องการดึง
+ * @param companyId - ID ของบริษัท (optional) ถ้าไม่ระบุจะดึงทั้งหมด
+ */
+export const getTaxInvoices = async (limitCount: number = 50, companyId?: string): Promise<TaxInvoiceDocument[]> => {
+    return taxInvoiceService.getAll(limitCount, companyId) as Promise<TaxInvoiceDocument[]>;
+};
+
+/**
+ * อัปเดตใบกำกับภาษี
+ * @param id - Document ID ของเอกสารที่ต้องการอัปเดต
+ * @param data - ข้อมูลที่ต้องการอัปเดต
+ */
+export const updateTaxInvoice = async (id: string, data: Partial<TaxInvoiceData>): Promise<void> => {
+    return taxInvoiceService.update(id, data);
+};
+
+/**
+ * ลบใบกำกับภาษี (Soft Delete) - ตั้งค่า isDeleted = true แทนการลบจริง
+ * @param id - Document ID ของเอกสารที่ต้องการลบ
+ */
+export const deleteTaxInvoice = async (id: string): Promise<void> => {
+    return taxInvoiceService.delete(id);
+};
+
+/**
+ * ค้นหาใบกำกับภาษีตามเลขที่เอกสาร
+ * @param taxInvoiceNumber - เลขที่ใบกำกับภาษีที่ต้องการค้นหา
+ * @param companyId - ID ของบริษัท (optional) ถ้าไม่ระบุจะค้นหาทั้งหมดของ user
+ */
+export const searchTaxInvoiceByTaxInvoiceNumber = async (taxInvoiceNumber: string, companyId?: string): Promise<TaxInvoiceDocument[]> => {
+    return taxInvoiceService.searchByDocumentNumber(taxInvoiceNumber, companyId) as Promise<TaxInvoiceDocument[]>;
 };
 
 // ==================== Quotations Functions ====================

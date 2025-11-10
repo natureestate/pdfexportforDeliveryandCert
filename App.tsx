@@ -1,6 +1,6 @@
 import React, { useState, useRef, useCallback, useEffect } from 'react';
 import { Routes, Route, Navigate } from 'react-router-dom';
-import { DeliveryNoteData, WarrantyData, InvoiceData, ReceiptData, QuotationData, PurchaseOrderData, LogoType } from './types';
+import { DeliveryNoteData, WarrantyData, InvoiceData, ReceiptData, TaxInvoiceData, QuotationData, PurchaseOrderData, LogoType } from './types';
 import { AuthProvider } from './contexts/AuthContext';
 import { CompanyProvider, useCompany } from './contexts/CompanyContext';
 import ProtectedRoute from './components/ProtectedRoute';
@@ -13,6 +13,8 @@ import InvoiceForm from './components/InvoiceForm';
 import InvoicePreview from './components/InvoicePreview';
 import ReceiptForm from './components/ReceiptForm';
 import ReceiptPreview from './components/ReceiptPreview';
+import TaxInvoiceForm from './components/TaxInvoiceForm';
+import TaxInvoicePreview from './components/TaxInvoicePreview';
 import QuotationForm from './components/QuotationForm';
 import QuotationPreview from './components/QuotationPreview';
 import PurchaseOrderForm from './components/PurchaseOrderForm';
@@ -22,8 +24,8 @@ import AcceptInvitationPage from './components/AcceptInvitationPage';
 import SuperAdminDashboard from './components/SuperAdminDashboard';
 import CookieConsentModal from './components/CookieConsentModal';
 import { generatePdf } from './services/pdfGenerator';
-import { saveDeliveryNote, saveWarrantyCard, saveInvoice, saveReceipt, saveQuotation, savePurchaseOrder } from './services/firestore';
-import type { DeliveryNoteDocument, WarrantyDocument, InvoiceDocument, ReceiptDocument, QuotationDocument, PurchaseOrderDocument } from './services/firestore';
+import { saveDeliveryNote, saveWarrantyCard, saveInvoice, saveReceipt, saveTaxInvoice, saveQuotation, savePurchaseOrder } from './services/firestore';
+import type { DeliveryNoteDocument, WarrantyDocument, InvoiceDocument, ReceiptDocument, TaxInvoiceDocument, QuotationDocument, PurchaseOrderDocument } from './services/firestore';
 import { DOCUMENT_REGISTRY, generatePdfFilename as generatePdfFilenameFromRegistry, saveOrUpdateDocument, type DocType } from './utils/documentRegistry';
 
 const getInitialDeliveryData = (): DeliveryNoteData => ({
@@ -153,6 +155,44 @@ const initialReceiptData: ReceiptData = {
     issuedBy: '',
 };
 
+const initialTaxInvoiceData: TaxInvoiceData = {
+    logo: null,
+    // ข้อมูลบริษัทผู้ขาย
+    companyName: '',
+    companyAddress: '',
+    companyPhone: '',
+    companyEmail: '',
+    companyWebsite: '',
+    companyTaxId: '',
+    // ข้อมูลลูกค้า/ผู้ซื้อ
+    customerName: '',
+    customerAddress: '',
+    customerPhone: '',
+    customerEmail: '',
+    customerTaxId: '',
+    // ข้อมูลเอกสาร
+    taxInvoiceNumber: '', // จะถูก auto-generate ใน TaxInvoiceForm
+    taxInvoiceDate: new Date(),
+    referenceNumber: '',
+    // รายการสินค้า/บริการ
+    items: [
+        { description: '', quantity: 1, unit: 'ชิ้น', unitPrice: 0, amount: 0, notes: '' },
+    ],
+    // ข้อมูลการชำระเงิน
+    subtotal: 0,
+    taxRate: 7, // Default 7%
+    taxAmount: 0,
+    discount: 0,
+    total: 0,
+    // ข้อมูลการรับเงิน
+    paymentMethod: '',
+    paidAmount: 0,
+    changeAmount: 0,
+    // ข้อมูลเพิ่มเติม
+    notes: '',
+    issuedBy: '',
+};
+
 const initialQuotationData: QuotationData = {
     logo: null,
     // ข้อมูลบริษัทผู้เสนอราคา
@@ -237,6 +277,7 @@ const AppContent: React.FC = () => {
     const [warrantyData, setWarrantyData] = useState<WarrantyData>(initialWarrantyData);
     const [invoiceData, setInvoiceData] = useState<InvoiceData>(initialInvoiceData);
     const [receiptData, setReceiptData] = useState<ReceiptData>(initialReceiptData);
+    const [taxInvoiceData, setTaxInvoiceData] = useState<TaxInvoiceData>(initialTaxInvoiceData);
     const [quotationData, setQuotationData] = useState<QuotationData>(initialQuotationData);
     const [purchaseOrderData, setPurchaseOrderData] = useState<PurchaseOrderData>(initialPurchaseOrderData);
     const [activeTab, setActiveTab] = useState<DocType>('delivery');
@@ -268,6 +309,7 @@ const AppContent: React.FC = () => {
         setWarrantyData(updateLogo);
         setInvoiceData(updateLogo);
         setReceiptData(updateLogo);
+        setTaxInvoiceData(updateLogo);
         setQuotationData(updateLogo);
         setPurchaseOrderData(updateLogo);
     }, [sharedLogo, sharedLogoUrl, sharedLogoType]);
@@ -309,6 +351,16 @@ const AppContent: React.FC = () => {
 
             // Sync ไปยัง ReceiptForm (ข้อมูลบริษัทผู้ขาย)
             setReceiptData(prev => ({
+                ...prev,
+                companyName: currentCompany.name,
+                companyAddress: currentCompany.address || '',
+                companyPhone: currentCompany.phone || '',
+                companyEmail: currentCompany.email || '',
+                companyWebsite: currentCompany.website || '',
+            }));
+
+            // Sync ไปยัง TaxInvoiceForm (ข้อมูลบริษัทผู้ขาย)
+            setTaxInvoiceData(prev => ({
                 ...prev,
                 companyName: currentCompany.name,
                 companyAddress: currentCompany.address || '',
@@ -427,12 +479,14 @@ const AppContent: React.FC = () => {
                 return invoiceData;
             case 'receipt':
                 return receiptData;
+            case 'tax-invoice':
+                return taxInvoiceData;
             case 'quotation':
                 return quotationData;
             case 'purchase-order':
                 return purchaseOrderData;
         }
-    }, [activeTab, deliveryData, warrantyData, invoiceData, receiptData, quotationData, purchaseOrderData]);
+    }, [activeTab, deliveryData, warrantyData, invoiceData, receiptData, taxInvoiceData, quotationData, purchaseOrderData]);
 
     // ฟังก์ชันบันทึกข้อมูลลง Firestore พร้อม companyId (รองรับทั้ง create และ update)
     // Refactored: ใช้ Document Registry Pattern
@@ -512,7 +566,7 @@ const AppContent: React.FC = () => {
     }, [activeTab, getCurrentData, currentCompany, generatePdfFilename]);
 
     // ฟังก์ชันโหลดเอกสารจาก History (สำหรับ Edit)
-    const handleLoadDocument = useCallback((doc: DeliveryNoteDocument | WarrantyDocument | InvoiceDocument | ReceiptDocument | QuotationDocument | PurchaseOrderDocument) => {
+    const handleLoadDocument = useCallback((doc: DeliveryNoteDocument | WarrantyDocument | InvoiceDocument | ReceiptDocument | TaxInvoiceDocument | QuotationDocument | PurchaseOrderDocument) => {
         // โหลด logo จากเอกสาร
         if (doc.logoUrl || doc.logo) {
             setSharedLogo(doc.logo || null);
@@ -552,6 +606,13 @@ const AppContent: React.FC = () => {
                 receiptDate: doc.receiptDate || null,
             });
             setActiveTab('receipt');
+        } else if ('taxInvoiceNumber' in doc) {
+            // เป็น TaxInvoiceDocument
+            setTaxInvoiceData({
+                ...doc,
+                taxInvoiceDate: doc.taxInvoiceDate || null,
+            });
+            setActiveTab('tax-invoice');
         } else if ('quotationNumber' in doc) {
             // เป็น QuotationDocument
             setQuotationData({
@@ -602,6 +663,9 @@ const AppContent: React.FC = () => {
                 break;
             case 'receipt':
                 setReceiptData(withLogo(initialReceiptData));
+                break;
+            case 'tax-invoice':
+                setTaxInvoiceData(withLogo(initialTaxInvoiceData));
                 break;
             case 'quotation':
                 setQuotationData(withLogo(initialQuotationData));
@@ -701,6 +765,12 @@ const AppContent: React.FC = () => {
                                         ใบเสร็จ
                                     </button>
                                     <button
+                                        onClick={() => setActiveTab('tax-invoice')}
+                                        className={`${activeTab === 'tax-invoice' ? 'border-indigo-500 text-indigo-600' : 'border-transparent text-gray-500 hover:text-gray-700 hover:border-gray-300'} whitespace-nowrap py-3 sm:py-4 px-2 sm:px-1 border-b-2 font-medium text-xs sm:text-sm transition-colors flex-shrink-0`}
+                                    >
+                                        ใบกำกับภาษี
+                                    </button>
+                                    <button
                                         onClick={() => setActiveTab('quotation')}
                                         className={`${activeTab === 'quotation' ? 'border-indigo-500 text-indigo-600' : 'border-transparent text-gray-500 hover:text-gray-700 hover:border-gray-300'} whitespace-nowrap py-3 sm:py-4 px-2 sm:px-1 border-b-2 font-medium text-xs sm:text-sm transition-colors flex-shrink-0`}
                                     >
@@ -764,6 +834,21 @@ const AppContent: React.FC = () => {
                                 <ReceiptForm
                                     data={receiptData}
                                     setData={setReceiptData}
+                                    sharedLogo={sharedLogo}
+                                    sharedLogoUrl={sharedLogoUrl}
+                                    sharedLogoType={sharedLogoType}
+                                    companyDefaultLogoUrl={currentCompany?.defaultLogoUrl}
+                                    onLogoChange={(logo, logoUrl, logoType) => {
+                                        setSharedLogo(logo);
+                                        setSharedLogoUrl(logoUrl);
+                                        setSharedLogoType(logoType);
+                                    }}
+                                    onSetDefaultLogo={handleSetDefaultLogo}
+                                />
+                            ) : activeTab === 'tax-invoice' ? (
+                                <TaxInvoiceForm
+                                    data={taxInvoiceData}
+                                    setData={setTaxInvoiceData}
                                     sharedLogo={sharedLogo}
                                     sharedLogoUrl={sharedLogoUrl}
                                     sharedLogoType={sharedLogoType}
@@ -871,6 +956,8 @@ const AppContent: React.FC = () => {
                                         <InvoicePreview ref={printableAreaRef} data={invoiceData} />
                                     ) : activeTab === 'receipt' ? (
                                         <ReceiptPreview ref={printableAreaRef} data={receiptData} />
+                                    ) : activeTab === 'tax-invoice' ? (
+                                        <TaxInvoicePreview ref={printableAreaRef} data={taxInvoiceData} />
                                     ) : activeTab === 'quotation' ? (
                                         <QuotationPreview ref={printableAreaRef} data={quotationData} />
                                     ) : (

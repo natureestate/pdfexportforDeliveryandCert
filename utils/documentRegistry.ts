@@ -6,6 +6,7 @@ import {
     WarrantyData, 
     InvoiceData, 
     ReceiptData, 
+    TaxInvoiceData,
     QuotationData, 
     PurchaseOrderData 
 } from '../types';
@@ -18,6 +19,8 @@ import {
     updateInvoice,
     saveReceipt,
     updateReceipt,
+    saveTaxInvoice,
+    updateTaxInvoice,
     saveQuotation,
     updateQuotation,
     savePurchaseOrder,
@@ -28,11 +31,12 @@ import type {
     WarrantyDocument,
     InvoiceDocument,
     ReceiptDocument,
+    TaxInvoiceDocument,
     QuotationDocument,
     PurchaseOrderDocument,
 } from '../services/firestore';
 
-export type DocType = 'delivery' | 'warranty' | 'invoice' | 'receipt' | 'quotation' | 'purchase-order';
+export type DocType = 'delivery' | 'warranty' | 'invoice' | 'receipt' | 'tax-invoice' | 'quotation' | 'purchase-order';
 
 // Union type สำหรับ document data
 export type DocumentData = 
@@ -40,6 +44,7 @@ export type DocumentData =
     | WarrantyData 
     | InvoiceData 
     | ReceiptData 
+    | TaxInvoiceData
     | QuotationData 
     | PurchaseOrderData;
 
@@ -49,6 +54,7 @@ export type DocumentDocument =
     | WarrantyDocument
     | InvoiceDocument
     | ReceiptDocument
+    | TaxInvoiceDocument
     | QuotationDocument
     | PurchaseOrderDocument;
 
@@ -118,6 +124,18 @@ export const DOCUMENT_REGISTRY = {
             update: 'อัปเดตใบเสร็จสำเร็จ',
         },
     } as DocumentConfig<ReceiptData>,
+    
+    'tax-invoice': {
+        prefix: 'TI',
+        saveFn: saveTaxInvoice,
+        updateFn: updateTaxInvoice,
+        getCustomerName: (data: TaxInvoiceData) => data.customerName || 'Customer',
+        getDate: (data: TaxInvoiceData) => data.taxInvoiceDate,
+        successMessages: {
+            save: 'บันทึกใบกำกับภาษีสำเร็จ',
+            update: 'อัปเดตใบกำกับภาษีสำเร็จ',
+        },
+    } as DocumentConfig<TaxInvoiceData>,
     
     'quotation': {
         prefix: 'QT',

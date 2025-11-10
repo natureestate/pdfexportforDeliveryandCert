@@ -9,12 +9,14 @@ import {
     getWarrantyCards,
     getInvoices,
     getReceipts,
+    getTaxInvoices,
     getQuotations,
     getPurchaseOrders,
     deleteDeliveryNote,
     deleteWarrantyCard,
     deleteInvoice,
     deleteReceipt,
+    deleteTaxInvoice,
     deleteQuotation,
     deletePurchaseOrder,
 } from '../services/firestore';
@@ -23,6 +25,7 @@ import type {
     WarrantyDocument,
     InvoiceDocument,
     ReceiptDocument,
+    TaxInvoiceDocument,
     QuotationDocument,
     PurchaseOrderDocument,
 } from '../services/firestore';
@@ -33,6 +36,7 @@ const FETCH_FUNCTIONS = {
     'warranty': getWarrantyCards,
     'invoice': getInvoices,
     'receipt': getReceipts,
+    'tax-invoice': getTaxInvoices,
     'quotation': getQuotations,
     'purchase-order': getPurchaseOrders,
 } as const;
@@ -42,6 +46,7 @@ const DELETE_FUNCTIONS = {
     'warranty': deleteWarrantyCard,
     'invoice': deleteInvoice,
     'receipt': deleteReceipt,
+    'tax-invoice': deleteTaxInvoice,
     'quotation': deleteQuotation,
     'purchase-order': deletePurchaseOrder,
 } as const;
@@ -52,6 +57,7 @@ const DOCUMENT_TYPE_NAMES = {
     'warranty': 'ใบรับประกันสินค้า',
     'invoice': 'ใบแจ้งหนี้',
     'receipt': 'ใบเสร็จ',
+    'tax-invoice': 'ใบกำกับภาษี',
     'quotation': 'ใบเสนอราคา',
     'purchase-order': 'ใบสั่งซื้อ',
 } as const;

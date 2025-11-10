@@ -368,6 +368,62 @@ export interface ReceiptData {
     issuedBy?: string;             // ผู้ออกเอกสาร (optional)
 }
 
+// Tax Invoice Item - รายการสินค้า/บริการในใบกำกับภาษี
+export interface TaxInvoiceItem {
+    description: string;        // รายละเอียดสินค้า/บริการ
+    quantity: number;           // จำนวน
+    unit: string;               // หน่วย (เช่น ชิ้น, ชั่วโมง, งาน)
+    unitPrice: number;          // ราคาต่อหน่วย
+    amount: number;            // จำนวนเงิน (quantity * unitPrice)
+    notes?: string;             // หมายเหตุเพิ่มเติม (optional)
+}
+
+// Tax Invoice Data - ข้อมูลใบกำกับภาษี
+export interface TaxInvoiceData {
+    logo: string | null;           // Base64 string หรือ URL ของโลโก้
+    logoUrl?: string | null;       // URL จาก Firebase Storage (สำหรับบันทึกใน Firestore)
+    logoType?: LogoType;           // ประเภทของโลโก้
+    
+    // ข้อมูลบริษัทผู้ขาย
+    companyName: string;            // ชื่อบริษัทผู้ขาย
+    companyAddress: string;         // ที่อยู่บริษัทผู้ขาย
+    companyPhone: string;          // เบอร์โทรศัพท์บริษัทผู้ขาย
+    companyEmail?: string;         // อีเมลบริษัทผู้ขาย (optional)
+    companyWebsite?: string;      // เว็บไซต์บริษัทผู้ขาย (optional)
+    companyTaxId?: string;         // เลขประจำตัวผู้เสียภาษี (optional)
+    
+    // ข้อมูลลูกค้า/ผู้ซื้อ
+    customerName: string;           // ชื่อลูกค้า/บริษัทผู้ซื้อ
+    customerAddress: string;       // ที่อยู่ลูกค้า
+    customerPhone?: string;         // เบอร์โทรศัพท์ลูกค้า (optional)
+    customerEmail?: string;         // อีเมลลูกค้า (optional)
+    customerTaxId?: string;        // เลขประจำตัวผู้เสียภาษีลูกค้า (optional)
+    
+    // ข้อมูลเอกสาร
+    taxInvoiceNumber: string;          // เลขที่ใบกำกับภาษี
+    taxInvoiceDate: Date | null;       // วันที่ออกใบกำกับภาษี
+    referenceNumber?: string;        // เลขที่อ้างอิง (เช่น เลขที่ใบแจ้งหนี้) (optional)
+    
+    // รายการสินค้า/บริการ
+    items: TaxInvoiceItem[];           // รายการสินค้า/บริการ
+    
+    // ข้อมูลการชำระเงิน
+    subtotal: number;               // ยอดรวมก่อนภาษี
+    taxRate: number;                // อัตราภาษีมูลค่าเพิ่ม (%) (เช่น 7)
+    taxAmount: number;              // จำนวนภาษีมูลค่าเพิ่ม
+    discount: number;               // ส่วนลด (optional, default 0)
+    total: number;                  // ยอดรวมทั้งสิ้น (subtotal + taxAmount - discount)
+    
+    // ข้อมูลการรับเงิน
+    paymentMethod?: string;         // วิธีการชำระเงิน (เช่น เงินสด, โอนเงิน, เช็ค) (optional)
+    paidAmount: number;             // จำนวนเงินที่รับ (default = total)
+    changeAmount: number;           // เงินทอน (paidAmount - total)
+    
+    // ข้อมูลเพิ่มเติม
+    notes?: string;                 // หมายเหตุเพิ่มเติม (optional)
+    issuedBy?: string;             // ผู้ออกเอกสาร (optional)
+}
+
 // Quotation Item - รายการสินค้า/บริการในใบเสนอราคา
 export interface QuotationItem {
     description: string;        // รายละเอียดสินค้า/บริการ
