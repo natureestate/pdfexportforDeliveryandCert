@@ -232,6 +232,9 @@ const TaxInvoiceForm: React.FC<TaxInvoiceFormProps> = ({
                             if (customer.email) {
                                 handleDataChange('customerEmail', customer.email);
                             }
+                            if (customer.taxId) {
+                                handleDataChange('customerTaxId', customer.taxId);
+                            }
                         }}
                         currentCustomer={{
                             customerName: data.customerName,

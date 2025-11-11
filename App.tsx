@@ -36,6 +36,7 @@ const getInitialDeliveryData = (): DeliveryNoteData => ({
     fromAddress: '',
     toCompany: '',
     toAddress: '',
+    toEmail: '',
     docNumber: '', // จะถูก auto-generate ใน DeliveryForm
     date: new Date(),
     project: '',
@@ -61,6 +62,7 @@ const initialWarrantyData: WarrantyData = {
     customerName: '',
     customerPhone: '',
     customerAddress: '',
+    customerEmail: '',
     // ข้อมูลสินค้า/บริการ
     serviceName: '',
     productDetail: '',

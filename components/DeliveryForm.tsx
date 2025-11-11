@@ -171,6 +171,9 @@ const DeliveryForm: React.FC<DeliveryFormProps> = ({
                             if (customer.projectName) {
                                 handleDataChange('project', customer.projectName);
                             }
+                            if (customer.email) {
+                                handleDataChange('toEmail', customer.email);
+                            }
                         }}
                         currentCustomer={{
                             customerName: data.toCompany,
@@ -187,6 +190,10 @@ const DeliveryForm: React.FC<DeliveryFormProps> = ({
                     <div>
                         <label htmlFor="toAddress" className="block text-xs sm:text-sm font-medium text-slate-700">ที่อยู่</label>
                         <textarea id="toAddress" value={data.toAddress} onChange={(e) => handleDataChange('toAddress', e.target.value)} rows={3} className="mt-1 block w-full rounded-md border-gray-300 shadow-sm focus:border-indigo-500 focus:ring-indigo-500 text-xs sm:text-sm bg-gray-50" />
+                    </div>
+                    <div>
+                        <label htmlFor="toEmail" className="block text-xs sm:text-sm font-medium text-slate-700">อีเมลผู้รับ</label>
+                        <input type="email" id="toEmail" value={data.toEmail || ''} onChange={(e) => handleDataChange('toEmail', e.target.value)} className="mt-1 block w-full rounded-md border-gray-300 shadow-sm focus:border-indigo-500 focus:ring-indigo-500 text-xs sm:text-sm bg-gray-50" placeholder="เช่น customer@example.com" />
                     </div>
                 </div>
 

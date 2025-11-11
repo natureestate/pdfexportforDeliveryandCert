@@ -58,6 +58,7 @@ const DocumentPreview = forwardRef<HTMLDivElement, DocumentPreviewProps>(({ data
                     <p className="font-semibold text-slate-600 text-base mb-1">ถึง:</p>
                     <p className="font-bold text-slate-800">{data.toCompany || 'N/A'}</p>
                     <p className="text-slate-600 whitespace-pre-wrap">{data.toAddress || 'N/A'}</p>
+                    <p className="text-slate-600 text-xs mt-1">อีเมล: {data.toEmail || '...........................'}</p>
                 </div>
             </section>
             

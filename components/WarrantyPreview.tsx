@@ -83,6 +83,7 @@ const WarrantyPreview = forwardRef<HTMLDivElement, WarrantyPreviewProps>(({ data
                             <DetailRow label="ชื่อโครงการ" value={data.projectName} />
                             <DetailRow label="ชื่อลูกค้า" value={data.customerName} />
                             <DetailRow label="โทรศัพท์" value={data.customerPhone} />
+                            <DetailRow label="อีเมล" value={data.customerEmail} />
                             <DetailRow label="ที่อยู่โครงการ/ลูกค้า" value={data.customerAddress} isFullWidth={true} />
                         </div>
                     </section>

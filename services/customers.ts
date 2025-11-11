@@ -47,6 +47,9 @@ export interface Customer {
     projectName?: string;       // ชื่อโครงการ (ถ้ามี)
     houseNumber?: string;       // บ้านเลขที่/ห้องเลขที่
     
+    // ข้อมูลภาษี
+    taxId?: string;             // เลขประจำตัวผู้เสียภาษี (สำหรับนิติบุคคล)
+    
     // Tags และหมายเหตุ
     tags?: string[];            // Tags สำหรับจัดกลุ่ม เช่น ['VIP', 'ลูกค้าประจำ']
     notes?: string;             // หมายเหตุเพิ่มเติม
@@ -142,6 +145,7 @@ export const getCustomers = async (companyId: string): Promise<Customer[]> => {
                 postalCode: data.postalCode,
                 projectName: data.projectName,
                 houseNumber: data.houseNumber,
+                taxId: data.taxId,
                 tags: data.tags || [],
                 notes: data.notes,
                 lastUsedAt: data.lastUsedAt?.toDate(),

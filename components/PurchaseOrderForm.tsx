@@ -223,6 +223,9 @@ const PurchaseOrderForm: React.FC<PurchaseOrderFormProps> = ({
                             if (customer.email) {
                                 handleDataChange('supplierEmail', customer.email);
                             }
+                            if (customer.taxId) {
+                                handleDataChange('supplierTaxId', customer.taxId);
+                            }
                         }}
                         currentCustomer={{
                             customerName: data.supplierName,

@@ -159,6 +159,7 @@ export interface DeliveryNoteData {
     fromWebsite?: string;         // เว็บไซต์ผู้ส่ง (optional)
     toCompany: string;
     toAddress: string;
+    toEmail?: string;              // อีเมลผู้รับ (optional)
     docNumber: string;
     date: Date | null;
     project: string;
@@ -184,6 +185,7 @@ export interface WarrantyData {
     customerName: string;          // ชื่อลูกค้า
     customerPhone: string;         // เบอร์โทรลูกค้า
     customerAddress: string;       // ที่อยู่ลูกค้า/โครงการ
+    customerEmail?: string;         // อีเมลลูกค้า (optional)
     
     // ข้อมูลสินค้า/บริการ
     serviceName: string;           // ชื่อบริการ/ประเภทสินค้า
@@ -250,6 +252,9 @@ export interface Customer {
     // ข้อมูลโครงการ (สำหรับธุรกิจก่อสร้าง/อสังหา)
     projectName?: string;          // ชื่อโครงการ (ถ้ามี)
     houseNumber?: string;          // บ้านเลขที่/ห้องเลขที่
+    
+    // ข้อมูลภาษี
+    taxId?: string;                // เลขประจำตัวผู้เสียภาษี (สำหรับนิติบุคคล)
     
     // Tags และหมายเหตุ
     tags?: string[];               // Tags สำหรับจัดกลุ่ม เช่น ['VIP', 'ลูกค้าประจำ']

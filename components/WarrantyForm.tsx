@@ -145,6 +145,9 @@ const WarrantyForm: React.FC<WarrantyFormProps> = ({
                             if (customer.projectName) {
                                 handleDataChange('projectName', customer.projectName);
                             }
+                            if (customer.email) {
+                                handleDataChange('customerEmail', customer.email);
+                            }
                         }}
                         currentCustomer={{
                             customerName: data.customerName,
@@ -168,6 +171,10 @@ const WarrantyForm: React.FC<WarrantyFormProps> = ({
                             <label htmlFor="customerPhone" className="block text-xs sm:text-sm font-medium text-slate-700">โทรศัพท์ลูกค้า</label>
                             <input type="tel" id="customerPhone" value={data.customerPhone} onChange={(e) => handleDataChange('customerPhone', e.target.value)} className="mt-1 block w-full rounded-md border-gray-300 shadow-sm focus:border-indigo-500 focus:ring-indigo-500 text-xs sm:text-sm bg-gray-50" placeholder="เช่น 089-xxx-xxxx" />
                         </div>
+                    </div>
+                    <div>
+                        <label htmlFor="customerEmail" className="block text-xs sm:text-sm font-medium text-slate-700">อีเมลลูกค้า</label>
+                        <input type="email" id="customerEmail" value={data.customerEmail || ''} onChange={(e) => handleDataChange('customerEmail', e.target.value)} className="mt-1 block w-full rounded-md border-gray-300 shadow-sm focus:border-indigo-500 focus:ring-indigo-500 text-xs sm:text-sm bg-gray-50" placeholder="เช่น customer@example.com" />
                     </div>
                     <div>
                         <label htmlFor="customerAddress" className="block text-xs sm:text-sm font-medium text-slate-700">ที่อยู่โครงการ/ลูกค้า</label>

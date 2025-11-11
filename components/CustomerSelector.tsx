@@ -168,6 +168,7 @@ const CustomerSelector: React.FC<CustomerSelectorProps> = ({
             phone: currentCustomer.phone,
             address: currentCustomer.address || '',
             projectName: currentCustomer.projectName || '',
+            taxId: '',
         });
         
         setIsSaveModalOpen(true);
@@ -194,8 +195,10 @@ const CustomerSelector: React.FC<CustomerSelectorProps> = ({
                 customerName: editingCustomer.customerName,
                 customerType: editingCustomer.customerType,
                 phone: editingCustomer.phone,
+                email: editingCustomer.email,
                 address: editingCustomer.address,
                 projectName: editingCustomer.projectName,
+                taxId: editingCustomer.taxId,
             });
             
             await loadCustomers();
@@ -526,6 +529,20 @@ const CustomerSelector: React.FC<CustomerSelectorProps> = ({
                                 />
                             </div>
 
+                            {/* เลขประจำตัวผู้เสียภาษี */}
+                            <div>
+                                <label className="block text-xs sm:text-sm font-medium text-gray-700 mb-1">
+                                    เลขประจำตัวผู้เสียภาษี
+                                </label>
+                                <input
+                                    type="text"
+                                    value={newCustomer.taxId || ''}
+                                    onChange={(e) => setNewCustomer(prev => ({ ...prev, taxId: e.target.value }))}
+                                    className="w-full rounded-md border-gray-300 shadow-sm focus:border-indigo-500 focus:ring-indigo-500 text-xs sm:text-sm px-3 py-2"
+                                    placeholder="เช่น 0123456789012 (สำหรับนิติบุคคล)"
+                                />
+                            </div>
+
                             {/* ที่อยู่ */}
                             <div>
                                 <label className="block text-xs sm:text-sm font-medium text-gray-700 mb-1">
@@ -566,6 +583,7 @@ const CustomerSelector: React.FC<CustomerSelectorProps> = ({
                                         phone: '',
                                         address: '',
                                         projectName: '',
+                                        taxId: '',
                                     });
                                 }}
                                 disabled={isSaving}
@@ -638,6 +656,20 @@ const CustomerSelector: React.FC<CustomerSelectorProps> = ({
                                 />
                             </div>
 
+                            {/* อีเมล */}
+                            <div>
+                                <label className="block text-xs sm:text-sm font-medium text-gray-700 mb-1">
+                                    อีเมล
+                                </label>
+                                <input
+                                    type="email"
+                                    value={editingCustomer.email || ''}
+                                    onChange={(e) => setEditingCustomer(prev => prev ? ({ ...prev, email: e.target.value }) : null)}
+                                    className="w-full rounded-md border-gray-300 shadow-sm focus:border-indigo-500 focus:ring-indigo-500 text-xs sm:text-sm px-3 py-2"
+                                    placeholder="example@email.com"
+                                />
+                            </div>
+
                             {/* ชื่อโครงการ */}
                             <div>
                                 <label className="block text-xs sm:text-sm font-medium text-gray-700 mb-1">
@@ -649,6 +681,20 @@ const CustomerSelector: React.FC<CustomerSelectorProps> = ({
                                     onChange={(e) => setEditingCustomer(prev => prev ? ({ ...prev, projectName: e.target.value }) : null)}
                                     className="w-full rounded-md border-gray-300 shadow-sm focus:border-indigo-500 focus:ring-indigo-500 text-xs sm:text-sm px-3 py-2"
                                     placeholder="เช่น บ้านสวยใจกลางเมือง"
+                                />
+                            </div>
+
+                            {/* เลขประจำตัวผู้เสียภาษี */}
+                            <div>
+                                <label className="block text-xs sm:text-sm font-medium text-gray-700 mb-1">
+                                    เลขประจำตัวผู้เสียภาษี
+                                </label>
+                                <input
+                                    type="text"
+                                    value={editingCustomer.taxId || ''}
+                                    onChange={(e) => setEditingCustomer(prev => prev ? ({ ...prev, taxId: e.target.value }) : null)}
+                                    className="w-full rounded-md border-gray-300 shadow-sm focus:border-indigo-500 focus:ring-indigo-500 text-xs sm:text-sm px-3 py-2"
+                                    placeholder="เช่น 0123456789012 (สำหรับนิติบุคคล)"
                                 />
                             </div>
 
