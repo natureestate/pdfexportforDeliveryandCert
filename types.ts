@@ -592,6 +592,81 @@ export interface MemoData {
     responseDate?: Date | null;     // วันที่รับทราบ/อนุมัติ
 }
 
+// Variation Order Item - รายการงานใหม่/งานเดิมในใบส่วนต่าง
+export interface VariationOrderItem {
+    description: string;        // รายละเอียดงาน
+    quantity: number;           // จำนวน
+    unit: string;               // หน่วย (เช่น ตร.ม., ชิ้น, งาน)
+    unitPrice: number;          // ราคาต่อหน่วย
+    amount: number;            // จำนวนเงิน (quantity * unitPrice)
+    itemType: 'new' | 'deduct'; // ประเภท: งานใหม่/งานเพิ่ม หรือ งานเดิม/งานลด
+    notes?: string;             // หมายเหตุเพิ่มเติม (optional)
+}
+
+// Variation Order Data - ข้อมูลใบส่วนต่าง (Variation Order)
+export interface VariationOrderData {
+    logo: string | null;           // Base64 string หรือ URL ของโลโก้
+    logoUrl?: string | null;       // URL จาก Firebase Storage (สำหรับบันทึกใน Firestore)
+    logoType?: LogoType;           // ประเภทของโลโก้
+    
+    // ข้อมูลบริษัทผู้ออกเอกสาร
+    companyName: string;            // ชื่อบริษัทผู้ออกเอกสาร
+    companyAddress: string;         // ที่อยู่บริษัทผู้ออกเอกสาร
+    companyPhone: string;          // เบอร์โทรศัพท์บริษัทผู้ออกเอกสาร
+    companyEmail?: string;         // อีเมลบริษัทผู้ออกเอกสาร (optional)
+    companyWebsite?: string;       // เว็บไซต์บริษัทผู้ออกเอกสาร (optional)
+    companyTaxId?: string;         // เลขประจำตัวผู้เสียภาษี (optional)
+    
+    // ข้อมูลลูกค้า/โครงการ
+    customerName: string;           // ชื่อลูกค้า/บริษัท
+    customerAddress: string;        // ที่อยู่ลูกค้า/โครงการ
+    customerPhone?: string;         // เบอร์โทรศัพท์ลูกค้า (optional)
+    customerEmail?: string;         // อีเมลลูกค้า (optional)
+    customerTaxId?: string;        // เลขประจำตัวผู้เสียภาษีลูกค้า (optional)
+    
+    // ส่วนหัวและข้อมูลอ้างอิง
+    voNumber: string;               // เลขที่เอกสาร (VO No.) เช่น VO-001
+    date: Date | null;              // วันที่ออกเอกสาร
+    projectName: string;           // โครงการ / ลูกค้า
+    location: string;              // สถานที่
+    contractNumber?: string;       // อ้างอิงสัญญาเลขที่ (optional)
+    requestedBy: 'customer' | 'company' | 'designer'; // ผู้ร้องขอ
+    
+    // รายละเอียดการเปลี่ยนแปลง
+    subject: string;                // เรื่อง (เช่น "ขอเปลี่ยนแปลงสเปคกระเบื้องห้องน้ำชั้น 2")
+    originalScope: string;          // รายละเอียดงานเดิม (Original Scope / Spec)
+    newScope: string;               // รายละเอียดงานใหม่ (New Scope / Spec)
+    reasonForChange: string;       // เหตุผลในการเปลี่ยนแปลง
+    
+    // รายการงาน (แยกเป็นงานใหม่/งานเดิม)
+    items: VariationOrderItem[];    // รายการงาน
+    
+    // สรุปผลกระทบด้านราคา (Cost Impact)
+    newItemsSubtotal: number;       // ยอดรวมงานใหม่/งานเพิ่ม
+    deductItemsSubtotal: number;    // ยอดรวมงานเดิม/งานลด
+    netDifference: number;          // ยอดรวมส่วนต่าง (สุทธิ)
+    taxRate: number;                // อัตราภาษีมูลค่าเพิ่ม (%) (เช่น 7)
+    taxAmount: number;              // จำนวนภาษีมูลค่าเพิ่ม
+    totalAmount: number;            // ยอดรวมที่ต้องชำระเพิ่ม/หัก
+    paymentNote?: string;           // หมายเหตุการชำระเงิน (เช่น "หักจากงวดที่ 10")
+    
+    // สรุปผลกระทบด้านระยะเวลา (Time Impact)
+    hasTimeImpact: boolean;          // มีผลกระทบต่อระยะเวลาหรือไม่
+    timeImpactDays?: number;        // จำนวนวันที่ขยายออกไป (วันทำการ)
+    timeImpactReason?: string;      // เหตุผล (ถ้ามีผลกระทบ)
+    
+    // ส่วนอนุมัติ
+    terms?: string;                 // เงื่อนไข (เช่น "ราคานี้มีผลยืนยันภายใน 7 วัน")
+    customerApproverName?: string;  // ชื่อผู้อนุมัติ (ลูกค้า)
+    customerApproverDate?: Date | null; // วันที่อนุมัติ (ลูกค้า)
+    companyApproverName?: string;   // ชื่อผู้เสนอ (บริษัท)
+    companyApproverDate?: Date | null; // วันที่เสนอ (บริษัท)
+    
+    // ข้อมูลเพิ่มเติม
+    notes?: string;                 // หมายเหตุเพิ่มเติม (optional)
+    issuedBy?: string;              // ผู้ออกเอกสาร (optional)
+}
+
 // ข้อมูลคำเชิญเข้าองค์กร
 export interface Invitation {
     id?: string;                   // Document ID

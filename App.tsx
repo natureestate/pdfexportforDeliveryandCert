@@ -1,6 +1,6 @@
 import React, { useState, useRef, useCallback, useEffect } from 'react';
 import { Routes, Route, Navigate } from 'react-router-dom';
-import { DeliveryNoteData, WarrantyData, InvoiceData, ReceiptData, TaxInvoiceData, QuotationData, PurchaseOrderData, MemoData, LogoType } from './types';
+import { DeliveryNoteData, WarrantyData, InvoiceData, ReceiptData, TaxInvoiceData, QuotationData, PurchaseOrderData, MemoData, VariationOrderData, LogoType } from './types';
 import { AuthProvider } from './contexts/AuthContext';
 import { CompanyProvider, useCompany } from './contexts/CompanyContext';
 import ProtectedRoute from './components/ProtectedRoute';
@@ -21,13 +21,15 @@ import PurchaseOrderForm from './components/PurchaseOrderForm';
 import PurchaseOrderPreview from './components/PurchaseOrderPreview';
 import MemoForm from './components/MemoForm';
 import MemoPreview from './components/MemoPreview';
+import VariationOrderForm from './components/VariationOrderForm';
+import VariationOrderPreview from './components/VariationOrderPreview';
 import HistoryList from './components/HistoryList';
 import AcceptInvitationPage from './components/AcceptInvitationPage';
 import SuperAdminDashboard from './components/SuperAdminDashboard';
 import CookieConsentModal from './components/CookieConsentModal';
 import { generatePdf } from './services/pdfGenerator';
 import { saveDeliveryNote, saveWarrantyCard, saveInvoice, saveReceipt, saveTaxInvoice, saveQuotation, savePurchaseOrder } from './services/firestore';
-import type { DeliveryNoteDocument, WarrantyDocument, InvoiceDocument, ReceiptDocument, TaxInvoiceDocument, QuotationDocument, PurchaseOrderDocument, MemoDocument } from './services/firestore';
+import type { DeliveryNoteDocument, WarrantyDocument, InvoiceDocument, ReceiptDocument, TaxInvoiceDocument, QuotationDocument, PurchaseOrderDocument, MemoDocument, VariationOrderDocument } from './services/firestore';
 import { DOCUMENT_REGISTRY, generatePdfFilename as generatePdfFilenameFromRegistry, saveOrUpdateDocument, type DocType } from './utils/documentRegistry';
 
 const getInitialDeliveryData = (): DeliveryNoteData => ({
@@ -309,6 +311,58 @@ const initialMemoData: MemoData = {
     responseReceived: false,
 };
 
+const initialVariationOrderData: VariationOrderData = {
+    logo: null,
+    // ข้อมูลบริษัทผู้ออกเอกสาร
+    companyName: '',
+    companyAddress: '',
+    companyPhone: '',
+    companyEmail: '',
+    companyWebsite: '',
+    companyTaxId: '',
+    // ข้อมูลลูกค้า/โครงการ
+    customerName: '',
+    customerAddress: '',
+    customerPhone: '',
+    customerEmail: '',
+    customerTaxId: '',
+    // ส่วนหัวและข้อมูลอ้างอิง
+    voNumber: '', // จะถูก auto-generate ใน VariationOrderForm
+    date: new Date(),
+    projectName: '',
+    location: '',
+    contractNumber: '',
+    requestedBy: 'customer',
+    // รายละเอียดการเปลี่ยนแปลง
+    subject: '',
+    originalScope: '',
+    newScope: '',
+    reasonForChange: '',
+    // รายการงาน
+    items: [],
+    // สรุปผลกระทบด้านราคา
+    newItemsSubtotal: 0,
+    deductItemsSubtotal: 0,
+    netDifference: 0,
+    taxRate: 7,
+    taxAmount: 0,
+    totalAmount: 0,
+    paymentNote: '',
+    // สรุปผลกระทบด้านระยะเวลา
+    hasTimeImpact: false,
+    timeImpactDays: 0,
+    timeImpactReason: '',
+    // ส่วนอนุมัติ
+    terms: '',
+    customerApproverName: '',
+    customerApproverDate: null,
+    companyApproverName: '',
+    companyApproverDate: null,
+    // ข้อมูลเพิ่มเติม
+    notes: '',
+    issuedBy: '',
+};
+
 type ViewMode = 'form' | 'history';
 type Notification = { show: boolean; message: string; type: 'success' | 'info' | 'error' };
 
@@ -323,6 +377,7 @@ const AppContent: React.FC = () => {
     const [quotationData, setQuotationData] = useState<QuotationData>(initialQuotationData);
     const [purchaseOrderData, setPurchaseOrderData] = useState<PurchaseOrderData>(initialPurchaseOrderData);
     const [memoData, setMemoData] = useState<MemoData>(initialMemoData);
+    const [variationOrderData, setVariationOrderData] = useState<VariationOrderData>(initialVariationOrderData);
     const [activeTab, setActiveTab] = useState<DocType>('delivery');
     const [viewMode, setViewMode] = useState<ViewMode>('form');
     const [isLoading, setIsLoading] = useState<boolean>(false);
@@ -356,6 +411,7 @@ const AppContent: React.FC = () => {
         setQuotationData(updateLogo);
         setPurchaseOrderData(updateLogo);
         setMemoData(updateLogo);
+        setVariationOrderData(updateLogo);
     }, [sharedLogo, sharedLogoUrl, sharedLogoType]);
 
     // Sync ข้อมูลบริษัทจาก currentCompany ไปยัง form data
@@ -441,6 +497,17 @@ const AppContent: React.FC = () => {
                 companyPhone: currentCompany.phone || '',
                 companyEmail: currentCompany.email || '',
                 companyWebsite: currentCompany.website || '',
+            }));
+
+            // Sync ไปยัง VariationOrderForm (ข้อมูลบริษัทผู้ออกเอกสาร)
+            setVariationOrderData(prev => ({
+                ...prev,
+                companyName: currentCompany.name,
+                companyAddress: currentCompany.address || '',
+                companyPhone: currentCompany.phone || '',
+                companyEmail: currentCompany.email || '',
+                companyWebsite: currentCompany.website || '',
+                companyTaxId: currentCompany.taxId || '',
             }));
         }
     }, [currentCompany]);
@@ -541,8 +608,10 @@ const AppContent: React.FC = () => {
                 return purchaseOrderData;
             case 'memo':
                 return memoData;
+            case 'variation-order':
+                return variationOrderData;
         }
-    }, [activeTab, deliveryData, warrantyData, invoiceData, receiptData, taxInvoiceData, quotationData, purchaseOrderData, memoData]);
+    }, [activeTab, deliveryData, warrantyData, invoiceData, receiptData, taxInvoiceData, quotationData, purchaseOrderData, memoData, variationOrderData]);
 
     // ฟังก์ชันบันทึกข้อมูลลง Firestore พร้อม companyId (รองรับทั้ง create และ update)
     // Refactored: ใช้ Document Registry Pattern
@@ -622,7 +691,7 @@ const AppContent: React.FC = () => {
     }, [activeTab, getCurrentData, currentCompany, generatePdfFilename]);
 
     // ฟังก์ชันโหลดเอกสารจาก History (สำหรับ Edit)
-    const handleLoadDocument = useCallback((doc: DeliveryNoteDocument | WarrantyDocument | InvoiceDocument | ReceiptDocument | TaxInvoiceDocument | QuotationDocument | PurchaseOrderDocument | MemoDocument) => {
+    const handleLoadDocument = useCallback((doc: DeliveryNoteDocument | WarrantyDocument | InvoiceDocument | ReceiptDocument | TaxInvoiceDocument | QuotationDocument | PurchaseOrderDocument | MemoDocument | VariationOrderDocument) => {
         // โหลด logo จากเอกสาร
         if (doc.logoUrl || doc.logo) {
             setSharedLogo(doc.logo || null);
@@ -694,6 +763,15 @@ const AppContent: React.FC = () => {
                 responseDate: doc.responseDate || null,
             });
             setActiveTab('memo');
+        } else if ('voNumber' in doc) {
+            // เป็น VariationOrderDocument
+            setVariationOrderData({
+                ...doc,
+                date: doc.date || null,
+                customerApproverDate: doc.customerApproverDate || null,
+                companyApproverDate: doc.companyApproverDate || null,
+            });
+            setActiveTab('variation-order');
         }
         setViewMode('form');
         showToast('โหลดเอกสารสำเร็จ - โหมดแก้ไข', 'info');
@@ -740,6 +818,9 @@ const AppContent: React.FC = () => {
                 break;
             case 'memo':
                 setMemoData(withLogo(initialMemoData));
+                break;
+            case 'variation-order':
+                setVariationOrderData(withLogo(initialVariationOrderData));
                 break;
         }
         showToast('สร้างฟอร์มใหม่สำเร็จ', 'success');
@@ -856,6 +937,12 @@ const AppContent: React.FC = () => {
                                     >
                                         ใบบันทึก
                                     </button>
+                                    <button
+                                        onClick={() => setActiveTab('variation-order')}
+                                        className={`${activeTab === 'variation-order' ? 'border-indigo-500 text-indigo-600' : 'border-transparent text-gray-500 hover:text-gray-700 hover:border-gray-300'} whitespace-nowrap py-3 sm:py-4 px-2 sm:px-1 border-b-2 font-medium text-xs sm:text-sm transition-colors flex-shrink-0`}
+                                    >
+                                        ใบส่วนต่าง
+                                    </button>
                                 </nav>
                             </div>
                             
@@ -964,10 +1051,25 @@ const AppContent: React.FC = () => {
                                     }}
                                     onSetDefaultLogo={handleSetDefaultLogo}
                                 />
-                            ) : (
+                            ) : activeTab === 'memo' ? (
                                 <MemoForm
                                     data={memoData}
                                     setData={setMemoData}
+                                    sharedLogo={sharedLogo}
+                                    sharedLogoUrl={sharedLogoUrl}
+                                    sharedLogoType={sharedLogoType}
+                                    companyDefaultLogoUrl={currentCompany?.defaultLogoUrl}
+                                    onLogoChange={(logo, logoUrl, logoType) => {
+                                        setSharedLogo(logo);
+                                        setSharedLogoUrl(logoUrl);
+                                        setSharedLogoType(logoType);
+                                    }}
+                                    onSetDefaultLogo={handleSetDefaultLogo}
+                                />
+                            ) : (
+                                <VariationOrderForm
+                                    data={variationOrderData}
+                                    setData={setVariationOrderData}
                                     sharedLogo={sharedLogo}
                                     sharedLogoUrl={sharedLogoUrl}
                                     sharedLogoType={sharedLogoType}
@@ -1051,8 +1153,10 @@ const AppContent: React.FC = () => {
                                         <QuotationPreview ref={printableAreaRef} data={quotationData} />
                                     ) : activeTab === 'purchase-order' ? (
                                         <PurchaseOrderPreview ref={printableAreaRef} data={purchaseOrderData} />
-                                    ) : (
+                                    ) : activeTab === 'memo' ? (
                                         <MemoPreview ref={printableAreaRef} data={memoData} />
+                                    ) : (
+                                        <VariationOrderPreview ref={printableAreaRef} data={variationOrderData} />
                                     )}
                                 </div>
                             </div>
