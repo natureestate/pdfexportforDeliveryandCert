@@ -9,7 +9,8 @@ import {
     TaxInvoiceData,
     QuotationData, 
     PurchaseOrderData,
-    MemoData
+    MemoData,
+    VariationOrderData
 } from '../types';
 import {
     saveDeliveryNote,
@@ -28,6 +29,8 @@ import {
     updatePurchaseOrder,
     saveMemo,
     updateMemo,
+    saveVariationOrder,
+    updateVariationOrder,
 } from '../services/firestore';
 import type {
     DeliveryNoteDocument,
@@ -38,9 +41,10 @@ import type {
     QuotationDocument,
     PurchaseOrderDocument,
     MemoDocument,
+    VariationOrderDocument,
 } from '../services/firestore';
 
-export type DocType = 'delivery' | 'warranty' | 'invoice' | 'receipt' | 'tax-invoice' | 'quotation' | 'purchase-order' | 'memo';
+export type DocType = 'delivery' | 'warranty' | 'invoice' | 'receipt' | 'tax-invoice' | 'quotation' | 'purchase-order' | 'memo' | 'variation-order';
 
 // Union type สำหรับ document data
 export type DocumentData = 
@@ -51,7 +55,8 @@ export type DocumentData =
     | TaxInvoiceData
     | QuotationData 
     | PurchaseOrderData
-    | MemoData;
+    | MemoData
+    | VariationOrderData;
 
 // Union type สำหรับ document documents
 export type DocumentDocument = 
@@ -62,7 +67,8 @@ export type DocumentDocument =
     | TaxInvoiceDocument
     | QuotationDocument
     | PurchaseOrderDocument
-    | MemoDocument;
+    | MemoDocument
+    | VariationOrderDocument;
 
 // Helper function สำหรับดึงชื่อลูกค้า/ผู้ขายจาก document data
 type CustomerNameGetter<T extends DocumentData> = (data: T) => string;
@@ -178,6 +184,18 @@ export const DOCUMENT_REGISTRY = {
             update: 'อัปเดตใบบันทึกสำเร็จ',
         },
     } as DocumentConfig<MemoData>,
+    
+    'variation-order': {
+        prefix: 'VO',
+        saveFn: saveVariationOrder,
+        updateFn: updateVariationOrder,
+        getCustomerName: (data: VariationOrderData) => data.customerName || data.projectName || 'Customer',
+        getDate: (data: VariationOrderData) => data.date,
+        successMessages: {
+            save: 'บันทึกใบส่วนต่างสำเร็จ',
+            update: 'อัปเดตใบส่วนต่างสำเร็จ',
+        },
+    } as DocumentConfig<VariationOrderData>,
 } as const;
 
 /**
