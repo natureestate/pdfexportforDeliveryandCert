@@ -203,10 +203,10 @@ export const sendInvitationEmail = onCall(
         }
 
         try {
-            // สร้าง invitation link
+            // สร้าง invitation link - ใช้ domain จริงของ Firebase Hosting
             const baseUrl = process.env.FUNCTIONS_EMULATOR
                 ? 'http://localhost:5173'
-                : 'https://your-app-domain.web.app'; // เปลี่ยนเป็น domain จริงของคุณ
+                : 'https://ecertonline-29a67.web.app'; // Domain จริงของ Firebase Hosting
             
             const invitationLink = `${baseUrl}/accept-invitation?token=${token}`;
 

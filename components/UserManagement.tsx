@@ -159,6 +159,22 @@ const UserManagement: React.FC<UserManagementProps> = ({ companyId, companyName,
     };
 
     /**
+     * Copy Invitation Link
+     */
+    const handleCopyInvitationLink = async (token: string, email: string) => {
+        const baseUrl = window.location.origin;
+        const invitationLink = `${baseUrl}/accept-invitation?token=${token}`;
+        
+        try {
+            await navigator.clipboard.writeText(invitationLink);
+            alert(`✅ คัดลอกลิงก์สำเร็จ!\n\nลิงก์: ${invitationLink}\n\nกรุณาส่งลิงก์นี้ให้ ${email} ทาง Line, Email หรือช่องทางอื่น`);
+        } catch (err) {
+            // Fallback สำหรับ browser ที่ไม่รองรับ clipboard API
+            prompt('กรุณาคัดลอกลิงก์ด้านล่าง:', invitationLink);
+        }
+    };
+
+    /**
      * เปิด Modal เพิ่มสมาชิกโดยตรง
      */
     const handleOpenAddMember = () => {
@@ -509,6 +525,13 @@ const UserManagement: React.FC<UserManagementProps> = ({ companyId, companyName,
                                             <td className="actions-cell">
                                                 {invitation.status === 'pending' && (
                                                     <>
+                                                        <button
+                                                            onClick={() => handleCopyInvitationLink(invitation.token, invitation.email)}
+                                                            className="btn-small btn-copy"
+                                                            title="คัดลอกลิงก์"
+                                                        >
+                                                            📋
+                                                        </button>
                                                         <button
                                                             onClick={() => handleResendInvitation(invitation.id!, invitation.email)}
                                                             className="btn-small btn-secondary"
@@ -986,6 +1009,11 @@ const UserManagement: React.FC<UserManagementProps> = ({ companyId, companyName,
 
                 .btn-edit {
                     background: #FF9800;
+                    color: white;
+                }
+
+                .btn-copy {
+                    background: #9C27B0;
                     color: white;
                 }
 
