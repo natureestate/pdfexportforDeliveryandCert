@@ -1,11 +1,13 @@
 /**
  * Auth Context
  * Context สำหรับแชร์สถานะ Authentication ทั้งแอป
+ * รองรับการ activate pending members เมื่อ user login
  */
 
 import React, { createContext, useContext, useState, useEffect, ReactNode } from 'react';
 import { User } from 'firebase/auth';
 import { onAuthStateChanged } from '../services/auth';
+import { activatePendingMemberships } from '../services/companyMembers';
 
 // Interface สำหรับ Auth Context
 interface AuthContextType {
@@ -32,7 +34,7 @@ export const AuthProvider: React.FC<AuthProviderProps> = ({ children }) => {
 
     useEffect(() => {
         // ติดตามสถานะการ Login
-        const unsubscribe = onAuthStateChanged((currentUser) => {
+        const unsubscribe = onAuthStateChanged(async (currentUser) => {
             setUser(currentUser);
             setLoading(false);
             
@@ -42,6 +44,21 @@ export const AuthProvider: React.FC<AuthProviderProps> = ({ children }) => {
                     email: currentUser.email,
                     uid: currentUser.uid,
                 });
+
+                // ตรวจสอบและ activate pending memberships
+                // (กรณี Admin เพิ่มสมาชิกโดยตรงด้วยอีเมล และ user login เข้ามาทีหลัง)
+                if (currentUser.email) {
+                    try {
+                        await activatePendingMemberships(
+                            currentUser.email,
+                            currentUser.uid,
+                            currentUser.displayName || undefined,
+                            currentUser.phoneNumber || undefined
+                        );
+                    } catch (error) {
+                        console.error('❌ ไม่สามารถ activate pending memberships:', error);
+                    }
+                }
             } else {
                 console.log('👤 ไม่มีผู้ใช้ Login');
             }

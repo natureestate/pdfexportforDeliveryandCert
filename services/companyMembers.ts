@@ -372,6 +372,89 @@ export const checkIsMember = async (companyId: string, userId: string): Promise<
 };
 
 /**
+ * Activate pending memberships เมื่อ user login
+ * ใช้สำหรับกรณีที่ Admin เพิ่มสมาชิกโดยตรงด้วยอีเมล และ user login เข้ามาทีหลัง
+ * @param email - อีเมลของ user ที่ login
+ * @param userId - User ID ของ user ที่ login
+ * @param displayName - ชื่อแสดง (optional)
+ * @param phoneNumber - เบอร์โทรศัพท์ (optional)
+ * @returns จำนวน memberships ที่ถูก activate
+ */
+export const activatePendingMemberships = async (
+    email: string,
+    userId: string,
+    displayName?: string,
+    phoneNumber?: string
+): Promise<number> => {
+    try {
+        // ค้นหา pending memberships ที่ตรงกับอีเมล
+        const q = query(
+            collection(db, MEMBERS_COLLECTION),
+            where('email', '==', email.toLowerCase()),
+            where('status', '==', 'pending')
+        );
+
+        const querySnapshot = await getDocs(q);
+
+        if (querySnapshot.empty) {
+            // ไม่มี pending memberships
+            return 0;
+        }
+
+        console.log(`🔍 พบ ${querySnapshot.docs.length} pending memberships สำหรับ ${email}`);
+
+        // อัปเดตทุก pending membership
+        const batch = writeBatch(db);
+        let activatedCount = 0;
+
+        for (const docSnapshot of querySnapshot.docs) {
+            const data = docSnapshot.data();
+            
+            // ตรวจสอบว่า user นี้ยังไม่ได้เป็นสมาชิกขององค์กรนี้อยู่แล้ว
+            const isAlreadyMember = await checkIsMember(data.companyId, userId);
+            
+            if (!isAlreadyMember) {
+                const updateData: any = {
+                    userId,
+                    status: 'active' as MemberStatus,
+                    joinedAt: Timestamp.now(),
+                    updatedAt: Timestamp.now(),
+                };
+
+                if (displayName) updateData.displayName = displayName;
+                if (phoneNumber) updateData.phoneNumber = phoneNumber;
+
+                batch.update(docSnapshot.ref, updateData);
+                activatedCount++;
+
+                console.log(`✅ Activating membership: ${docSnapshot.id} (Company: ${data.companyId})`);
+            } else {
+                // ถ้าเป็นสมาชิกอยู่แล้ว ให้ลบ pending membership ออก
+                batch.delete(docSnapshot.ref);
+                console.log(`🗑️ Removing duplicate pending membership: ${docSnapshot.id}`);
+            }
+        }
+
+        await batch.commit();
+
+        if (activatedCount > 0) {
+            console.log(`✅ Activated ${activatedCount} memberships สำหรับ ${email}`);
+            
+            // อัปเดตจำนวนสมาชิกในแต่ละองค์กร
+            const companyIds = new Set(querySnapshot.docs.map(doc => doc.data().companyId));
+            for (const companyId of companyIds) {
+                await updateMemberCount(companyId);
+            }
+        }
+
+        return activatedCount;
+    } catch (error) {
+        console.error('❌ Activate pending memberships ล้มเหลว:', error);
+        return 0;
+    }
+};
+
+/**
  * อัปเดตบทบาทของสมาชิก
  * @param memberId - ID ของสมาชิก
  * @param role - บทบาทใหม่
