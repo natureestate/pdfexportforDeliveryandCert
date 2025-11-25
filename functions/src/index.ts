@@ -164,6 +164,16 @@ export const verifyRecaptcha = onCall(
  * @returns { success: boolean, message: string }
  */
 export const sendInvitationEmail = onCall(
+    {
+        // กำหนด region และ cors เพื่อแก้ปัญหา CORS error
+        region: 'us-central1',
+        cors: [
+            'https://ecertonline-29a67.web.app',
+            'https://ecertonline-29a67.firebaseapp.com',
+            'http://localhost:5173',
+            'http://localhost:3000',
+        ],
+    },
     async (request): Promise<SendInvitationEmailResponse> => {
         // ตรวจสอบว่า user login แล้วหรือไม่
         if (!request.auth) {

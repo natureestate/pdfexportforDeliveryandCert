@@ -6,7 +6,7 @@
 import React, { useState } from 'react';
 import { UserRole } from '../types';
 import { createInvitation } from '../services/invitations';
-import { getFunctions, httpsCallable } from 'firebase/functions';
+import { getFunctions, httpsCallable, connectFunctionsEmulator } from 'firebase/functions';
 
 interface InviteMemberModalProps {
     companyId: string;
@@ -67,7 +67,8 @@ const InviteMemberModal: React.FC<InviteMemberModalProps> = ({
             // ส่งอีเมลเชิญ (ถ้าเลือก)
             if (sendEmail) {
                 try {
-                    const functions = getFunctions();
+                    // ระบุ region ให้ตรงกับ Cloud Function (us-central1)
+                    const functions = getFunctions(undefined, 'us-central1');
                     const sendInvitationEmail = httpsCallable(functions, 'sendInvitationEmail');
                     
                     await sendInvitationEmail({
@@ -85,7 +86,27 @@ const InviteMemberModal: React.FC<InviteMemberModalProps> = ({
                     alert(`✅ เชิญ ${email} เข้าองค์กรสำเร็จ และส่งอีเมลเรียบร้อยแล้ว`);
                 } catch (emailError: any) {
                     console.error('❌ ส่งอีเมลล้มเหลว:', emailError);
-                    alert(`⚠️ เชิญสำเร็จ แต่ส่งอีเมลล้มเหลว: ${emailError.message}\nกรุณาส่งลิงก์คำเชิญด้วยตนเอง`);
+                    
+                    // สร้าง invitation link สำหรับ copy
+                    const baseUrl = window.location.origin;
+                    const invitationLink = `${baseUrl}/accept-invitation?token=${invitation.token}`;
+                    
+                    // แสดง link ให้ copy
+                    const shouldCopy = confirm(
+                        `⚠️ เชิญสำเร็จ แต่ส่งอีเมลล้มเหลว!\n\n` +
+                        `กรุณาคัดลอกลิงก์ด้านล่างแล้วส่งให้ผู้ถูกเชิญ:\n\n` +
+                        `กด OK เพื่อคัดลอกลิงก์`
+                    );
+                    
+                    if (shouldCopy) {
+                        try {
+                            await navigator.clipboard.writeText(invitationLink);
+                            alert(`✅ คัดลอกลิงก์แล้ว!\n\nลิงก์: ${invitationLink}\n\nกรุณาส่งลิงก์นี้ให้ ${email}`);
+                        } catch (copyError) {
+                            // ถ้า clipboard ไม่ทำงาน ให้แสดง link ให้ copy เอง
+                            prompt('กรุณาคัดลอกลิงก์ด้านล่าง:', invitationLink);
+                        }
+                    }
                 }
             } else {
                 alert(`✅ เชิญ ${email} เข้าองค์กรสำเร็จ\nกรุณาส่งลิงก์คำเชิญด้วยตนเอง`);

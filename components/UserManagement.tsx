@@ -1,6 +1,7 @@
 /**
  * User Management Component
  * Component สำหรับ Admin จัดการสมาชิกในองค์กร
+ * รองรับ: เพิ่ม, แก้ไข, ลบสมาชิก และจัดการคำเชิญ
  */
 
 import React, { useState, useEffect } from 'react';
@@ -12,6 +13,8 @@ import {
     removeMember,
     checkIsAdmin,
     updateMemberCount,
+    updateMemberInfo,
+    addMemberDirect,
 } from '../services/companyMembers';
 import {
     getCompanyInvitations,
@@ -29,6 +32,25 @@ interface UserManagementProps {
 }
 
 /**
+ * Interface สำหรับ Edit Member Form
+ */
+interface EditMemberForm {
+    displayName: string;
+    phoneNumber: string;
+    role: UserRole;
+}
+
+/**
+ * Interface สำหรับ Add Member Form
+ */
+interface AddMemberForm {
+    email: string;
+    displayName: string;
+    phoneNumber: string;
+    role: UserRole;
+}
+
+/**
  * Component สำหรับจัดการสมาชิกในองค์กร
  */
 const UserManagement: React.FC<UserManagementProps> = ({ companyId, companyName, onClose }) => {
@@ -40,6 +62,28 @@ const UserManagement: React.FC<UserManagementProps> = ({ companyId, companyName,
     const [error, setError] = useState<string | null>(null);
     const [showInviteModal, setShowInviteModal] = useState(false);
     const [activeTab, setActiveTab] = useState<'members' | 'invitations'>('members');
+    
+    // State สำหรับ Add Member Modal
+    const [showAddMemberModal, setShowAddMemberModal] = useState(false);
+    const [addMemberForm, setAddMemberForm] = useState<AddMemberForm>({
+        email: '',
+        displayName: '',
+        phoneNumber: '',
+        role: 'member',
+    });
+    const [addMemberLoading, setAddMemberLoading] = useState(false);
+    const [addMemberError, setAddMemberError] = useState<string | null>(null);
+    
+    // State สำหรับ Edit Member Modal
+    const [showEditMemberModal, setShowEditMemberModal] = useState(false);
+    const [editingMember, setEditingMember] = useState<CompanyMember | null>(null);
+    const [editMemberForm, setEditMemberForm] = useState<EditMemberForm>({
+        displayName: '',
+        phoneNumber: '',
+        role: 'member',
+    });
+    const [editMemberLoading, setEditMemberLoading] = useState(false);
+    const [editMemberError, setEditMemberError] = useState<string | null>(null);
 
     /**
      * โหลดรายการสมาชิกและคำเชิญ
@@ -111,6 +155,105 @@ const UserManagement: React.FC<UserManagementProps> = ({ companyId, companyName,
         } catch (err: any) {
             console.error('❌ ส่งคำเชิญใหม่ล้มเหลว:', err);
             alert(err.message || 'ไม่สามารถส่งคำเชิญใหม่ได้');
+        }
+    };
+
+    /**
+     * เปิด Modal เพิ่มสมาชิกโดยตรง
+     */
+    const handleOpenAddMember = () => {
+        setAddMemberForm({
+            email: '',
+            displayName: '',
+            phoneNumber: '',
+            role: 'member',
+        });
+        setAddMemberError(null);
+        setShowAddMemberModal(true);
+    };
+
+    /**
+     * เพิ่มสมาชิกโดยตรง
+     */
+    const handleAddMember = async (e: React.FormEvent) => {
+        e.preventDefault();
+
+        if (!addMemberForm.email.trim()) {
+            setAddMemberError('กรุณากรอกอีเมล');
+            return;
+        }
+
+        // ตรวจสอบรูปแบบอีเมล
+        const emailRegex = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
+        if (!emailRegex.test(addMemberForm.email)) {
+            setAddMemberError('รูปแบบอีเมลไม่ถูกต้อง');
+            return;
+        }
+
+        try {
+            setAddMemberLoading(true);
+            setAddMemberError(null);
+
+            await addMemberDirect(
+                companyId,
+                addMemberForm.email.trim(),
+                addMemberForm.role,
+                addMemberForm.displayName.trim() || undefined,
+                addMemberForm.phoneNumber.trim() || undefined
+            );
+
+            alert('✅ เพิ่มสมาชิกสำเร็จ');
+            setShowAddMemberModal(false);
+            await loadMembers();
+        } catch (err: any) {
+            console.error('❌ เพิ่มสมาชิกล้มเหลว:', err);
+            setAddMemberError(err.message || 'ไม่สามารถเพิ่มสมาชิกได้');
+        } finally {
+            setAddMemberLoading(false);
+        }
+    };
+
+    /**
+     * เปิด Modal แก้ไขสมาชิก
+     */
+    const handleOpenEditMember = (member: CompanyMember) => {
+        setEditingMember(member);
+        setEditMemberForm({
+            displayName: member.displayName || '',
+            phoneNumber: member.phoneNumber || '',
+            role: member.role,
+        });
+        setEditMemberError(null);
+        setShowEditMemberModal(true);
+    };
+
+    /**
+     * บันทึกการแก้ไขสมาชิก
+     */
+    const handleSaveEditMember = async (e: React.FormEvent) => {
+        e.preventDefault();
+
+        if (!editingMember) return;
+
+        try {
+            setEditMemberLoading(true);
+            setEditMemberError(null);
+
+            await updateMemberInfo(editingMember.id!, {
+                displayName: editMemberForm.displayName.trim() || undefined,
+                phoneNumber: editMemberForm.phoneNumber.trim() || undefined,
+                role: editMemberForm.role,
+            });
+
+            alert('✅ แก้ไขข้อมูลสมาชิกสำเร็จ');
+            setShowEditMemberModal(false);
+            setEditingMember(null);
+            await loadMembers();
+        } catch (err: any) {
+            console.error('❌ แก้ไขข้อมูลล้มเหลว:', err);
+            setEditMemberError(err.message || 'ไม่สามารถแก้ไขข้อมูลได้');
+        } finally {
+            setEditMemberLoading(false);
         }
     };
 
@@ -188,11 +331,14 @@ const UserManagement: React.FC<UserManagementProps> = ({ companyId, companyName,
                 </div>
             )}
 
-            {/* ปุ่มเชิญสมาชิกใหม่ (เฉพาะ Admin) */}
+            {/* ปุ่มจัดการสมาชิก (เฉพาะ Admin) */}
             {isAdmin && (
                 <div className="invite-button-section">
                     <button onClick={() => setShowInviteModal(true)} className="btn-invite">
                         📨 เชิญสมาชิกใหม่
+                    </button>
+                    <button onClick={handleOpenAddMember} className="btn-add-direct">
+                        ➕ เพิ่มสมาชิกโดยตรง
                     </button>
                 </div>
             )}
@@ -264,6 +410,13 @@ const UserManagement: React.FC<UserManagementProps> = ({ companyId, companyName,
                                                 {member.userId !== user?.uid && (
                                                     <>
                                                         <button
+                                                            onClick={() => handleOpenEditMember(member)}
+                                                            className="btn-small btn-edit"
+                                                            title="แก้ไขข้อมูล"
+                                                        >
+                                                            ✏️
+                                                        </button>
+                                                        <button
                                                             onClick={() => handleChangeRole(member.id!, member.role)}
                                                             className="btn-small btn-secondary"
                                                             title="เปลี่ยนบทบาท"
@@ -280,7 +433,16 @@ const UserManagement: React.FC<UserManagementProps> = ({ companyId, companyName,
                                                     </>
                                                 )}
                                                 {member.userId === user?.uid && (
-                                                    <span className="self-indicator">(คุณ)</span>
+                                                    <>
+                                                        <button
+                                                            onClick={() => handleOpenEditMember(member)}
+                                                            className="btn-small btn-edit"
+                                                            title="แก้ไขข้อมูลของฉัน"
+                                                        >
+                                                            ✏️
+                                                        </button>
+                                                        <span className="self-indicator">(คุณ)</span>
+                                                    </>
                                                 )}
                                             </td>
                                         )}
@@ -383,6 +545,194 @@ const UserManagement: React.FC<UserManagementProps> = ({ companyId, companyName,
                 />
             )}
 
+            {/* Modal เพิ่มสมาชิกโดยตรง */}
+            {showAddMemberModal && (
+                <div className="modal-overlay" onClick={() => setShowAddMemberModal(false)}>
+                    <div className="modal-content-inner" onClick={(e) => e.stopPropagation()}>
+                        <div className="modal-header-inner">
+                            <h3>➕ เพิ่มสมาชิกโดยตรง</h3>
+                            <button 
+                                onClick={() => setShowAddMemberModal(false)} 
+                                className="close-button"
+                                disabled={addMemberLoading}
+                            >
+                                ✕
+                            </button>
+                        </div>
+                        <form onSubmit={handleAddMember} className="modal-body">
+                            {addMemberError && (
+                                <div className="error-message">
+                                    ⚠️ {addMemberError}
+                                </div>
+                            )}
+                            
+                            <div className="form-group">
+                                <label htmlFor="add-email">อีเมล *</label>
+                                <input
+                                    type="email"
+                                    id="add-email"
+                                    value={addMemberForm.email}
+                                    onChange={(e) => setAddMemberForm({...addMemberForm, email: e.target.value})}
+                                    placeholder="example@email.com"
+                                    required
+                                    disabled={addMemberLoading}
+                                    autoFocus
+                                />
+                            </div>
+                            
+                            <div className="form-group">
+                                <label htmlFor="add-displayName">ชื่อแสดง</label>
+                                <input
+                                    type="text"
+                                    id="add-displayName"
+                                    value={addMemberForm.displayName}
+                                    onChange={(e) => setAddMemberForm({...addMemberForm, displayName: e.target.value})}
+                                    placeholder="ชื่อ-นามสกุล"
+                                    disabled={addMemberLoading}
+                                />
+                            </div>
+                            
+                            <div className="form-group">
+                                <label htmlFor="add-phoneNumber">เบอร์โทรศัพท์</label>
+                                <input
+                                    type="tel"
+                                    id="add-phoneNumber"
+                                    value={addMemberForm.phoneNumber}
+                                    onChange={(e) => setAddMemberForm({...addMemberForm, phoneNumber: e.target.value})}
+                                    placeholder="08x-xxx-xxxx"
+                                    disabled={addMemberLoading}
+                                />
+                            </div>
+                            
+                            <div className="form-group">
+                                <label htmlFor="add-role">บทบาท *</label>
+                                <select
+                                    id="add-role"
+                                    value={addMemberForm.role}
+                                    onChange={(e) => setAddMemberForm({...addMemberForm, role: e.target.value as UserRole})}
+                                    disabled={addMemberLoading}
+                                >
+                                    <option value="member">👤 Member (สมาชิกทั่วไป)</option>
+                                    <option value="admin">👑 Admin (ผู้จัดการ)</option>
+                                </select>
+                            </div>
+                            
+                            <div className="modal-actions-inner">
+                                <button
+                                    type="button"
+                                    onClick={() => setShowAddMemberModal(false)}
+                                    className="btn-cancel"
+                                    disabled={addMemberLoading}
+                                >
+                                    ยกเลิก
+                                </button>
+                                <button
+                                    type="submit"
+                                    className="btn-submit"
+                                    disabled={addMemberLoading}
+                                >
+                                    {addMemberLoading ? '⏳ กำลังเพิ่ม...' : '✅ เพิ่มสมาชิก'}
+                                </button>
+                            </div>
+                        </form>
+                    </div>
+                </div>
+            )}
+
+            {/* Modal แก้ไขสมาชิก */}
+            {showEditMemberModal && editingMember && (
+                <div className="modal-overlay" onClick={() => setShowEditMemberModal(false)}>
+                    <div className="modal-content-inner" onClick={(e) => e.stopPropagation()}>
+                        <div className="modal-header-inner">
+                            <h3>✏️ แก้ไขข้อมูลสมาชิก</h3>
+                            <button 
+                                onClick={() => setShowEditMemberModal(false)} 
+                                className="close-button"
+                                disabled={editMemberLoading}
+                            >
+                                ✕
+                            </button>
+                        </div>
+                        <form onSubmit={handleSaveEditMember} className="modal-body">
+                            {editMemberError && (
+                                <div className="error-message">
+                                    ⚠️ {editMemberError}
+                                </div>
+                            )}
+                            
+                            <div className="form-group">
+                                <label>อีเมล</label>
+                                <input
+                                    type="email"
+                                    value={editingMember.email}
+                                    disabled
+                                    className="input-disabled"
+                                />
+                                <small className="hint">อีเมลไม่สามารถเปลี่ยนได้</small>
+                            </div>
+                            
+                            <div className="form-group">
+                                <label htmlFor="edit-displayName">ชื่อแสดง</label>
+                                <input
+                                    type="text"
+                                    id="edit-displayName"
+                                    value={editMemberForm.displayName}
+                                    onChange={(e) => setEditMemberForm({...editMemberForm, displayName: e.target.value})}
+                                    placeholder="ชื่อ-นามสกุล"
+                                    disabled={editMemberLoading}
+                                />
+                            </div>
+                            
+                            <div className="form-group">
+                                <label htmlFor="edit-phoneNumber">เบอร์โทรศัพท์</label>
+                                <input
+                                    type="tel"
+                                    id="edit-phoneNumber"
+                                    value={editMemberForm.phoneNumber}
+                                    onChange={(e) => setEditMemberForm({...editMemberForm, phoneNumber: e.target.value})}
+                                    placeholder="08x-xxx-xxxx"
+                                    disabled={editMemberLoading}
+                                />
+                            </div>
+                            
+                            <div className="form-group">
+                                <label htmlFor="edit-role">บทบาท</label>
+                                <select
+                                    id="edit-role"
+                                    value={editMemberForm.role}
+                                    onChange={(e) => setEditMemberForm({...editMemberForm, role: e.target.value as UserRole})}
+                                    disabled={editMemberLoading || editingMember.userId === user?.uid}
+                                >
+                                    <option value="member">👤 Member (สมาชิกทั่วไป)</option>
+                                    <option value="admin">👑 Admin (ผู้จัดการ)</option>
+                                </select>
+                                {editingMember.userId === user?.uid && (
+                                    <small className="hint">ไม่สามารถเปลี่ยนบทบาทของตัวเองได้</small>
+                                )}
+                            </div>
+                            
+                            <div className="modal-actions-inner">
+                                <button
+                                    type="button"
+                                    onClick={() => setShowEditMemberModal(false)}
+                                    className="btn-cancel"
+                                    disabled={editMemberLoading}
+                                >
+                                    ยกเลิก
+                                </button>
+                                <button
+                                    type="submit"
+                                    className="btn-submit"
+                                    disabled={editMemberLoading}
+                                >
+                                    {editMemberLoading ? '⏳ กำลังบันทึก...' : '💾 บันทึก'}
+                                </button>
+                            </div>
+                        </form>
+                    </div>
+                </div>
+            )}
+
             <style>{`
                 .user-management-container {
                     padding: 20px;
@@ -436,6 +786,9 @@ const UserManagement: React.FC<UserManagementProps> = ({ companyId, companyName,
 
                 .invite-button-section {
                     margin-bottom: 20px;
+                    display: flex;
+                    gap: 12px;
+                    flex-wrap: wrap;
                 }
 
                 .btn-invite {
@@ -453,6 +806,23 @@ const UserManagement: React.FC<UserManagementProps> = ({ companyId, companyName,
                 .btn-invite:hover {
                     transform: translateY(-2px);
                     box-shadow: 0 4px 12px rgba(102, 126, 234, 0.4);
+                }
+
+                .btn-add-direct {
+                    background: linear-gradient(135deg, #4CAF50 0%, #45a049 100%);
+                    color: white;
+                    border: none;
+                    padding: 12px 24px;
+                    border-radius: 8px;
+                    cursor: pointer;
+                    font-size: 16px;
+                    font-weight: 600;
+                    transition: all 0.3s;
+                }
+
+                .btn-add-direct:hover {
+                    transform: translateY(-2px);
+                    box-shadow: 0 4px 12px rgba(76, 175, 80, 0.4);
                 }
 
                 .tabs {
@@ -614,10 +984,161 @@ const UserManagement: React.FC<UserManagementProps> = ({ companyId, companyName,
                     color: white;
                 }
 
+                .btn-edit {
+                    background: #FF9800;
+                    color: white;
+                }
+
                 .self-indicator {
                     color: #666;
                     font-size: 12px;
                     font-style: italic;
+                }
+
+                /* Modal Styles */
+                .modal-overlay {
+                    position: fixed;
+                    top: 0;
+                    left: 0;
+                    right: 0;
+                    bottom: 0;
+                    background: rgba(0, 0, 0, 0.5);
+                    display: flex;
+                    justify-content: center;
+                    align-items: center;
+                    z-index: 1000;
+                    padding: 20px;
+                }
+
+                .modal-content-inner {
+                    background: white;
+                    border-radius: 12px;
+                    max-width: 500px;
+                    width: 100%;
+                    max-height: 90vh;
+                    overflow-y: auto;
+                    box-shadow: 0 10px 40px rgba(0, 0, 0, 0.2);
+                }
+
+                .modal-header-inner {
+                    display: flex;
+                    justify-content: space-between;
+                    align-items: center;
+                    padding: 20px 25px;
+                    border-bottom: 2px solid #e0e0e0;
+                    background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+                    color: white;
+                    border-radius: 12px 12px 0 0;
+                }
+
+                .modal-header-inner h3 {
+                    margin: 0;
+                    font-size: 20px;
+                }
+
+                .modal-body {
+                    padding: 25px;
+                }
+
+                .form-group {
+                    margin-bottom: 20px;
+                }
+
+                .form-group label {
+                    display: block;
+                    margin-bottom: 8px;
+                    font-weight: 600;
+                    color: #333;
+                    font-size: 14px;
+                }
+
+                .form-group input,
+                .form-group select {
+                    width: 100%;
+                    padding: 12px;
+                    border: 2px solid #e0e0e0;
+                    border-radius: 6px;
+                    font-size: 14px;
+                    transition: border-color 0.3s;
+                    font-family: inherit;
+                    box-sizing: border-box;
+                }
+
+                .form-group input:focus,
+                .form-group select:focus {
+                    outline: none;
+                    border-color: #667eea;
+                }
+
+                .form-group input:disabled,
+                .form-group select:disabled {
+                    background: #f5f5f5;
+                    cursor: not-allowed;
+                }
+
+                .input-disabled {
+                    background: #f5f5f5 !important;
+                    color: #666;
+                }
+
+                .hint {
+                    display: block;
+                    margin-top: 6px;
+                    font-size: 12px;
+                    color: #666;
+                }
+
+                .modal-actions-inner {
+                    display: flex;
+                    gap: 12px;
+                    justify-content: flex-end;
+                    margin-top: 25px;
+                    padding-top: 20px;
+                    border-top: 1px solid #e0e0e0;
+                }
+
+                .btn-cancel {
+                    padding: 12px 24px;
+                    border: none;
+                    border-radius: 6px;
+                    font-size: 14px;
+                    font-weight: 600;
+                    cursor: pointer;
+                    background: #f5f5f5;
+                    color: #333;
+                    transition: all 0.3s;
+                }
+
+                .btn-cancel:hover:not(:disabled) {
+                    background: #e0e0e0;
+                }
+
+                .btn-cancel:disabled {
+                    opacity: 0.5;
+                    cursor: not-allowed;
+                }
+
+                .btn-submit {
+                    padding: 12px 24px;
+                    border: none;
+                    border-radius: 6px;
+                    font-size: 14px;
+                    font-weight: 600;
+                    cursor: pointer;
+                    background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+                    color: white;
+                    transition: all 0.3s;
+                }
+
+                .btn-submit:hover:not(:disabled) {
+                    transform: translateY(-2px);
+                    box-shadow: 0 4px 12px rgba(102, 126, 234, 0.4);
+                }
+
+                .btn-submit:disabled {
+                    background: #ccc;
+                    cursor: not-allowed;
+                    transform: none;
                 }
 
                 @media (max-width: 768px) {

@@ -412,3 +412,177 @@ export const updateMemberCount = async (companyId: string): Promise<void> => {
     }
 };
 
+/**
+ * อัปเดตข้อมูลสมาชิก (displayName, phoneNumber, role)
+ * @param memberId - ID ของสมาชิก
+ * @param data - ข้อมูลที่ต้องการอัปเดต
+ */
+export const updateMemberInfo = async (
+    memberId: string,
+    data: {
+        displayName?: string;
+        phoneNumber?: string;
+        role?: UserRole;
+    }
+): Promise<void> => {
+    try {
+        const currentUser = auth.currentUser;
+        if (!currentUser) {
+            throw new Error('กรุณา Login ก่อนแก้ไขข้อมูล');
+        }
+
+        // ดึงข้อมูลสมาชิกที่จะแก้ไข
+        const memberRef = doc(db, MEMBERS_COLLECTION, memberId);
+        const memberDoc = await getDoc(memberRef);
+
+        if (!memberDoc.exists()) {
+            throw new Error('ไม่พบสมาชิกนี้');
+        }
+
+        const memberData = memberDoc.data();
+
+        // ตรวจสอบว่าเป็น Admin หรือไม่
+        const isAdmin = await checkIsAdmin(memberData.companyId, currentUser.uid);
+        if (!isAdmin) {
+            throw new Error('เฉพาะ Admin เท่านั้นที่สามารถแก้ไขข้อมูลสมาชิกได้');
+        }
+
+        // เตรียมข้อมูลที่จะอัปเดต
+        const updateData: any = {
+            updatedAt: Timestamp.now(),
+        };
+
+        if (data.displayName !== undefined) {
+            updateData.displayName = data.displayName;
+        }
+        if (data.phoneNumber !== undefined) {
+            updateData.phoneNumber = data.phoneNumber;
+        }
+        if (data.role !== undefined) {
+            updateData.role = data.role;
+        }
+
+        // อัปเดตข้อมูล
+        await updateDoc(memberRef, updateData);
+
+        console.log('✅ อัปเดตข้อมูลสมาชิกสำเร็จ:', memberId);
+    } catch (error) {
+        console.error('❌ อัปเดตข้อมูลสมาชิกล้มเหลว:', error);
+        throw error;
+    }
+};
+
+/**
+ * เพิ่มสมาชิกโดยตรง (Direct Add) - ไม่ต้องส่งคำเชิญ
+ * @param companyId - ID ขององค์กร
+ * @param email - อีเมลของสมาชิก
+ * @param role - บทบาท (admin หรือ member)
+ * @param displayName - ชื่อแสดง (optional)
+ * @param phoneNumber - เบอร์โทรศัพท์ (optional)
+ * @returns ID ของสมาชิกที่เพิ่ม
+ */
+export const addMemberDirect = async (
+    companyId: string,
+    email: string,
+    role: UserRole = 'member',
+    displayName?: string,
+    phoneNumber?: string
+): Promise<string> => {
+    try {
+        const currentUser = auth.currentUser;
+        if (!currentUser) {
+            throw new Error('กรุณา Login ก่อนเพิ่มสมาชิก');
+        }
+
+        // ตรวจสอบว่าเป็น Admin หรือไม่
+        const isAdmin = await checkIsAdmin(companyId, currentUser.uid);
+        if (!isAdmin) {
+            throw new Error('เฉพาะ Admin เท่านั้นที่สามารถเพิ่มสมาชิกได้');
+        }
+
+        // ตรวจสอบว่าอีเมลนี้มีในองค์กรแล้วหรือไม่
+        const existingMember = await getMemberByEmail(companyId, email);
+        if (existingMember) {
+            throw new Error('อีเมลนี้เป็นสมาชิกขององค์กรอยู่แล้ว');
+        }
+
+        // สร้าง ID
+        const docRef = doc(collection(db, MEMBERS_COLLECTION));
+        const memberId = docRef.id;
+
+        // เตรียมข้อมูลสมาชิก
+        const memberData: any = {
+            companyId,
+            userId: '', // จะอัปเดตเมื่อ user login
+            email: email.toLowerCase(),
+            role,
+            status: 'pending' as MemberStatus, // รอ user login เพื่อยืนยัน
+            invitedBy: currentUser.uid,
+            createdAt: Timestamp.now(),
+            updatedAt: Timestamp.now(),
+        };
+
+        // เพิ่ม optional fields
+        if (displayName) memberData.displayName = displayName;
+        if (phoneNumber) memberData.phoneNumber = phoneNumber;
+
+        // บันทึกข้อมูล
+        await setDoc(docRef, memberData);
+
+        // อัปเดตจำนวนสมาชิก
+        await updateMemberCount(companyId);
+
+        console.log('✅ เพิ่มสมาชิกโดยตรงสำเร็จ:', memberId, '(Email:', email, ')');
+        return memberId;
+    } catch (error) {
+        console.error('❌ เพิ่มสมาชิกโดยตรงล้มเหลว:', error);
+        throw error;
+    }
+};
+
+/**
+ * ค้นหาสมาชิกตามอีเมล
+ * @param companyId - ID ขององค์กร
+ * @param email - อีเมลของสมาชิก
+ * @returns CompanyMember object หรือ null
+ */
+export const getMemberByEmail = async (
+    companyId: string,
+    email: string
+): Promise<CompanyMember | null> => {
+    try {
+        const q = query(
+            collection(db, MEMBERS_COLLECTION),
+            where('companyId', '==', companyId),
+            where('email', '==', email.toLowerCase())
+        );
+
+        const querySnapshot = await getDocs(q);
+
+        if (querySnapshot.empty) {
+            return null;
+        }
+
+        const docSnap = querySnapshot.docs[0];
+        const data = docSnap.data();
+
+        return {
+            id: docSnap.id,
+            companyId: data.companyId,
+            userId: data.userId,
+            email: data.email,
+            phoneNumber: data.phoneNumber,
+            displayName: data.displayName,
+            role: data.role,
+            status: data.status,
+            joinedAt: data.joinedAt?.toDate(),
+            invitedBy: data.invitedBy,
+            createdAt: data.createdAt?.toDate(),
+            updatedAt: data.updatedAt?.toDate(),
+        } as CompanyMember;
+    } catch (error) {
+        console.error('❌ ค้นหาสมาชิกล้มเหลว:', error);
+        return null;
+    }
+};
+

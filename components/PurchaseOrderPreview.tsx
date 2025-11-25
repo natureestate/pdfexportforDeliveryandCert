@@ -96,16 +96,6 @@ const PurchaseOrderPreview = forwardRef<HTMLDivElement, PurchaseOrderPreviewProp
                                 <td className="p-2 text-right align-top font-medium">{item.amount.toLocaleString('th-TH', { minimumFractionDigits: 2, maximumFractionDigits: 2 })}</td>
                             </tr>
                         ))}
-                        {Array.from({ length: Math.max(0, 8 - data.items.length) }).map((_, i) => (
-                            <tr key={`empty-${i}`}>
-                                <td className="p-2 h-8 border-b border-slate-200">&nbsp;</td>
-                                <td className="border-b border-slate-200"></td>
-                                <td className="border-b border-slate-200"></td>
-                                <td className="border-b border-slate-200"></td>
-                                <td className="border-b border-slate-200"></td>
-                                <td className="border-b border-slate-200"></td>
-                            </tr>
-                        ))}
                     </tbody>
                 </table>
             </section>

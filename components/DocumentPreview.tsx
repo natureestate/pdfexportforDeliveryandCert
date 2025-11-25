@@ -87,15 +87,6 @@ const DocumentPreview = forwardRef<HTMLDivElement, DocumentPreviewProps>(({ data
                                 <td className="p-2 align-top">{item.notes}</td>
                             </tr>
                         ))}
-                        {Array.from({ length: Math.max(0, 8 - data.items.length) }).map((_, i) => (
-                            <tr key={`empty-${i}`}>
-                                <td className="p-2 h-8 border-b border-slate-100">&nbsp;</td>
-                                <td className="border-b border-slate-100"></td>
-                                <td className="border-b border-slate-100"></td>
-                                <td className="border-b border-slate-100"></td>
-                                <td className="border-b border-slate-100"></td>
-                            </tr>
-                        ))}
                     </tbody>
                 </table>
             </section>
