@@ -1,13 +1,20 @@
 /**
  * reCAPTCHA v3 Service
  * บริการจัดการ Google reCAPTCHA v3 สำหรับป้องกัน bot
+ * 
+ * ⚠️ ความปลอดภัย: Site Key ถูกดึงจาก Environment Variables
  */
 
 import { httpsCallable } from 'firebase/functions';
 import { functions } from '../firebase.config';
 
-// Site Key สำหรับ reCAPTCHA v3
-const RECAPTCHA_SITE_KEY = '6Lc_6t4rAAAAAChtA-8Cpl-2p2fSjm3_wlDyAuEj';
+// Site Key สำหรับ reCAPTCHA v3 (ดึงจาก Environment Variables)
+const RECAPTCHA_SITE_KEY = import.meta.env.VITE_RECAPTCHA_SITE_KEY || '';
+
+// ตรวจสอบว่ามี Site Key หรือไม่
+if (!RECAPTCHA_SITE_KEY && import.meta.env.DEV) {
+    console.warn('⚠️ VITE_RECAPTCHA_SITE_KEY ไม่ได้ตั้งค่า - reCAPTCHA จะไม่ทำงาน');
+}
 
 // Threshold สำหรับตัดสินว่าเป็น bot หรือไม่ (0.0-1.0)
 const RECAPTCHA_THRESHOLD = 0.5;

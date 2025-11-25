@@ -12,11 +12,13 @@ dist
 dist-ssr
 *.local
 
-# Environment variables
+# Environment variables (⚠️ สำคัญ: ห้าม commit ไฟล์เหล่านี้!)
 .env
 .env.local
 .env.production
 .env.development
+.env.staging
+.env*.local
 
 # Editor directories and files
 .vscode/*
