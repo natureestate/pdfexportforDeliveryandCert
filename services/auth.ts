@@ -27,6 +27,7 @@ import {
     linkWithPopup,
     linkWithCredential,
     EmailAuthProvider,
+    PhoneAuthProvider,
     sendPasswordResetEmail,
     updatePassword,
     reauthenticateWithCredential,
@@ -706,4 +707,204 @@ export const changePassword = async (
         
         throw new Error(getAuthErrorMessage(error.code));
     }
+};
+
+// ==================== Phone Account Linking ====================
+
+/**
+ * Link Phone Number กับ Account ปัจจุบัน
+ * ใช้สำหรับเพิ่มเบอร์โทรให้กับ account ที่ login ด้วย Email/Google
+ * @param phoneNumber - เบอร์โทรศัพท์ในรูปแบบ +66XXXXXXXXX
+ * @param recaptchaVerifier - RecaptchaVerifier instance
+ * @returns Promise<ConfirmationResult> - ใช้สำหรับยืนยัน OTP
+ */
+export const linkPhoneSendOTP = async (
+    phoneNumber: string,
+    recaptchaVerifier: RecaptchaVerifier
+): Promise<ConfirmationResult> => {
+    try {
+        const currentUser = auth.currentUser;
+        if (!currentUser) {
+            throw new Error('กรุณา Login ก่อน');
+        }
+
+        console.log('📱 กำลังส่ง OTP เพื่อ Link Phone:', phoneNumber);
+        
+        // ใช้ signInWithPhoneNumber แต่จะ link กับ account ปัจจุบันหลังจากยืนยัน OTP
+        const confirmationResult = await signInWithPhoneNumber(
+            auth,
+            phoneNumber,
+            recaptchaVerifier
+        );
+        
+        console.log('✅ ส่ง OTP สำเร็จ');
+        return confirmationResult;
+    } catch (error: any) {
+        console.error('❌ ส่ง OTP สำหรับ Link Phone ล้มเหลว:', error);
+        throw new Error(getPhoneAuthErrorMessage(error.code));
+    }
+};
+
+/**
+ * ยืนยัน OTP และ Link Phone กับ Account ปัจจุบัน
+ * @param confirmationResult - ผลจากการส่ง OTP
+ * @param otp - รหัส OTP 6 หลัก
+ * @returns Promise<User>
+ */
+export const linkPhoneVerifyOTP = async (
+    confirmationResult: ConfirmationResult,
+    otp: string
+): Promise<User> => {
+    try {
+        const currentUser = auth.currentUser;
+        if (!currentUser) {
+            throw new Error('กรุณา Login ก่อน');
+        }
+
+        console.log('🔗 กำลังยืนยัน OTP และ Link Phone...');
+        
+        // ยืนยัน OTP
+        const credential = PhoneAuthProvider.credential(
+            confirmationResult.verificationId,
+            otp
+        );
+        
+        // Link กับ account ปัจจุบัน
+        const result = await linkWithCredential(currentUser, credential);
+        const user = result.user;
+        
+        console.log('✅ Link Phone สำเร็จ:', {
+            phoneNumber: user.phoneNumber,
+            providers: user.providerData.map(p => p.providerId),
+        });
+        
+        return user;
+    } catch (error: any) {
+        console.error('❌ Link Phone ล้มเหลว:', error);
+        
+        const errorCode = error.code;
+        let thaiErrorMessage = 'ไม่สามารถ Link เบอร์โทรได้';
+        
+        switch (errorCode) {
+            case 'auth/provider-already-linked':
+                thaiErrorMessage = 'เบอร์โทรนี้ถูก Link ไว้แล้ว';
+                break;
+            case 'auth/credential-already-in-use':
+                thaiErrorMessage = 'เบอร์โทรนี้ถูกใช้งานโดยผู้ใช้อื่นแล้ว';
+                break;
+            case 'auth/invalid-verification-code':
+                thaiErrorMessage = 'รหัส OTP ไม่ถูกต้อง';
+                break;
+            case 'auth/code-expired':
+                thaiErrorMessage = 'รหัส OTP หมดอายุแล้ว กรุณาขอรหัสใหม่';
+                break;
+            case 'auth/requires-recent-login':
+                thaiErrorMessage = 'กรุณา Logout แล้ว Login ใหม่ก่อน Link เบอร์โทร';
+                break;
+            default:
+                thaiErrorMessage = error.message || 'ไม่สามารถ Link เบอร์โทรได้';
+        }
+        
+        throw new Error(thaiErrorMessage);
+    }
+};
+
+/**
+ * ดึง Auth Error Message เป็นภาษาไทย (สำหรับ Phone Auth)
+ */
+const getPhoneAuthErrorMessage = (errorCode: string): string => {
+    switch (errorCode) {
+        case 'auth/invalid-phone-number':
+            return 'รูปแบบเบอร์โทรศัพท์ไม่ถูกต้อง';
+        case 'auth/missing-phone-number':
+            return 'กรุณากรอกเบอร์โทรศัพท์';
+        case 'auth/quota-exceeded':
+            return 'ส่ง SMS เกินโควต้า กรุณาลองใหม่ภายหลัง';
+        case 'auth/user-disabled':
+            return 'บัญชีนี้ถูกระงับการใช้งาน';
+        case 'auth/operation-not-allowed':
+            return 'ระบบยังไม่เปิดใช้งาน Phone Authentication';
+        case 'auth/too-many-requests':
+            return 'มีการส่ง OTP มากเกินไป กรุณารอสักครู่';
+        case 'auth/captcha-check-failed':
+            return 'การตรวจสอบ reCAPTCHA ล้มเหลว กรุณาลองใหม่';
+        default:
+            return 'ไม่สามารถส่ง OTP ได้';
+    }
+};
+
+/**
+ * ดึง Auth Error Message เป็นภาษาไทย (ทั่วไป)
+ */
+const getAuthErrorMessage = (errorCode: string): string => {
+    switch (errorCode) {
+        case 'auth/user-not-found':
+            return 'ไม่พบผู้ใช้นี้ในระบบ';
+        case 'auth/wrong-password':
+            return 'รหัสผ่านไม่ถูกต้อง';
+        case 'auth/invalid-email':
+            return 'รูปแบบอีเมลไม่ถูกต้อง';
+        case 'auth/user-disabled':
+            return 'บัญชีนี้ถูกระงับการใช้งาน';
+        case 'auth/too-many-requests':
+            return 'มีการพยายามมากเกินไป กรุณารอสักครู่';
+        case 'auth/email-already-in-use':
+            return 'อีเมลนี้ถูกใช้งานแล้ว';
+        case 'auth/weak-password':
+            return 'รหัสผ่านต้องมีอย่างน้อย 6 ตัวอักษร';
+        case 'auth/requires-recent-login':
+            return 'กรุณา Logout แล้ว Login ใหม่ก่อน';
+        case 'auth/credential-already-in-use':
+            return 'ข้อมูลนี้ถูกใช้งานโดยผู้ใช้อื่นแล้ว';
+        case 'auth/provider-already-linked':
+            return 'บัญชีนี้ถูก Link ไว้แล้ว';
+        default:
+            return 'เกิดข้อผิดพลาด กรุณาลองใหม่อีกครั้ง';
+    }
+};
+
+/**
+ * ดึงข้อมูล Provider ทั้งหมดของ User ปัจจุบัน
+ * @returns Array ของ provider info
+ */
+export const getUserProviders = (): { providerId: string; email?: string; phoneNumber?: string }[] => {
+    const currentUser = auth.currentUser;
+    if (!currentUser) {
+        return [];
+    }
+    
+    return currentUser.providerData.map(provider => ({
+        providerId: provider.providerId,
+        email: provider.email || undefined,
+        phoneNumber: provider.phoneNumber || undefined,
+    }));
+};
+
+/**
+ * ตรวจสอบว่า User มี Provider ครบหรือยัง
+ * @returns object แสดงสถานะ providers
+ */
+export const checkLinkedProviders = (): {
+    hasGoogle: boolean;
+    hasEmail: boolean;
+    hasPhone: boolean;
+    missingProviders: string[];
+} => {
+    const providers = getLinkedProviders();
+    
+    const hasGoogle = providers.includes('google.com');
+    const hasEmail = providers.includes('password');
+    const hasPhone = providers.includes('phone');
+    
+    const missingProviders: string[] = [];
+    if (!hasGoogle) missingProviders.push('google.com');
+    if (!hasEmail) missingProviders.push('password');
+    if (!hasPhone) missingProviders.push('phone');
+    
+    return {
+        hasGoogle,
+        hasEmail,
+        hasPhone,
+        missingProviders,
+    };
 };

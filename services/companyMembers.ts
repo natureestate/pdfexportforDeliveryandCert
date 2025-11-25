@@ -789,3 +789,280 @@ export const getMemberByEmail = async (
     }
 };
 
+/**
+ * ค้นหาสมาชิกตามเบอร์โทรศัพท์
+ * @param companyId - ID ขององค์กร
+ * @param phoneNumber - เบอร์โทรศัพท์ของสมาชิก
+ * @returns CompanyMember object หรือ null
+ */
+export const getMemberByPhoneNumber = async (
+    companyId: string,
+    phoneNumber: string
+): Promise<CompanyMember | null> => {
+    try {
+        // Normalize phone number (ลบ + ออกเพื่อค้นหา)
+        const normalizedPhone = phoneNumber.replace(/^\+/, '');
+        
+        const q = query(
+            collection(db, MEMBERS_COLLECTION),
+            where('companyId', '==', companyId),
+            where('phoneNumber', '==', phoneNumber)
+        );
+
+        const querySnapshot = await getDocs(q);
+
+        // ถ้าไม่พบ ลองค้นหาแบบไม่มี +
+        if (querySnapshot.empty) {
+            const q2 = query(
+                collection(db, MEMBERS_COLLECTION),
+                where('companyId', '==', companyId),
+                where('phoneNumber', '==', normalizedPhone)
+            );
+            
+            const querySnapshot2 = await getDocs(q2);
+            
+            if (querySnapshot2.empty) {
+                return null;
+            }
+            
+            const docSnap = querySnapshot2.docs[0];
+            const data = docSnap.data();
+
+            return {
+                id: docSnap.id,
+                companyId: data.companyId,
+                userId: data.userId,
+                email: data.email,
+                phoneNumber: data.phoneNumber,
+                displayName: data.displayName,
+                role: data.role,
+                status: data.status,
+                joinedAt: data.joinedAt?.toDate(),
+                invitedBy: data.invitedBy,
+                createdAt: data.createdAt?.toDate(),
+                updatedAt: data.updatedAt?.toDate(),
+            } as CompanyMember;
+        }
+
+        const docSnap = querySnapshot.docs[0];
+        const data = docSnap.data();
+
+        return {
+            id: docSnap.id,
+            companyId: data.companyId,
+            userId: data.userId,
+            email: data.email,
+            phoneNumber: data.phoneNumber,
+            displayName: data.displayName,
+            role: data.role,
+            status: data.status,
+            joinedAt: data.joinedAt?.toDate(),
+            invitedBy: data.invitedBy,
+            createdAt: data.createdAt?.toDate(),
+            updatedAt: data.updatedAt?.toDate(),
+        } as CompanyMember;
+    } catch (error) {
+        console.error('❌ ค้นหาสมาชิกตามเบอร์โทรล้มเหลว:', error);
+        return null;
+    }
+};
+
+/**
+ * Activate pending memberships เมื่อ user login ด้วยเบอร์โทรศัพท์
+ * ใช้สำหรับกรณีที่ Admin เพิ่มสมาชิกโดยตรงด้วยเบอร์โทร และ user login เข้ามาทีหลัง
+ * @param phoneNumber - เบอร์โทรศัพท์ของ user ที่ login
+ * @param userId - User ID ของ user ที่ login
+ * @param displayName - ชื่อแสดง (optional)
+ * @param email - อีเมล (optional, ถ้ามี)
+ * @returns จำนวน memberships ที่ถูก activate
+ */
+export const activatePendingMembershipsByPhone = async (
+    phoneNumber: string,
+    userId: string,
+    displayName?: string,
+    email?: string
+): Promise<number> => {
+    try {
+        // Normalize phone number
+        const normalizedPhone = phoneNumber.replace(/^\+/, '');
+        
+        // ค้นหา pending memberships ที่ตรงกับเบอร์โทร (ทั้งแบบมี + และไม่มี)
+        const q1 = query(
+            collection(db, MEMBERS_COLLECTION),
+            where('phoneNumber', '==', phoneNumber),
+            where('status', '==', 'pending')
+        );
+        
+        const q2 = query(
+            collection(db, MEMBERS_COLLECTION),
+            where('phoneNumber', '==', normalizedPhone),
+            where('status', '==', 'pending')
+        );
+
+        const [querySnapshot1, querySnapshot2] = await Promise.all([
+            getDocs(q1),
+            getDocs(q2)
+        ]);
+
+        // รวม results และกรอง duplicates
+        const allDocs = [...querySnapshot1.docs, ...querySnapshot2.docs];
+        const uniqueDocs = allDocs.filter((doc, index, self) =>
+            index === self.findIndex(d => d.id === doc.id)
+        );
+
+        if (uniqueDocs.length === 0) {
+            console.log('ℹ️ ไม่พบ pending memberships สำหรับเบอร์โทร:', phoneNumber);
+            return 0;
+        }
+
+        console.log(`🔍 พบ ${uniqueDocs.length} pending memberships สำหรับ ${phoneNumber}`);
+
+        // อัปเดตทุก pending membership
+        const batch = writeBatch(db);
+        let activatedCount = 0;
+
+        for (const docSnapshot of uniqueDocs) {
+            const data = docSnapshot.data();
+            
+            // ตรวจสอบว่า user นี้ยังไม่ได้เป็นสมาชิกขององค์กรนี้อยู่แล้ว
+            const isAlreadyMember = await checkIsMember(data.companyId, userId);
+            
+            if (!isAlreadyMember) {
+                const updateData: any = {
+                    userId,
+                    status: 'active' as MemberStatus,
+                    joinedAt: Timestamp.now(),
+                    updatedAt: Timestamp.now(),
+                };
+
+                if (displayName) updateData.displayName = displayName;
+                if (email) updateData.email = email.toLowerCase();
+
+                batch.update(docSnapshot.ref, updateData);
+                activatedCount++;
+
+                console.log(`✅ Activating membership: ${docSnapshot.id} (Company: ${data.companyId})`);
+            } else {
+                // ถ้าเป็นสมาชิกอยู่แล้ว ให้ลบ pending membership ออก
+                batch.delete(docSnapshot.ref);
+                console.log(`🗑️ Removing duplicate pending membership: ${docSnapshot.id}`);
+            }
+        }
+
+        await batch.commit();
+
+        if (activatedCount > 0) {
+            console.log(`✅ Activated ${activatedCount} memberships สำหรับ ${phoneNumber}`);
+            
+            // อัปเดตจำนวนสมาชิกในแต่ละองค์กร
+            const companyIds = new Set(uniqueDocs.map(doc => doc.data().companyId));
+            for (const companyId of companyIds) {
+                await updateMemberCount(companyId);
+            }
+        }
+
+        return activatedCount;
+    } catch (error) {
+        console.error('❌ Activate pending memberships by phone ล้มเหลว:', error);
+        return 0;
+    }
+};
+
+/**
+ * ค้นหา pending memberships ทั้งหมดที่ตรงกับ email หรือ phoneNumber
+ * ใช้สำหรับแสดงแจ้งเตือนให้ user link account
+ * @param email - อีเมล (optional)
+ * @param phoneNumber - เบอร์โทรศัพท์ (optional)
+ * @returns Array ของ CompanyMember ที่เป็น pending
+ */
+export const findPendingMemberships = async (
+    email?: string,
+    phoneNumber?: string
+): Promise<CompanyMember[]> => {
+    try {
+        const results: CompanyMember[] = [];
+        
+        // ค้นหาด้วย email
+        if (email) {
+            const qEmail = query(
+                collection(db, MEMBERS_COLLECTION),
+                where('email', '==', email.toLowerCase()),
+                where('status', '==', 'pending')
+            );
+            
+            const emailSnapshot = await getDocs(qEmail);
+            emailSnapshot.docs.forEach(doc => {
+                const data = doc.data();
+                results.push({
+                    id: doc.id,
+                    companyId: data.companyId,
+                    userId: data.userId,
+                    email: data.email,
+                    phoneNumber: data.phoneNumber,
+                    displayName: data.displayName,
+                    role: data.role,
+                    status: data.status,
+                    joinedAt: data.joinedAt?.toDate(),
+                    invitedBy: data.invitedBy,
+                    createdAt: data.createdAt?.toDate(),
+                    updatedAt: data.updatedAt?.toDate(),
+                } as CompanyMember);
+            });
+        }
+        
+        // ค้นหาด้วย phoneNumber
+        if (phoneNumber) {
+            const normalizedPhone = phoneNumber.replace(/^\+/, '');
+            
+            const qPhone1 = query(
+                collection(db, MEMBERS_COLLECTION),
+                where('phoneNumber', '==', phoneNumber),
+                where('status', '==', 'pending')
+            );
+            
+            const qPhone2 = query(
+                collection(db, MEMBERS_COLLECTION),
+                where('phoneNumber', '==', normalizedPhone),
+                where('status', '==', 'pending')
+            );
+            
+            const [phoneSnapshot1, phoneSnapshot2] = await Promise.all([
+                getDocs(qPhone1),
+                getDocs(qPhone2)
+            ]);
+            
+            const allPhoneDocs = [...phoneSnapshot1.docs, ...phoneSnapshot2.docs];
+            const uniquePhoneDocs = allPhoneDocs.filter((doc, index, self) =>
+                index === self.findIndex(d => d.id === doc.id)
+            );
+            
+            uniquePhoneDocs.forEach(doc => {
+                // ตรวจสอบว่ายังไม่มีใน results
+                if (!results.find(r => r.id === doc.id)) {
+                    const data = doc.data();
+                    results.push({
+                        id: doc.id,
+                        companyId: data.companyId,
+                        userId: data.userId,
+                        email: data.email,
+                        phoneNumber: data.phoneNumber,
+                        displayName: data.displayName,
+                        role: data.role,
+                        status: data.status,
+                        joinedAt: data.joinedAt?.toDate(),
+                        invitedBy: data.invitedBy,
+                        createdAt: data.createdAt?.toDate(),
+                        updatedAt: data.updatedAt?.toDate(),
+                    } as CompanyMember);
+                }
+            });
+        }
+        
+        console.log(`🔍 พบ ${results.length} pending memberships`);
+        return results;
+    } catch (error) {
+        console.error('❌ ค้นหา pending memberships ล้มเหลว:', error);
+        return [];
+    }
+};
+
