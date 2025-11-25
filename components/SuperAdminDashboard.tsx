@@ -178,12 +178,50 @@ const SuperAdminDashboard: React.FC = () => {
     }, [activeTab, isSuper, selectedCompany]);
 
     /**
-     * Filter members by search term
+     * ฟังก์ชันหาประเภทการ Login ของสมาชิก
+     * @param member - ข้อมูลสมาชิก
+     * @returns ประเภทการ login (email, phone, หรือ unknown)
      */
-    const filteredMembers = members.filter(member => 
-        member.email.toLowerCase().includes(searchTerm.toLowerCase()) ||
-        (member.displayName || '').toLowerCase().includes(searchTerm.toLowerCase())
-    );
+    const getAuthType = (member: CompanyMember): 'email' | 'phone' | 'unknown' => {
+        // ถ้ามีเบอร์โทรและไม่มีอีเมล = login ด้วยเบอร์โทร
+        if (member.phoneNumber && (!member.email || member.email === '')) {
+            return 'phone';
+        }
+        // ถ้ามีอีเมล = login ด้วยอีเมล
+        if (member.email && member.email !== '') {
+            return 'email';
+        }
+        // ไม่มีทั้งคู่ = unknown
+        return 'unknown';
+    };
+
+    /**
+     * ฟังก์ชันแสดงข้อมูลติดต่อหลัก (อีเมลหรือเบอร์โทร)
+     * @param member - ข้อมูลสมาชิก
+     * @returns ข้อความแสดงข้อมูลติดต่อ
+     */
+    const getPrimaryContact = (member: CompanyMember): string => {
+        if (member.email && member.email !== '') {
+            return member.email;
+        }
+        if (member.phoneNumber && member.phoneNumber !== '') {
+            return member.phoneNumber;
+        }
+        return '-';
+    };
+
+    /**
+     * Filter members by search term
+     * รองรับการค้นหาด้วยอีเมล, เบอร์โทร, และชื่อ
+     */
+    const filteredMembers = members.filter(member => {
+        const searchLower = searchTerm.toLowerCase();
+        return (
+            (member.email || '').toLowerCase().includes(searchLower) ||
+            (member.phoneNumber || '').toLowerCase().includes(searchLower) ||
+            (member.displayName || '').toLowerCase().includes(searchLower)
+        );
+    });
 
     /**
      * Filter invitations by search term
@@ -518,7 +556,7 @@ const SuperAdminDashboard: React.FC = () => {
                             <h2>👥 สมาชิกทั้งหมด ({filteredMembers.length})</h2>
                             <input
                                 type="text"
-                                placeholder="ค้นหาด้วยอีเมลหรือชื่อ..."
+                                placeholder="ค้นหาด้วยอีเมล, เบอร์โทร หรือชื่อ..."
                                 value={searchTerm}
                                 onChange={(e) => setSearchTerm(e.target.value)}
                                 className="search-input"
@@ -529,7 +567,8 @@ const SuperAdminDashboard: React.FC = () => {
                             <table>
                                 <thead>
                                     <tr>
-                                        <th>อีเมล</th>
+                                        <th>ประเภท Login</th>
+                                        <th>อีเมล/เบอร์โทร</th>
                                         <th>ชื่อ</th>
                                         <th>บทบาท</th>
                                         <th>สถานะ</th>
@@ -537,29 +576,47 @@ const SuperAdminDashboard: React.FC = () => {
                                     </tr>
                                 </thead>
                                 <tbody>
-                                    {filteredMembers.map(member => (
-                                        <tr key={member.id}>
-                                            <td>{member.email}</td>
-                                            <td>{member.displayName || '-'}</td>
-                                            <td>
-                                                <span className={`role-badge ${member.role}`}>
-                                                    {member.role === 'admin' ? '👑 Admin' : '👤 Member'}
-                                                </span>
-                                            </td>
-                                            <td>
-                                                <span className={`status-badge ${member.status}`}>
-                                                    {member.status === 'active' ? '✅ Active' :
-                                                     member.status === 'pending' ? '⏳ Pending' :
-                                                     '❌ Inactive'}
-                                                </span>
-                                            </td>
-                                            <td>
-                                                {member.joinedAt 
-                                                    ? member.joinedAt.toLocaleDateString('th-TH')
-                                                    : '-'}
-                                            </td>
-                                        </tr>
-                                    ))}
+                                    {filteredMembers.map(member => {
+                                        const authType = getAuthType(member);
+                                        return (
+                                            <tr key={member.id}>
+                                                <td>
+                                                    <span className={`auth-type-badge auth-${authType}`}>
+                                                        {authType === 'email' ? '📧 อีเมล' :
+                                                         authType === 'phone' ? '📱 เบอร์โทร' :
+                                                         '❓ ไม่ระบุ'}
+                                                    </span>
+                                                </td>
+                                                <td>
+                                                    <div className="contact-info">
+                                                        <span className="primary-contact">{getPrimaryContact(member)}</span>
+                                                        {/* แสดงเบอร์โทรเพิ่มเติมถ้ามีทั้งอีเมลและเบอร์โทร */}
+                                                        {member.email && member.phoneNumber && (
+                                                            <span className="secondary-contact">📱 {member.phoneNumber}</span>
+                                                        )}
+                                                    </div>
+                                                </td>
+                                                <td>{member.displayName || '-'}</td>
+                                                <td>
+                                                    <span className={`role-badge ${member.role}`}>
+                                                        {member.role === 'admin' ? '👑 Admin' : '👤 Member'}
+                                                    </span>
+                                                </td>
+                                                <td>
+                                                    <span className={`status-badge ${member.status}`}>
+                                                        {member.status === 'active' ? '✅ Active' :
+                                                         member.status === 'pending' ? '⏳ Pending' :
+                                                         '❌ Inactive'}
+                                                    </span>
+                                                </td>
+                                                <td>
+                                                    {member.joinedAt 
+                                                        ? member.joinedAt.toLocaleDateString('th-TH')
+                                                        : '-'}
+                                                </td>
+                                            </tr>
+                                        );
+                                    })}
                                 </tbody>
                             </table>
                         </div>
@@ -1246,6 +1303,48 @@ const styles = `
     .status-badge.inactive {
         background: #ffebee;
         color: #c62828;
+    }
+
+    /* Auth Type Badge Styles - แสดงประเภทการ Login */
+    .auth-type-badge {
+        display: inline-block;
+        padding: 4px 10px;
+        border-radius: 12px;
+        font-size: 12px;
+        font-weight: 500;
+        white-space: nowrap;
+    }
+
+    .auth-type-badge.auth-email {
+        background: #e3f2fd;
+        color: #1565c0;
+    }
+
+    .auth-type-badge.auth-phone {
+        background: #e8f5e9;
+        color: #2e7d32;
+    }
+
+    .auth-type-badge.auth-unknown {
+        background: #f5f5f5;
+        color: #666;
+    }
+
+    /* Contact Info Styles - แสดงข้อมูลติดต่อ */
+    .contact-info {
+        display: flex;
+        flex-direction: column;
+        gap: 4px;
+    }
+
+    .contact-info .primary-contact {
+        font-weight: 500;
+        color: #2d3748;
+    }
+
+    .contact-info .secondary-contact {
+        font-size: 12px;
+        color: #718096;
     }
 
     .status-badge.invitation-pending {
