@@ -124,6 +124,126 @@ export const addFirstAdmin = async (
 };
 
 /**
+ * เพิ่มสมาชิกจากคำเชิญ (รองรับกรณีอีเมลไม่ตรงกัน)
+ * @param companyId - ID ขององค์กร
+ * @param userId - User ID ของสมาชิก
+ * @param invitedEmail - อีเมลที่ถูกเชิญ (จากคำเชิญ)
+ * @param role - บทบาท
+ * @param phoneNumber - เบอร์โทรศัพท์ (optional)
+ * @param displayName - ชื่อแสดง (optional)
+ * @param actualEmail - อีเมลจริงที่ใช้ login (optional, ถ้าต่างจาก invitedEmail)
+ * @returns ID ของสมาชิกที่เพิ่ม
+ */
+export const addMemberFromInvitation = async (
+    companyId: string,
+    userId: string,
+    invitedEmail: string,
+    role: UserRole,
+    phoneNumber?: string,
+    displayName?: string,
+    actualEmail?: string
+): Promise<string> => {
+    try {
+        // ตรวจสอบว่ามีสมาชิกอยู่แล้วหรือไม่ (ตรวจสอบทั้ง userId และ invitedEmail)
+        const existingByUserId = await getMemberByUserId(companyId, userId);
+        if (existingByUserId) {
+            console.log('ℹ️ สมาชิก userId นี้มีอยู่แล้ว:', existingByUserId.id);
+            return existingByUserId.id!;
+        }
+
+        const existingByEmail = await getMemberByEmail(companyId, invitedEmail);
+        if (existingByEmail && existingByEmail.status === 'active') {
+            console.log('ℹ️ สมาชิก email นี้มีอยู่แล้ว:', existingByEmail.id);
+            return existingByEmail.id!;
+        }
+
+        // สร้าง ID
+        const docRef = doc(collection(db, MEMBERS_COLLECTION));
+        const memberId = docRef.id;
+
+        // เตรียมข้อมูลสมาชิก
+        const memberData: any = {
+            companyId,
+            userId,
+            email: invitedEmail.toLowerCase(), // ใช้อีเมลจากคำเชิญ
+            role,
+            status: 'active' as MemberStatus,
+            joinedAt: Timestamp.now(),
+            createdAt: Timestamp.now(),
+            updatedAt: Timestamp.now(),
+        };
+
+        // เพิ่ม optional fields
+        if (phoneNumber) memberData.phoneNumber = phoneNumber;
+        if (displayName) memberData.displayName = displayName;
+        
+        // บันทึกอีเมลจริงที่ใช้ login (ถ้าต่างจากอีเมลที่ถูกเชิญ)
+        if (actualEmail && actualEmail.toLowerCase() !== invitedEmail.toLowerCase()) {
+            memberData.actualEmail = actualEmail.toLowerCase();
+            memberData.note = `Login ด้วย ${actualEmail} แต่ถูกเชิญด้วย ${invitedEmail}`;
+        }
+
+        // บันทึกข้อมูล
+        await setDoc(docRef, memberData);
+
+        // อัปเดตจำนวนสมาชิก
+        await updateMemberCount(companyId);
+
+        console.log('✅ เพิ่มสมาชิกจากคำเชิญสำเร็จ:', memberId, '(Email:', invitedEmail, ')');
+        return memberId;
+    } catch (error) {
+        console.error('❌ เพิ่มสมาชิกจากคำเชิญล้มเหลว:', error);
+        throw error;
+    }
+};
+
+/**
+ * ค้นหาสมาชิกตาม User ID
+ * @param companyId - ID ขององค์กร
+ * @param userId - User ID
+ * @returns CompanyMember object หรือ null
+ */
+export const getMemberByUserId = async (
+    companyId: string,
+    userId: string
+): Promise<CompanyMember | null> => {
+    try {
+        const q = query(
+            collection(db, MEMBERS_COLLECTION),
+            where('companyId', '==', companyId),
+            where('userId', '==', userId)
+        );
+
+        const querySnapshot = await getDocs(q);
+
+        if (querySnapshot.empty) {
+            return null;
+        }
+
+        const docSnap = querySnapshot.docs[0];
+        const data = docSnap.data();
+
+        return {
+            id: docSnap.id,
+            companyId: data.companyId,
+            userId: data.userId,
+            email: data.email,
+            phoneNumber: data.phoneNumber,
+            displayName: data.displayName,
+            role: data.role,
+            status: data.status,
+            joinedAt: data.joinedAt?.toDate(),
+            invitedBy: data.invitedBy,
+            createdAt: data.createdAt?.toDate(),
+            updatedAt: data.updatedAt?.toDate(),
+        } as CompanyMember;
+    } catch (error) {
+        console.error('❌ ค้นหาสมาชิกตาม userId ล้มเหลว:', error);
+        return null;
+    }
+};
+
+/**
  * ดึงรายการสมาชิกทั้งหมดในองค์กร
  * @param companyId - ID ขององค์กร
  * @returns Array ของ CompanyMember

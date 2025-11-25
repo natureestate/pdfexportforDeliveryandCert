@@ -1,13 +1,14 @@
 /**
  * Accept Invitation Page Component
  * หน้าสำหรับยอมรับคำเชิญเข้าองค์กร
+ * รองรับ: Google Login, Email/Password, และ Account Linking
  */
 
 import React, { useState, useEffect } from 'react';
 import { useNavigate, useSearchParams } from 'react-router-dom';
 import { useAuth } from '../contexts/AuthContext';
 import { getInvitationByToken, acceptInvitation } from '../services/invitations';
-import { addCompanyMember, updateMemberCount } from '../services/companyMembers';
+import { updateMemberCount, addMemberFromInvitation } from '../services/companyMembers';
 import { Invitation } from '../types';
 
 /**
@@ -23,6 +24,9 @@ const AcceptInvitationPage: React.FC = () => {
     const [processing, setProcessing] = useState(false);
     const [error, setError] = useState<string | null>(null);
     const [success, setSuccess] = useState(false);
+    
+    // State สำหรับ Email Mismatch
+    const [showEmailMismatchOptions, setShowEmailMismatchOptions] = useState(false);
 
     const token = searchParams.get('token');
 
@@ -105,13 +109,20 @@ const AcceptInvitationPage: React.FC = () => {
 
         // ตรวจสอบว่าอีเมลตรงกันหรือไม่
         if (user.email && invitation.email.toLowerCase() !== user.email.toLowerCase()) {
-            setError(
-                `คำเชิญนี้สำหรับ ${invitation.email} เท่านั้น\n` +
-                `คุณ login ด้วยอีเมล ${user.email}\n` +
-                `กรุณา login ด้วยอีเมลที่ถูกต้อง`
-            );
+            // แสดงตัวเลือกให้ผู้ใช้เลือก
+            setShowEmailMismatchOptions(true);
             return;
         }
+
+        // ดำเนินการยอมรับคำเชิญ
+        await processAcceptInvitation();
+    };
+
+    /**
+     * ดำเนินการยอมรับคำเชิญ (ใช้ร่วมกันทั้งกรณีอีเมลตรงและไม่ตรง)
+     */
+    const processAcceptInvitation = async () => {
+        if (!user || !invitation) return;
 
         try {
             setProcessing(true);
@@ -120,11 +131,15 @@ const AcceptInvitationPage: React.FC = () => {
             // ยอมรับคำเชิญ
             await acceptInvitation(token!, user.uid);
 
-            // เพิ่มสมาชิกเข้าองค์กร
-            await addCompanyMember(
+            // เพิ่มสมาชิกเข้าองค์กร - รองรับกรณีอีเมลไม่ตรงกัน
+            await addMemberFromInvitation(
                 invitation.companyId,
-                invitation.email,
-                invitation.role
+                user.uid,
+                invitation.email, // ใช้อีเมลจากคำเชิญ
+                invitation.role,
+                user.phoneNumber || undefined,
+                user.displayName || undefined,
+                user.email || undefined // อีเมลจริงที่ใช้ login
             );
 
             // อัปเดตจำนวนสมาชิก
@@ -144,6 +159,23 @@ const AcceptInvitationPage: React.FC = () => {
         } finally {
             setProcessing(false);
         }
+    };
+
+    /**
+     * ยอมรับคำเชิญแม้อีเมลไม่ตรงกัน (ผู้ใช้ยืนยันว่าเป็นเจ้าของอีเมลที่ถูกเชิญ)
+     */
+    const handleAcceptWithDifferentEmail = async () => {
+        setShowEmailMismatchOptions(false);
+        await processAcceptInvitation();
+    };
+
+    /**
+     * ยกเลิกและ Logout เพื่อ login ใหม่ด้วยอีเมลที่ถูกต้อง
+     */
+    const handleLogoutAndRetry = () => {
+        setShowEmailMismatchOptions(false);
+        const returnUrl = `/accept-invitation?token=${token}`;
+        navigate(`/login?returnUrl=${encodeURIComponent(returnUrl)}&logout=true`);
     };
 
     /**
@@ -268,6 +300,64 @@ const AcceptInvitationPage: React.FC = () => {
                     {!user && (
                         <div className="warning-box">
                             ⚠️ <strong>หมายเหตุ:</strong> คุณต้อง Login หรือสร้างบัญชีก่อนยอมรับคำเชิญ
+                        </div>
+                    )}
+
+                    {/* แสดงข้อมูลผู้ใช้ที่ login อยู่ */}
+                    {user && (
+                        <div className="logged-in-info">
+                            <h3>👤 คุณ Login อยู่ในชื่อ:</h3>
+                            <p><strong>{user.displayName || user.email || user.phoneNumber}</strong></p>
+                            {user.email && user.email.toLowerCase() !== invitation?.email.toLowerCase() && (
+                                <div className="email-mismatch-warning">
+                                    ⚠️ อีเมลที่ login ({user.email}) <strong>ไม่ตรงกับ</strong> อีเมลที่ถูกเชิญ ({invitation?.email})
+                                </div>
+                            )}
+                        </div>
+                    )}
+
+                    {/* Modal ตัวเลือกเมื่ออีเมลไม่ตรงกัน */}
+                    {showEmailMismatchOptions && (
+                        <div className="email-mismatch-modal">
+                            <h3>⚠️ อีเมลไม่ตรงกัน</h3>
+                            <p>
+                                คำเชิญนี้สำหรับ: <strong>{invitation?.email}</strong><br/>
+                                คุณ login ด้วย: <strong>{user?.email}</strong>
+                            </p>
+                            
+                            <div className="mismatch-options">
+                                <div className="option-card option-accept">
+                                    <h4>✅ ยอมรับคำเชิญด้วยบัญชีนี้</h4>
+                                    <p>ถ้าคุณเป็นเจ้าของอีเมล {invitation?.email} และต้องการใช้บัญชี Google ปัจจุบัน</p>
+                                    <button 
+                                        onClick={handleAcceptWithDifferentEmail}
+                                        className="btn-accept"
+                                        disabled={processing}
+                                    >
+                                        {processing ? '⏳ กำลังดำเนินการ...' : '✅ ยืนยันและยอมรับ'}
+                                    </button>
+                                </div>
+                                
+                                <div className="option-card option-logout">
+                                    <h4>🔄 Login ด้วยอีเมลอื่น</h4>
+                                    <p>Logout แล้ว login ใหม่ด้วยอีเมล {invitation?.email}</p>
+                                    <button 
+                                        onClick={handleLogoutAndRetry}
+                                        className="btn-logout"
+                                        disabled={processing}
+                                    >
+                                        🔄 Logout และ Login ใหม่
+                                    </button>
+                                </div>
+                            </div>
+                            
+                            <button 
+                                onClick={() => setShowEmailMismatchOptions(false)}
+                                className="btn-cancel-mismatch"
+                                disabled={processing}
+                            >
+                                ยกเลิก
+                            </button>
                         </div>
                     )}
 
@@ -481,6 +571,165 @@ const styles = `
         margin-bottom: 20px;
         font-size: 14px;
         color: #856404;
+    }
+
+    .logged-in-info {
+        background: #e3f2fd;
+        border-left: 4px solid #2196F3;
+        padding: 15px;
+        border-radius: 4px;
+        margin-bottom: 20px;
+    }
+
+    .logged-in-info h3 {
+        margin: 0 0 8px 0;
+        font-size: 14px;
+        color: #1565c0;
+    }
+
+    .logged-in-info p {
+        margin: 0;
+        color: #333;
+    }
+
+    .email-mismatch-warning {
+        background: #fff3e0;
+        border: 1px solid #ff9800;
+        padding: 10px;
+        border-radius: 4px;
+        margin-top: 10px;
+        font-size: 13px;
+        color: #e65100;
+    }
+
+    .email-mismatch-modal {
+        background: white;
+        border: 2px solid #ff9800;
+        border-radius: 12px;
+        padding: 25px;
+        margin: 20px 0;
+        box-shadow: 0 4px 20px rgba(255, 152, 0, 0.2);
+    }
+
+    .email-mismatch-modal h3 {
+        margin: 0 0 15px 0;
+        color: #e65100;
+        font-size: 20px;
+    }
+
+    .email-mismatch-modal p {
+        color: #555;
+        margin-bottom: 20px;
+        line-height: 1.6;
+    }
+
+    .mismatch-options {
+        display: grid;
+        gap: 15px;
+        margin-bottom: 20px;
+    }
+
+    .option-card {
+        border: 2px solid #e0e0e0;
+        border-radius: 8px;
+        padding: 20px;
+        transition: all 0.3s;
+    }
+
+    .option-card:hover {
+        border-color: #667eea;
+        box-shadow: 0 2px 10px rgba(102, 126, 234, 0.2);
+    }
+
+    .option-card h4 {
+        margin: 0 0 10px 0;
+        font-size: 16px;
+        color: #333;
+    }
+
+    .option-card p {
+        margin: 0 0 15px 0;
+        font-size: 13px;
+        color: #666;
+    }
+
+    .option-accept {
+        border-color: #4CAF50;
+        background: #f1f8e9;
+    }
+
+    .option-logout {
+        border-color: #2196F3;
+        background: #e3f2fd;
+    }
+
+    .btn-accept {
+        width: 100%;
+        padding: 12px;
+        background: linear-gradient(135deg, #4CAF50 0%, #45a049 100%);
+        color: white;
+        border: none;
+        border-radius: 6px;
+        font-size: 14px;
+        font-weight: 600;
+        cursor: pointer;
+        transition: all 0.3s;
+    }
+
+    .btn-accept:hover:not(:disabled) {
+        transform: translateY(-2px);
+        box-shadow: 0 4px 12px rgba(76, 175, 80, 0.4);
+    }
+
+    .btn-accept:disabled {
+        background: #ccc;
+        cursor: not-allowed;
+        transform: none;
+    }
+
+    .btn-logout {
+        width: 100%;
+        padding: 12px;
+        background: linear-gradient(135deg, #2196F3 0%, #1976D2 100%);
+        color: white;
+        border: none;
+        border-radius: 6px;
+        font-size: 14px;
+        font-weight: 600;
+        cursor: pointer;
+        transition: all 0.3s;
+    }
+
+    .btn-logout:hover:not(:disabled) {
+        transform: translateY(-2px);
+        box-shadow: 0 4px 12px rgba(33, 150, 243, 0.4);
+    }
+
+    .btn-logout:disabled {
+        background: #ccc;
+        cursor: not-allowed;
+        transform: none;
+    }
+
+    .btn-cancel-mismatch {
+        width: 100%;
+        padding: 10px;
+        background: #f5f5f5;
+        color: #666;
+        border: 2px solid #e0e0e0;
+        border-radius: 6px;
+        font-size: 14px;
+        cursor: pointer;
+        transition: all 0.3s;
+    }
+
+    .btn-cancel-mismatch:hover:not(:disabled) {
+        background: #e0e0e0;
+    }
+
+    .btn-cancel-mismatch:disabled {
+        opacity: 0.5;
+        cursor: not-allowed;
     }
 
     .role-description {
