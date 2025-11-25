@@ -27,7 +27,6 @@ import HistoryList from './components/HistoryList';
 import AcceptInvitationPage from './components/AcceptInvitationPage';
 import SuperAdminDashboard from './components/SuperAdminDashboard';
 import CookieConsentModal from './components/CookieConsentModal';
-import AccountLinkingSuggestion from './components/AccountLinkingSuggestion';
 import { generatePdf } from './services/pdfGenerator';
 import { saveDeliveryNote, saveWarrantyCard, saveInvoice, saveReceipt, saveTaxInvoice, saveQuotation, savePurchaseOrder } from './services/firestore';
 import type { DeliveryNoteDocument, WarrantyDocument, InvoiceDocument, ReceiptDocument, TaxInvoiceDocument, QuotationDocument, PurchaseOrderDocument, MemoDocument, VariationOrderDocument } from './services/firestore';
@@ -841,8 +840,6 @@ const AppContent: React.FC = () => {
                 </div>
             )}
             <Header />
-            {/* แนะนำ Account Linking เพื่อป้องกัน user ซ้ำซ้อน */}
-            <AccountLinkingSuggestion variant="banner" showOnlyIfIncomplete={true} />
             <main className="p-3 sm:p-4 md:p-8 max-w-7xl mx-auto">
                 {/* View Mode Selector */}
                 <div className="mb-4 sm:mb-6 flex justify-center">

@@ -1,11 +1,12 @@
 import React, { useState, useEffect } from 'react';
 import { useAuth } from '../contexts/AuthContext';
 import { useCompany } from '../contexts/CompanyContext';
-import { signOut, getLinkedProviders, linkWithEmailPassword, changePassword, sendPasswordReset } from '../services/auth';
+import { signOut, getLinkedProviders, linkWithEmailPassword, changePassword, sendPasswordReset, checkLinkedProviders } from '../services/auth';
 import CompanySelector from './CompanySelector';
 import UserManagement from './UserManagement';
 import LogoManagerModal from './LogoManagerModal';
 import CompanyInfoModal from './CompanyInfoModal';
+import AccountLinkingModal from './AccountLinkingModal';
 import { checkIsAdmin } from '../services/companyMembers';
 import { getQuota } from '../services/quota';
 import { updateCompany } from '../services/companies';
@@ -53,13 +54,26 @@ const Header: React.FC = () => {
     // Company Info Modal
     const [showCompanyInfoModal, setShowCompanyInfoModal] = useState(false);
 
-    // ตรวจสอบว่ามี Password หรือไม่
+    // Account Linking Modal
+    const [showAccountLinkingModal, setShowAccountLinkingModal] = useState(false);
+    const [linkedProviders, setLinkedProviders] = useState<{
+        hasGoogle: boolean;
+        hasEmail: boolean;
+        hasPhone: boolean;
+    }>({ hasGoogle: false, hasEmail: false, hasPhone: false });
+
+    // ตรวจสอบว่ามี Password หรือไม่ และ providers ที่ link แล้ว
     useEffect(() => {
         if (user) {
             const providers = getLinkedProviders();
             setHasPassword(providers.includes('password'));
+            
+            // ตรวจสอบ linked providers
+            const status = checkLinkedProviders();
+            setLinkedProviders(status);
         } else {
             setHasPassword(false);
+            setLinkedProviders({ hasGoogle: false, hasEmail: false, hasPhone: false });
         }
     }, [user]);
 
@@ -426,6 +440,38 @@ const Header: React.FC = () => {
                                         {/* Desktop Dropdown */}
                                         {showDropdown && (
                                             <div className="absolute right-0 mt-2 w-72 bg-white rounded-lg shadow-xl border border-gray-200 py-2 z-50">
+                                                {/* ข้อมูล Profile */}
+                                                <div className="px-4 py-3 border-b border-gray-200 bg-gradient-to-r from-indigo-50 to-purple-50">
+                                                    <p className="text-xs text-gray-500 font-medium mb-2">👤 โปรไฟล์</p>
+                                                    <div className="space-y-1">
+                                                        {user?.displayName && (
+                                                            <p className="text-sm font-semibold text-gray-800">{user.displayName}</p>
+                                                        )}
+                                                        {user?.email && (
+                                                            <p className="text-xs text-gray-600 flex items-center gap-1">
+                                                                <span>📧</span> {user.email}
+                                                            </p>
+                                                        )}
+                                                        {user?.phoneNumber && (
+                                                            <p className="text-xs text-gray-600 flex items-center gap-1">
+                                                                <span>📱</span> {user.phoneNumber}
+                                                            </p>
+                                                        )}
+                                                    </div>
+                                                    {/* แสดง providers ที่ link แล้ว */}
+                                                    <div className="flex flex-wrap gap-1 mt-2">
+                                                        {linkedProviders.hasGoogle && (
+                                                            <span className="px-2 py-0.5 bg-blue-100 text-blue-700 rounded-full text-xs">Google</span>
+                                                        )}
+                                                        {linkedProviders.hasEmail && (
+                                                            <span className="px-2 py-0.5 bg-purple-100 text-purple-700 rounded-full text-xs">Email</span>
+                                                        )}
+                                                        {linkedProviders.hasPhone && (
+                                                            <span className="px-2 py-0.5 bg-green-100 text-green-700 rounded-full text-xs">Phone</span>
+                                                        )}
+                                                    </div>
+                                                </div>
+
                                                 {currentCompany && (
                                                     <div className="px-4 py-3 border-b border-gray-200">
                                                         <div className="flex items-center justify-between mb-2">
@@ -443,6 +489,25 @@ const Header: React.FC = () => {
                                                         </p>
                                                     </div>
                                                 )}
+
+                                                {/* ปุ่ม Account Linking */}
+                                                <button
+                                                    onClick={() => {
+                                                        setShowAccountLinkingModal(true);
+                                                        setShowDropdown(false);
+                                                    }}
+                                                    className="w-full px-4 py-3 text-left text-sm text-cyan-600 hover:bg-cyan-50 transition-colors duration-200 flex items-center justify-between border-b border-gray-200"
+                                                >
+                                                    <div className="flex items-center gap-3">
+                                                        <svg className="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                                            <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M13.828 10.172a4 4 0 00-5.656 0l-4 4a4 4 0 105.656 5.656l1.102-1.101m-.758-4.899a4 4 0 005.656 0l4-4a4 4 0 00-5.656-5.656l-1.1 1.1" />
+                                                        </svg>
+                                                        <span className="font-medium">🔗 Account Linking</span>
+                                                    </div>
+                                                    <span className="text-xs px-2 py-0.5 bg-cyan-100 text-cyan-700 rounded-full">
+                                                        {[linkedProviders.hasGoogle, linkedProviders.hasEmail, linkedProviders.hasPhone].filter(Boolean).length}/3
+                                                    </span>
+                                                </button>
 
                                                 {/* เพิ่มรหัสผ่าน (ถ้ายังไม่มี) */}
                                                 {!hasPassword ? (
@@ -645,7 +710,24 @@ const Header: React.FC = () => {
                                         <p className="text-xs text-gray-600 truncate mt-0.5">
                                             {user?.email}
                                         </p>
+                                        {user?.phoneNumber && (
+                                            <p className="text-xs text-gray-600 truncate mt-0.5">
+                                                📱 {user.phoneNumber}
+                                            </p>
+                                        )}
                                     </div>
+                                </div>
+                                {/* แสดง providers ที่ link แล้ว */}
+                                <div className="flex flex-wrap gap-1">
+                                    {linkedProviders.hasGoogle && (
+                                        <span className="px-2 py-0.5 bg-blue-100 text-blue-700 rounded-full text-xs">Google</span>
+                                    )}
+                                    {linkedProviders.hasEmail && (
+                                        <span className="px-2 py-0.5 bg-purple-100 text-purple-700 rounded-full text-xs">Email</span>
+                                    )}
+                                    {linkedProviders.hasPhone && (
+                                        <span className="px-2 py-0.5 bg-green-100 text-green-700 rounded-full text-xs">Phone</span>
+                                    )}
                                 </div>
                             </div>
 
@@ -676,6 +758,27 @@ const Header: React.FC = () => {
 
                             {/* เมนูต่างๆ */}
                             <div className="px-3 py-2">
+                                {/* ปุ่ม Account Linking */}
+                                <button
+                                    onClick={() => {
+                                        setShowAccountLinkingModal(true);
+                                        setShowMobileMenu(false);
+                                    }}
+                                    className="w-full px-4 py-3.5 text-left text-sm font-medium text-cyan-700 bg-cyan-50 hover:bg-cyan-100 rounded-lg transition-all duration-200 flex items-center justify-between mb-2 shadow-sm hover:shadow"
+                                >
+                                    <div className="flex items-center gap-3">
+                                        <div className="w-9 h-9 rounded-lg bg-cyan-200 flex items-center justify-center">
+                                            <svg className="w-5 h-5 text-cyan-700" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                                <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M13.828 10.172a4 4 0 00-5.656 0l-4 4a4 4 0 105.656 5.656l1.102-1.101m-.758-4.899a4 4 0 005.656 0l4-4a4 4 0 00-5.656-5.656l-1.1 1.1" />
+                                            </svg>
+                                        </div>
+                                        <span>🔗 Account Linking</span>
+                                    </div>
+                                    <span className="text-xs px-2 py-0.5 bg-cyan-200 text-cyan-700 rounded-full">
+                                        {[linkedProviders.hasGoogle, linkedProviders.hasEmail, linkedProviders.hasPhone].filter(Boolean).length}/3
+                                    </span>
+                                </button>
+
                                 {/* เพิ่มรหัสผ่าน (ถ้ายังไม่มี) */}
                                 {!hasPassword ? (
                                     <button
@@ -1269,6 +1372,21 @@ const Header: React.FC = () => {
                     onSave={handleSaveCompanyInfo}
                 />
             )}
+
+            {/* Account Linking Modal */}
+            <AccountLinkingModal
+                isOpen={showAccountLinkingModal}
+                onClose={() => {
+                    setShowAccountLinkingModal(false);
+                    // รีเฟรช linked providers หลังปิด modal
+                    const status = checkLinkedProviders();
+                    setLinkedProviders(status);
+                    setHasPassword(status.hasEmail);
+                }}
+                email={user?.email || undefined}
+                phoneNumber={user?.phoneNumber || undefined}
+                mode="suggest"
+            />
         </>
     );
 };
