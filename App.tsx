@@ -887,63 +887,73 @@ const AppContent: React.FC = () => {
                                 </div>
                             )}
                             
-                            <div className="border-b border-gray-200 overflow-x-auto -mx-4 sm:mx-0 px-4 sm:px-0 tab-menu-scroll overscroll-x-contain touch-pan-x">
-                                <nav className="-mb-px flex space-x-2 sm:space-x-4 min-w-max" aria-label="Tabs">
-                                    <button
-                                        onClick={() => setActiveTab('delivery')}
-                                        className={`${activeTab === 'delivery' ? 'border-indigo-500 text-indigo-600' : 'border-transparent text-gray-500 hover:text-gray-700 hover:border-gray-300'} whitespace-nowrap py-3 sm:py-4 px-2 sm:px-1 border-b-2 font-medium text-xs sm:text-sm transition-colors flex-shrink-0`}
-                                    >
-                                        ใบส่งมอบงาน
-                                    </button>
-                                    <button
-                                        onClick={() => setActiveTab('warranty')}
-                                        className={`${activeTab === 'warranty' ? 'border-indigo-500 text-indigo-600' : 'border-transparent text-gray-500 hover:text-gray-700 hover:border-gray-300'} whitespace-nowrap py-3 sm:py-4 px-2 sm:px-1 border-b-2 font-medium text-xs sm:text-sm transition-colors flex-shrink-0`}
-                                    >
-                                        ใบรับประกันสินค้า
-                                    </button>
-                                    <button
-                                        onClick={() => setActiveTab('invoice')}
-                                        className={`${activeTab === 'invoice' ? 'border-indigo-500 text-indigo-600' : 'border-transparent text-gray-500 hover:text-gray-700 hover:border-gray-300'} whitespace-nowrap py-3 sm:py-4 px-2 sm:px-1 border-b-2 font-medium text-xs sm:text-sm transition-colors flex-shrink-0`}
-                                    >
-                                        ใบแจ้งหนี้
-                                    </button>
-                                    <button
-                                        onClick={() => setActiveTab('receipt')}
-                                        className={`${activeTab === 'receipt' ? 'border-indigo-500 text-indigo-600' : 'border-transparent text-gray-500 hover:text-gray-700 hover:border-gray-300'} whitespace-nowrap py-3 sm:py-4 px-2 sm:px-1 border-b-2 font-medium text-xs sm:text-sm transition-colors flex-shrink-0`}
-                                    >
-                                        ใบเสร็จ
-                                    </button>
-                                    <button
-                                        onClick={() => setActiveTab('tax-invoice')}
-                                        className={`${activeTab === 'tax-invoice' ? 'border-indigo-500 text-indigo-600' : 'border-transparent text-gray-500 hover:text-gray-700 hover:border-gray-300'} whitespace-nowrap py-3 sm:py-4 px-2 sm:px-1 border-b-2 font-medium text-xs sm:text-sm transition-colors flex-shrink-0`}
-                                    >
-                                        ใบกำกับภาษี
-                                    </button>
-                                    <button
-                                        onClick={() => setActiveTab('quotation')}
-                                        className={`${activeTab === 'quotation' ? 'border-indigo-500 text-indigo-600' : 'border-transparent text-gray-500 hover:text-gray-700 hover:border-gray-300'} whitespace-nowrap py-3 sm:py-4 px-2 sm:px-1 border-b-2 font-medium text-xs sm:text-sm transition-colors flex-shrink-0`}
-                                    >
-                                        ใบเสนอราคา
-                                    </button>
-                                    <button
-                                        onClick={() => setActiveTab('purchase-order')}
-                                        className={`${activeTab === 'purchase-order' ? 'border-indigo-500 text-indigo-600' : 'border-transparent text-gray-500 hover:text-gray-700 hover:border-gray-300'} whitespace-nowrap py-3 sm:py-4 px-2 sm:px-1 border-b-2 font-medium text-xs sm:text-sm transition-colors flex-shrink-0`}
-                                    >
-                                        ใบสั่งซื้อ
-                                    </button>
-                                    <button
-                                        onClick={() => setActiveTab('memo')}
-                                        className={`${activeTab === 'memo' ? 'border-indigo-500 text-indigo-600' : 'border-transparent text-gray-500 hover:text-gray-700 hover:border-gray-300'} whitespace-nowrap py-3 sm:py-4 px-2 sm:px-1 border-b-2 font-medium text-xs sm:text-sm transition-colors flex-shrink-0`}
-                                    >
-                                        ใบบันทึก
-                                    </button>
-                                    <button
-                                        onClick={() => setActiveTab('variation-order')}
-                                        className={`${activeTab === 'variation-order' ? 'border-indigo-500 text-indigo-600' : 'border-transparent text-gray-500 hover:text-gray-700 hover:border-gray-300'} whitespace-nowrap py-3 sm:py-4 px-2 sm:px-1 border-b-2 font-medium text-xs sm:text-sm transition-colors flex-shrink-0`}
-                                    >
-                                        ใบส่วนต่าง
-                                    </button>
-                                </nav>
+                            {/* Tab Menu Container พร้อม Fade Indicator */}
+                            <div className="relative border-b border-gray-200">
+                                {/* Fade indicator ด้านซ้าย */}
+                                <div className="absolute left-0 top-0 bottom-0 w-6 bg-gradient-to-r from-white to-transparent z-10 pointer-events-none sm:hidden"></div>
+                                
+                                {/* Tab Menu */}
+                                <div className="overflow-x-auto -mx-4 sm:mx-0 px-4 sm:px-0 tab-menu-scroll overscroll-x-contain touch-pan-x">
+                                    <nav className="-mb-px flex space-x-1 sm:space-x-2 min-w-max" aria-label="Tabs">
+                                        <button
+                                            onClick={() => setActiveTab('delivery')}
+                                            className={`${activeTab === 'delivery' ? 'border-indigo-500 text-indigo-600 bg-indigo-50' : 'border-transparent text-gray-500 hover:text-gray-700 hover:border-gray-300'} whitespace-nowrap py-2.5 sm:py-3 px-3 sm:px-4 border-b-2 font-medium text-xs sm:text-sm transition-all flex-shrink-0 rounded-t-lg`}
+                                        >
+                                            📦 ส่งมอบงาน
+                                        </button>
+                                        <button
+                                            onClick={() => setActiveTab('warranty')}
+                                            className={`${activeTab === 'warranty' ? 'border-indigo-500 text-indigo-600 bg-indigo-50' : 'border-transparent text-gray-500 hover:text-gray-700 hover:border-gray-300'} whitespace-nowrap py-2.5 sm:py-3 px-3 sm:px-4 border-b-2 font-medium text-xs sm:text-sm transition-all flex-shrink-0 rounded-t-lg`}
+                                        >
+                                            🛡️ รับประกัน
+                                        </button>
+                                        <button
+                                            onClick={() => setActiveTab('invoice')}
+                                            className={`${activeTab === 'invoice' ? 'border-indigo-500 text-indigo-600 bg-indigo-50' : 'border-transparent text-gray-500 hover:text-gray-700 hover:border-gray-300'} whitespace-nowrap py-2.5 sm:py-3 px-3 sm:px-4 border-b-2 font-medium text-xs sm:text-sm transition-all flex-shrink-0 rounded-t-lg`}
+                                        >
+                                            📄 แจ้งหนี้
+                                        </button>
+                                        <button
+                                            onClick={() => setActiveTab('receipt')}
+                                            className={`${activeTab === 'receipt' ? 'border-indigo-500 text-indigo-600 bg-indigo-50' : 'border-transparent text-gray-500 hover:text-gray-700 hover:border-gray-300'} whitespace-nowrap py-2.5 sm:py-3 px-3 sm:px-4 border-b-2 font-medium text-xs sm:text-sm transition-all flex-shrink-0 rounded-t-lg`}
+                                        >
+                                            🧾 ใบเสร็จ
+                                        </button>
+                                        <button
+                                            onClick={() => setActiveTab('tax-invoice')}
+                                            className={`${activeTab === 'tax-invoice' ? 'border-indigo-500 text-indigo-600 bg-indigo-50' : 'border-transparent text-gray-500 hover:text-gray-700 hover:border-gray-300'} whitespace-nowrap py-2.5 sm:py-3 px-3 sm:px-4 border-b-2 font-medium text-xs sm:text-sm transition-all flex-shrink-0 rounded-t-lg`}
+                                        >
+                                            📋 กำกับภาษี
+                                        </button>
+                                        <button
+                                            onClick={() => setActiveTab('quotation')}
+                                            className={`${activeTab === 'quotation' ? 'border-indigo-500 text-indigo-600 bg-indigo-50' : 'border-transparent text-gray-500 hover:text-gray-700 hover:border-gray-300'} whitespace-nowrap py-2.5 sm:py-3 px-3 sm:px-4 border-b-2 font-medium text-xs sm:text-sm transition-all flex-shrink-0 rounded-t-lg`}
+                                        >
+                                            💰 เสนอราคา
+                                        </button>
+                                        <button
+                                            onClick={() => setActiveTab('purchase-order')}
+                                            className={`${activeTab === 'purchase-order' ? 'border-indigo-500 text-indigo-600 bg-indigo-50' : 'border-transparent text-gray-500 hover:text-gray-700 hover:border-gray-300'} whitespace-nowrap py-2.5 sm:py-3 px-3 sm:px-4 border-b-2 font-medium text-xs sm:text-sm transition-all flex-shrink-0 rounded-t-lg`}
+                                        >
+                                            🛒 สั่งซื้อ
+                                        </button>
+                                        <button
+                                            onClick={() => setActiveTab('memo')}
+                                            className={`${activeTab === 'memo' ? 'border-indigo-500 text-indigo-600 bg-indigo-50' : 'border-transparent text-gray-500 hover:text-gray-700 hover:border-gray-300'} whitespace-nowrap py-2.5 sm:py-3 px-3 sm:px-4 border-b-2 font-medium text-xs sm:text-sm transition-all flex-shrink-0 rounded-t-lg`}
+                                        >
+                                            📝 บันทึก
+                                        </button>
+                                        <button
+                                            onClick={() => setActiveTab('variation-order')}
+                                            className={`${activeTab === 'variation-order' ? 'border-indigo-500 text-indigo-600 bg-indigo-50' : 'border-transparent text-gray-500 hover:text-gray-700 hover:border-gray-300'} whitespace-nowrap py-2.5 sm:py-3 px-3 sm:px-4 border-b-2 font-medium text-xs sm:text-sm transition-all flex-shrink-0 rounded-t-lg`}
+                                        >
+                                            ➕ ส่วนต่าง
+                                        </button>
+                                    </nav>
+                                </div>
+                                
+                                {/* Fade indicator ด้านขวา */}
+                                <div className="absolute right-0 top-0 bottom-0 w-8 bg-gradient-to-l from-white to-transparent z-10 pointer-events-none sm:hidden"></div>
                             </div>
                             
                             {activeTab === 'delivery' ? (
