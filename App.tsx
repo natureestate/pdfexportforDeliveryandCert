@@ -1,6 +1,6 @@
 import React, { useState, useRef, useCallback, useEffect } from 'react';
 import { Routes, Route, Navigate } from 'react-router-dom';
-import { Package, Shield, FileText, Receipt, FileCheck, DollarSign, ShoppingCart, StickyNote, PlusCircle, FilePlus, History } from 'lucide-react';
+import { Package, Shield, FileText, Receipt, FileCheck, DollarSign, ShoppingCart, StickyNote, PlusCircle, FilePlus, History, Save } from 'lucide-react';
 import { DeliveryNoteData, WarrantyData, InvoiceData, ReceiptData, TaxInvoiceData, QuotationData, PurchaseOrderData, MemoData, VariationOrderData, LogoType } from './types';
 import { AuthProvider } from './contexts/AuthContext';
 import { CompanyProvider, useCompany } from './contexts/CompanyContext';
@@ -1138,7 +1138,7 @@ const AppContent: React.FC = () => {
                                                     <path d="M7.707 10.293a1 1 0 10-1.414 1.414l3 3a1 1 0 001.414 0l3-3a1 1 0 00-1.414-1.414L11 11.586V6h5a2 2 0 012 2v7a2 2 0 01-2 2H4a2 2 0 01-2-2V8a2 2 0 012-2h5v5.586l-1.293-1.293zM9 4a1 1 0 012 0v2H9V4z" />
                                                 </svg>
                                             )}
-                                            {isSaving ? 'กำลังบันทึก...' : (editingDocumentId ? '💾 อัปเดต' : '💾 บันทึก')}
+                                            {isSaving ? 'กำลังบันทึก...' : (editingDocumentId ? <><Save className="w-4 h-4 inline mr-1" />อัปเดต</> : <><Save className="w-4 h-4 inline mr-1" />บันทึก</>)}
                                         </button>
                                         <button
                                             type="button"
