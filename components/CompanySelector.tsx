@@ -9,6 +9,7 @@ import { createCompany } from '../services/companies';
 import { canCreateCompany } from '../services/quota';
 import { Company } from '../types';
 import { auth } from '../firebase.config';
+import { Users } from 'lucide-react';
 
 const CompanySelector: React.FC = () => {
     const { currentCompany, companies, selectCompany, refreshCompanies, loading } = useCompany();
@@ -208,7 +209,7 @@ const CompanySelector: React.FC = () => {
                                             )}
                                             <div className="flex items-center gap-2 sm:gap-3 mt-1.5 sm:mt-2">
                                                 <span className="text-xs text-gray-500">
-                                                    👥 {company.memberCount || 0} สมาชิก
+                                                    <Users className="w-3 h-3 inline mr-0.5" />{company.memberCount || 0} สมาชิก
                                                 </span>
                                             </div>
                                         </div>

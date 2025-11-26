@@ -8,6 +8,7 @@ import React, { useState, useEffect } from 'react';
 import { useAuth } from '../contexts/AuthContext';
 import { checkLinkedProviders } from '../services/auth';
 import { AccountLinkingModal } from './AccountLinkingModal';
+import { Link2 } from 'lucide-react';
 
 interface AccountLinkingSuggestionProps {
     /** แสดงเป็น banner หรือ card */
@@ -159,7 +160,7 @@ export const AccountLinkingSuggestion: React.FC<AccountLinkingSuggestionProps> =
                 <div className="bg-gradient-to-r from-blue-500 to-purple-500 text-white px-4 py-3 relative">
                     <div className="max-w-7xl mx-auto flex items-center justify-between flex-wrap gap-2">
                         <div className="flex items-center gap-3">
-                            <span className="text-2xl">🔗</span>
+                            <Link2 className="w-6 h-6" />
                             <div>
                                 <p className="font-medium text-sm">
                                     {linkedCount === 1 
@@ -220,8 +221,8 @@ export const AccountLinkingSuggestion: React.FC<AccountLinkingSuggestionProps> =
                 </button>
 
                 <div className="flex items-start gap-3">
-                    <div className="flex-shrink-0 w-12 h-12 bg-gradient-to-br from-blue-500 to-purple-500 rounded-full flex items-center justify-center text-white text-2xl">
-                        🔗
+                    <div className="flex-shrink-0 w-12 h-12 bg-gradient-to-br from-blue-500 to-purple-500 rounded-full flex items-center justify-center text-white">
+                        <Link2 className="w-6 h-6" />
                     </div>
                     
                     <div className="flex-1">
@@ -253,7 +254,7 @@ export const AccountLinkingSuggestion: React.FC<AccountLinkingSuggestionProps> =
                             onClick={handleOpenLinkingModal}
                             className="w-full py-2 px-4 bg-gradient-to-r from-blue-500 to-purple-500 text-white rounded-lg text-sm font-medium hover:from-blue-600 hover:to-purple-600 transition-all"
                         >
-                            🔗 Link Account เพิ่มเติม
+                            <Link2 className="w-4 h-4 inline mr-1" />Link Account เพิ่มเติม
                         </button>
 
                         {/* แสดง pending memberships */}

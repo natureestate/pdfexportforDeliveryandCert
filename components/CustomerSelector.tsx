@@ -7,6 +7,7 @@ import React, { useState, useEffect } from 'react';
 import { Customer, getCustomers, saveCustomer, updateCustomer, deleteCustomer, updateCustomerUsage, searchCustomers, getRecentCustomers } from '../services/customers';
 import { useCompany } from '../contexts/CompanyContext';
 import { migrateCustomersLastUsedAt } from '../services/customerMigration';
+import { Users, Save } from 'lucide-react';
 
 interface CustomerSelectorProps {
     label?: string;
@@ -239,7 +240,7 @@ const CustomerSelector: React.FC<CustomerSelectorProps> = ({
                         onClick={() => setIsModalOpen(true)}
                         className="text-xs border border-indigo-300 rounded px-3 py-1 text-indigo-700 hover:bg-indigo-50 focus:outline-none focus:ring-2 focus:ring-indigo-500"
                     >
-                        👥 เลือกลูกค้า
+                        <Users className="w-3.5 h-3.5 inline mr-1" />เลือกลูกค้า
                     </button>
                     {showSaveButton && (
                         <button
@@ -247,7 +248,7 @@ const CustomerSelector: React.FC<CustomerSelectorProps> = ({
                             onClick={handleSaveCurrentAsCustomer}
                             className="text-xs bg-green-500 text-white rounded px-3 py-1 hover:bg-green-600 focus:outline-none focus:ring-2 focus:ring-green-500"
                         >
-                            💾 บันทึกลูกค้า
+                            <Save className="w-3.5 h-3.5 inline mr-1" />บันทึกลูกค้า
                         </button>
                     )}
                 </div>
@@ -259,7 +260,7 @@ const CustomerSelector: React.FC<CustomerSelectorProps> = ({
                     <div className="bg-white p-3 sm:p-6 rounded-lg shadow-xl max-w-2xl w-full max-h-[90vh] sm:max-h-[80vh] overflow-y-auto">
                         <div className="flex items-center justify-between mb-3 sm:mb-4">
                             <h3 className="text-base sm:text-lg font-semibold text-gray-800">
-                                👥 เลือกข้อมูลลูกค้า
+                                <Users className="w-4 h-4 inline mr-1" />เลือกข้อมูลลูกค้า
                             </h3>
                             <button
                                 onClick={() => {
@@ -442,7 +443,7 @@ const CustomerSelector: React.FC<CustomerSelectorProps> = ({
                 <div className="fixed inset-0 bg-gray-600 bg-opacity-50 overflow-y-auto h-full w-full z-50 flex items-center justify-center p-2 sm:p-4">
                     <div className="bg-white p-3 sm:p-6 rounded-lg shadow-xl max-w-2xl w-full max-h-[90vh] overflow-y-auto">
                         <h3 className="text-base sm:text-lg font-semibold text-gray-800 mb-3 sm:mb-4">
-                            💾 บันทึกข้อมูลลูกค้าใหม่
+                            <Save className="w-4 h-4 inline mr-1" />บันทึกข้อมูลลูกค้าใหม่
                         </h3>
 
                         <div className="space-y-3 sm:space-y-4">
@@ -597,7 +598,7 @@ const CustomerSelector: React.FC<CustomerSelectorProps> = ({
                                 disabled={isSaving}
                                 className="w-full sm:w-auto px-4 py-2 bg-green-600 text-white rounded hover:bg-green-700 focus:outline-none focus:ring-2 focus:ring-green-500 disabled:bg-green-300 text-xs sm:text-sm"
                             >
-                                {isSaving ? 'กำลังบันทึก...' : '💾 บันทึก'}
+                                {isSaving ? 'กำลังบันทึก...' : <><Save className="w-3.5 h-3.5 inline mr-1" />บันทึก</>}
                             </button>
                         </div>
                     </div>
@@ -731,7 +732,7 @@ const CustomerSelector: React.FC<CustomerSelectorProps> = ({
                                 disabled={isSaving}
                                 className="w-full sm:w-auto px-4 py-2 bg-amber-600 text-white rounded hover:bg-amber-700 focus:outline-none focus:ring-2 focus:ring-amber-500 disabled:bg-amber-300 text-xs sm:text-sm"
                             >
-                                {isSaving ? 'กำลังอัปเดต...' : '💾 อัปเดต'}
+                                {isSaving ? 'กำลังอัปเดต...' : <><Save className="w-3.5 h-3.5 inline mr-1" />อัปเดต</>}
                             </button>
                         </div>
                     </div>

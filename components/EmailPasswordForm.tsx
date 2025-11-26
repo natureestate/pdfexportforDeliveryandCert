@@ -7,6 +7,7 @@
 import React, { useState } from 'react';
 import { signInWithEmailPassword, signUpWithEmailPassword, checkEmailProviders, sendPasswordReset } from '../services/auth';
 import { AccountLinkingModal } from './AccountLinkingModal';
+import { Link2, Key } from 'lucide-react';
 
 interface EmailPasswordFormProps {
     onSuccess?: () => void;
@@ -265,7 +266,7 @@ export const EmailPasswordForm: React.FC<EmailPasswordFormProps> = ({ onSuccess 
                             }}
                             className="text-sm text-blue-600 hover:text-blue-800 underline"
                         >
-                            🔗 ลืมรหัสผ่าน?
+                            <Link2 className="w-4 h-4 inline mr-1" />ลืมรหัสผ่าน?
                         </button>
                     </div>
                 )}
@@ -358,7 +359,7 @@ export const EmailPasswordForm: React.FC<EmailPasswordFormProps> = ({ onSuccess 
                         {/* Header */}
                         <div className="flex items-center justify-between mb-4">
                             <h3 className="text-xl font-bold text-gray-800">
-                                🔑 ลืมรหัสผ่าน
+                                <Key className="w-5 h-5 inline mr-1" />ลืมรหัสผ่าน
                             </h3>
                             <button
                                 onClick={() => {

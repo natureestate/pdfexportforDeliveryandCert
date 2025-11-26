@@ -24,6 +24,7 @@ import {
 } from '../services/invitations';
 import { useAuth } from '../contexts/AuthContext';
 import InviteMemberModal from './InviteMemberModal';
+import { Users, Crown, User, Save, Loader } from 'lucide-react';
 
 interface UserManagementProps {
     companyId: string;
@@ -366,7 +367,7 @@ const UserManagement: React.FC<UserManagementProps> = ({ companyId, companyName,
                         className={`tab ${activeTab === 'members' ? 'active' : ''}`}
                         onClick={() => setActiveTab('members')}
                     >
-                        👥 สมาชิก ({members.length})
+                        <Users className="w-4 h-4 inline mr-1" />สมาชิก ({members.length})
                     </button>
                     <button
                         className={`tab ${activeTab === 'invitations' ? 'active' : ''}`}
@@ -406,7 +407,7 @@ const UserManagement: React.FC<UserManagementProps> = ({ companyId, companyName,
                                         <td>{member.phoneNumber || '-'}</td>
                                         <td>
                                             <span className={`role-badge ${member.role}`}>
-                                                {member.role === 'admin' ? '👑 Admin' : '👤 Member'}
+                                                {member.role === 'admin' ? <><Crown className="w-3 h-3 inline mr-0.5" /> Admin</> : <><User className="w-3 h-3 inline mr-0.5" /> Member</>}
                                             </span>
                                         </td>
                                         <td>
@@ -498,7 +499,7 @@ const UserManagement: React.FC<UserManagementProps> = ({ companyId, companyName,
                                             <td>{invitation.email}</td>
                                             <td>
                                                 <span className={`role-badge ${invitation.role}`}>
-                                                    {invitation.role === 'admin' ? '👑 Admin' : '👤 Member'}
+                                                    {invitation.role === 'admin' ? <><Crown className="w-3 h-3 inline mr-0.5" /> Admin</> : <><User className="w-3 h-3 inline mr-0.5" /> Member</>}
                                                 </span>
                                             </td>
                                             <td>
@@ -635,8 +636,8 @@ const UserManagement: React.FC<UserManagementProps> = ({ companyId, companyName,
                                     onChange={(e) => setAddMemberForm({...addMemberForm, role: e.target.value as UserRole})}
                                     disabled={addMemberLoading}
                                 >
-                                    <option value="member">👤 Member (สมาชิกทั่วไป)</option>
-                                    <option value="admin">👑 Admin (ผู้จัดการ)</option>
+                                    <option value="member">Member (สมาชิกทั่วไป)</option>
+                                    <option value="admin">Admin (ผู้จัดการ)</option>
                                 </select>
                             </div>
                             
@@ -726,8 +727,8 @@ const UserManagement: React.FC<UserManagementProps> = ({ companyId, companyName,
                                     onChange={(e) => setEditMemberForm({...editMemberForm, role: e.target.value as UserRole})}
                                     disabled={editMemberLoading || editingMember.userId === user?.uid}
                                 >
-                                    <option value="member">👤 Member (สมาชิกทั่วไป)</option>
-                                    <option value="admin">👑 Admin (ผู้จัดการ)</option>
+                                    <option value="member">Member (สมาชิกทั่วไป)</option>
+                                    <option value="admin">Admin (ผู้จัดการ)</option>
                                 </select>
                                 {editingMember.userId === user?.uid && (
                                     <small className="hint">ไม่สามารถเปลี่ยนบทบาทของตัวเองได้</small>
@@ -748,7 +749,7 @@ const UserManagement: React.FC<UserManagementProps> = ({ companyId, companyName,
                                     className="btn-submit"
                                     disabled={editMemberLoading}
                                 >
-                                    {editMemberLoading ? '⏳ กำลังบันทึก...' : '💾 บันทึก'}
+                                    {editMemberLoading ? <><Loader className="w-4 h-4 inline mr-1 animate-spin" />กำลังบันทึก...</> : <><Save className="w-4 h-4 inline mr-1" />บันทึก</>}
                                 </button>
                             </div>
                         </form>

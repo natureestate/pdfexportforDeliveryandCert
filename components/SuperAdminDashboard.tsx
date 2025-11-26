@@ -16,6 +16,7 @@ import { SystemStats, Company, CompanyMember, Invitation, CompanyQuota, Subscrip
 import { signOut } from '../services/auth';
 import { getAllQuotas, changePlan, updateQuota } from '../services/quota';
 import { getAllPlanTemplates, updatePlanTemplate, PlanTemplate } from '../services/planTemplates';
+import { BarChart3, Building2, Users, Crown, User, Palette, HardDrive, StickyNote } from 'lucide-react';
 
 type TabType = 'overview' | 'companies' | 'members' | 'invitations' | 'quotas' | 'plans';
 
@@ -363,13 +364,13 @@ const SuperAdminDashboard: React.FC = () => {
                     className={`tab ${activeTab === 'overview' ? 'active' : ''}`}
                     onClick={() => setActiveTab('overview')}
                 >
-                    📊 ภาพรวม
+                    <BarChart3 className="w-4 h-4 inline mr-1" />ภาพรวม
                 </button>
                 <button
                     className={`tab ${activeTab === 'companies' ? 'active' : ''}`}
                     onClick={() => setActiveTab('companies')}
                 >
-                    🏢 บริษัททั้งหมด
+                    <Building2 className="w-4 h-4 inline mr-1" />บริษัททั้งหมด
                 </button>
                 <button
                     className={`tab ${activeTab === 'quotas' ? 'active' : ''}`}
@@ -387,7 +388,7 @@ const SuperAdminDashboard: React.FC = () => {
                     className={`tab ${activeTab === 'members' ? 'active' : ''}`}
                     onClick={() => setActiveTab('members')}
                 >
-                    👥 สมาชิกทั้งหมด
+                    <Users className="w-4 h-4 inline mr-1" />สมาชิกทั้งหมด
                 </button>
                 <button
                     className={`tab ${activeTab === 'invitations' ? 'active' : ''}`}
@@ -435,7 +436,7 @@ const SuperAdminDashboard: React.FC = () => {
                         ) : stats ? (
                             <div className="stats-grid">
                                 <div className="stat-card">
-                                    <div className="stat-icon">🏢</div>
+                                    <div className="stat-icon"><Building2 className="w-6 h-6" /></div>
                                     <div className="stat-info">
                                         <div className="stat-value">{stats.totalCompanies}</div>
                                         <div className="stat-label">บริษัททั้งหมด</div>
@@ -443,7 +444,7 @@ const SuperAdminDashboard: React.FC = () => {
                                 </div>
 
                                 <div className="stat-card">
-                                    <div className="stat-icon">👥</div>
+                                    <div className="stat-icon"><Users className="w-6 h-6" /></div>
                                     <div className="stat-info">
                                         <div className="stat-value">{stats.totalUsers}</div>
                                         <div className="stat-label">ผู้ใช้ทั้งหมด</div>
@@ -484,7 +485,7 @@ const SuperAdminDashboard: React.FC = () => {
                             </div>
                         ) : (
                             <div className="empty-state">
-                                <div className="empty-icon">📊</div>
+                                <div className="empty-icon"><BarChart3 className="w-8 h-8" /></div>
                                 <h3>ยังไม่มีข้อมูลสถิติ</h3>
                                 <p>คลิกปุ่มด้านล่างเพื่อโหลดสถิติระบบ</p>
                                 <button 
@@ -515,7 +516,7 @@ const SuperAdminDashboard: React.FC = () => {
                 {activeTab === 'companies' && (
                     <div className="companies-tab">
                         <div className="tab-header">
-                            <h2>🏢 บริษัททั้งหมด ({companies.length})</h2>
+                            <h2><Building2 className="w-4 h-4 inline mr-1" />บริษัททั้งหมด ({companies.length})</h2>
                         </div>
 
                         <div className="table-container">
@@ -553,7 +554,7 @@ const SuperAdminDashboard: React.FC = () => {
                 {activeTab === 'members' && (
                     <div className="members-tab">
                         <div className="tab-header">
-                            <h2>👥 สมาชิกทั้งหมด ({filteredMembers.length})</h2>
+                            <h2><Users className="w-4 h-4 inline mr-1" />สมาชิกทั้งหมด ({filteredMembers.length})</h2>
                             <input
                                 type="text"
                                 placeholder="ค้นหาด้วยอีเมล, เบอร์โทร หรือชื่อ..."
@@ -599,7 +600,7 @@ const SuperAdminDashboard: React.FC = () => {
                                                 <td>{member.displayName || '-'}</td>
                                                 <td>
                                                     <span className={`role-badge ${member.role}`}>
-                                                        {member.role === 'admin' ? '👑 Admin' : '👤 Member'}
+                                                        {member.role === 'admin' ? <><Crown className="w-3 h-3 inline mr-0.5" /> Admin</> : <><User className="w-3 h-3 inline mr-0.5" /> Member</>}
                                                     </span>
                                                 </td>
                                                 <td>
@@ -632,7 +633,7 @@ const SuperAdminDashboard: React.FC = () => {
 
                         <div className="quota-info-box">
                             <div className="info-item">
-                                <span className="info-label">📊 แผนทั้งหมด:</span>
+                                <span className="info-label"><BarChart3 className="w-4 h-4 inline mr-1" />แผนทั้งหมด:</span>
                                 <span className="info-value">
                                     Free: {quotas.filter(q => q.plan === 'free').length} | 
                                     Basic: {quotas.filter(q => q.plan === 'basic').length} | 
@@ -789,7 +790,7 @@ const SuperAdminDashboard: React.FC = () => {
                                             <td>{invitation.companyName}</td>
                                             <td>
                                                 <span className={`role-badge ${invitation.role}`}>
-                                                    {invitation.role === 'admin' ? '👑 Admin' : '👤 Member'}
+                                                    {invitation.role === 'admin' ? <><Crown className="w-3 h-3 inline mr-0.5" /> Admin</> : <><User className="w-3 h-3 inline mr-0.5" /> Member</>}
                                                 </span>
                                             </td>
                                             <td>
@@ -838,7 +839,7 @@ const SuperAdminDashboard: React.FC = () => {
                                     {editingPlan === plan.id ? (
                                         <div className="plan-edit-form">
                                             <div className="form-group">
-                                                <label>👥 ผู้ใช้สูงสุด:</label>
+                                                <label><Users className="w-4 h-4 inline mr-1" />ผู้ใช้สูงสุด:</label>
                                                 <input
                                                     type="number"
                                                     defaultValue={plan.maxUsers}
@@ -864,7 +865,7 @@ const SuperAdminDashboard: React.FC = () => {
                                                 />
                                             </div>
                                             <div className="form-group">
-                                                <label>🎨 โลโก้:</label>
+                                                <label><Palette className="w-4 h-4 inline mr-1" />โลโก้:</label>
                                                 <input
                                                     type="number"
                                                     defaultValue={plan.maxLogos}
@@ -877,7 +878,7 @@ const SuperAdminDashboard: React.FC = () => {
                                                 />
                                             </div>
                                             <div className="form-group">
-                                                <label>💾 Storage (MB):</label>
+                                                <label><HardDrive className="w-4 h-4 inline mr-1" />Storage (MB):</label>
                                                 <input
                                                     type="number"
                                                     defaultValue={plan.maxStorageMB}
@@ -913,7 +914,7 @@ const SuperAdminDashboard: React.FC = () => {
                                         <>
                                             <div className="plan-features">
                                                 <div className="feature-item">
-                                                    <span className="feature-icon">👥</span>
+                                                    <span className="feature-icon"><Users className="w-4 h-4" /></span>
                                                     <span>{plan.maxUsers === -1 ? 'ไม่จำกัด' : plan.maxUsers} ผู้ใช้</span>
                                                 </div>
                                                 <div className="feature-item">
@@ -921,11 +922,11 @@ const SuperAdminDashboard: React.FC = () => {
                                                     <span>{plan.maxDocuments === -1 ? 'ไม่จำกัด' : plan.maxDocuments} เอกสาร/เดือน</span>
                                                 </div>
                                                 <div className="feature-item">
-                                                    <span className="feature-icon">🎨</span>
+                                                    <span className="feature-icon"><Palette className="w-4 h-4" /></span>
                                                     <span>{plan.maxLogos === -1 ? 'ไม่จำกัด' : plan.maxLogos} โลโก้</span>
                                                 </div>
                                                 <div className="feature-item">
-                                                    <span className="feature-icon">💾</span>
+                                                    <span className="feature-icon"><HardDrive className="w-4 h-4" /></span>
                                                     <span>{plan.maxStorageMB === -1 ? 'ไม่จำกัด' : `${plan.maxStorageMB} MB`}</span>
                                                 </div>
                                             </div>
@@ -955,7 +956,7 @@ const SuperAdminDashboard: React.FC = () => {
                         </div>
 
                         <div className="plan-note">
-                            <h4>📝 หมายเหตุ:</h4>
+                            <h4><StickyNote className="w-4 h-4 inline mr-1" />หมายเหตุ:</h4>
                             <p>• การแก้ไขแผนจะส่งผลกับ <strong>บริษัทใหม่ที่สร้างในอนาคต</strong> เท่านั้น</p>
                             <p>• บริษัทที่มีอยู่แล้วจะยังใช้โควต้าที่กำหนดไว้เดิม (ดูได้ที่แท็บ "💎 โควตาบริษัท")</p>
                             <p>• ตัวเลข <strong>-1</strong> หมายถึง ไม่จำกัด</p>

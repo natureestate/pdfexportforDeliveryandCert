@@ -9,6 +9,7 @@ import { getUserMemberships } from '../services/companyMembers';
 import { getCompanyById } from '../services/companies';
 import { useAuth } from '../contexts/AuthContext';
 import UserManagement from './UserManagement';
+import { Crown, User, Users } from 'lucide-react';
 
 interface CompanyWithRole extends Company {
     memberRole?: string;
@@ -145,7 +146,7 @@ const CompanyMembersList: React.FC = () => {
                             <div className="company-header">
                                 <h3>{company.name}</h3>
                                 <span className={`role-badge ${company.memberRole}`}>
-                                    {company.memberRole === 'admin' ? '👑 Admin' : '👤 Member'}
+                                    {company.memberRole === 'admin' ? <><Crown className="w-3 h-3 inline mr-0.5" /> Admin</> : <><User className="w-3 h-3 inline mr-0.5" /> Member</>}
                                 </span>
                             </div>
 
@@ -171,7 +172,7 @@ const CompanyMembersList: React.FC = () => {
                                     onClick={() => handleManageMembers(company)}
                                     className="btn-manage"
                                 >
-                                    👥 จัดการสมาชิก
+                                    <Users className="w-4 h-4 inline mr-1" />จัดการสมาชิก
                                 </button>
                             )}
                         </div>

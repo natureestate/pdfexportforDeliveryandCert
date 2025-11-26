@@ -1,5 +1,6 @@
 import React, { useState, useRef, useCallback, useEffect } from 'react';
 import { Routes, Route, Navigate } from 'react-router-dom';
+import { Package, Shield, FileText, Receipt, FileCheck, DollarSign, ShoppingCart, StickyNote, PlusCircle, FilePlus, History } from 'lucide-react';
 import { DeliveryNoteData, WarrantyData, InvoiceData, ReceiptData, TaxInvoiceData, QuotationData, PurchaseOrderData, MemoData, VariationOrderData, LogoType } from './types';
 import { AuthProvider } from './contexts/AuthContext';
 import { CompanyProvider, useCompany } from './contexts/CompanyContext';
@@ -852,17 +853,19 @@ const AppContent: React.FC = () => {
                                     : 'bg-white text-gray-700 border-gray-300 hover:bg-gray-50'
                             }`}
                         >
-                            📝 สร้างเอกสาร
+                            <FilePlus className="w-4 h-4 inline-block mr-1.5" />
+                            สร้างเอกสาร
                         </button>
                         <button
                             onClick={() => setViewMode('history')}
-                            className={`flex-1 sm:flex-none px-4 sm:px-6 py-2 text-xs sm:text-sm font-medium rounded-r-lg border-t border-r border-b ${
+                            className={`flex-1 sm:flex-none px-4 sm:px-6 py-2 text-xs sm:text-sm font-medium rounded-r-lg border-t border-r border-b flex items-center justify-center gap-1.5 ${
                                 viewMode === 'history'
                                     ? 'bg-indigo-600 text-white border-indigo-600'
                                     : 'bg-white text-gray-700 border-gray-300 hover:bg-gray-50'
                             }`}
                         >
-                            📋 ประวัติเอกสาร
+                            <History className="w-4 h-4" />
+                            ประวัติเอกสาร
                         </button>
                     </div>
                 </div>
@@ -897,57 +900,66 @@ const AppContent: React.FC = () => {
                                     <nav className="-mb-px flex space-x-1 sm:space-x-2 min-w-max" aria-label="Tabs">
                                         <button
                                             onClick={() => setActiveTab('delivery')}
-                                            className={`${activeTab === 'delivery' ? 'border-indigo-500 text-indigo-600 bg-indigo-50' : 'border-transparent text-gray-500 hover:text-gray-700 hover:border-gray-300'} whitespace-nowrap py-2.5 sm:py-3 px-3 sm:px-4 border-b-2 font-medium text-xs sm:text-sm transition-all flex-shrink-0 rounded-t-lg`}
+                                            className={`${activeTab === 'delivery' ? 'border-indigo-500 text-indigo-600 bg-indigo-50' : 'border-transparent text-gray-500 hover:text-gray-700 hover:border-gray-300'} whitespace-nowrap py-2.5 sm:py-3 px-3 sm:px-4 border-b-2 font-medium text-xs sm:text-sm transition-all flex-shrink-0 rounded-t-lg flex items-center gap-1.5`}
                                         >
-                                            📦 ส่งมอบงาน
+                                            <Package className="w-4 h-4" />
+                                            <span className="hidden sm:inline">ส่งมอบงาน</span>
                                         </button>
                                         <button
                                             onClick={() => setActiveTab('warranty')}
-                                            className={`${activeTab === 'warranty' ? 'border-indigo-500 text-indigo-600 bg-indigo-50' : 'border-transparent text-gray-500 hover:text-gray-700 hover:border-gray-300'} whitespace-nowrap py-2.5 sm:py-3 px-3 sm:px-4 border-b-2 font-medium text-xs sm:text-sm transition-all flex-shrink-0 rounded-t-lg`}
+                                            className={`${activeTab === 'warranty' ? 'border-indigo-500 text-indigo-600 bg-indigo-50' : 'border-transparent text-gray-500 hover:text-gray-700 hover:border-gray-300'} whitespace-nowrap py-2.5 sm:py-3 px-3 sm:px-4 border-b-2 font-medium text-xs sm:text-sm transition-all flex-shrink-0 rounded-t-lg flex items-center gap-1.5`}
                                         >
-                                            🛡️ รับประกัน
+                                            <Shield className="w-4 h-4" />
+                                            <span className="hidden sm:inline">รับประกัน</span>
                                         </button>
                                         <button
                                             onClick={() => setActiveTab('invoice')}
-                                            className={`${activeTab === 'invoice' ? 'border-indigo-500 text-indigo-600 bg-indigo-50' : 'border-transparent text-gray-500 hover:text-gray-700 hover:border-gray-300'} whitespace-nowrap py-2.5 sm:py-3 px-3 sm:px-4 border-b-2 font-medium text-xs sm:text-sm transition-all flex-shrink-0 rounded-t-lg`}
+                                            className={`${activeTab === 'invoice' ? 'border-indigo-500 text-indigo-600 bg-indigo-50' : 'border-transparent text-gray-500 hover:text-gray-700 hover:border-gray-300'} whitespace-nowrap py-2.5 sm:py-3 px-3 sm:px-4 border-b-2 font-medium text-xs sm:text-sm transition-all flex-shrink-0 rounded-t-lg flex items-center gap-1.5`}
                                         >
-                                            📄 แจ้งหนี้
+                                            <FileText className="w-4 h-4" />
+                                            <span className="hidden sm:inline">แจ้งหนี้</span>
                                         </button>
                                         <button
                                             onClick={() => setActiveTab('receipt')}
-                                            className={`${activeTab === 'receipt' ? 'border-indigo-500 text-indigo-600 bg-indigo-50' : 'border-transparent text-gray-500 hover:text-gray-700 hover:border-gray-300'} whitespace-nowrap py-2.5 sm:py-3 px-3 sm:px-4 border-b-2 font-medium text-xs sm:text-sm transition-all flex-shrink-0 rounded-t-lg`}
+                                            className={`${activeTab === 'receipt' ? 'border-indigo-500 text-indigo-600 bg-indigo-50' : 'border-transparent text-gray-500 hover:text-gray-700 hover:border-gray-300'} whitespace-nowrap py-2.5 sm:py-3 px-3 sm:px-4 border-b-2 font-medium text-xs sm:text-sm transition-all flex-shrink-0 rounded-t-lg flex items-center gap-1.5`}
                                         >
-                                            🧾 ใบเสร็จ
+                                            <Receipt className="w-4 h-4" />
+                                            <span className="hidden sm:inline">ใบเสร็จ</span>
                                         </button>
                                         <button
                                             onClick={() => setActiveTab('tax-invoice')}
-                                            className={`${activeTab === 'tax-invoice' ? 'border-indigo-500 text-indigo-600 bg-indigo-50' : 'border-transparent text-gray-500 hover:text-gray-700 hover:border-gray-300'} whitespace-nowrap py-2.5 sm:py-3 px-3 sm:px-4 border-b-2 font-medium text-xs sm:text-sm transition-all flex-shrink-0 rounded-t-lg`}
+                                            className={`${activeTab === 'tax-invoice' ? 'border-indigo-500 text-indigo-600 bg-indigo-50' : 'border-transparent text-gray-500 hover:text-gray-700 hover:border-gray-300'} whitespace-nowrap py-2.5 sm:py-3 px-3 sm:px-4 border-b-2 font-medium text-xs sm:text-sm transition-all flex-shrink-0 rounded-t-lg flex items-center gap-1.5`}
                                         >
-                                            📋 กำกับภาษี
+                                            <FileCheck className="w-4 h-4" />
+                                            <span className="hidden sm:inline">กำกับภาษี</span>
                                         </button>
                                         <button
                                             onClick={() => setActiveTab('quotation')}
-                                            className={`${activeTab === 'quotation' ? 'border-indigo-500 text-indigo-600 bg-indigo-50' : 'border-transparent text-gray-500 hover:text-gray-700 hover:border-gray-300'} whitespace-nowrap py-2.5 sm:py-3 px-3 sm:px-4 border-b-2 font-medium text-xs sm:text-sm transition-all flex-shrink-0 rounded-t-lg`}
+                                            className={`${activeTab === 'quotation' ? 'border-indigo-500 text-indigo-600 bg-indigo-50' : 'border-transparent text-gray-500 hover:text-gray-700 hover:border-gray-300'} whitespace-nowrap py-2.5 sm:py-3 px-3 sm:px-4 border-b-2 font-medium text-xs sm:text-sm transition-all flex-shrink-0 rounded-t-lg flex items-center gap-1.5`}
                                         >
-                                            💰 เสนอราคา
+                                            <DollarSign className="w-4 h-4" />
+                                            <span className="hidden sm:inline">เสนอราคา</span>
                                         </button>
                                         <button
                                             onClick={() => setActiveTab('purchase-order')}
-                                            className={`${activeTab === 'purchase-order' ? 'border-indigo-500 text-indigo-600 bg-indigo-50' : 'border-transparent text-gray-500 hover:text-gray-700 hover:border-gray-300'} whitespace-nowrap py-2.5 sm:py-3 px-3 sm:px-4 border-b-2 font-medium text-xs sm:text-sm transition-all flex-shrink-0 rounded-t-lg`}
+                                            className={`${activeTab === 'purchase-order' ? 'border-indigo-500 text-indigo-600 bg-indigo-50' : 'border-transparent text-gray-500 hover:text-gray-700 hover:border-gray-300'} whitespace-nowrap py-2.5 sm:py-3 px-3 sm:px-4 border-b-2 font-medium text-xs sm:text-sm transition-all flex-shrink-0 rounded-t-lg flex items-center gap-1.5`}
                                         >
-                                            🛒 สั่งซื้อ
+                                            <ShoppingCart className="w-4 h-4" />
+                                            <span className="hidden sm:inline">สั่งซื้อ</span>
                                         </button>
                                         <button
                                             onClick={() => setActiveTab('memo')}
-                                            className={`${activeTab === 'memo' ? 'border-indigo-500 text-indigo-600 bg-indigo-50' : 'border-transparent text-gray-500 hover:text-gray-700 hover:border-gray-300'} whitespace-nowrap py-2.5 sm:py-3 px-3 sm:px-4 border-b-2 font-medium text-xs sm:text-sm transition-all flex-shrink-0 rounded-t-lg`}
+                                            className={`${activeTab === 'memo' ? 'border-indigo-500 text-indigo-600 bg-indigo-50' : 'border-transparent text-gray-500 hover:text-gray-700 hover:border-gray-300'} whitespace-nowrap py-2.5 sm:py-3 px-3 sm:px-4 border-b-2 font-medium text-xs sm:text-sm transition-all flex-shrink-0 rounded-t-lg flex items-center gap-1.5`}
                                         >
-                                            📝 บันทึก
+                                            <StickyNote className="w-4 h-4" />
+                                            <span className="hidden sm:inline">บันทึก</span>
                                         </button>
                                         <button
                                             onClick={() => setActiveTab('variation-order')}
-                                            className={`${activeTab === 'variation-order' ? 'border-indigo-500 text-indigo-600 bg-indigo-50' : 'border-transparent text-gray-500 hover:text-gray-700 hover:border-gray-300'} whitespace-nowrap py-2.5 sm:py-3 px-3 sm:px-4 border-b-2 font-medium text-xs sm:text-sm transition-all flex-shrink-0 rounded-t-lg`}
+                                            className={`${activeTab === 'variation-order' ? 'border-indigo-500 text-indigo-600 bg-indigo-50' : 'border-transparent text-gray-500 hover:text-gray-700 hover:border-gray-300'} whitespace-nowrap py-2.5 sm:py-3 px-3 sm:px-4 border-b-2 font-medium text-xs sm:text-sm transition-all flex-shrink-0 rounded-t-lg flex items-center gap-1.5`}
                                         >
-                                            ➕ ส่วนต่าง
+                                            <PlusCircle className="w-4 h-4" />
+                                            <span className="hidden sm:inline">ส่วนต่าง</span>
                                         </button>
                                     </nav>
                                 </div>

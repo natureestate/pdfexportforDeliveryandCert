@@ -11,6 +11,7 @@ import { checkIsAdmin } from '../services/companyMembers';
 import { getQuota } from '../services/quota';
 import { updateCompany } from '../services/companies';
 import { CompanyQuota, LogoType } from '../types';
+import { Link2, Key, Building2, Palette, BarChart3, Users, HardDrive, Crown, User } from 'lucide-react';
 
 const Header: React.FC = () => {
     const { user } = useAuth();
@@ -481,7 +482,7 @@ const Header: React.FC = () => {
                                                                     ? 'bg-amber-100 text-amber-800 border border-amber-200' 
                                                                     : 'bg-blue-100 text-blue-800 border border-blue-200'
                                                             }`}>
-                                                                {isAdmin ? '👑 Admin' : '👤 Member'}
+                                                                {isAdmin ? <><Crown className="w-3 h-3 inline mr-0.5" /> Admin</> : <><User className="w-3 h-3 inline mr-0.5" /> Member</>}
                                                             </div>
                                                         </div>
                                                         <p className="text-sm font-semibold text-gray-800 truncate">
@@ -502,7 +503,7 @@ const Header: React.FC = () => {
                                                         <svg className="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                                                             <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M13.828 10.172a4 4 0 00-5.656 0l-4 4a4 4 0 105.656 5.656l1.102-1.101m-.758-4.899a4 4 0 005.656 0l4-4a4 4 0 00-5.656-5.656l-1.1 1.1" />
                                                         </svg>
-                                                        <span className="font-medium">🔗 Account Linking</span>
+                                                        <span className="font-medium"><Link2 className="w-4 h-4 inline mr-1" />Account Linking</span>
                                                     </div>
                                                     <span className="text-xs px-2 py-0.5 bg-cyan-100 text-cyan-700 rounded-full">
                                                         {[linkedProviders.hasGoogle, linkedProviders.hasEmail, linkedProviders.hasPhone].filter(Boolean).length}/3
@@ -521,7 +522,7 @@ const Header: React.FC = () => {
                                                         <svg className="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                                                             <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M12 15v2m-6 4h12a2 2 0 002-2v-6a2 2 0 00-2-2H6a2 2 0 00-2 2v6a2 2 0 002 2zm10-10V7a4 4 0 00-8 0v4h8z" />
                                                         </svg>
-                                                        <span className="font-medium">🔗 เพิ่มรหัสผ่าน</span>
+                                                        <span className="font-medium"><Link2 className="w-4 h-4 inline mr-1" />เพิ่มรหัสผ่าน</span>
                                                     </button>
                                                 ) : (
                                                     <button
@@ -534,7 +535,7 @@ const Header: React.FC = () => {
                                                         <svg className="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                                                             <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M15 7a2 2 0 012 2m4 0a6 6 0 01-7.743 5.743L11 17H9v2H7v2H4a1 1 0 01-1-1v-2.586a1 1 0 01.293-.707l5.964-5.964A6 6 0 1121 9z" />
                                                         </svg>
-                                                        <span className="font-medium">🔑 เปลี่ยนรหัสผ่าน</span>
+                                                        <span className="font-medium"><Key className="w-4 h-4 inline mr-1" />เปลี่ยนรหัสผ่าน</span>
                                                     </button>
                                                 )}
 
@@ -547,7 +548,7 @@ const Header: React.FC = () => {
                                                         <svg className="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                                                             <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M19 21V5a2 2 0 00-2-2H7a2 2 0 00-2 2v16m14 0h2m-2 0h-5m-9 0H3m2 0h5M9 7h1m-1 4h1m4-4h1m-1 4h1m-5 10v-5a1 1 0 011-1h2a1 1 0 011 1v5m-4 0h4" />
                                                         </svg>
-                                                        <span className="font-medium">🏢 ข้อมูลบริษัท</span>
+                                                        <span className="font-medium"><Building2 className="w-4 h-4 inline mr-1" />ข้อมูลบริษัท</span>
                                                     </button>
                                                 )}
 
@@ -560,7 +561,7 @@ const Header: React.FC = () => {
                                                         <svg className="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                                                             <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M4 16l4.586-4.586a2 2 0 012.828 0L16 16m-2-2l1.586-1.586a2 2 0 012.828 0L20 14m-6-6h.01M6 20h12a2 2 0 002-2V6a2 2 0 00-2-2H6a2 2 0 00-2 2v12a2 2 0 002 2z" />
                                                         </svg>
-                                                        <span className="font-medium">🎨 จัดการโลโก้</span>
+                                                        <span className="font-medium"><Palette className="w-4 h-4 inline mr-1" />จัดการโลโก้</span>
                                                     </button>
                                                 )}
 
@@ -573,7 +574,7 @@ const Header: React.FC = () => {
                                                         <svg className="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                                                             <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M9 19v-6a2 2 0 00-2-2H5a2 2 0 00-2 2v6a2 2 0 002 2h2a2 2 0 002-2zm0 0V9a2 2 0 012-2h2a2 2 0 012 2v10m-6 0a2 2 0 002 2h2a2 2 0 002-2m0 0V5a2 2 0 012-2h2a2 2 0 012 2v14a2 2 0 01-2 2h-2a2 2 0 01-2-2z" />
                                                         </svg>
-                                                        <span className="font-medium">📊 ดูโควตา</span>
+                                                        <span className="font-medium"><BarChart3 className="w-4 h-4 inline mr-1" />ดูโควตา</span>
                                                     </button>
                                                 )}
 
@@ -741,7 +742,7 @@ const Header: React.FC = () => {
                                                 ? 'bg-gradient-to-r from-amber-400 to-orange-500 text-white' 
                                                 : 'bg-gradient-to-r from-blue-400 to-indigo-500 text-white'
                                         }`}>
-                                            {isAdmin ? '👑 Admin' : '👤 Member'}
+                                            {isAdmin ? <><Crown className="w-3 h-3 inline mr-0.5" /> Admin</> : <><User className="w-3 h-3 inline mr-0.5" /> Member</>}
                                         </div>
                                     </div>
                                     <p className="text-sm font-bold text-gray-800 break-words">
@@ -772,7 +773,7 @@ const Header: React.FC = () => {
                                                 <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M13.828 10.172a4 4 0 00-5.656 0l-4 4a4 4 0 105.656 5.656l1.102-1.101m-.758-4.899a4 4 0 005.656 0l4-4a4 4 0 00-5.656-5.656l-1.1 1.1" />
                                             </svg>
                                         </div>
-                                        <span>🔗 Account Linking</span>
+                                        <span><Link2 className="w-4 h-4 inline mr-1" />Account Linking</span>
                                     </div>
                                     <span className="text-xs px-2 py-0.5 bg-cyan-200 text-cyan-700 rounded-full">
                                         {[linkedProviders.hasGoogle, linkedProviders.hasEmail, linkedProviders.hasPhone].filter(Boolean).length}/3
@@ -793,7 +794,7 @@ const Header: React.FC = () => {
                                                 <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M12 15v2m-6 4h12a2 2 0 002-2v-6a2 2 0 00-2-2H6a2 2 0 00-2 2v6a2 2 0 002 2zm10-10V7a4 4 0 00-8 0v4h8z" />
                                             </svg>
                                         </div>
-                                        <span>🔗 เพิ่มรหัสผ่าน</span>
+                                        <span><Link2 className="w-4 h-4 inline mr-1" />เพิ่มรหัสผ่าน</span>
                                     </button>
                                 ) : (
                                     <button
@@ -808,7 +809,7 @@ const Header: React.FC = () => {
                                                 <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M15 7a2 2 0 012 2m4 0a6 6 0 01-7.743 5.743L11 17H9v2H7v2H4a1 1 0 01-1-1v-2.586a1 1 0 01.293-.707l5.964-5.964A6 6 0 1121 9z" />
                                             </svg>
                                         </div>
-                                        <span>🔑 เปลี่ยนรหัสผ่าน</span>
+                                        <span><Key className="w-4 h-4 inline mr-1" />เปลี่ยนรหัสผ่าน</span>
                                     </button>
                                 )}
 
@@ -823,7 +824,7 @@ const Header: React.FC = () => {
                                                 <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M19 21V5a2 2 0 00-2-2H7a2 2 0 00-2 2v16m14 0h2m-2 0h-5m-9 0H3m2 0h5M9 7h1m-1 4h1m4-4h1m-1 4h1m-5 10v-5a1 1 0 011-1h2a1 1 0 011 1v5m-4 0h4" />
                                             </svg>
                                         </div>
-                                        <span>🏢 ข้อมูลบริษัท</span>
+                                        <span><Building2 className="w-4 h-4 inline mr-1" />ข้อมูลบริษัท</span>
                                     </button>
                                 )}
 
@@ -838,7 +839,7 @@ const Header: React.FC = () => {
                                                 <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M4 16l4.586-4.586a2 2 0 012.828 0L16 16m-2-2l1.586-1.586a2 2 0 012.828 0L20 14m-6-6h.01M6 20h12a2 2 0 002-2V6a2 2 0 00-2-2H6a2 2 0 00-2 2v12a2 2 0 002 2z" />
                                             </svg>
                                         </div>
-                                        <span>🎨 จัดการโลโก้</span>
+                                        <span><Palette className="w-4 h-4 inline mr-1" />จัดการโลโก้</span>
                                     </button>
                                 )}
 
@@ -853,7 +854,7 @@ const Header: React.FC = () => {
                                                 <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M9 19v-6a2 2 0 00-2-2H5a2 2 0 00-2 2v6a2 2 0 002 2h2a2 2 0 002-2zm0 0V9a2 2 0 012-2h2a2 2 0 012 2v10m-6 0a2 2 0 002 2h2a2 2 0 002-2m0 0V5a2 2 0 012-2h2a2 2 0 012 2v14a2 2 0 01-2 2h-2a2 2 0 01-2-2z" />
                                             </svg>
                                         </div>
-                                        <span>📊 ดูโควตา</span>
+                                        <span><BarChart3 className="w-4 h-4 inline mr-1" />ดูโควตา</span>
                                     </button>
                                 )}
 
@@ -929,7 +930,7 @@ const Header: React.FC = () => {
                         {/* Header */}
                         <div className="flex items-center justify-between mb-4">
                             <h3 className="text-xl font-bold text-gray-800">
-                                🔗 เพิ่มรหัสผ่าน
+                                เพิ่มรหัสผ่าน
                             </h3>
                             <button
                                 onClick={() => {
@@ -1031,7 +1032,7 @@ const Header: React.FC = () => {
                         {/* Header */}
                         <div className="flex items-center justify-between mb-4">
                             <h3 className="text-xl font-bold text-gray-800">
-                                🔑 เปลี่ยนรหัสผ่าน
+                                เปลี่ยนรหัสผ่าน
                             </h3>
                             <button
                                 onClick={() => {
@@ -1127,7 +1128,7 @@ const Header: React.FC = () => {
                                         onClick={handleSendResetEmail}
                                         className="text-sm text-blue-600 hover:text-blue-800 underline"
                                     >
-                                        🔗 ลืมรหัสผ่าน? ส่งอีเมลรีเซ็ต
+                                        ลืมรหัสผ่าน? ส่งอีเมลรีเซ็ต
                                     </button>
                                 </div>
 
@@ -1161,7 +1162,7 @@ const Header: React.FC = () => {
                         {/* Header */}
                         <div className="flex items-center justify-between mb-6">
                             <h3 className="text-2xl font-bold text-gray-800">
-                                📊 ข้อมูลโควตาของบริษัท
+                                ข้อมูลโควตาของบริษัท
                             </h3>
                             <button
                                 onClick={() => setShowQuotaModal(false)}
@@ -1218,7 +1219,7 @@ const Header: React.FC = () => {
                                     {/* ผู้ใช้ */}
                                     <div className="bg-white border border-gray-200 rounded-lg p-4">
                                         <div className="flex items-center justify-between mb-2">
-                                            <span className="text-sm font-medium text-gray-600">👥 ผู้ใช้</span>
+                                            <span className="text-sm font-medium text-gray-600 flex items-center gap-1"><Users className="w-4 h-4" /> ผู้ใช้</span>
                                             <span className={`text-sm font-bold ${quota.currentUsers >= quota.maxUsers && quota.maxUsers !== -1 ? 'text-red-600' : 'text-gray-800'}`}>
                                                 {quota.currentUsers} / {quota.maxUsers === -1 ? '∞' : quota.maxUsers}
                                             </span>
@@ -1250,7 +1251,7 @@ const Header: React.FC = () => {
                                     {/* โลโก้ */}
                                     <div className="bg-white border border-gray-200 rounded-lg p-4">
                                         <div className="flex items-center justify-between mb-2">
-                                            <span className="text-sm font-medium text-gray-600">🎨 โลโก้</span>
+                                            <span className="text-sm font-medium text-gray-600 flex items-center gap-1"><Palette className="w-4 h-4" /> โลโก้</span>
                                             <span className={`text-sm font-bold ${quota.currentLogos >= quota.maxLogos && quota.maxLogos !== -1 ? 'text-red-600' : 'text-gray-800'}`}>
                                                 {quota.currentLogos} / {quota.maxLogos === -1 ? '∞' : quota.maxLogos}
                                             </span>
@@ -1266,7 +1267,7 @@ const Header: React.FC = () => {
                                     {/* Storage */}
                                     <div className="bg-white border border-gray-200 rounded-lg p-4">
                                         <div className="flex items-center justify-between mb-2">
-                                            <span className="text-sm font-medium text-gray-600">💾 พื้นที่จัดเก็บ</span>
+                                            <span className="text-sm font-medium text-gray-600 flex items-center gap-1"><HardDrive className="w-4 h-4" /> พื้นที่จัดเก็บ</span>
                                             <span className={`text-sm font-bold ${quota.currentStorageMB >= quota.maxStorageMB && quota.maxStorageMB !== -1 ? 'text-red-600' : 'text-gray-800'}`}>
                                                 {quota.currentStorageMB.toFixed(1)} MB / {quota.maxStorageMB === -1 ? '∞' : `${quota.maxStorageMB} MB`}
                                             </span>

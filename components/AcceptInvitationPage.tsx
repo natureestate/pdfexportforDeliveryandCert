@@ -10,6 +10,7 @@ import { useAuth } from '../contexts/AuthContext';
 import { getInvitationByToken, acceptInvitation } from '../services/invitations';
 import { updateMemberCount, addMemberFromInvitation } from '../services/companyMembers';
 import { Invitation } from '../types';
+import { Building2, Crown, User } from 'lucide-react';
 
 /**
  * หน้ายอมรับคำเชิญ
@@ -252,7 +253,7 @@ const AcceptInvitationPage: React.FC = () => {
                 <div className="card-body">
                     <div className="invitation-info">
                         <div className="info-row">
-                            <span className="label">🏢 องค์กร:</span>
+                            <span className="label"><Building2 className="w-4 h-4 inline mr-1" />องค์กร:</span>
                             <span className="value">{invitation?.companyName}</span>
                         </div>
                         <div className="info-row">
@@ -262,7 +263,7 @@ const AcceptInvitationPage: React.FC = () => {
                         <div className="info-row">
                             <span className="label">👤 บทบาท:</span>
                             <span className="value role-badge">
-                                {invitation?.role === 'admin' ? '👑 Admin (ผู้จัดการ)' : '👤 Member (สมาชิกทั่วไป)'}
+                                {invitation?.role === 'admin' ? <><Crown className="w-3 h-3 inline mr-0.5" /> Admin (ผู้จัดการ)</> : <><User className="w-3 h-3 inline mr-0.5" /> Member (สมาชิกทั่วไป)</>}
                             </span>
                         </div>
                         {invitation?.invitedByName && (

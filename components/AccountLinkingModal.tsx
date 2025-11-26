@@ -17,6 +17,7 @@ import {
     getLinkedProviders,
     checkLinkedProviders
 } from '../services/auth';
+import { Link2 } from 'lucide-react';
 
 // ประเภทของ Provider
 type ProviderType = 'google.com' | 'password' | 'phone';
@@ -389,7 +390,7 @@ export const AccountLinkingModal: React.FC<AccountLinkingModalProps> = ({
                                 disabled={loading}
                                 className="w-full py-2 px-4 bg-blue-500 text-white rounded-lg font-medium hover:bg-blue-600 transition-colors disabled:opacity-50"
                             >
-                                {loading ? 'กำลังดำเนินการ...' : '🔗 Link กับ Google'}
+                                {loading ? 'กำลังดำเนินการ...' : <><Link2 className="w-4 h-4 inline mr-1" />Link กับ Google</>}
                             </button>
                         )}
 
@@ -399,7 +400,7 @@ export const AccountLinkingModal: React.FC<AccountLinkingModalProps> = ({
                                 disabled={loading}
                                 className="w-full py-2 px-4 bg-blue-500 text-white rounded-lg font-medium hover:bg-blue-600 transition-colors disabled:opacity-50"
                             >
-                                {loading ? 'กำลังดำเนินการ...' : '🔗 Link กับ Email/Password'}
+                                {loading ? 'กำลังดำเนินการ...' : <><Link2 className="w-4 h-4 inline mr-1" />Link กับ Email/Password</>}
                             </button>
                         )}
 
@@ -411,7 +412,7 @@ export const AccountLinkingModal: React.FC<AccountLinkingModalProps> = ({
                                         disabled={loading}
                                         className="w-full py-2 px-4 bg-blue-500 text-white rounded-lg font-medium hover:bg-blue-600 transition-colors disabled:opacity-50"
                                     >
-                                        {loading ? 'กำลังดำเนินการ...' : '🔗 Link กับ Google'}
+                                        {loading ? 'กำลังดำเนินการ...' : <><Link2 className="w-4 h-4 inline mr-1" />Link กับ Google</>}
                                     </button>
                                 )}
                                 {existingProviders.includes('password') && (
@@ -420,7 +421,7 @@ export const AccountLinkingModal: React.FC<AccountLinkingModalProps> = ({
                                         disabled={loading}
                                         className="w-full py-2 px-4 bg-purple-500 text-white rounded-lg font-medium hover:bg-purple-600 transition-colors disabled:opacity-50"
                                     >
-                                        {loading ? 'กำลังดำเนินการ...' : '🔗 Link กับ Email/Password'}
+                                        {loading ? 'กำลังดำเนินการ...' : <><Link2 className="w-4 h-4 inline mr-1" />Link กับ Email/Password</>}
                                     </button>
                                 )}
                             </div>
@@ -553,7 +554,7 @@ export const AccountLinkingModal: React.FC<AccountLinkingModalProps> = ({
                     disabled={loading}
                     className="flex-1 py-2 px-4 bg-blue-500 text-white rounded-lg font-medium hover:bg-blue-600 transition-colors disabled:opacity-50"
                 >
-                    {loading ? 'กำลัง Link...' : '🔗 Link'}
+                    {loading ? 'กำลัง Link...' : <><Link2 className="w-4 h-4 inline mr-1" />Link</>}
                 </button>
             </div>
         </form>
@@ -696,7 +697,7 @@ export const AccountLinkingModal: React.FC<AccountLinkingModalProps> = ({
                 {/* Header */}
                 <div className="flex items-center justify-between mb-4">
                     <h3 className="text-xl font-bold text-gray-800">
-                        🔗 Account Linking
+                        <Link2 className="w-5 h-5 inline mr-1" />Account Linking
                     </h3>
                     <button
                         onClick={() => {

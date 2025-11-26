@@ -5,6 +5,7 @@
 
 import React, { useState, useEffect } from 'react';
 import { CompanyProfile, getCompanyProfiles, saveCompanyProfile, deleteCompanyProfile, getProfilesByType } from '../services/companyProfiles';
+import { Save } from 'lucide-react';
 
 interface CompanyProfileSelectorProps {
     type: 'sender' | 'receiver';
@@ -126,7 +127,7 @@ const CompanyProfileSelector: React.FC<CompanyProfileSelectorProps> = ({
                         onClick={() => setIsModalOpen(true)}
                         className="text-xs bg-green-500 text-white rounded px-2 py-1 hover:bg-green-600 focus:outline-none focus:ring-2 focus:ring-green-500"
                     >
-                        💾 บันทึก
+                        <Save className="w-4 h-4 inline mr-1" />บันทึก
                     </button>
                 </div>
             </div>

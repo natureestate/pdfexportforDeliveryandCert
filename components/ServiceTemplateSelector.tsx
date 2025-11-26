@@ -7,6 +7,7 @@ import React, { useState, useEffect } from 'react';
 import { ServiceTemplate } from '../types';
 import { getUserServiceTemplates, deleteServiceTemplate, saveServiceTemplate } from '../services/serviceTemplates';
 import { useAuth } from '../contexts/AuthContext';
+import { Save } from 'lucide-react';
 
 interface ServiceTemplateSelectorProps {
     onSelect: (template: ServiceTemplate) => void;
@@ -177,7 +178,7 @@ const ServiceTemplateSelector: React.FC<ServiceTemplateSelectorProps> = ({ onSel
                             onClick={handleSaveNew}
                             className="w-full px-3 sm:px-4 py-1.5 sm:py-2 bg-green-600 text-white text-xs sm:text-sm rounded-md hover:bg-green-700"
                         >
-                            💾 บันทึก
+                            <Save className="w-4 h-4 inline mr-1" />บันทึก
                         </button>
                     </div>
                 </div>
