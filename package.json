@@ -16,7 +16,12 @@
     "preview:host": "vite preview --port 4173 --host",
     "clean": "rm -rf dist node_modules/.vite",
     "setup": "npm install && npm run clean",
-    "migrate:quotas": "tsx scripts/create-default-quotas.ts"
+    "migrate:quotas": "tsx scripts/create-default-quotas.ts",
+    "deploy": "firebase deploy --only hosting",
+    "build:deploy": "npm run build && npm run deploy",
+    "push": "git push origin main",
+    "commit": "git add -A && git commit",
+    "ship": "git add -A && git commit && git push origin main && npm run build && npm run deploy"
   },
   "dependencies": {
     "firebase": "^12.3.0",
