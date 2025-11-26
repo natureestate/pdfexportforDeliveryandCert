@@ -887,7 +887,7 @@ const AppContent: React.FC = () => {
                                 </div>
                             )}
                             
-                            <div className="border-b border-gray-200 overflow-x-auto -mx-4 sm:mx-0 px-4 sm:px-0 tab-menu-scroll">
+                            <div className="border-b border-gray-200 overflow-x-auto -mx-4 sm:mx-0 px-4 sm:px-0 tab-menu-scroll overscroll-x-contain touch-pan-x">
                                 <nav className="-mb-px flex space-x-2 sm:space-x-4 min-w-max" aria-label="Tabs">
                                     <button
                                         onClick={() => setActiveTab('delivery')}

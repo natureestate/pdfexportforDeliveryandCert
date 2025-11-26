@@ -97,6 +97,11 @@
       .tab-menu-scroll {
         scrollbar-width: thin;
         scrollbar-color: #cbd5e1 #f1f1f1;
+        /* Lock vertical scroll เมื่อเลื่อน horizontal บน mobile */
+        overscroll-behavior-x: contain;
+        overscroll-behavior-y: none;
+        touch-action: pan-x;
+        -webkit-overflow-scrolling: touch;
       }
     </style>
   <script type="importmap">
