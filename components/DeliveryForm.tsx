@@ -160,7 +160,8 @@ const DeliveryForm: React.FC<DeliveryFormProps> = ({
                     <span className="font-medium">เลขที่เอกสาร:</span> <span className="font-mono">{data.docNumber || 'กำลังสร้าง...'}</span>
                 </div>
                 
-                <FormDivider title="ข้อมูลผู้รับมอบ/ลูกค้า" />
+                {/* ส่วนที่ 1: ข้อมูลผู้รับมอบ */}
+                <FormDivider title="ส่วนที่ 1: ข้อมูลผู้รับมอบ/ลูกค้า" />
                 <div className="space-y-4">
                     {/* CustomerSelector - ระบบจัดการลูกค้าแบบครบวงจร */}
                     <CustomerSelector
@@ -197,7 +198,8 @@ const DeliveryForm: React.FC<DeliveryFormProps> = ({
                     </div>
                 </div>
 
-                <FormDivider title="รายละเอียดเอกสาร" />
+                {/* ส่วนที่ 2: รายละเอียดเอกสาร */}
+                <FormDivider title="ส่วนที่ 2: รายละเอียดเอกสาร" />
                 <div className="grid grid-cols-1 md:grid-cols-2 gap-3 sm:gap-4">
                     <div>
                         <label htmlFor="date" className="block text-xs sm:text-sm font-medium text-slate-700">วันที่</label>
@@ -209,7 +211,8 @@ const DeliveryForm: React.FC<DeliveryFormProps> = ({
                     </div>
                 </div>
 
-                <FormDivider title="รายการส่งมอบ" />
+                {/* ส่วนที่ 3: รายการส่งมอบ */}
+                <FormDivider title="ส่วนที่ 3: รายการส่งมอบ" />
                 <div className="overflow-x-auto -mx-3 sm:mx-0">
                     <table className="min-w-full divide-y divide-gray-200 text-xs sm:text-sm">
                         <thead className="bg-gray-50">
@@ -254,7 +257,8 @@ const DeliveryForm: React.FC<DeliveryFormProps> = ({
                 </button>
             </div>
             
-            <FormDivider title="ข้อมูลผู้ลงนาม" />
+            {/* ส่วนที่ 4: ข้อมูลผู้ลงนาม */}
+            <FormDivider title="ส่วนที่ 4: ข้อมูลผู้ลงนาม" />
             <div className="grid grid-cols-1 md:grid-cols-2 gap-3 sm:gap-4">
                 <div>
                     <label htmlFor="senderName" className="block text-xs sm:text-sm font-medium text-slate-700">ชื่อผู้ส่งมอบ</label>

@@ -210,7 +210,8 @@ const InvoiceForm: React.FC<InvoiceFormProps> = ({
                     <span className="font-medium">เลขที่ใบแจ้งหนี้:</span> <span className="font-mono">{data.invoiceNumber || 'กำลังสร้าง...'}</span>
                 </div>
                 
-                <FormDivider title="ข้อมูลลูกค้า/ผู้ซื้อ" />
+                {/* ส่วนที่ 1: ข้อมูลลูกค้า */}
+                <FormDivider title="ส่วนที่ 1: ข้อมูลลูกค้า/ผู้ซื้อ" />
                 <div className="space-y-4">
                     {/* CustomerSelector */}
                     <CustomerSelector
@@ -261,7 +262,8 @@ const InvoiceForm: React.FC<InvoiceFormProps> = ({
                     </div>
                 </div>
 
-                <FormDivider title="รายละเอียดเอกสาร" />
+                {/* ส่วนที่ 2: รายละเอียดเอกสาร */}
+                <FormDivider title="ส่วนที่ 2: รายละเอียดเอกสาร" />
                 <div className="grid grid-cols-1 md:grid-cols-3 gap-3 sm:gap-4">
                     <div>
                         <label htmlFor="invoiceDate" className="block text-xs sm:text-sm font-medium text-slate-700">วันที่ออกใบแจ้งหนี้</label>
@@ -277,7 +279,8 @@ const InvoiceForm: React.FC<InvoiceFormProps> = ({
                     </div>
                 </div>
 
-                <FormDivider title="รายการสินค้า/บริการ" />
+                {/* ส่วนที่ 3: รายการสินค้า/บริการ */}
+                <FormDivider title="ส่วนที่ 3: รายการสินค้า/บริการ" />
                 <div className="overflow-x-auto -mx-3 sm:mx-0">
                     <table className="min-w-full divide-y divide-gray-200 text-xs sm:text-sm">
                         <thead className="bg-gray-50">
@@ -325,7 +328,8 @@ const InvoiceForm: React.FC<InvoiceFormProps> = ({
                     เพิ่มรายการ
                 </button>
 
-                <FormDivider title="สรุปยอดเงิน" />
+                {/* ส่วนที่ 4: สรุปยอดเงิน */}
+                <FormDivider title="ส่วนที่ 4: สรุปยอดเงิน" />
                 <div className="grid grid-cols-1 md:grid-cols-2 gap-3 sm:gap-4">
                     <div className="space-y-3 sm:space-y-4">
                         <div className="flex flex-col sm:flex-row sm:justify-between sm:items-center gap-2">
@@ -359,7 +363,8 @@ const InvoiceForm: React.FC<InvoiceFormProps> = ({
                     </div>
                 </div>
 
-                <FormDivider title="ข้อมูลเพิ่มเติม" />
+                {/* ส่วนที่ 5: ข้อมูลเพิ่มเติม */}
+                <FormDivider title="ส่วนที่ 5: ข้อมูลเพิ่มเติม" />
                 <div className="space-y-3 sm:space-y-4">
                     <div>
                         <label htmlFor="paymentTerms" className="block text-xs sm:text-sm font-medium text-slate-700">เงื่อนไขการชำระเงิน</label>

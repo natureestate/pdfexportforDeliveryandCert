@@ -133,7 +133,8 @@ const WarrantyForm: React.FC<WarrantyFormProps> = ({
                     <span className="font-medium">เลขที่ใบรับประกัน:</span> <span className="font-mono">{data.warrantyNumber || 'กำลังสร้าง...'}</span>
                 </div>
                 
-                <FormDivider title="ข้อมูลลูกค้า/โครงการ" />
+                {/* ส่วนที่ 1: ข้อมูลลูกค้า */}
+                <FormDivider title="ส่วนที่ 1: ข้อมูลลูกค้า/โครงการ" />
                 <div className="space-y-4">
                     {/* CustomerSelector - ระบบจัดการลูกค้าแบบครบวงจร */}
                     <CustomerSelector
@@ -186,7 +187,8 @@ const WarrantyForm: React.FC<WarrantyFormProps> = ({
                     </div>
                 </div>
 
-                <FormDivider title="ข้อมูลสินค้า/บริการ" />
+                {/* ส่วนที่ 2: ข้อมูลสินค้า/บริการ */}
+                <FormDivider title="ส่วนที่ 2: ข้อมูลสินค้า/บริการ" />
                 <div className="space-y-4">
                     {/* Service Template Selector */}
                     <div>
@@ -292,7 +294,8 @@ const WarrantyForm: React.FC<WarrantyFormProps> = ({
                     </div>
                 </div>
 
-                <FormDivider title="การรับประกัน" />
+                {/* ส่วนที่ 3: การรับประกัน */}
+                <FormDivider title="ส่วนที่ 3: การรับประกัน" />
                 <div className="space-y-4">
                     {/* Checkbox สำหรับเปิดใช้การรับประกันแบบงานรับสร้างบ้าน */}
                     <div className="bg-blue-50 border border-blue-200 rounded-lg p-3 sm:p-4">
@@ -392,7 +395,8 @@ const WarrantyForm: React.FC<WarrantyFormProps> = ({
                     </div>
                 </div>
 
-                <FormDivider title="เงื่อนไขการรับประกัน" />
+                {/* ส่วนที่ 4: เงื่อนไขการรับประกัน */}
+                <FormDivider title="ส่วนที่ 4: เงื่อนไขการรับประกัน" />
                 <div>
                      <textarea id="terms" value={data.terms} onChange={(e) => handleDataChange('terms', e.target.value)} rows={6} className="mt-1 block w-full rounded-md border-gray-300 shadow-sm focus:border-indigo-500 focus:ring-indigo-500 text-xs sm:text-sm bg-gray-50" placeholder="ระบุเงื่อนไขการรับประกัน ขอบเขต และข้อจำกัดต่างๆ" />
                 </div>

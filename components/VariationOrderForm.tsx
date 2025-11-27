@@ -218,7 +218,8 @@ const VariationOrderForm: React.FC<VariationOrderFormProps> = ({
                     <span className="font-medium">เลขที่ใบส่วนต่าง:</span> <span className="font-mono">{data.voNumber || 'กำลังสร้าง...'}</span>
                 </div>
                 
-                <FormDivider title="ข้อมูลลูกค้า/โครงการ" />
+                {/* ส่วนที่ 1: ข้อมูลลูกค้า */}
+                <FormDivider title="ส่วนที่ 1: ข้อมูลลูกค้า/โครงการ" />
                 <div className="space-y-4">
                     {/* CustomerSelector */}
                     <CustomerSelector
@@ -269,7 +270,8 @@ const VariationOrderForm: React.FC<VariationOrderFormProps> = ({
                     </div>
                 </div>
 
-                <FormDivider title="ข้อมูลอ้างอิง" />
+                {/* ส่วนที่ 2: ข้อมูลอ้างอิง */}
+                <FormDivider title="ส่วนที่ 2: ข้อมูลอ้างอิง" />
                 <div className="grid grid-cols-1 md:grid-cols-2 gap-3 sm:gap-4">
                     <div>
                         <label htmlFor="date" className="block text-xs sm:text-sm font-medium text-slate-700">วันที่ออกเอกสาร</label>
@@ -297,7 +299,8 @@ const VariationOrderForm: React.FC<VariationOrderFormProps> = ({
                     </div>
                 </div>
 
-                <FormDivider title="รายละเอียดการเปลี่ยนแปลง" />
+                {/* ส่วนที่ 3: รายละเอียดการเปลี่ยนแปลง */}
+                <FormDivider title="ส่วนที่ 3: รายละเอียดการเปลี่ยนแปลง" />
                 <div className="space-y-4">
                     <div>
                         <label htmlFor="subject" className="block text-xs sm:text-sm font-medium text-slate-700">เรื่อง</label>
@@ -317,7 +320,8 @@ const VariationOrderForm: React.FC<VariationOrderFormProps> = ({
                     </div>
                 </div>
 
-                <FormDivider title="รายการงาน (แยกงานใหม่/งานเดิม)" />
+                {/* ส่วนที่ 4: รายการงาน */}
+                <FormDivider title="ส่วนที่ 4: รายการงาน (แยกงานใหม่/งานเดิม)" />
                 <div className="mb-3 flex gap-2">
                     <button type="button" onClick={() => addItem('new')} className="inline-flex items-center px-3 py-2 border border-green-300 shadow-sm text-xs sm:text-sm leading-4 font-medium rounded-md text-green-700 bg-green-50 hover:bg-green-100 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-green-500">
                         <svg className="-ml-0.5 mr-2 h-4 w-4" xmlns="http://www.w3.org/2000/svg" viewBox="0 0 20 20" fill="currentColor" aria-hidden="true">
@@ -379,7 +383,8 @@ const VariationOrderForm: React.FC<VariationOrderFormProps> = ({
                     </table>
                 </div>
 
-                <FormDivider title="สรุปผลกระทบด้านราคา (Cost Impact)" />
+                {/* ส่วนที่ 5: สรุปผลกระทบด้านราคา */}
+                <FormDivider title="ส่วนที่ 5: สรุปผลกระทบด้านราคา (Cost Impact)" />
                 <div className="grid grid-cols-1 md:grid-cols-2 gap-3 sm:gap-4">
                     <div className="space-y-3 sm:space-y-4">
                         <div className="flex flex-col sm:flex-row sm:justify-between sm:items-center gap-2">
@@ -419,7 +424,8 @@ const VariationOrderForm: React.FC<VariationOrderFormProps> = ({
                     </div>
                 </div>
 
-                <FormDivider title="สรุปผลกระทบด้านระยะเวลา (Time Impact)" />
+                {/* ส่วนที่ 6: สรุปผลกระทบด้านระยะเวลา */}
+                <FormDivider title="ส่วนที่ 6: สรุปผลกระทบด้านระยะเวลา (Time Impact)" />
                 <div className="space-y-4">
                     <div className="flex items-center">
                         <input type="checkbox" id="hasTimeImpact" checked={data.hasTimeImpact} onChange={(e) => handleDataChange('hasTimeImpact', e.target.checked)} className="h-4 w-4 text-indigo-600 focus:ring-indigo-500 border-gray-300 rounded" />
@@ -439,7 +445,8 @@ const VariationOrderForm: React.FC<VariationOrderFormProps> = ({
                     )}
                 </div>
 
-                <FormDivider title="ส่วนอนุมัติ" />
+                {/* ส่วนที่ 7: ส่วนอนุมัติ */}
+                <FormDivider title="ส่วนที่ 7: ส่วนอนุมัติ" />
                 <div className="space-y-4">
                     <div>
                         <label htmlFor="terms" className="block text-xs sm:text-sm font-medium text-slate-700">เงื่อนไข</label>
@@ -465,7 +472,8 @@ const VariationOrderForm: React.FC<VariationOrderFormProps> = ({
                     </div>
                 </div>
 
-                <FormDivider title="ข้อมูลเพิ่มเติม" />
+                {/* ส่วนที่ 8: ข้อมูลเพิ่มเติม */}
+                <FormDivider title="ส่วนที่ 8: ข้อมูลเพิ่มเติม" />
                 <div className="space-y-3 sm:space-y-4">
                     <div>
                         <label htmlFor="notes" className="block text-xs sm:text-sm font-medium text-slate-700">หมายเหตุ</label>
