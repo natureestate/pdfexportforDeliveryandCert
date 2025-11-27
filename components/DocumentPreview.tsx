@@ -50,9 +50,9 @@ const DocumentPreview = forwardRef<HTMLDivElement, DocumentPreviewProps>(({ data
                     <p className="font-semibold text-slate-600 text-base mb-1">จาก:</p>
                     <p className="font-bold text-slate-800">{data.fromCompany || 'N/A'}</p>
                     <p className="text-slate-600 whitespace-pre-wrap text-xs">{data.fromAddress || 'N/A'}</p>
-                    <p className="text-slate-600 text-xs mt-1">โทร: {data.fromPhone || '...........................'}</p>
+                    {data.fromPhone && <p className="text-slate-600 text-xs mt-1">โทร: {data.fromPhone}</p>}
                     {data.fromEmail && <p className="text-slate-600 text-xs">อีเมล: {data.fromEmail}</p>}
-                    <p className="text-slate-600 text-xs">เว็บไซต์: {data.fromWebsite || '...........................'}</p>
+                    {data.fromWebsite && <p className="text-slate-600 text-xs">เว็บไซต์: {data.fromWebsite}</p>}
                 </div>
                 <div className="bg-slate-50 p-3 rounded-md">
                     <p className="font-semibold text-slate-600 text-base mb-1">ถึง:</p>
@@ -62,9 +62,11 @@ const DocumentPreview = forwardRef<HTMLDivElement, DocumentPreviewProps>(({ data
                 </div>
             </section>
             
-            <section className="mb-6">
-                 <p><span className="font-semibold text-slate-600">โครงการ/เรื่อง:</span> {data.project || '...........................'}</p>
-            </section>
+            {data.project && (
+                <section className="mb-6">
+                    <p><span className="font-semibold text-slate-600">โครงการ/เรื่อง:</span> {data.project}</p>
+                </section>
+            )}
 
             <section className="min-h-[300px]">
                 <table className="w-full text-left text-sm">

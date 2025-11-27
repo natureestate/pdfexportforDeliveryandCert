@@ -54,9 +54,9 @@ const QuotationPreview = forwardRef<HTMLDivElement, QuotationPreviewProps>(({ da
                     <p className="font-semibold text-slate-600 text-base mb-1">ผู้เสนอราคา:</p>
                     <p className="font-bold text-slate-800">{data.companyName || 'N/A'}</p>
                     <p className="text-slate-600 whitespace-pre-wrap text-xs">{data.companyAddress || 'N/A'}</p>
-                    <p className="text-slate-600 text-xs mt-1">โทร: {data.companyPhone || '...........................'}</p>
+                    {data.companyPhone && <p className="text-slate-600 text-xs mt-1">โทร: {data.companyPhone}</p>}
                     {data.companyEmail && <p className="text-slate-600 text-xs">อีเมล: {data.companyEmail}</p>}
-                    <p className="text-slate-600 text-xs">เว็บไซต์: {data.companyWebsite || '...........................'}</p>
+                    {data.companyWebsite && <p className="text-slate-600 text-xs">เว็บไซต์: {data.companyWebsite}</p>}
                     {data.companyTaxId && (
                         <p className="text-slate-600 text-xs mt-1">เลขประจำตัวผู้เสียภาษี: {data.companyTaxId}</p>
                     )}
@@ -65,7 +65,7 @@ const QuotationPreview = forwardRef<HTMLDivElement, QuotationPreviewProps>(({ da
                     <p className="font-semibold text-slate-600 text-base mb-1">ผู้รับเสนอราคา:</p>
                     <p className="font-bold text-slate-800">{data.customerName || 'N/A'}</p>
                     <p className="text-slate-600 whitespace-pre-wrap text-xs">{data.customerAddress || 'N/A'}</p>
-                    <p className="text-slate-600 text-xs mt-1">โทร: {data.customerPhone || '...........................'}</p>
+                    {data.customerPhone && <p className="text-slate-600 text-xs mt-1">โทร: {data.customerPhone}</p>}
                     {data.customerEmail && <p className="text-slate-600 text-xs">อีเมล: {data.customerEmail}</p>}
                     {data.customerTaxId && (
                         <p className="text-slate-600 text-xs mt-1">เลขประจำตัวผู้เสียภาษี: {data.customerTaxId}</p>

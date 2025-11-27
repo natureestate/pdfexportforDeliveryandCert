@@ -54,9 +54,9 @@ const PurchaseOrderPreview = forwardRef<HTMLDivElement, PurchaseOrderPreviewProp
                     <p className="font-semibold text-slate-600 text-base mb-1">ผู้สั่งซื้อ:</p>
                     <p className="font-bold text-slate-800">{data.companyName || 'N/A'}</p>
                     <p className="text-slate-600 whitespace-pre-wrap text-xs">{data.companyAddress || 'N/A'}</p>
-                    <p className="text-slate-600 text-xs mt-1">โทร: {data.companyPhone || '...........................'}</p>
+                    {data.companyPhone && <p className="text-slate-600 text-xs mt-1">โทร: {data.companyPhone}</p>}
                     {data.companyEmail && <p className="text-slate-600 text-xs">อีเมล: {data.companyEmail}</p>}
-                    <p className="text-slate-600 text-xs">เว็บไซต์: {data.companyWebsite || '...........................'}</p>
+                    {data.companyWebsite && <p className="text-slate-600 text-xs">เว็บไซต์: {data.companyWebsite}</p>}
                     {data.companyTaxId && (
                         <p className="text-slate-600 text-xs mt-1">เลขประจำตัวผู้เสียภาษี: {data.companyTaxId}</p>
                     )}
@@ -65,7 +65,7 @@ const PurchaseOrderPreview = forwardRef<HTMLDivElement, PurchaseOrderPreviewProp
                     <p className="font-semibold text-slate-600 text-base mb-1">ผู้ขาย/ผู้จำหน่าย:</p>
                     <p className="font-bold text-slate-800">{data.supplierName || 'N/A'}</p>
                     <p className="text-slate-600 whitespace-pre-wrap text-xs">{data.supplierAddress || 'N/A'}</p>
-                    <p className="text-slate-600 text-xs mt-1">โทร: {data.supplierPhone || '...........................'}</p>
+                    {data.supplierPhone && <p className="text-slate-600 text-xs mt-1">โทร: {data.supplierPhone}</p>}
                     {data.supplierEmail && <p className="text-slate-600 text-xs">อีเมล: {data.supplierEmail}</p>}
                     {data.supplierTaxId && (
                         <p className="text-slate-600 text-xs mt-1">เลขประจำตัวผู้เสียภาษี: {data.supplierTaxId}</p>
