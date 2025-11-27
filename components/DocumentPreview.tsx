@@ -51,14 +51,14 @@ const DocumentPreview = forwardRef<HTMLDivElement, DocumentPreviewProps>(({ data
                     <p className="font-bold text-slate-800">{data.fromCompany || 'N/A'}</p>
                     <p className="text-slate-600 whitespace-pre-wrap text-xs">{data.fromAddress || 'N/A'}</p>
                     <p className="text-slate-600 text-xs mt-1">โทร: {data.fromPhone || '...........................'}</p>
-                    <p className="text-slate-600 text-xs">อีเมล: {data.fromEmail || '...........................'}</p>
+                    {data.fromEmail && <p className="text-slate-600 text-xs">อีเมล: {data.fromEmail}</p>}
                     <p className="text-slate-600 text-xs">เว็บไซต์: {data.fromWebsite || '...........................'}</p>
                 </div>
                 <div className="bg-slate-50 p-3 rounded-md">
                     <p className="font-semibold text-slate-600 text-base mb-1">ถึง:</p>
                     <p className="font-bold text-slate-800">{data.toCompany || 'N/A'}</p>
                     <p className="text-slate-600 whitespace-pre-wrap">{data.toAddress || 'N/A'}</p>
-                    <p className="text-slate-600 text-xs mt-1">อีเมล: {data.toEmail || '...........................'}</p>
+                    {data.toEmail && <p className="text-slate-600 text-xs mt-1">อีเมล: {data.toEmail}</p>}
                 </div>
             </section>
             

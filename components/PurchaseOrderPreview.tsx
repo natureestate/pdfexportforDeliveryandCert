@@ -55,7 +55,7 @@ const PurchaseOrderPreview = forwardRef<HTMLDivElement, PurchaseOrderPreviewProp
                     <p className="font-bold text-slate-800">{data.companyName || 'N/A'}</p>
                     <p className="text-slate-600 whitespace-pre-wrap text-xs">{data.companyAddress || 'N/A'}</p>
                     <p className="text-slate-600 text-xs mt-1">โทร: {data.companyPhone || '...........................'}</p>
-                    <p className="text-slate-600 text-xs">อีเมล: {data.companyEmail || '...........................'}</p>
+                    {data.companyEmail && <p className="text-slate-600 text-xs">อีเมล: {data.companyEmail}</p>}
                     <p className="text-slate-600 text-xs">เว็บไซต์: {data.companyWebsite || '...........................'}</p>
                     {data.companyTaxId && (
                         <p className="text-slate-600 text-xs mt-1">เลขประจำตัวผู้เสียภาษี: {data.companyTaxId}</p>
@@ -66,7 +66,7 @@ const PurchaseOrderPreview = forwardRef<HTMLDivElement, PurchaseOrderPreviewProp
                     <p className="font-bold text-slate-800">{data.supplierName || 'N/A'}</p>
                     <p className="text-slate-600 whitespace-pre-wrap text-xs">{data.supplierAddress || 'N/A'}</p>
                     <p className="text-slate-600 text-xs mt-1">โทร: {data.supplierPhone || '...........................'}</p>
-                    <p className="text-slate-600 text-xs">อีเมล: {data.supplierEmail || '...........................'}</p>
+                    {data.supplierEmail && <p className="text-slate-600 text-xs">อีเมล: {data.supplierEmail}</p>}
                     {data.supplierTaxId && (
                         <p className="text-slate-600 text-xs mt-1">เลขประจำตัวผู้เสียภาษี: {data.supplierTaxId}</p>
                     )}

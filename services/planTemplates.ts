@@ -69,7 +69,7 @@ export interface PlanTemplate {
 const DEFAULT_PLAN_TEMPLATES: Record<SubscriptionPlan, Omit<PlanTemplate, 'createdAt' | 'updatedAt'>> = {
     free: {
         id: 'free',
-        name: '🆓 Free',
+        name: 'Free',
         description: 'สำหรับเริ่มต้นใช้งาน (1 องค์กร)',
         maxCompanies: 1,              // สร้างได้แค่ 1 องค์กร
         maxUsers: 3,
@@ -96,7 +96,7 @@ const DEFAULT_PLAN_TEMPLATES: Record<SubscriptionPlan, Omit<PlanTemplate, 'creat
     },
     basic: {
         id: 'basic',
-        name: '💼 Basic',
+        name: 'Basic',
         description: 'สำหรับธุรกิจขนาดเล็ก',
         maxCompanies: 3,              // สร้างได้สูงสุด 3 องค์กร
         maxUsers: 10,
@@ -123,7 +123,7 @@ const DEFAULT_PLAN_TEMPLATES: Record<SubscriptionPlan, Omit<PlanTemplate, 'creat
     },
     premium: {
         id: 'premium',
-        name: '💎 Premium',
+        name: 'Premium',
         description: 'สำหรับธุรกิจขนาดกลาง',
         maxCompanies: 10,             // สร้างได้สูงสุด 10 องค์กร
         maxUsers: 50,
@@ -150,7 +150,7 @@ const DEFAULT_PLAN_TEMPLATES: Record<SubscriptionPlan, Omit<PlanTemplate, 'creat
     },
     enterprise: {
         id: 'enterprise',
-        name: '🏢 Enterprise',
+        name: 'Enterprise',
         description: 'สำหรับองค์กรขนาดใหญ่',
         maxCompanies: -1,             // ไม่จำกัด
         maxUsers: -1,

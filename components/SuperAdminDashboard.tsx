@@ -20,8 +20,28 @@ import {
     BarChart3, Building2, Users, Crown, User, Palette, HardDrive, StickyNote, 
     LogOut, Gem, Target, Mail, FileText, UserCheck, Clock, Ban, 
     CheckCircle, AlertTriangle, RefreshCw, Smartphone, HelpCircle, Loader2,
-    Pencil, BookOpen, Star, Coins, Lock, ShieldX, Check
+    Pencil, BookOpen, Star, Coins, Lock, ShieldX, Check, Gift, Briefcase
 } from 'lucide-react';
+
+/**
+ * Helper function สำหรับแสดง icon ตามประเภทแผน
+ * @param planId - ID ของแผน (free, basic, premium, enterprise)
+ * @param className - CSS class สำหรับ icon
+ */
+const getPlanIcon = (planId: string | undefined, className: string = "w-4 h-4 inline mr-1") => {
+    switch (planId) {
+        case 'free':
+            return <Gift className={className} />;
+        case 'basic':
+            return <Briefcase className={className} />;
+        case 'premium':
+            return <Gem className={className} />;
+        case 'enterprise':
+            return <Building2 className={className} />;
+        default:
+            return <HelpCircle className={className} />;
+    }
+};
 
 type TabType = 'overview' | 'companies' | 'members' | 'invitations' | 'quotas' | 'plans';
 
@@ -750,7 +770,7 @@ const SuperAdminDashboard: React.FC = () => {
                                 <div className="legend-grid">
                                     {planTemplates.map(plan => (
                                         <div key={plan.id} className="legend-item">
-                                            <strong>{plan.name}:</strong>{' '}
+                                            <strong>{getPlanIcon(plan.id)}{plan.name}:</strong>{' '}
                                             {plan.maxUsers === -1 ? 'ไม่จำกัด' : `${plan.maxUsers} Users`},{' '}
                                             {plan.maxDocuments === -1 ? 'ไม่จำกัด' : `${plan.maxDocuments} Docs/month`},{' '}
                                             {plan.maxLogos === -1 ? 'ไม่จำกัด' : `${plan.maxLogos} Logo${plan.maxLogos > 1 ? 's' : ''}`},{' '}
@@ -831,7 +851,7 @@ const SuperAdminDashboard: React.FC = () => {
                             {planTemplates.map(plan => (
                                 <div key={plan.id} className="plan-card" style={{ borderTop: `4px solid ${plan.color}` }}>
                                     <div className="plan-header">
-                                        <h3>{plan.name}</h3>
+                                        <h3>{getPlanIcon(plan.id, "w-5 h-5 inline mr-2")}{plan.name}</h3>
                                         {plan.isPopular && <span className="popular-badge"><Star className="w-3 h-3 inline mr-1" />ยอดนิยม</span>}
                                     </div>
                                     
