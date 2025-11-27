@@ -16,7 +16,12 @@ import { SystemStats, Company, CompanyMember, Invitation, CompanyQuota, Subscrip
 import { signOut } from '../services/auth';
 import { getAllQuotas, changePlan, updateQuota } from '../services/quota';
 import { getAllPlanTemplates, updatePlanTemplate, PlanTemplate } from '../services/planTemplates';
-import { BarChart3, Building2, Users, Crown, User, Palette, HardDrive, StickyNote } from 'lucide-react';
+import { 
+    BarChart3, Building2, Users, Crown, User, Palette, HardDrive, StickyNote, 
+    LogOut, Gem, Target, Mail, FileText, UserCheck, Clock, Ban, 
+    CheckCircle, AlertTriangle, RefreshCw, Smartphone, HelpCircle, Loader2,
+    Pencil, BookOpen, Star, Coins, Lock, ShieldX, Check
+} from 'lucide-react';
 
 type TabType = 'overview' | 'companies' | 'members' | 'invitations' | 'quotas' | 'plans';
 
@@ -254,7 +259,7 @@ const SuperAdminDashboard: React.FC = () => {
         return (
             <div className="super-admin-dashboard">
                 <div className="no-permission">
-                    <div className="icon">🚫</div>
+                    <div className="icon"><ShieldX className="w-16 h-16" /></div>
                     <h2>ไม่มีสิทธิ์เข้าถึง</h2>
                     <p>หน้านี้สำหรับ Super Admin เท่านั้น</p>
                 </div>
@@ -342,7 +347,7 @@ const SuperAdminDashboard: React.FC = () => {
             {/* Header */}
             <div className="dashboard-header">
                 <div>
-                    <h1>🔐 Super Admin Dashboard</h1>
+                    <h1><Lock className="w-7 h-7 inline mr-2" />Super Admin Dashboard</h1>
                     <p className="subtitle">จัดการระบบทั้งหมด</p>
                 </div>
                 <div className="user-info">
@@ -353,7 +358,8 @@ const SuperAdminDashboard: React.FC = () => {
                         onClick={handleLogout}
                         title="ออกจากระบบ"
                     >
-                        🚪 Logout
+                        <LogOut className="w-4 h-4" />
+                        <span className="logout-text">Logout</span>
                     </button>
                 </div>
             </div>
@@ -376,13 +382,13 @@ const SuperAdminDashboard: React.FC = () => {
                     className={`tab ${activeTab === 'quotas' ? 'active' : ''}`}
                     onClick={() => setActiveTab('quotas')}
                 >
-                    💎 โควตาบริษัท
+                    <Gem className="w-4 h-4 inline mr-1" />โควตาบริษัท
                 </button>
                 <button
                     className={`tab ${activeTab === 'plans' ? 'active' : ''}`}
                     onClick={() => setActiveTab('plans')}
                 >
-                    🎯 จัดการแผน
+                    <Target className="w-4 h-4 inline mr-1" />จัดการแผน
                 </button>
                 <button
                     className={`tab ${activeTab === 'members' ? 'active' : ''}`}
@@ -394,7 +400,7 @@ const SuperAdminDashboard: React.FC = () => {
                     className={`tab ${activeTab === 'invitations' ? 'active' : ''}`}
                     onClick={() => setActiveTab('invitations')}
                 >
-                    📨 คำเชิญทั้งหมด
+                    <Mail className="w-4 h-4 inline mr-1" /><span className="tab-text">คำเชิญทั้งหมด</span>
                 </button>
             </div>
 
@@ -410,7 +416,7 @@ const SuperAdminDashboard: React.FC = () => {
                             </div>
                         ) : statsError ? (
                             <div className="error-message">
-                                <div className="error-icon">⚠️</div>
+                                <div className="error-icon"><AlertTriangle className="w-16 h-16" /></div>
                                 <h3>เกิดข้อผิดพลาด</h3>
                                 <p>{statsError}</p>
                                 <button 
@@ -430,7 +436,7 @@ const SuperAdminDashboard: React.FC = () => {
                                         }
                                     }}
                                 >
-                                    🔄 ลองใหม่อีกครั้ง
+                                    <RefreshCw className="w-4 h-4 inline mr-1" />ลองใหม่อีกครั้ง
                                 </button>
                             </div>
                         ) : stats ? (
@@ -452,7 +458,7 @@ const SuperAdminDashboard: React.FC = () => {
                                 </div>
 
                                 <div className="stat-card">
-                                    <div className="stat-icon">✅</div>
+                                    <div className="stat-icon"><UserCheck className="w-6 h-6" /></div>
                                     <div className="stat-info">
                                         <div className="stat-value">{stats.activeUsers}</div>
                                         <div className="stat-label">สมาชิกที่ใช้งาน</div>
@@ -460,7 +466,7 @@ const SuperAdminDashboard: React.FC = () => {
                                 </div>
 
                                 <div className="stat-card">
-                                    <div className="stat-icon">📨</div>
+                                    <div className="stat-icon"><Mail className="w-6 h-6" /></div>
                                     <div className="stat-info">
                                         <div className="stat-value">{stats.pendingInvitations}</div>
                                         <div className="stat-label">คำเชิญรอการยอมรับ</div>
@@ -468,7 +474,7 @@ const SuperAdminDashboard: React.FC = () => {
                                 </div>
 
                                 <div className="stat-card">
-                                    <div className="stat-icon">📄</div>
+                                    <div className="stat-icon"><FileText className="w-6 h-6" /></div>
                                     <div className="stat-info">
                                         <div className="stat-value">{stats.totalDocuments}</div>
                                         <div className="stat-label">เอกสารทั้งหมด</div>
@@ -476,7 +482,7 @@ const SuperAdminDashboard: React.FC = () => {
                                 </div>
 
                                 <div className="stat-card">
-                                    <div className="stat-icon">👤</div>
+                                    <div className="stat-icon"><User className="w-6 h-6" /></div>
                                     <div className="stat-info">
                                         <div className="stat-value">{stats.totalMembers}</div>
                                         <div className="stat-label">สมาชิกทั้งหมด</div>
@@ -505,7 +511,7 @@ const SuperAdminDashboard: React.FC = () => {
                                         }
                                     }}
                                 >
-                                    🔄 โหลดสถิติ
+                                    <RefreshCw className="w-4 h-4 inline mr-1" />โหลดสถิติ
                                 </button>
                             </div>
                         )}
@@ -583,9 +589,9 @@ const SuperAdminDashboard: React.FC = () => {
                                             <tr key={member.id}>
                                                 <td>
                                                     <span className={`auth-type-badge auth-${authType}`}>
-                                                        {authType === 'email' ? '📧 อีเมล' :
-                                                         authType === 'phone' ? '📱 เบอร์โทร' :
-                                                         '❓ ไม่ระบุ'}
+                                                        {authType === 'email' ? <><Mail className="w-3 h-3 inline mr-1" />อีเมล</> :
+                                                         authType === 'phone' ? <><Smartphone className="w-3 h-3 inline mr-1" />เบอร์โทร</> :
+                                                         <><HelpCircle className="w-3 h-3 inline mr-1" />ไม่ระบุ</>}
                                                     </span>
                                                 </td>
                                                 <td>
@@ -593,7 +599,7 @@ const SuperAdminDashboard: React.FC = () => {
                                                         <span className="primary-contact">{getPrimaryContact(member)}</span>
                                                         {/* แสดงเบอร์โทรเพิ่มเติมถ้ามีทั้งอีเมลและเบอร์โทร */}
                                                         {member.email && member.phoneNumber && (
-                                                            <span className="secondary-contact">📱 {member.phoneNumber}</span>
+                                                            <span className="secondary-contact"><Smartphone className="w-3 h-3 inline mr-1" />{member.phoneNumber}</span>
                                                         )}
                                                     </div>
                                                 </td>
@@ -605,9 +611,9 @@ const SuperAdminDashboard: React.FC = () => {
                                                 </td>
                                                 <td>
                                                     <span className={`status-badge ${member.status}`}>
-                                                        {member.status === 'active' ? '✅ Active' :
-                                                         member.status === 'pending' ? '⏳ Pending' :
-                                                         '❌ Inactive'}
+                                                        {member.status === 'active' ? <><CheckCircle className="w-3 h-3 inline mr-1" />Active</> :
+                                                         member.status === 'pending' ? <><Clock className="w-3 h-3 inline mr-1" />Pending</> :
+                                                         <><Ban className="w-3 h-3 inline mr-1" />Inactive</>}
                                                     </span>
                                                 </td>
                                                 <td>
@@ -628,7 +634,7 @@ const SuperAdminDashboard: React.FC = () => {
                 {activeTab === 'quotas' && (
                     <div className="quotas-tab">
                         <div className="tab-header">
-                            <h2>💎 โควตาและแผนการใช้งาน ({quotas.length})</h2>
+                            <h2><Gem className="w-5 h-5 inline mr-2" />โควตาและแผนการใช้งาน ({quotas.length})</h2>
                         </div>
 
                         <div className="quota-info-box">
@@ -684,10 +690,10 @@ const SuperAdminDashboard: React.FC = () => {
                                             </td>
                                             <td>
                                                 <span className={`status-badge quota-${quota.status}`}>
-                                                    {quota.status === 'active' ? '✅ Active' :
-                                                     quota.status === 'trial' ? '🔄 Trial' :
-                                                     quota.status === 'expired' ? '❌ Expired' :
-                                                     '⏸️ Suspended'}
+                                                    {quota.status === 'active' ? <><CheckCircle className="w-3 h-3 inline mr-1" />Active</> :
+                                                     quota.status === 'trial' ? <><RefreshCw className="w-3 h-3 inline mr-1" />Trial</> :
+                                                     quota.status === 'expired' ? <><Ban className="w-3 h-3 inline mr-1" />Expired</> :
+                                                     <><Clock className="w-3 h-3 inline mr-1" />Suspended</>}
                                                 </span>
                                             </td>
                                             <td className="text-center">
@@ -713,13 +719,13 @@ const SuperAdminDashboard: React.FC = () => {
                                             <td className="text-center">
                                                 {editingQuota === quota.companyId ? (
                                                     <div className="action-buttons">
-                                                        <button
-                                                            className="btn-cancel"
-                                                            onClick={() => setEditingQuota(null)}
-                                                            disabled={quotaUpdating}
-                                                        >
-                                                            ❌
-                                                        </button>
+                                                    <button
+                                                        className="btn-cancel"
+                                                        onClick={() => setEditingQuota(null)}
+                                                        disabled={quotaUpdating}
+                                                    >
+                                                        <Ban className="w-4 h-4" />
+                                                    </button>
                                                     </div>
                                                 ) : (
                                                     <button
@@ -727,7 +733,7 @@ const SuperAdminDashboard: React.FC = () => {
                                                         onClick={() => setEditingQuota(quota.companyId)}
                                                         disabled={quotaUpdating}
                                                     >
-                                                        ✏️ แก้ไข
+                                                        <Pencil className="w-3 h-3 inline mr-1" />แก้ไข
                                                     </button>
                                                 )}
                                             </td>
@@ -740,7 +746,7 @@ const SuperAdminDashboard: React.FC = () => {
                         {/* Legend - ดึงข้อมูลจาก Plan Templates */}
                         {planTemplates.length > 0 && (
                             <div className="quota-legend">
-                                <h3>📖 คำอธิบายแผนการใช้งาน</h3>
+                                <h3><BookOpen className="w-4 h-4 inline mr-1" />คำอธิบายแผนการใช้งาน</h3>
                                 <div className="legend-grid">
                                     {planTemplates.map(plan => (
                                         <div key={plan.id} className="legend-item">
@@ -762,7 +768,7 @@ const SuperAdminDashboard: React.FC = () => {
                 {activeTab === 'invitations' && (
                     <div className="invitations-tab">
                         <div className="tab-header">
-                            <h2>📨 คำเชิญทั้งหมด ({filteredInvitations.length})</h2>
+                            <h2><Mail className="w-5 h-5 inline mr-2" />คำเชิญทั้งหมด ({filteredInvitations.length})</h2>
                             <input
                                 type="text"
                                 placeholder="ค้นหาด้วยอีเมลหรือบริษัท..."
@@ -795,10 +801,10 @@ const SuperAdminDashboard: React.FC = () => {
                                             </td>
                                             <td>
                                                 <span className={`status-badge invitation-${invitation.status}`}>
-                                                    {invitation.status === 'pending' ? '⏳ รอยอมรับ' :
-                                                     invitation.status === 'accepted' ? '✅ ยอมรับแล้ว' :
-                                                     invitation.status === 'rejected' ? '❌ ปฏิเสธ' :
-                                                     '⏰ หมดอายุ'}
+                                                    {invitation.status === 'pending' ? <><Clock className="w-3 h-3 inline mr-1" />รอยอมรับ</> :
+                                                     invitation.status === 'accepted' ? <><CheckCircle className="w-3 h-3 inline mr-1" />ยอมรับแล้ว</> :
+                                                     invitation.status === 'rejected' ? <><Ban className="w-3 h-3 inline mr-1" />ปฏิเสธ</> :
+                                                     <><AlertTriangle className="w-3 h-3 inline mr-1" />หมดอายุ</>}
                                                 </span>
                                             </td>
                                             <td>
@@ -818,7 +824,7 @@ const SuperAdminDashboard: React.FC = () => {
                 {activeTab === 'plans' && (
                     <div className="plans-tab">
                         <div className="tab-header">
-                            <h2>🎯 จัดการแผนการใช้งาน ({planTemplates.length})</h2>
+                            <h2><Target className="w-5 h-5 inline mr-2" />จัดการแผนการใช้งาน ({planTemplates.length})</h2>
                         </div>
 
                         <div className="plans-grid">
@@ -826,7 +832,7 @@ const SuperAdminDashboard: React.FC = () => {
                                 <div key={plan.id} className="plan-card" style={{ borderTop: `4px solid ${plan.color}` }}>
                                     <div className="plan-header">
                                         <h3>{plan.name}</h3>
-                                        {plan.isPopular && <span className="popular-badge">⭐ ยอดนิยม</span>}
+                                        {plan.isPopular && <span className="popular-badge"><Star className="w-3 h-3 inline mr-1" />ยอดนิยม</span>}
                                     </div>
                                     
                                     <p className="plan-description">{plan.description}</p>
@@ -851,8 +857,8 @@ const SuperAdminDashboard: React.FC = () => {
                                                     disabled={planUpdating}
                                                 />
                                             </div>
-                                            <div className="form-group">
-                                                <label>📄 เอกสาร/เดือน:</label>
+                                                <div className="form-group">
+                                                    <label><FileText className="w-4 h-4 inline mr-1" />เอกสาร/เดือน:</label>
                                                 <input
                                                     type="number"
                                                     defaultValue={plan.maxDocuments}
@@ -891,7 +897,7 @@ const SuperAdminDashboard: React.FC = () => {
                                                 />
                                             </div>
                                             <div className="form-group">
-                                                <label>💰 ราคา (฿/เดือน):</label>
+                                                <label><Coins className="w-4 h-4 inline mr-1" />ราคา (฿/เดือน):</label>
                                                 <input
                                                     type="number"
                                                     defaultValue={plan.price}
@@ -907,7 +913,7 @@ const SuperAdminDashboard: React.FC = () => {
                                                 onClick={() => setEditingPlan(null)}
                                                 disabled={planUpdating}
                                             >
-                                                ❌ ปิด
+                                                <Ban className="w-4 h-4 inline mr-1" />ปิด
                                             </button>
                                         </div>
                                     ) : (
@@ -918,7 +924,7 @@ const SuperAdminDashboard: React.FC = () => {
                                                     <span>{plan.maxUsers === -1 ? 'ไม่จำกัด' : plan.maxUsers} ผู้ใช้</span>
                                                 </div>
                                                 <div className="feature-item">
-                                                    <span className="feature-icon">📄</span>
+                                                    <span className="feature-icon"><FileText className="w-4 h-4" /></span>
                                                     <span>{plan.maxDocuments === -1 ? 'ไม่จำกัด' : plan.maxDocuments} เอกสาร/เดือน</span>
                                                 </div>
                                                 <div className="feature-item">
@@ -932,14 +938,14 @@ const SuperAdminDashboard: React.FC = () => {
                                             </div>
 
                                             <div className="plan-features-list">
-                                                {plan.features.multipleProfiles && <div className="feature">✅ Multiple Profiles</div>}
-                                                {plan.features.apiAccess && <div className="feature">✅ API Access</div>}
-                                                {plan.features.customDomain && <div className="feature">✅ Custom Domain</div>}
-                                                {plan.features.prioritySupport && <div className="feature">✅ Priority Support</div>}
-                                                {plan.features.exportPDF && <div className="feature">✅ Export PDF</div>}
-                                                {plan.features.exportExcel && <div className="feature">✅ Export Excel</div>}
-                                                {plan.features.advancedReports && <div className="feature">✅ Advanced Reports</div>}
-                                                {plan.features.customTemplates && <div className="feature">✅ Custom Templates</div>}
+                                                {plan.features.multipleProfiles && <div className="feature"><Check className="w-4 h-4 inline mr-1 text-green-500" />Multiple Profiles</div>}
+                                                {plan.features.apiAccess && <div className="feature"><Check className="w-4 h-4 inline mr-1 text-green-500" />API Access</div>}
+                                                {plan.features.customDomain && <div className="feature"><Check className="w-4 h-4 inline mr-1 text-green-500" />Custom Domain</div>}
+                                                {plan.features.prioritySupport && <div className="feature"><Check className="w-4 h-4 inline mr-1 text-green-500" />Priority Support</div>}
+                                                {plan.features.exportPDF && <div className="feature"><Check className="w-4 h-4 inline mr-1 text-green-500" />Export PDF</div>}
+                                                {plan.features.exportExcel && <div className="feature"><Check className="w-4 h-4 inline mr-1 text-green-500" />Export Excel</div>}
+                                                {plan.features.advancedReports && <div className="feature"><Check className="w-4 h-4 inline mr-1 text-green-500" />Advanced Reports</div>}
+                                                {plan.features.customTemplates && <div className="feature"><Check className="w-4 h-4 inline mr-1 text-green-500" />Custom Templates</div>}
                                             </div>
 
                                             <button
@@ -947,7 +953,7 @@ const SuperAdminDashboard: React.FC = () => {
                                                 onClick={() => setEditingPlan(plan.id!)}
                                                 disabled={planUpdating}
                                             >
-                                                ✏️ แก้ไขแผน
+                                                <Pencil className="w-4 h-4 inline mr-1" />แก้ไขแผน
                                             </button>
                                         </>
                                     )}
@@ -958,7 +964,7 @@ const SuperAdminDashboard: React.FC = () => {
                         <div className="plan-note">
                             <h4><StickyNote className="w-4 h-4 inline mr-1" />หมายเหตุ:</h4>
                             <p>• การแก้ไขแผนจะส่งผลกับ <strong>บริษัทใหม่ที่สร้างในอนาคต</strong> เท่านั้น</p>
-                            <p>• บริษัทที่มีอยู่แล้วจะยังใช้โควต้าที่กำหนดไว้เดิม (ดูได้ที่แท็บ "💎 โควตาบริษัท")</p>
+                            <p>• บริษัทที่มีอยู่แล้วจะยังใช้โควต้าที่กำหนดไว้เดิม (ดูได้ที่แท็บ "โควตาบริษัท")</p>
                             <p>• ตัวเลข <strong>-1</strong> หมายถึง ไม่จำกัด</p>
                         </div>
                     </div>
@@ -1006,6 +1012,7 @@ const styles = `
     .no-permission .icon {
         font-size: 64px;
         margin-bottom: 20px;
+        color: #e53e3e;
     }
 
     .dashboard-header {
@@ -1048,6 +1055,9 @@ const styles = `
     }
 
     .logout-button {
+        display: flex;
+        align-items: center;
+        gap: 6px;
         padding: 8px 16px;
         background: #f56565;
         color: white;
@@ -1058,6 +1068,7 @@ const styles = `
         cursor: pointer;
         transition: all 0.3s;
         margin-left: 10px;
+        white-space: nowrap;
     }
 
     .logout-button:hover {
@@ -1068,6 +1079,10 @@ const styles = `
 
     .logout-button:active {
         transform: translateY(0);
+    }
+    
+    .logout-text {
+        display: inline;
     }
 
     .tabs {
@@ -1126,6 +1141,11 @@ const styles = `
     .empty-state .empty-icon {
         font-size: 64px;
         margin-bottom: 20px;
+        color: #f6ad55;
+    }
+    
+    .text-green-500 {
+        color: #48bb78;
     }
 
     .error-message h3,
@@ -1710,10 +1730,42 @@ const styles = `
     }
 
     @media (max-width: 768px) {
+        .super-admin-dashboard {
+            padding: 10px;
+        }
+
         .dashboard-header {
             flex-direction: column;
             align-items: flex-start;
             gap: 15px;
+            padding: 20px;
+        }
+
+        .dashboard-header h1 {
+            font-size: 22px;
+        }
+
+        .user-info {
+            width: 100%;
+            flex-wrap: wrap;
+            gap: 8px;
+            justify-content: flex-start;
+        }
+
+        .user-info > span:not(.badge) {
+            font-size: 12px;
+            word-break: break-all;
+            max-width: 100%;
+        }
+
+        .logout-button {
+            margin-left: 0;
+            padding: 10px 14px;
+            flex-shrink: 0;
+        }
+
+        .logout-text {
+            display: none;
         }
 
         .stats-grid {
@@ -1731,10 +1783,61 @@ const styles = `
 
         .tabs {
             overflow-x: auto;
+            gap: 6px;
+            padding-bottom: 8px;
+        }
+
+        .tab {
+            padding: 10px 14px;
+            font-size: 13px;
+        }
+
+        .tab-text {
+            display: none;
         }
 
         .plans-grid {
             grid-template-columns: 1fr;
+        }
+
+        .dashboard-content {
+            padding: 15px;
+        }
+    }
+
+    @media (max-width: 480px) {
+        .dashboard-header h1 {
+            font-size: 18px;
+        }
+
+        .badge {
+            font-size: 10px;
+            padding: 3px 8px;
+        }
+
+        .user-info > span:not(.badge) {
+            font-size: 11px;
+        }
+
+        .stat-card {
+            padding: 16px;
+        }
+
+        .stat-icon {
+            font-size: 36px;
+        }
+
+        .stat-value {
+            font-size: 24px;
+        }
+
+        .stat-label {
+            font-size: 12px;
+        }
+
+        .tab {
+            padding: 8px 12px;
+            font-size: 12px;
         }
     }
 `;
