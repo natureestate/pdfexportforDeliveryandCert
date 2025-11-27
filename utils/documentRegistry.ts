@@ -10,7 +10,8 @@ import {
     QuotationData, 
     PurchaseOrderData,
     MemoData,
-    VariationOrderData
+    VariationOrderData,
+    SubcontractData
 } from '../types';
 import {
     saveDeliveryNote,
@@ -31,6 +32,8 @@ import {
     updateMemo,
     saveVariationOrder,
     updateVariationOrder,
+    saveSubcontract,
+    updateSubcontract,
 } from '../services/firestore';
 import type {
     DeliveryNoteDocument,
@@ -42,9 +45,10 @@ import type {
     PurchaseOrderDocument,
     MemoDocument,
     VariationOrderDocument,
+    SubcontractDocument,
 } from '../services/firestore';
 
-export type DocType = 'delivery' | 'warranty' | 'invoice' | 'receipt' | 'tax-invoice' | 'quotation' | 'purchase-order' | 'memo' | 'variation-order';
+export type DocType = 'delivery' | 'warranty' | 'invoice' | 'receipt' | 'tax-invoice' | 'quotation' | 'purchase-order' | 'memo' | 'variation-order' | 'subcontract';
 
 // Union type สำหรับ document data
 export type DocumentData = 
@@ -56,7 +60,8 @@ export type DocumentData =
     | QuotationData 
     | PurchaseOrderData
     | MemoData
-    | VariationOrderData;
+    | VariationOrderData
+    | SubcontractData;
 
 // Union type สำหรับ document documents
 export type DocumentDocument = 
@@ -68,7 +73,8 @@ export type DocumentDocument =
     | QuotationDocument
     | PurchaseOrderDocument
     | MemoDocument
-    | VariationOrderDocument;
+    | VariationOrderDocument
+    | SubcontractDocument;
 
 // Helper function สำหรับดึงชื่อลูกค้า/ผู้ขายจาก document data
 type CustomerNameGetter<T extends DocumentData> = (data: T) => string;
@@ -196,6 +202,18 @@ export const DOCUMENT_REGISTRY = {
             update: 'อัปเดตใบส่วนต่างสำเร็จ',
         },
     } as DocumentConfig<VariationOrderData>,
+    
+    'subcontract': {
+        prefix: 'SC',
+        saveFn: saveSubcontract,
+        updateFn: updateSubcontract,
+        getCustomerName: (data: SubcontractData) => data.contractorName || data.projectName || 'Contractor',
+        getDate: (data: SubcontractData) => data.contractDate,
+        successMessages: {
+            save: 'บันทึกสัญญาจ้างเหมาช่วงสำเร็จ',
+            update: 'อัปเดตสัญญาจ้างเหมาช่วงสำเร็จ',
+        },
+    } as DocumentConfig<SubcontractData>,
 } as const;
 
 /**

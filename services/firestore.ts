@@ -18,7 +18,7 @@ import {
     QueryConstraint
 } from "firebase/firestore";
 import { db, auth } from "../firebase.config";
-import { DeliveryNoteData, WarrantyData, InvoiceData, ReceiptData, QuotationData, PurchaseOrderData, TaxInvoiceData, MemoData, VariationOrderData } from "../types";
+import { DeliveryNoteData, WarrantyData, InvoiceData, ReceiptData, QuotationData, PurchaseOrderData, TaxInvoiceData, MemoData, VariationOrderData, SubcontractData } from "../types";
 import { createDocumentService, createIdGenerator, FirestoreDocument } from "./documentService";
 
 // Collection names
@@ -31,6 +31,7 @@ const QUOTATIONS_COLLECTION = "quotations";
 const PURCHASE_ORDERS_COLLECTION = "purchaseOrders";
 const MEMOS_COLLECTION = "memos";
 const VARIATION_ORDERS_COLLECTION = "variationOrders";
+const SUBCONTRACTS_COLLECTION = "subcontracts";
 
 // Re-export FirestoreDocument interface from documentService
 export type { FirestoreDocument };
@@ -204,6 +205,23 @@ const variationOrderService = createDocumentService<VariationOrderData>({
     },
 });
 
+// Subcontract Service (สัญญาจ้างเหมาช่วง)
+const subcontractService = createDocumentService<SubcontractData>({
+    collection: SUBCONTRACTS_COLLECTION,
+    prefix: 'SC',
+    documentNumberField: 'contractNumber',
+    generateId: createIdGenerator('SC'),
+    dateFields: ['contractDate', 'startDate', 'endDate'],
+    errorMessages: {
+        save: 'ไม่สามารถบันทึกสัญญาจ้างเหมาช่วงได้',
+        get: 'ไม่สามารถดึงข้อมูลสัญญาจ้างเหมาช่วงได้',
+        getAll: 'ไม่สามารถดึงรายการสัญญาจ้างเหมาช่วงได้',
+        update: 'ไม่สามารถอัปเดตสัญญาจ้างเหมาช่วงได้',
+        delete: 'ไม่สามารถลบสัญญาจ้างเหมาช่วงได้',
+        search: 'ไม่สามารถค้นหาสัญญาจ้างเหมาช่วงได้',
+    },
+});
+
 export interface DeliveryNoteDocument extends DeliveryNoteData, FirestoreDocument {}
 export interface WarrantyDocument extends WarrantyData, FirestoreDocument {}
 export interface InvoiceDocument extends InvoiceData, FirestoreDocument {}
@@ -213,6 +231,7 @@ export interface QuotationDocument extends QuotationData, FirestoreDocument {}
 export interface PurchaseOrderDocument extends PurchaseOrderData, FirestoreDocument {}
 export interface MemoDocument extends MemoData, FirestoreDocument {}
 export interface VariationOrderDocument extends VariationOrderData, FirestoreDocument {}
+export interface SubcontractDocument extends SubcontractData, FirestoreDocument {}
 
 // ==================== Delivery Notes Functions ====================
 // Refactored: ใช้ Generic Document Service
@@ -635,4 +654,31 @@ export const deleteVariationOrder = async (id: string): Promise<void> => {
 
 export const searchVariationOrderByVoNumber = async (voNumber: string, companyId?: string): Promise<VariationOrderDocument[]> => {
     return variationOrderService.searchByDocumentNumber(voNumber, companyId) as Promise<VariationOrderDocument[]>;
+};
+
+// ==================== Subcontracts Functions ====================
+// สัญญาจ้างเหมาช่วง (Sub-contractor Agreement)
+
+export const saveSubcontract = async (data: SubcontractData, companyId?: string): Promise<string> => {
+    return subcontractService.save(data, companyId);
+};
+
+export const getSubcontract = async (id: string): Promise<SubcontractDocument | null> => {
+    return subcontractService.get(id) as Promise<SubcontractDocument | null>;
+};
+
+export const getSubcontracts = async (limitCount: number = 50, companyId?: string): Promise<SubcontractDocument[]> => {
+    return subcontractService.getAll(limitCount, companyId) as Promise<SubcontractDocument[]>;
+};
+
+export const updateSubcontract = async (id: string, data: Partial<SubcontractData>): Promise<void> => {
+    return subcontractService.update(id, data);
+};
+
+export const deleteSubcontract = async (id: string): Promise<void> => {
+    return subcontractService.delete(id);
+};
+
+export const searchSubcontractByContractNumber = async (contractNumber: string, companyId?: string): Promise<SubcontractDocument[]> => {
+    return subcontractService.searchByDocumentNumber(contractNumber, companyId) as Promise<SubcontractDocument[]>;
 };

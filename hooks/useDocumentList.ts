@@ -14,6 +14,7 @@ import {
     getPurchaseOrders,
     getMemos,
     getVariationOrders,
+    getSubcontracts,
     deleteDeliveryNote,
     deleteWarrantyCard,
     deleteInvoice,
@@ -23,6 +24,7 @@ import {
     deletePurchaseOrder,
     deleteMemo,
     deleteVariationOrder,
+    deleteSubcontract,
 } from '../services/firestore';
 import type {
     DeliveryNoteDocument,
@@ -34,6 +36,7 @@ import type {
     PurchaseOrderDocument,
     MemoDocument,
     VariationOrderDocument,
+    SubcontractDocument,
 } from '../services/firestore';
 
 // Registry สำหรับ fetch และ delete functions
@@ -47,6 +50,7 @@ const FETCH_FUNCTIONS = {
     'purchase-order': getPurchaseOrders,
     'memo': getMemos,
     'variation-order': getVariationOrders,
+    'subcontract': getSubcontracts,
 } as const;
 
 const DELETE_FUNCTIONS = {
@@ -59,6 +63,7 @@ const DELETE_FUNCTIONS = {
     'purchase-order': deletePurchaseOrder,
     'memo': deleteMemo,
     'variation-order': deleteVariationOrder,
+    'subcontract': deleteSubcontract,
 } as const;
 
 // Document type names สำหรับแสดงผล
@@ -72,6 +77,7 @@ const DOCUMENT_TYPE_NAMES = {
     'purchase-order': 'ใบสั่งซื้อ',
     'memo': 'ใบบันทึก',
     'variation-order': 'ใบส่วนต่าง',
+    'subcontract': 'สัญญาจ้างเหมาช่วง',
 } as const;
 
 interface UseDocumentListOptions {

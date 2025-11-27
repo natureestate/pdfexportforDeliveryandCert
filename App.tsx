@@ -1,7 +1,7 @@
 import React, { useState, useRef, useCallback, useEffect } from 'react';
 import { Routes, Route, Navigate } from 'react-router-dom';
-import { Package, Shield, FileText, Receipt, FileCheck, DollarSign, ShoppingCart, StickyNote, PlusCircle, FilePlus, History, Save } from 'lucide-react';
-import { DeliveryNoteData, WarrantyData, InvoiceData, ReceiptData, TaxInvoiceData, QuotationData, PurchaseOrderData, MemoData, VariationOrderData, LogoType } from './types';
+import { Package, Shield, FileText, Receipt, FileCheck, DollarSign, ShoppingCart, StickyNote, PlusCircle, FilePlus, History, Save, HardHat } from 'lucide-react';
+import { DeliveryNoteData, WarrantyData, InvoiceData, ReceiptData, TaxInvoiceData, QuotationData, PurchaseOrderData, MemoData, VariationOrderData, SubcontractData, LogoType } from './types';
 import { AuthProvider } from './contexts/AuthContext';
 import { CompanyProvider, useCompany } from './contexts/CompanyContext';
 import ProtectedRoute from './components/ProtectedRoute';
@@ -24,13 +24,15 @@ import MemoForm from './components/MemoForm';
 import MemoPreview from './components/MemoPreview';
 import VariationOrderForm from './components/VariationOrderForm';
 import VariationOrderPreview from './components/VariationOrderPreview';
+import SubcontractForm from './components/SubcontractForm';
+import SubcontractPreview from './components/SubcontractPreview';
 import HistoryList from './components/HistoryList';
 import AcceptInvitationPage from './components/AcceptInvitationPage';
 import SuperAdminDashboard from './components/SuperAdminDashboard';
 import CookieConsentModal from './components/CookieConsentModal';
 import { generatePdf } from './services/pdfGenerator';
 import { saveDeliveryNote, saveWarrantyCard, saveInvoice, saveReceipt, saveTaxInvoice, saveQuotation, savePurchaseOrder } from './services/firestore';
-import type { DeliveryNoteDocument, WarrantyDocument, InvoiceDocument, ReceiptDocument, TaxInvoiceDocument, QuotationDocument, PurchaseOrderDocument, MemoDocument, VariationOrderDocument } from './services/firestore';
+import type { DeliveryNoteDocument, WarrantyDocument, InvoiceDocument, ReceiptDocument, TaxInvoiceDocument, QuotationDocument, PurchaseOrderDocument, MemoDocument, VariationOrderDocument, SubcontractDocument } from './services/firestore';
 import { DOCUMENT_REGISTRY, generatePdfFilename as generatePdfFilenameFromRegistry, saveOrUpdateDocument, type DocType } from './utils/documentRegistry';
 
 const getInitialDeliveryData = (): DeliveryNoteData => ({
@@ -364,6 +366,62 @@ const initialVariationOrderData: VariationOrderData = {
     issuedBy: '',
 };
 
+const initialSubcontractData: SubcontractData = {
+    logo: null,
+    // ข้อมูลผู้ว่าจ้าง (บริษัท)
+    companyName: '',
+    companyAddress: '',
+    companyPhone: '',
+    companyEmail: '',
+    companyTaxId: '',
+    // ข้อมูลผู้รับจ้าง (ช่าง)
+    contractorName: '',
+    contractorIdCard: '',
+    contractorPhone: '',
+    contractorAddress: '',
+    // ข้อมูลเอกสารและสถานที่
+    contractNumber: '', // จะถูก auto-generate ใน SubcontractForm
+    contractDate: new Date(),
+    contractLocation: '',
+    projectName: '',
+    projectLocation: '',
+    // ข้อ 1: ลักษณะงานที่จ้าง
+    scopeOfWork: '',
+    items: [],
+    materialNote: '',
+    totalWorkAmount: 0,
+    // ข้อ 2: ระยะเวลาการทำงาน
+    showWorkPeriod: true,
+    startDate: null,
+    endDate: null,
+    // ข้อ 3: การชำระเงินและการแบ่งงวดงาน
+    totalContractAmount: 0,
+    totalContractAmountText: '',
+    paymentMilestones: [
+        { milestone: 1, description: 'เบิกเงินล่วงหน้า (Advance) / เริ่มเข้าหน้างาน', percentage: 20, amount: 0 },
+        { milestone: 2, description: 'เมื่อดำเนินการ 50% เสร็จสิ้น', percentage: 30, amount: 0 },
+        { milestone: 3, description: 'เมื่อส่งมอบงานทั้งหมด และผ่านการตรวจรับ', percentage: 50, amount: 0 },
+    ],
+    // ข้อ 4: เครื่องมือและวัสดุอุปกรณ์
+    showToolsSection: true,
+    consumableResponsibility: 'contractor',
+    // ข้อ 5: มาตรฐานงานและการรับประกัน
+    showWarrantySection: true,
+    defectFixDays: 7,
+    warrantyMonths: 6,
+    // ข้อ 6: การทิ้งงานและการปรับ
+    showPenaltySection: true,
+    abandonDays: 3,
+    penaltyPerDay: 500,
+    // ส่วนลงนาม
+    employerSignName: '',
+    contractorSignName: '',
+    witnessName: '',
+    // ข้อมูลเพิ่มเติม
+    notes: '',
+    issuedBy: '',
+};
+
 type ViewMode = 'form' | 'history';
 type Notification = { show: boolean; message: string; type: 'success' | 'info' | 'error' };
 
@@ -379,6 +437,7 @@ const AppContent: React.FC = () => {
     const [purchaseOrderData, setPurchaseOrderData] = useState<PurchaseOrderData>(initialPurchaseOrderData);
     const [memoData, setMemoData] = useState<MemoData>(initialMemoData);
     const [variationOrderData, setVariationOrderData] = useState<VariationOrderData>(initialVariationOrderData);
+    const [subcontractData, setSubcontractData] = useState<SubcontractData>(initialSubcontractData);
     const [activeTab, setActiveTab] = useState<DocType>('delivery');
     const [viewMode, setViewMode] = useState<ViewMode>('form');
     const [isLoading, setIsLoading] = useState<boolean>(false);
@@ -413,6 +472,7 @@ const AppContent: React.FC = () => {
         setPurchaseOrderData(updateLogo);
         setMemoData(updateLogo);
         setVariationOrderData(updateLogo);
+        setSubcontractData(updateLogo);
     }, [sharedLogo, sharedLogoUrl, sharedLogoType]);
 
     // Sync ข้อมูลบริษัทจาก currentCompany ไปยัง form data
@@ -508,6 +568,16 @@ const AppContent: React.FC = () => {
                 companyPhone: currentCompany.phone || '',
                 companyEmail: currentCompany.email || '',
                 companyWebsite: currentCompany.website || '',
+                companyTaxId: currentCompany.taxId || '',
+            }));
+
+            // Sync ไปยัง SubcontractForm (ข้อมูลผู้ว่าจ้าง)
+            setSubcontractData(prev => ({
+                ...prev,
+                companyName: currentCompany.name,
+                companyAddress: currentCompany.address || '',
+                companyPhone: currentCompany.phone || '',
+                companyEmail: currentCompany.email || '',
                 companyTaxId: currentCompany.taxId || '',
             }));
         }
@@ -611,8 +681,10 @@ const AppContent: React.FC = () => {
                 return memoData;
             case 'variation-order':
                 return variationOrderData;
+            case 'subcontract':
+                return subcontractData;
         }
-    }, [activeTab, deliveryData, warrantyData, invoiceData, receiptData, taxInvoiceData, quotationData, purchaseOrderData, memoData, variationOrderData]);
+    }, [activeTab, deliveryData, warrantyData, invoiceData, receiptData, taxInvoiceData, quotationData, purchaseOrderData, memoData, variationOrderData, subcontractData]);
 
     // ฟังก์ชันบันทึกข้อมูลลง Firestore พร้อม companyId (รองรับทั้ง create และ update)
     // Refactored: ใช้ Document Registry Pattern
@@ -692,7 +764,7 @@ const AppContent: React.FC = () => {
     }, [activeTab, getCurrentData, currentCompany, generatePdfFilename]);
 
     // ฟังก์ชันโหลดเอกสารจาก History (สำหรับ Edit)
-    const handleLoadDocument = useCallback((doc: DeliveryNoteDocument | WarrantyDocument | InvoiceDocument | ReceiptDocument | TaxInvoiceDocument | QuotationDocument | PurchaseOrderDocument | MemoDocument | VariationOrderDocument) => {
+    const handleLoadDocument = useCallback((doc: DeliveryNoteDocument | WarrantyDocument | InvoiceDocument | ReceiptDocument | TaxInvoiceDocument | QuotationDocument | PurchaseOrderDocument | MemoDocument | VariationOrderDocument | SubcontractDocument) => {
         // โหลด logo จากเอกสาร
         if (doc.logoUrl || doc.logo) {
             setSharedLogo(doc.logo || null);
@@ -773,6 +845,15 @@ const AppContent: React.FC = () => {
                 companyApproverDate: doc.companyApproverDate || null,
             });
             setActiveTab('variation-order');
+        } else if ('contractNumber' in doc && 'contractorName' in doc) {
+            // เป็น SubcontractDocument
+            setSubcontractData({
+                ...doc,
+                contractDate: doc.contractDate || null,
+                startDate: doc.startDate || null,
+                endDate: doc.endDate || null,
+            });
+            setActiveTab('subcontract');
         }
         setViewMode('form');
         showToast('โหลดเอกสารสำเร็จ - โหมดแก้ไข', 'info');
@@ -822,6 +903,9 @@ const AppContent: React.FC = () => {
                 break;
             case 'variation-order':
                 setVariationOrderData(withLogo(initialVariationOrderData));
+                break;
+            case 'subcontract':
+                setSubcontractData(withLogo(initialSubcontractData));
                 break;
         }
         showToast('สร้างฟอร์มใหม่สำเร็จ', 'success');
@@ -961,6 +1045,13 @@ const AppContent: React.FC = () => {
                                             <PlusCircle className="w-4 h-4" />
                                             <span className="hidden sm:inline">ส่วนต่าง</span>
                                         </button>
+                                        <button
+                                            onClick={() => setActiveTab('subcontract')}
+                                            className={`${activeTab === 'subcontract' ? 'border-indigo-500 text-indigo-600 bg-indigo-50' : 'border-transparent text-gray-500 hover:text-gray-700 hover:border-gray-300'} whitespace-nowrap py-2.5 sm:py-3 px-3 sm:px-4 border-b-2 font-medium text-xs sm:text-sm transition-all flex-shrink-0 rounded-t-lg flex items-center gap-1.5`}
+                                        >
+                                            <HardHat className="w-4 h-4" />
+                                            <span className="hidden sm:inline">สัญญาช่าง</span>
+                                        </button>
                                     </nav>
                                 </div>
                                 
@@ -1088,10 +1179,25 @@ const AppContent: React.FC = () => {
                                     }}
                                     onSetDefaultLogo={handleSetDefaultLogo}
                                 />
-                            ) : (
+                            ) : activeTab === 'variation-order' ? (
                                 <VariationOrderForm
                                     data={variationOrderData}
                                     setData={setVariationOrderData}
+                                    sharedLogo={sharedLogo}
+                                    sharedLogoUrl={sharedLogoUrl}
+                                    sharedLogoType={sharedLogoType}
+                                    companyDefaultLogoUrl={currentCompany?.defaultLogoUrl}
+                                    onLogoChange={(logo, logoUrl, logoType) => {
+                                        setSharedLogo(logo);
+                                        setSharedLogoUrl(logoUrl);
+                                        setSharedLogoType(logoType);
+                                    }}
+                                    onSetDefaultLogo={handleSetDefaultLogo}
+                                />
+                            ) : (
+                                <SubcontractForm
+                                    data={subcontractData}
+                                    setData={setSubcontractData}
                                     sharedLogo={sharedLogo}
                                     sharedLogoUrl={sharedLogoUrl}
                                     sharedLogoType={sharedLogoType}
@@ -1177,8 +1283,10 @@ const AppContent: React.FC = () => {
                                         <PurchaseOrderPreview ref={printableAreaRef} data={purchaseOrderData} />
                                     ) : activeTab === 'memo' ? (
                                         <MemoPreview ref={printableAreaRef} data={memoData} />
-                                    ) : (
+                                    ) : activeTab === 'variation-order' ? (
                                         <VariationOrderPreview ref={printableAreaRef} data={variationOrderData} />
+                                    ) : (
+                                        <SubcontractPreview ref={printableAreaRef} data={subcontractData} />
                                     )}
                                 </div>
                             </div>

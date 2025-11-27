@@ -686,3 +686,87 @@ export interface Invitation {
     createdAt?: Date;
     updatedAt?: Date;
 }
+
+// Subcontract Work Item - รายการงานในสัญญาจ้างเหมาช่วง
+export interface SubcontractWorkItem {
+    description: string;        // รายละเอียดงาน
+    quantity: number;           // ปริมาณ
+    unit: string;               // หน่วย (เช่น ตร.ม., ชิ้น, งาน)
+    unitPrice: number;          // ราคาต่อหน่วย
+    amount: number;             // จำนวนเงิน (quantity * unitPrice)
+    notes?: string;             // หมายเหตุเพิ่มเติม (optional)
+}
+
+// Subcontract Payment Milestone - งวดงานในสัญญาจ้างเหมาช่วง
+export interface SubcontractPaymentMilestone {
+    milestone: number;          // งวดที่
+    description: string;        // รายละเอียดงานที่ต้องแล้วเสร็จ
+    percentage: number;         // % ของยอด
+    amount: number;             // จำนวนเงิน (บาท)
+}
+
+// Subcontract Data - ข้อมูลสัญญาจ้างเหมาช่วง
+export interface SubcontractData {
+    logo: string | null;           // Base64 string หรือ URL ของโลโก้
+    logoUrl?: string | null;       // URL จาก Firebase Storage (สำหรับบันทึกใน Firestore)
+    logoType?: LogoType;           // ประเภทของโลโก้
+    
+    // ข้อมูลผู้ว่าจ้าง (บริษัท)
+    companyName: string;            // ชื่อบริษัทผู้ว่าจ้าง
+    companyAddress: string;         // ที่อยู่บริษัทผู้ว่าจ้าง
+    companyPhone: string;           // เบอร์โทรศัพท์บริษัทผู้ว่าจ้าง
+    companyEmail?: string;          // อีเมลบริษัทผู้ว่าจ้าง (optional)
+    companyTaxId?: string;          // เลขประจำตัวผู้เสียภาษี (optional)
+    
+    // ข้อมูลผู้รับจ้าง (ช่าง)
+    contractorName: string;         // ชื่อช่าง/หัวหน้าชุดช่าง
+    contractorIdCard?: string;      // เลขบัตรประชาชน/เลขผู้เสียภาษี
+    contractorPhone: string;        // เบอร์โทรศัพท์
+    contractorAddress?: string;     // ที่อยู่ผู้รับจ้าง (optional)
+    
+    // ข้อมูลเอกสารและสถานที่
+    contractNumber: string;         // เลขที่สัญญา
+    contractDate: Date | null;      // วันที่ทำสัญญา
+    contractLocation: string;       // ทำที่ (สถานที่ทำสัญญา)
+    projectName: string;            // ชื่อโครงการ/บ้านลูกค้า
+    projectLocation: string;        // สถานที่ก่อสร้าง
+    
+    // ข้อ 1: ลักษณะงานที่จ้าง (Scope of Work)
+    scopeOfWork: string;            // รายละเอียดงานที่จ้าง
+    items: SubcontractWorkItem[];   // รายการงาน
+    materialNote?: string;          // หมายเหตุเรื่องวัสดุ (เช่น "ค่าวัสดุผู้ว่าจ้างเป็นผู้จัดหา")
+    totalWorkAmount: number;        // รวมทั้งสิ้น (ค่าแรงและค่าวัสดุตามตกลง)
+    
+    // ข้อ 2: ระยะเวลาการทำงาน
+    showWorkPeriod: boolean;        // แสดงข้อนี้หรือไม่
+    startDate: Date | null;         // วันที่เริ่มทำงาน
+    endDate: Date | null;           // วันที่แล้วเสร็จ
+    
+    // ข้อ 3: การชำระเงินและการแบ่งงวดงาน
+    totalContractAmount: number;    // ค่าจ้างรวมทั้งสิ้น
+    totalContractAmountText: string; // ค่าจ้างเป็นตัวอักษร
+    paymentMilestones: SubcontractPaymentMilestone[]; // งวดงาน
+    
+    // ข้อ 4: เครื่องมือและวัสดุอุปกรณ์
+    showToolsSection: boolean;      // แสดงข้อนี้หรือไม่
+    consumableResponsibility: 'employer' | 'contractor'; // วัสดุสิ้นเปลืองใครรับผิดชอบ
+    
+    // ข้อ 5: มาตรฐานงานและการรับประกัน
+    showWarrantySection: boolean;   // แสดงข้อนี้หรือไม่
+    defectFixDays: number;          // แก้ไขภายในกี่วัน
+    warrantyMonths: number;         // รับประกันผลงานกี่เดือน
+    
+    // ข้อ 6: การทิ้งงานและการปรับ
+    showPenaltySection: boolean;    // แสดงข้อนี้หรือไม่
+    abandonDays: number;            // ไม่เข้าทำงานติดต่อกันเกินกี่วัน
+    penaltyPerDay: number;          // ปรับเป็นรายวัน วันละกี่บาท
+    
+    // ส่วนลงนาม
+    employerSignName: string;       // ชื่อผู้ว่าจ้าง (ลงนาม)
+    contractorSignName: string;     // ชื่อผู้รับจ้าง (ลงนาม)
+    witnessName?: string;           // ชื่อพยาน (optional)
+    
+    // ข้อมูลเพิ่มเติม
+    notes?: string;                 // หมายเหตุเพิ่มเติม (optional)
+    issuedBy?: string;              // ผู้ออกเอกสาร (optional)
+}

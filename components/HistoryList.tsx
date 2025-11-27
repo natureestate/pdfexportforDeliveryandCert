@@ -1,5 +1,5 @@
 import React, { useEffect, useState, useCallback, useRef } from 'react';
-import type { DeliveryNoteDocument, WarrantyDocument, InvoiceDocument, ReceiptDocument, QuotationDocument, PurchaseOrderDocument, MemoDocument } from '../services/firestore';
+import type { DeliveryNoteDocument, WarrantyDocument, InvoiceDocument, ReceiptDocument, QuotationDocument, PurchaseOrderDocument, MemoDocument, VariationOrderDocument, SubcontractDocument } from '../services/firestore';
 import { useCompany } from '../contexts/CompanyContext';
 import { generatePdf } from '../services/pdfGenerator';
 import { generatePdfFilename as generatePdfFilenameFromRegistry, type DocType, type DocumentDocument } from '../utils/documentRegistry';
@@ -11,7 +11,9 @@ import ReceiptPreview from './ReceiptPreview';
 import QuotationPreview from './QuotationPreview';
 import PurchaseOrderPreview from './PurchaseOrderPreview';
 import MemoPreview from './MemoPreview';
-import type { DeliveryNoteData, WarrantyData, InvoiceData, ReceiptData, QuotationData, PurchaseOrderData, MemoData } from '../types';
+import VariationOrderPreview from './VariationOrderPreview';
+import SubcontractPreview from './SubcontractPreview';
+import type { DeliveryNoteData, WarrantyData, InvoiceData, ReceiptData, QuotationData, PurchaseOrderData, MemoData, VariationOrderData, SubcontractData } from '../types';
 
 interface HistoryListProps {
     activeDocType: DocType;
@@ -37,9 +39,9 @@ const HistoryList: React.FC<HistoryListProps> = ({ activeDocType, onLoadDocument
     const [deleteConfirm, setDeleteConfirm] = useState<{ type: 'delivery' | 'warranty' | 'invoice' | 'receipt' | 'quotation' | 'purchase-order' | 'memo', id: string } | null>(null);
     const [downloadingPdfId, setDownloadingPdfId] = useState<string | null>(null); // เก็บ ID ของเอกสารที่กำลัง download
     const previewRef = useRef<HTMLDivElement>(null); // Ref สำหรับ preview component ที่ซ่อนอยู่
-    const [previewData, setPreviewData] = useState<DeliveryNoteData | WarrantyData | InvoiceData | ReceiptData | QuotationData | PurchaseOrderData | MemoData | null>(null); // ข้อมูลสำหรับ preview
+    const [previewData, setPreviewData] = useState<DeliveryNoteData | WarrantyData | InvoiceData | ReceiptData | QuotationData | PurchaseOrderData | MemoData | VariationOrderData | SubcontractData | null>(null); // ข้อมูลสำหรับ preview
     const [showPreviewModal, setShowPreviewModal] = useState(false); // แสดง preview modal หรือไม่
-    const [previewDoc, setPreviewDoc] = useState<DeliveryNoteDocument | WarrantyDocument | InvoiceDocument | ReceiptDocument | QuotationDocument | PurchaseOrderDocument | MemoDocument | null>(null); // เอกสารที่กำลัง preview
+    const [previewDoc, setPreviewDoc] = useState<DeliveryNoteDocument | WarrantyDocument | InvoiceDocument | ReceiptDocument | QuotationDocument | PurchaseOrderDocument | MemoDocument | VariationOrderDocument | SubcontractDocument | null>(null); // เอกสารที่กำลัง preview
     const previewModalRef = useRef<HTMLDivElement>(null); // Ref สำหรับ preview component ใน modal
     
     // State สำหรับ filter และ pagination
