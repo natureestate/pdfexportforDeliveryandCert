@@ -15,7 +15,7 @@ import {
 import { SystemStats, Company, CompanyMember, Invitation, CompanyQuota, SubscriptionPlan } from '../types';
 import { signOut } from '../services/auth';
 import { getAllQuotas, changePlan, updateQuota } from '../services/quota';
-import { getAllPlanTemplates, updatePlanTemplate, PlanTemplate } from '../services/planTemplates';
+import { getAllPlanTemplates, updatePlanTemplate, PlanTemplate, migratePlanNames } from '../services/planTemplates';
 import { 
     BarChart3, Building2, Users, Crown, User, Palette, HardDrive, StickyNote, 
     LogOut, Gem, Target, Mail, FileText, UserCheck, Clock, Ban, 
@@ -75,6 +75,8 @@ const SuperAdminDashboard: React.FC = () => {
     
     // Ref เพื่อติดตามว่าเคยโหลด stats แล้วหรือยัง (เพื่อหลีกเลี่ยง infinite loop)
     const statsLoadedRef = useRef(false);
+    // Ref เพื่อติดตามว่าเคย migrate plan names แล้วหรือยัง
+    const planMigratedRef = useRef(false);
 
     /**
      * ตรวจสอบว่าเป็น Super Admin และโหลดข้อมูล
@@ -92,6 +94,16 @@ const SuperAdminDashboard: React.FC = () => {
                 setIsSuper(superStatus);
 
                 if (superStatus) {
+                    // Migrate plan names (รันครั้งเดียว) - ลบ emoji ออกจากชื่อแผนใน database
+                    if (!planMigratedRef.current) {
+                        try {
+                            await migratePlanNames();
+                            planMigratedRef.current = true;
+                        } catch (migrateError) {
+                            console.error('❌ Migrate plan names ล้มเหลว:', migrateError);
+                        }
+                    }
+                    
                     // โหลดสถิติ
                     setStatsLoading(true);
                     setStatsError(null);

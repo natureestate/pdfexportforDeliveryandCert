@@ -345,6 +345,47 @@ export const deletePlanTemplate = async (planId: string): Promise<void> => {
 };
 
 /**
+ * Migrate Plan Names - ลบ emoji ออกจากชื่อแผนใน database
+ * รันครั้งเดียวเพื่ออัปเดตข้อมูลเดิม
+ */
+export const migratePlanNames = async (): Promise<void> => {
+    try {
+        console.log('🔄 กำลัง Migrate Plan Names...');
+
+        const planNameMapping: Record<string, string> = {
+            'free': 'Free',
+            'basic': 'Basic',
+            'premium': 'Premium',
+            'enterprise': 'Enterprise',
+        };
+
+        for (const [planId, newName] of Object.entries(planNameMapping)) {
+            const templateRef = doc(db, PLAN_TEMPLATES_COLLECTION, planId);
+            const templateSnap = await getDoc(templateRef);
+            
+            if (templateSnap.exists()) {
+                const currentName = templateSnap.data().name;
+                // ตรวจสอบว่าชื่อยังมี emoji หรือไม่
+                if (currentName !== newName) {
+                    await updateDoc(templateRef, {
+                        name: newName,
+                        updatedAt: Timestamp.now(),
+                    });
+                    console.log(`✅ อัปเดต: "${currentName}" → "${newName}"`);
+                } else {
+                    console.log(`⏭️  ข้าม: ${newName} (ชื่อถูกต้องแล้ว)`);
+                }
+            }
+        }
+
+        console.log('✅ Migrate Plan Names เสร็จสิ้น');
+    } catch (error) {
+        console.error('❌ Migrate Plan Names ล้มเหลว:', error);
+        throw error;
+    }
+};
+
+/**
  * Export Default Templates สำหรับใช้ใน quota.ts
  */
 export { DEFAULT_PLAN_TEMPLATES };
