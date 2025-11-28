@@ -6,6 +6,9 @@ import React, { useRef, useState, useEffect } from 'react';
 import { SubcontractData, SubcontractWorkItem, SubcontractPaymentMilestone, LogoType } from '../types';
 import { formatDateForInput } from '../utils/dateUtils';
 import CustomerSelector from './CustomerSelector';
+import ContractorSelector from './ContractorSelector';
+import { Customer } from '../services/customers';
+import { Contractor } from '../services/contractors';
 import { generateDocumentNumber } from '../services/documentNumber';
 import { useCompany } from '../contexts/CompanyContext';
 
@@ -137,10 +140,15 @@ const SubcontractForm: React.FC<SubcontractFormProps> = ({
         handleDataChange('paymentMilestones', newMilestones);
     };
 
-    // Sync ข้อมูลบริษัทจาก context
+    // Sync ข้อมูลบริษัทจาก context และตั้งค่าสถานที่ทำสัญญาอัตโนมัติ
     useEffect(() => {
         if (currentCompany && currentCompany.id !== hasSyncedCompanyRef.current) {
             hasSyncedCompanyRef.current = currentCompany.id;
+            
+            // สร้างสถานที่ทำสัญญาจากข้อมูลบริษัท
+            const contractLocation = currentCompany.address 
+                ? `${currentCompany.name || ''} ${currentCompany.address}`.trim()
+                : currentCompany.name || '';
             
             setData(prev => ({
                 ...prev,
@@ -149,9 +157,31 @@ const SubcontractForm: React.FC<SubcontractFormProps> = ({
                 companyPhone: currentCompany.phone || prev.companyPhone,
                 companyEmail: currentCompany.email || prev.companyEmail,
                 companyTaxId: currentCompany.taxId || prev.companyTaxId,
+                // ตั้งค่าสถานที่ทำสัญญาอัตโนมัติจากข้อมูลบริษัท
+                contractLocation: prev.contractLocation || contractLocation,
             }));
         }
     }, [currentCompany, setData]);
+    
+    // Handler สำหรับเลือกช่างจากฐานข้อมูล
+    const handleSelectContractor = (contractor: Contractor) => {
+        setData(prev => ({
+            ...prev,
+            contractorName: contractor.contractorName,
+            contractorPhone: contractor.phone,
+            contractorIdCard: contractor.idCard || contractor.taxId || '',
+            contractorAddress: contractor.address || '',
+        }));
+    };
+    
+    // Handler สำหรับเลือกลูกค้าจากฐานข้อมูล
+    const handleSelectCustomer = (customer: Customer) => {
+        setData(prev => ({
+            ...prev,
+            projectName: customer.projectName || customer.customerName,
+            projectLocation: customer.address || '',
+        }));
+    };
 
     // สร้างเลขที่สัญญาอัตโนมัติ
     useEffect(() => {
@@ -237,6 +267,19 @@ const SubcontractForm: React.FC<SubcontractFormProps> = ({
                 {/* ส่วนที่ 1: ข้อมูลผู้รับจ้าง (ช่าง) */}
                 <FormDivider title="ส่วนที่ 1: ข้อมูลผู้รับจ้าง (ช่าง)" />
                 <div className="space-y-4">
+                    {/* Contractor Selector - เลือกช่างจากฐานข้อมูล */}
+                    <ContractorSelector
+                        label="เลือกข้อมูลช่าง"
+                        onSelect={handleSelectContractor}
+                        currentContractor={{
+                            contractorName: data.contractorName,
+                            phone: data.contractorPhone,
+                            address: data.contractorAddress || '',
+                            idCard: data.contractorIdCard || '',
+                        }}
+                        showSaveButton={true}
+                    />
+                    
                     <div>
                         <label htmlFor="contractorName" className="block text-xs sm:text-sm font-medium text-slate-700">ชื่อช่าง/หัวหน้าชุดช่าง *</label>
                         <input type="text" id="contractorName" value={data.contractorName} onChange={(e) => handleDataChange('contractorName', e.target.value)} className="mt-1 block w-full rounded-md border-gray-300 shadow-sm focus:border-indigo-500 focus:ring-indigo-500 text-xs sm:text-sm bg-gray-50" placeholder="นายสมชาย ช่างเก่ง" />
@@ -263,13 +306,30 @@ const SubcontractForm: React.FC<SubcontractFormProps> = ({
                     <div className="grid grid-cols-1 md:grid-cols-2 gap-3 sm:gap-4">
                         <div>
                             <label htmlFor="contractLocation" className="block text-xs sm:text-sm font-medium text-slate-700">ทำที่ (สถานที่ทำสัญญา)</label>
-                            <input type="text" id="contractLocation" value={data.contractLocation} onChange={(e) => handleDataChange('contractLocation', e.target.value)} className="mt-1 block w-full rounded-md border-gray-300 shadow-sm focus:border-indigo-500 focus:ring-indigo-500 text-xs sm:text-sm bg-gray-50" placeholder="สำนักงานใหญ่ บริษัท..." />
+                            <div className="mt-1 block w-full rounded-md border-gray-300 shadow-sm text-xs sm:text-sm bg-gray-100 px-3 py-2 text-gray-700">
+                                {data.contractLocation || currentCompany?.name || 'กำลังโหลดข้อมูลบริษัท...'}
+                            </div>
+                            <p className="mt-1 text-xs text-gray-500">* ใช้ข้อมูลจากบริษัทที่เลือกอัตโนมัติ</p>
                         </div>
                         <div>
                             <label htmlFor="contractDate" className="block text-xs sm:text-sm font-medium text-slate-700">วันที่ทำสัญญา</label>
                             <input type="date" id="contractDate" value={formatDateForInput(data.contractDate)} onChange={(e) => handleDataChange('contractDate', e.target.value ? new Date(e.target.value) : null)} className="mt-1 block w-full rounded-md border-gray-300 shadow-sm focus:border-indigo-500 focus:ring-indigo-500 text-xs sm:text-sm bg-gray-50" />
                         </div>
                     </div>
+                    
+                    {/* Customer Selector - เลือกลูกค้าจากฐานข้อมูล */}
+                    <CustomerSelector
+                        label="เลือกข้อมูลลูกค้า/โครงการ"
+                        onSelect={handleSelectCustomer}
+                        currentCustomer={{
+                            customerName: data.projectName,
+                            phone: '',
+                            address: data.projectLocation,
+                            projectName: data.projectName,
+                        }}
+                        showSaveButton={false}
+                    />
+                    
                     <div>
                         <label htmlFor="projectName" className="block text-xs sm:text-sm font-medium text-slate-700">ชื่อโครงการ/บ้านลูกค้า *</label>
                         <input type="text" id="projectName" value={data.projectName} onChange={(e) => handleDataChange('projectName', e.target.value)} className="mt-1 block w-full rounded-md border-gray-300 shadow-sm focus:border-indigo-500 focus:ring-indigo-500 text-xs sm:text-sm bg-gray-50" placeholder="บ้านคุณสมศรี โครงการ ABC" />

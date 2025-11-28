@@ -139,6 +139,13 @@ service cloud.firestore {
       allow update, delete: if isAuthenticated() && canModifyDocument();
     }
     
+    // สัญญาจ้างเหมาช่วง (Subcontracts)
+    match /subcontracts/{documentId} {
+      allow read: if isAuthenticated() && canAccessDocument();
+      allow create: if isAuthenticated() && request.resource.data.userId == request.auth.uid;
+      allow update, delete: if isAuthenticated() && canModifyDocument();
+    }
+    
     // ============================================================
     // ข้อมูลบริษัทและโปรไฟล์ (Company & Profile Data)
     // ============================================================
@@ -228,6 +235,24 @@ service cloud.firestore {
     
     // Customers (ข้อมูลลูกค้า)
     match /customers/{customerId} {
+      // อ่าน: เจ้าของ หรือ สมาชิกบริษัทเดียวกัน หรือ Super Admin
+      allow read: if isAuthenticated() && (
+        isSuperAdmin() ||
+        isOwner(resource.data.userId) ||
+        (resource.data.companyId != null && isMemberOfCompany(resource.data.companyId))
+      );
+      
+      allow create: if isAuthenticated() && request.resource.data.userId == request.auth.uid;
+      
+      allow update, delete: if isAuthenticated() && (
+        isSuperAdmin() ||
+        isOwner(resource.data.userId) ||
+        (resource.data.companyId != null && isMemberOfCompany(resource.data.companyId))
+      );
+    }
+    
+    // Contractors (ข้อมูลช่าง/ผู้รับจ้าง)
+    match /contractors/{contractorId} {
       // อ่าน: เจ้าของ หรือ สมาชิกบริษัทเดียวกัน หรือ Super Admin
       allow read: if isAuthenticated() && (
         isSuperAdmin() ||

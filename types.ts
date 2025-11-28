@@ -687,6 +687,47 @@ export interface Invitation {
     updatedAt?: Date;
 }
 
+// Contractor - ข้อมูลช่าง/ผู้รับจ้าง (ลดการกรอกข้อมูลซ้ำ)
+export interface Contractor {
+    id?: string;
+    companyId: string;             // ID ของบริษัทที่สร้างข้อมูลช่างนี้
+    userId: string;                // User ที่สร้างข้อมูลช่างนี้
+    
+    // ข้อมูลช่างหลัก
+    contractorName: string;        // ชื่อช่าง/หัวหน้าชุดช่าง
+    contractorType: 'individual' | 'company';  // ประเภท: บุคคล หรือ นิติบุคคล
+    
+    // ข้อมูลติดต่อ
+    phone: string;                 // เบอร์โทรศัพท์หลัก
+    alternatePhone?: string;       // เบอร์สำรอง
+    email?: string;                // อีเมล
+    lineId?: string;               // Line ID
+    
+    // ที่อยู่
+    address: string;               // ที่อยู่หลัก
+    district?: string;             // ตำบล/แขวง
+    amphoe?: string;               // อำเภอ/เขต
+    province?: string;             // จังหวัด
+    postalCode?: string;           // รหัสไปรษณีย์
+    
+    // ข้อมูลภาษี
+    idCard?: string;               // เลขบัตรประชาชน
+    taxId?: string;                // เลขประจำตัวผู้เสียภาษี (สำหรับนิติบุคคล)
+    
+    // ข้อมูลความเชี่ยวชาญ
+    specialties?: string[];        // ความเชี่ยวชาญ เช่น ['งานปูกระเบื้อง', 'งานไฟฟ้า', 'งานประปา']
+    
+    // Tags และหมายเหตุ
+    tags?: string[];               // Tags สำหรับจัดกลุ่ม เช่น ['ช่างประจำ', 'ช่างเก่ง']
+    notes?: string;                // หมายเหตุเพิ่มเติม
+    
+    // Metadata
+    lastUsedAt?: Date;             // ใช้ล่าสุดเมื่อไร (สำหรับ sorting)
+    usageCount?: number;           // จำนวนครั้งที่ใช้ (สำหรับ suggestion)
+    createdAt?: Date;
+    updatedAt?: Date;
+}
+
 // Subcontract Work Item - รายการงานในสัญญาจ้างเหมาช่วง
 export interface SubcontractWorkItem {
     description: string;        // รายละเอียดงาน
