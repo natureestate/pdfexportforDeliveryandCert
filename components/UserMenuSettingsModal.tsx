@@ -1,15 +1,15 @@
 /**
- * Menu Settings Modal Component
- * Modal สำหรับ Admin ตั้งค่าเมนูของบริษัท
- * - เลือกแสดง/ซ่อนเมนู
- * - จัดลำดับเมนู (Drag & Drop)
- * - แยกการตั้งค่าตาม role
+ * User Menu Settings Modal Component
+ * Modal สำหรับ Admin กำหนดสิทธิ์เมนูรายบุคคล
+ * - เลือก user ที่ต้องการตั้งค่า
+ * - กำหนดเมนูที่แสดง/ซ่อน
+ * - จัดลำดับเมนู
  */
 
 import React, { useState, useEffect, useCallback } from 'react';
 import { 
     X, 
-    Settings, 
+    Users, 
     GripVertical, 
     Eye, 
     EyeOff, 
@@ -17,9 +17,6 @@ import {
     ChevronDown,
     RotateCcw,
     Save,
-    Copy,
-    Users,
-    UserCog,
     Package,
     Shield,
     FileText,
@@ -32,25 +29,32 @@ import {
     HardHat,
     Loader2,
     AlertCircle,
-    CheckCircle
+    CheckCircle,
+    User,
+    Settings,
+    ChevronLeft,
+    Trash2,
+    Copy
 } from 'lucide-react';
 import { 
     MenuItemConfig, 
-    UserRole, 
     DEFAULT_MENU_CONFIG,
-    MenuDocType
+    MenuDocType,
+    MemberWithMenuSettings
 } from '../types';
 import { 
-    getAllMenusForRole, 
-    saveMenuSettingsForRole, 
-    resetMenuSettings,
-    copyMenuSettings
+    getMembersWithMenuSettings,
+    getAllMenusForUser,
+    saveUserMenuSettings,
+    removeUserMenuSettings,
+    copyRoleSettingsToUser,
+    getAllMenusForRole
 } from '../services/menuSettings';
 import { useCompany } from '../contexts/CompanyContext';
 import { checkIsAdmin } from '../services/companyMembers';
 import { useAuth } from '../contexts/AuthContext';
 
-// Icon mapping - แมป icon name กับ component
+// Icon mapping
 const iconMap: Record<string, React.ComponentType<{ className?: string }>> = {
     Package,
     Shield,
@@ -64,11 +68,10 @@ const iconMap: Record<string, React.ComponentType<{ className?: string }>> = {
     HardHat,
 };
 
-interface MenuSettingsModalProps {
+interface UserMenuSettingsModalProps {
     isOpen: boolean;
     onClose: () => void;
     onSave?: () => void;
-    onOpenUserSettings?: () => void; // เปิด modal ตั้งค่ารายบุคคล
 }
 
 type NotificationType = 'success' | 'error' | 'info';
@@ -79,19 +82,24 @@ interface Notification {
     type: NotificationType;
 }
 
-const MenuSettingsModal: React.FC<MenuSettingsModalProps> = ({
+type ViewMode = 'list' | 'edit';
+
+const UserMenuSettingsModal: React.FC<UserMenuSettingsModalProps> = ({
     isOpen,
     onClose,
     onSave,
-    onOpenUserSettings,
 }) => {
     const { currentCompany } = useCompany();
     const { user } = useAuth();
     
-    // State สำหรับ role ที่กำลังตั้งค่า
-    const [selectedRole, setSelectedRole] = useState<UserRole>('member');
+    // View state
+    const [viewMode, setViewMode] = useState<ViewMode>('list');
+    const [selectedMember, setSelectedMember] = useState<MemberWithMenuSettings | null>(null);
     
-    // State สำหรับเมนู
+    // Members list
+    const [members, setMembers] = useState<MemberWithMenuSettings[]>([]);
+    
+    // Menu settings for selected user
     const [menus, setMenus] = useState<MenuItemConfig[]>([...DEFAULT_MENU_CONFIG]);
     
     // Loading และ Error states
@@ -115,15 +123,34 @@ const MenuSettingsModal: React.FC<MenuSettingsModalProps> = ({
     }, []);
 
     /**
-     * โหลดการตั้งค่าเมนูสำหรับ role ที่เลือก
+     * โหลดรายการสมาชิก
      */
-    const loadMenuSettings = useCallback(async () => {
+    const loadMembers = useCallback(async () => {
         if (!currentCompany?.id) return;
         
         setIsLoading(true);
         try {
-            const menuSettings = await getAllMenusForRole(currentCompany.id, selectedRole);
-            setMenus(menuSettings);
+            const membersList = await getMembersWithMenuSettings(currentCompany.id);
+            // Filter เฉพาะ active members
+            setMembers(membersList.filter(m => m.status === 'active'));
+        } catch (error) {
+            console.error('❌ โหลดรายการสมาชิกล้มเหลว:', error);
+            showNotification('ไม่สามารถโหลดรายการสมาชิกได้', 'error');
+        } finally {
+            setIsLoading(false);
+        }
+    }, [currentCompany?.id, showNotification]);
+
+    /**
+     * โหลดการตั้งค่าเมนูของ user ที่เลือก
+     */
+    const loadUserMenuSettings = useCallback(async (member: MemberWithMenuSettings) => {
+        if (!currentCompany?.id) return;
+        
+        setIsLoading(true);
+        try {
+            const userMenus = await getAllMenusForUser(currentCompany.id, member.userId, member.role);
+            setMenus(userMenus);
         } catch (error) {
             console.error('❌ โหลดการตั้งค่าเมนูล้มเหลว:', error);
             showNotification('ไม่สามารถโหลดการตั้งค่าได้', 'error');
@@ -131,7 +158,7 @@ const MenuSettingsModal: React.FC<MenuSettingsModalProps> = ({
         } finally {
             setIsLoading(false);
         }
-    }, [currentCompany?.id, selectedRole, showNotification]);
+    }, [currentCompany?.id, showNotification]);
 
     /**
      * ตรวจสอบสิทธิ์ Admin
@@ -155,13 +182,33 @@ const MenuSettingsModal: React.FC<MenuSettingsModalProps> = ({
         }
     }, [currentCompany?.id, user?.uid, showNotification]);
 
-    // โหลดข้อมูลเมื่อเปิด modal หรือเปลี่ยน role
+    // โหลดข้อมูลเมื่อเปิด modal
     useEffect(() => {
         if (isOpen) {
             checkAdminPermission();
-            loadMenuSettings();
+            loadMembers();
+            setViewMode('list');
+            setSelectedMember(null);
         }
-    }, [isOpen, loadMenuSettings, checkAdminPermission]);
+    }, [isOpen, loadMembers, checkAdminPermission]);
+
+    /**
+     * เลือก user เพื่อตั้งค่า
+     */
+    const handleSelectMember = async (member: MemberWithMenuSettings) => {
+        setSelectedMember(member);
+        setViewMode('edit');
+        await loadUserMenuSettings(member);
+    };
+
+    /**
+     * กลับไปหน้ารายการ
+     */
+    const handleBackToList = () => {
+        setViewMode('list');
+        setSelectedMember(null);
+        loadMembers(); // Refresh list
+    };
 
     /**
      * สลับการแสดง/ซ่อนเมนู
@@ -229,11 +276,17 @@ const MenuSettingsModal: React.FC<MenuSettingsModalProps> = ({
      * บันทึกการตั้งค่า
      */
     const handleSave = async () => {
-        if (!currentCompany?.id || !isAdmin) return;
+        if (!currentCompany?.id || !isAdmin || !selectedMember) return;
         
         setIsSaving(true);
         try {
-            await saveMenuSettingsForRole(currentCompany.id, selectedRole, menus);
+            await saveUserMenuSettings(
+                currentCompany.id,
+                selectedMember.userId,
+                menus,
+                selectedMember.email,
+                selectedMember.displayName
+            );
             showNotification('บันทึกการตั้งค่าสำเร็จ', 'success');
             onSave?.();
         } catch (error) {
@@ -245,19 +298,24 @@ const MenuSettingsModal: React.FC<MenuSettingsModalProps> = ({
     };
 
     /**
-     * รีเซ็ตเป็นค่า default
+     * รีเซ็ตเป็นค่าจาก role
      */
-    const handleReset = async () => {
-        if (!currentCompany?.id || !isAdmin) return;
+    const handleResetToRole = async () => {
+        if (!currentCompany?.id || !isAdmin || !selectedMember) return;
         
-        if (!confirm(`ต้องการรีเซ็ตการตั้งค่าเมนูสำหรับ ${selectedRole === 'admin' ? 'Admin' : 'Member'} เป็นค่าเริ่มต้นหรือไม่?`)) {
+        if (!confirm(`ต้องการรีเซ็ตการตั้งค่าของ ${selectedMember.displayName || selectedMember.email} กลับเป็นค่าจาก ${selectedMember.role === 'admin' ? 'Admin' : 'Member'} หรือไม่?`)) {
             return;
         }
         
         setIsSaving(true);
         try {
-            await resetMenuSettings(currentCompany.id, selectedRole);
-            setMenus([...DEFAULT_MENU_CONFIG]);
+            // ลบการตั้งค่าเฉพาะ user
+            await removeUserMenuSettings(currentCompany.id, selectedMember.userId);
+            
+            // โหลดค่าจาก role
+            const roleMenus = await getAllMenusForRole(currentCompany.id, selectedMember.role);
+            setMenus(roleMenus);
+            
             showNotification('รีเซ็ตการตั้งค่าสำเร็จ', 'success');
             onSave?.();
         } catch (error) {
@@ -269,26 +327,21 @@ const MenuSettingsModal: React.FC<MenuSettingsModalProps> = ({
     };
 
     /**
-     * คัดลอกการตั้งค่าจาก Admin ไป Member หรือกลับกัน
+     * คัดลอกการตั้งค่าจาก role
      */
-    const handleCopySettings = async () => {
-        if (!currentCompany?.id || !isAdmin) return;
+    const handleCopyFromRole = async () => {
+        if (!currentCompany?.id || !selectedMember) return;
         
-        const targetRole: UserRole = selectedRole === 'admin' ? 'member' : 'admin';
-        
-        if (!confirm(`ต้องการคัดลอกการตั้งค่าจาก ${selectedRole === 'admin' ? 'Admin' : 'Member'} ไปยัง ${targetRole === 'admin' ? 'Admin' : 'Member'} หรือไม่?`)) {
-            return;
-        }
-        
-        setIsSaving(true);
+        setIsLoading(true);
         try {
-            await copyMenuSettings(currentCompany.id, selectedRole, targetRole);
-            showNotification(`คัดลอกการตั้งค่าไปยัง ${targetRole === 'admin' ? 'Admin' : 'Member'} สำเร็จ`, 'success');
+            const roleMenus = await getAllMenusForRole(currentCompany.id, selectedMember.role);
+            setMenus(roleMenus);
+            showNotification(`คัดลอกการตั้งค่าจาก ${selectedMember.role === 'admin' ? 'Admin' : 'Member'} สำเร็จ`, 'info');
         } catch (error) {
             console.error('❌ คัดลอกล้มเหลว:', error);
             showNotification('ไม่สามารถคัดลอกการตั้งค่าได้', 'error');
         } finally {
-            setIsSaving(false);
+            setIsLoading(false);
         }
     };
 
@@ -328,12 +381,24 @@ const MenuSettingsModal: React.FC<MenuSettingsModalProps> = ({
                     {/* Header */}
                     <div className="flex items-center justify-between p-4 border-b border-gray-200">
                         <div className="flex items-center gap-3">
-                            <div className="p-2 bg-indigo-100 rounded-lg">
-                                <Settings className="w-6 h-6 text-indigo-600" />
+                            {viewMode === 'edit' && (
+                                <button
+                                    onClick={handleBackToList}
+                                    className="p-2 text-gray-400 hover:text-gray-600 hover:bg-gray-100 rounded-lg transition-colors"
+                                >
+                                    <ChevronLeft className="w-5 h-5" />
+                                </button>
+                            )}
+                            <div className="p-2 bg-purple-100 rounded-lg">
+                                <Users className="w-6 h-6 text-purple-600" />
                             </div>
                             <div>
-                                <h2 className="text-lg font-semibold text-gray-900">ตั้งค่าเมนู</h2>
-                                <p className="text-sm text-gray-500">เลือกเมนูที่ต้องการแสดงและจัดลำดับ</p>
+                                <h2 className="text-lg font-semibold text-gray-900">
+                                    {viewMode === 'list' ? 'ตั้งค่าเมนูรายบุคคล' : `ตั้งค่าเมนู: ${selectedMember?.displayName || selectedMember?.email}`}
+                                </h2>
+                                <p className="text-sm text-gray-500">
+                                    {viewMode === 'list' ? 'เลือก user ที่ต้องการกำหนดสิทธิ์เมนู' : `Role: ${selectedMember?.role === 'admin' ? 'Admin' : 'Member'}`}
+                                </p>
                             </div>
                         </div>
                         <button
@@ -344,52 +409,8 @@ const MenuSettingsModal: React.FC<MenuSettingsModalProps> = ({
                         </button>
                     </div>
 
-                    {/* Role Selector */}
-                    <div className="p-4 border-b border-gray-200 bg-gray-50">
-                        <div className="flex items-center justify-between mb-2">
-                            <span className="text-sm font-medium text-gray-700">ตั้งค่าสำหรับ:</span>
-                            {/* ปุ่มตั้งค่ารายบุคคล */}
-                            {isAdmin && onOpenUserSettings && (
-                                <button
-                                    onClick={() => {
-                                        onClose();
-                                        onOpenUserSettings();
-                                    }}
-                                    className="flex items-center gap-1.5 px-3 py-1.5 text-xs font-medium text-purple-600 bg-purple-50 hover:bg-purple-100 rounded-lg transition-colors"
-                                >
-                                    <Users className="w-3.5 h-3.5" />
-                                    ตั้งค่ารายบุคคล
-                                </button>
-                            )}
-                        </div>
-                        <div className="flex gap-2">
-                            <button
-                                onClick={() => setSelectedRole('admin')}
-                                className={`flex-1 flex items-center justify-center gap-2 px-4 py-2.5 rounded-lg border-2 transition-all ${
-                                    selectedRole === 'admin'
-                                        ? 'border-indigo-500 bg-indigo-50 text-indigo-700'
-                                        : 'border-gray-200 bg-white text-gray-600 hover:border-gray-300'
-                                }`}
-                            >
-                                <UserCog className="w-4 h-4" />
-                                <span className="font-medium">Admin</span>
-                            </button>
-                            <button
-                                onClick={() => setSelectedRole('member')}
-                                className={`flex-1 flex items-center justify-center gap-2 px-4 py-2.5 rounded-lg border-2 transition-all ${
-                                    selectedRole === 'member'
-                                        ? 'border-indigo-500 bg-indigo-50 text-indigo-700'
-                                        : 'border-gray-200 bg-white text-gray-600 hover:border-gray-300'
-                                }`}
-                            >
-                                <Users className="w-4 h-4" />
-                                <span className="font-medium">Member</span>
-                            </button>
-                        </div>
-                    </div>
-
-                    {/* Menu List */}
-                    <div className="p-4 max-h-[400px] overflow-y-auto">
+                    {/* Content */}
+                    <div className="p-4 max-h-[500px] overflow-y-auto">
                         {!isAdmin && (
                             <div className="mb-4 p-3 bg-amber-50 border border-amber-200 rounded-lg flex items-center gap-2 text-amber-700">
                                 <AlertCircle className="w-5 h-5 flex-shrink-0" />
@@ -399,10 +420,76 @@ const MenuSettingsModal: React.FC<MenuSettingsModalProps> = ({
                         
                         {isLoading ? (
                             <div className="flex items-center justify-center py-12">
-                                <Loader2 className="w-8 h-8 text-indigo-500 animate-spin" />
+                                <Loader2 className="w-8 h-8 text-purple-500 animate-spin" />
+                            </div>
+                        ) : viewMode === 'list' ? (
+                            /* Members List View */
+                            <div className="space-y-2">
+                                {members.length === 0 ? (
+                                    <div className="text-center py-8 text-gray-500">
+                                        <Users className="w-12 h-12 mx-auto mb-2 opacity-50" />
+                                        <p>ไม่พบสมาชิกในองค์กร</p>
+                                    </div>
+                                ) : (
+                                    members.map((member) => (
+                                        <div
+                                            key={member.memberId}
+                                            onClick={() => isAdmin && handleSelectMember(member)}
+                                            className={`flex items-center gap-3 p-3 rounded-lg border border-gray-200 bg-white transition-all ${
+                                                isAdmin ? 'hover:border-purple-300 hover:bg-purple-50 cursor-pointer' : 'opacity-60'
+                                            }`}
+                                        >
+                                            {/* Avatar */}
+                                            <div className={`w-10 h-10 rounded-full flex items-center justify-center ${
+                                                member.role === 'admin' ? 'bg-amber-100 text-amber-600' : 'bg-blue-100 text-blue-600'
+                                            }`}>
+                                                <User className="w-5 h-5" />
+                                            </div>
+                                            
+                                            {/* Info */}
+                                            <div className="flex-1 min-w-0">
+                                                <p className="font-medium text-gray-900 truncate">
+                                                    {member.displayName || member.email}
+                                                </p>
+                                                <div className="flex items-center gap-2 text-xs text-gray-500">
+                                                    <span className={`px-1.5 py-0.5 rounded ${
+                                                        member.role === 'admin' ? 'bg-amber-100 text-amber-700' : 'bg-blue-100 text-blue-700'
+                                                    }`}>
+                                                        {member.role === 'admin' ? 'Admin' : 'Member'}
+                                                    </span>
+                                                    {member.displayName && (
+                                                        <span className="truncate">{member.email}</span>
+                                                    )}
+                                                </div>
+                                            </div>
+                                            
+                                            {/* Custom Settings Badge */}
+                                            {member.hasCustomMenuSettings && (
+                                                <div className="px-2 py-1 bg-purple-100 text-purple-700 text-xs rounded-full flex items-center gap-1">
+                                                    <Settings className="w-3 h-3" />
+                                                    กำหนดเอง
+                                                </div>
+                                            )}
+                                            
+                                            {/* Arrow */}
+                                            {isAdmin && (
+                                                <ChevronLeft className="w-5 h-5 text-gray-400 rotate-180" />
+                                            )}
+                                        </div>
+                                    ))
+                                )}
                             </div>
                         ) : (
+                            /* Menu Edit View */
                             <div className="space-y-2">
+                                {/* Info Banner */}
+                                {selectedMember?.hasCustomMenuSettings && (
+                                    <div className="mb-4 p-3 bg-purple-50 border border-purple-200 rounded-lg flex items-center gap-2 text-purple-700">
+                                        <Settings className="w-5 h-5 flex-shrink-0" />
+                                        <span className="text-sm">User นี้มีการตั้งค่าเมนูเฉพาะ</span>
+                                    </div>
+                                )}
+                                
                                 {menus.map((menu, index) => (
                                     <div
                                         key={menu.id}
@@ -412,7 +499,7 @@ const MenuSettingsModal: React.FC<MenuSettingsModalProps> = ({
                                         onDragEnd={handleDragEnd}
                                         className={`flex items-center gap-3 p-3 rounded-lg border transition-all ${
                                             dragOverIndex === index
-                                                ? 'border-indigo-500 bg-indigo-50'
+                                                ? 'border-purple-500 bg-purple-50'
                                                 : menu.visible
                                                     ? 'border-gray-200 bg-white hover:border-gray-300'
                                                     : 'border-gray-200 bg-gray-50 opacity-60'
@@ -427,7 +514,7 @@ const MenuSettingsModal: React.FC<MenuSettingsModalProps> = ({
                                         
                                         {/* Icon */}
                                         <div className={`p-2 rounded-lg ${
-                                            menu.visible ? 'bg-indigo-100 text-indigo-600' : 'bg-gray-200 text-gray-400'
+                                            menu.visible ? 'bg-purple-100 text-purple-600' : 'bg-gray-200 text-gray-400'
                                         }`}>
                                             {renderIcon(menu.icon)}
                                         </div>
@@ -437,15 +524,11 @@ const MenuSettingsModal: React.FC<MenuSettingsModalProps> = ({
                                             <p className={`font-medium ${menu.visible ? 'text-gray-900' : 'text-gray-400'}`}>
                                                 {menu.label}
                                             </p>
-                                            <p className="text-xs text-gray-400">
-                                                {menu.shortLabel}
-                                            </p>
                                         </div>
                                         
                                         {/* Actions */}
                                         {isAdmin && (
                                             <div className="flex items-center gap-1">
-                                                {/* Move Up */}
                                                 <button
                                                     onClick={() => handleMoveUp(index)}
                                                     disabled={index === 0}
@@ -455,7 +538,6 @@ const MenuSettingsModal: React.FC<MenuSettingsModalProps> = ({
                                                     <ChevronUp className="w-4 h-4" />
                                                 </button>
                                                 
-                                                {/* Move Down */}
                                                 <button
                                                     onClick={() => handleMoveDown(index)}
                                                     disabled={index === menus.length - 1}
@@ -465,7 +547,6 @@ const MenuSettingsModal: React.FC<MenuSettingsModalProps> = ({
                                                     <ChevronDown className="w-4 h-4" />
                                                 </button>
                                                 
-                                                {/* Toggle Visibility */}
                                                 <button
                                                     onClick={() => handleToggleVisibility(menu.id)}
                                                     className={`p-1.5 rounded transition-colors ${
@@ -490,59 +571,74 @@ const MenuSettingsModal: React.FC<MenuSettingsModalProps> = ({
                     </div>
 
                     {/* Footer */}
-                    <div className="flex flex-col sm:flex-row items-stretch sm:items-center justify-between gap-3 p-4 border-t border-gray-200 bg-gray-50 rounded-b-xl">
-                        <div className="flex gap-2">
-                            {isAdmin && (
-                                <>
+                    {viewMode === 'edit' && (
+                        <div className="flex flex-col sm:flex-row items-stretch sm:items-center justify-between gap-3 p-4 border-t border-gray-200 bg-gray-50 rounded-b-xl">
+                            <div className="flex gap-2">
+                                {isAdmin && (
+                                    <>
+                                        <button
+                                            onClick={handleResetToRole}
+                                            disabled={isSaving}
+                                            className="flex items-center gap-1.5 px-3 py-2 text-sm text-red-600 hover:text-red-800 hover:bg-red-50 rounded-lg transition-colors disabled:opacity-50"
+                                            title="ลบการตั้งค่าเฉพาะ และใช้ค่าจาก Role"
+                                        >
+                                            <Trash2 className="w-4 h-4" />
+                                            ใช้ค่าจาก Role
+                                        </button>
+                                        <button
+                                            onClick={handleCopyFromRole}
+                                            disabled={isSaving}
+                                            className="flex items-center gap-1.5 px-3 py-2 text-sm text-gray-600 hover:text-gray-800 hover:bg-gray-200 rounded-lg transition-colors disabled:opacity-50"
+                                            title="คัดลอกการตั้งค่าจาก Role มาแก้ไข"
+                                        >
+                                            <Copy className="w-4 h-4" />
+                                            คัดลอกจาก Role
+                                        </button>
+                                    </>
+                                )}
+                            </div>
+                            
+                            <div className="flex gap-2">
+                                <button
+                                    onClick={handleBackToList}
+                                    className="flex-1 sm:flex-none px-4 py-2 text-sm font-medium text-gray-700 bg-white border border-gray-300 rounded-lg hover:bg-gray-50 transition-colors"
+                                >
+                                    ยกเลิก
+                                </button>
+                                {isAdmin && (
                                     <button
-                                        onClick={handleReset}
+                                        onClick={handleSave}
                                         disabled={isSaving}
-                                        className="flex items-center gap-1.5 px-3 py-2 text-sm text-gray-600 hover:text-gray-800 hover:bg-gray-200 rounded-lg transition-colors disabled:opacity-50"
+                                        className="flex-1 sm:flex-none flex items-center justify-center gap-2 px-4 py-2 text-sm font-medium text-white bg-purple-600 rounded-lg hover:bg-purple-700 transition-colors disabled:opacity-50 disabled:cursor-not-allowed"
                                     >
-                                        <RotateCcw className="w-4 h-4" />
-                                        รีเซ็ต
+                                        {isSaving ? (
+                                            <Loader2 className="w-4 h-4 animate-spin" />
+                                        ) : (
+                                            <Save className="w-4 h-4" />
+                                        )}
+                                        บันทึก
                                     </button>
-                                    <button
-                                        onClick={handleCopySettings}
-                                        disabled={isSaving}
-                                        className="flex items-center gap-1.5 px-3 py-2 text-sm text-gray-600 hover:text-gray-800 hover:bg-gray-200 rounded-lg transition-colors disabled:opacity-50"
-                                        title={`คัดลอกไปยัง ${selectedRole === 'admin' ? 'Member' : 'Admin'}`}
-                                    >
-                                        <Copy className="w-4 h-4" />
-                                        คัดลอกไป {selectedRole === 'admin' ? 'Member' : 'Admin'}
-                                    </button>
-                                </>
-                            )}
+                                )}
+                            </div>
                         </div>
-                        
-                        <div className="flex gap-2">
+                    )}
+                    
+                    {/* Footer for List View */}
+                    {viewMode === 'list' && (
+                        <div className="flex justify-end p-4 border-t border-gray-200 bg-gray-50 rounded-b-xl">
                             <button
                                 onClick={onClose}
-                                className="flex-1 sm:flex-none px-4 py-2 text-sm font-medium text-gray-700 bg-white border border-gray-300 rounded-lg hover:bg-gray-50 transition-colors"
+                                className="px-4 py-2 text-sm font-medium text-gray-700 bg-white border border-gray-300 rounded-lg hover:bg-gray-50 transition-colors"
                             >
-                                ยกเลิก
+                                ปิด
                             </button>
-                            {isAdmin && (
-                                <button
-                                    onClick={handleSave}
-                                    disabled={isSaving}
-                                    className="flex-1 sm:flex-none flex items-center justify-center gap-2 px-4 py-2 text-sm font-medium text-white bg-indigo-600 rounded-lg hover:bg-indigo-700 transition-colors disabled:opacity-50 disabled:cursor-not-allowed"
-                                >
-                                    {isSaving ? (
-                                        <Loader2 className="w-4 h-4 animate-spin" />
-                                    ) : (
-                                        <Save className="w-4 h-4" />
-                                    )}
-                                    บันทึก
-                                </button>
-                            )}
                         </div>
-                    </div>
+                    )}
                 </div>
             </div>
         </div>
     );
 };
 
-export default MenuSettingsModal;
+export default UserMenuSettingsModal;
 

@@ -32,6 +32,7 @@ import AcceptInvitationPage from './components/AcceptInvitationPage';
 import SuperAdminDashboard from './components/SuperAdminDashboard';
 import CookieConsentModal from './components/CookieConsentModal';
 import MenuSettingsModal from './components/MenuSettingsModal';
+import UserMenuSettingsModal from './components/UserMenuSettingsModal';
 import { generatePdf } from './services/pdfGenerator';
 import { saveDeliveryNote, saveWarrantyCard, saveInvoice, saveReceipt, saveTaxInvoice, saveQuotation, savePurchaseOrder } from './services/firestore';
 import type { DeliveryNoteDocument, WarrantyDocument, InvoiceDocument, ReceiptDocument, TaxInvoiceDocument, QuotationDocument, PurchaseOrderDocument, MemoDocument, VariationOrderDocument, SubcontractDocument } from './services/firestore';
@@ -467,6 +468,7 @@ const AppContent: React.FC = () => {
     
     // Menu Settings Modal
     const [showMenuSettings, setShowMenuSettings] = useState(false);
+    const [showUserMenuSettings, setShowUserMenuSettings] = useState(false);
     
     // Shared Logo State - ใช้ร่วมกันระหว่างทั้ง 2 แท็บ
     const [sharedLogo, setSharedLogo] = useState<string | null>(null);
@@ -1041,6 +1043,16 @@ const AppContent: React.FC = () => {
                                                 onSave={() => {
                                                     refreshMenus();
                                                     setShowMenuSettings(false);
+                                                }}
+                                                onOpenUserSettings={() => setShowUserMenuSettings(true)}
+                                            />
+                                            
+                                            {/* User Menu Settings Modal */}
+                                            <UserMenuSettingsModal
+                                                isOpen={showUserMenuSettings}
+                                                onClose={() => setShowUserMenuSettings(false)}
+                                                onSave={() => {
+                                                    refreshMenus();
                                                 }}
                                             />
                             

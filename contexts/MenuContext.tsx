@@ -7,7 +7,7 @@
 
 import React, { createContext, useContext, useState, useEffect, ReactNode, useCallback } from 'react';
 import { MenuItemConfig, DEFAULT_MENU_CONFIG, UserRole } from '../types';
-import { getMenusForRole, getAllMenusForRole } from '../services/menuSettings';
+import { getMenusForUser, getAllMenusForUser, getUserMenuSettings } from '../services/menuSettings';
 import { checkIsAdmin } from '../services/companyMembers';
 import { useCompany } from './CompanyContext';
 import { useAuth } from './AuthContext';
@@ -24,6 +24,9 @@ interface MenuContextType {
     
     // ผู้ใช้เป็น Admin หรือไม่
     isAdmin: boolean;
+    
+    // ผู้ใช้มีการตั้งค่าเมนูเฉพาะหรือไม่
+    hasCustomMenuSettings: boolean;
     
     // กำลังโหลดข้อมูล
     loading: boolean;
@@ -46,10 +49,11 @@ export const MenuProvider: React.FC<MenuProviderProps> = ({ children }) => {
     const [allMenus, setAllMenus] = useState<MenuItemConfig[]>([...DEFAULT_MENU_CONFIG]);
     const [userRole, setUserRole] = useState<UserRole>('member');
     const [isAdmin, setIsAdmin] = useState(false);
+    const [hasCustomMenuSettings, setHasCustomMenuSettings] = useState(false);
     const [loading, setLoading] = useState(true);
 
     /**
-     * โหลดการตั้งค่าเมนู
+     * โหลดการตั้งค่าเมนู (รองรับ user-specific settings)
      */
     const loadMenuSettings = useCallback(async () => {
         if (!currentCompany?.id || !user?.uid) {
@@ -58,6 +62,7 @@ export const MenuProvider: React.FC<MenuProviderProps> = ({ children }) => {
             setAllMenus([...DEFAULT_MENU_CONFIG]);
             setIsAdmin(false);
             setUserRole('member');
+            setHasCustomMenuSettings(false);
             setLoading(false);
             return;
         }
@@ -75,10 +80,18 @@ export const MenuProvider: React.FC<MenuProviderProps> = ({ children }) => {
             
             console.log('👤 [MenuContext] User role:', role);
 
-            // โหลดเมนูสำหรับ role นี้
+            // ตรวจสอบว่ามีการตั้งค่าเฉพาะ user หรือไม่
+            const userSettings = await getUserMenuSettings(currentCompany.id, user.uid);
+            setHasCustomMenuSettings(!!userSettings?.useCustomSettings);
+            
+            if (userSettings?.useCustomSettings) {
+                console.log('📋 [MenuContext] ใช้การตั้งค่าเฉพาะ user');
+            }
+
+            // โหลดเมนูสำหรับ user นี้ (รวม user-specific settings)
             const [visible, all] = await Promise.all([
-                getMenusForRole(currentCompany.id, role),
-                getAllMenusForRole(currentCompany.id, role),
+                getMenusForUser(currentCompany.id, user.uid, role),
+                getAllMenusForUser(currentCompany.id, user.uid, role),
             ]);
 
             setVisibleMenus(visible);
@@ -89,6 +102,7 @@ export const MenuProvider: React.FC<MenuProviderProps> = ({ children }) => {
             console.error('❌ [MenuContext] โหลดการตั้งค่าเมนูล้มเหลว:', error);
             setVisibleMenus([...DEFAULT_MENU_CONFIG]);
             setAllMenus([...DEFAULT_MENU_CONFIG]);
+            setHasCustomMenuSettings(false);
         } finally {
             setLoading(false);
         }
@@ -113,6 +127,7 @@ export const MenuProvider: React.FC<MenuProviderProps> = ({ children }) => {
         allMenus,
         userRole,
         isAdmin,
+        hasCustomMenuSettings,
         loading,
         refreshMenus,
     };

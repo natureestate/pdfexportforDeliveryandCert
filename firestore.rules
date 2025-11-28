@@ -439,7 +439,7 @@ service cloud.firestore {
     // ระบบตั้งค่าเมนู (Menu Settings System)
     // ============================================================
     
-    // Menu Settings (การตั้งค่าเมนูของบริษัท)
+    // Menu Settings (การตั้งค่าเมนูของบริษัท - ตาม Role)
     // Document ID = companyId
     match /menuSettings/{companyId} {
       // อ่าน: สมาชิกบริษัท หรือ เจ้าของบริษัท หรือ Super Admin
@@ -468,6 +468,39 @@ service cloud.firestore {
         isSuperAdmin() ||
         isCompanyOwner(companyId) ||
         isAdminOfCompany(companyId)
+      );
+    }
+    
+    // User Menu Settings (การตั้งค่าเมนูรายบุคคล)
+    // Document ID = {companyId}_{userId}
+    match /userMenuSettings/{docId} {
+      // อ่าน: เจ้าของการตั้งค่า หรือ Admin ของบริษัท หรือ Super Admin
+      allow read: if isAuthenticated() && (
+        isSuperAdmin() ||
+        resource.data.userId == request.auth.uid ||
+        (resource.data.companyId != null && isAdminOfCompany(resource.data.companyId)) ||
+        (resource.data.companyId != null && isCompanyOwner(resource.data.companyId))
+      );
+      
+      // สร้าง: Admin ของบริษัท หรือ เจ้าของบริษัท หรือ Super Admin
+      allow create: if isAuthenticated() && (
+        isSuperAdmin() ||
+        isCompanyOwner(request.resource.data.companyId) ||
+        isAdminOfCompany(request.resource.data.companyId)
+      );
+      
+      // แก้ไข: Admin ของบริษัท หรือ เจ้าของบริษัท หรือ Super Admin
+      allow update: if isAuthenticated() && (
+        isSuperAdmin() ||
+        (resource.data.companyId != null && isCompanyOwner(resource.data.companyId)) ||
+        (resource.data.companyId != null && isAdminOfCompany(resource.data.companyId))
+      );
+      
+      // ลบ: Admin ของบริษัท หรือ เจ้าของบริษัท หรือ Super Admin
+      allow delete: if isAuthenticated() && (
+        isSuperAdmin() ||
+        (resource.data.companyId != null && isCompanyOwner(resource.data.companyId)) ||
+        (resource.data.companyId != null && isAdminOfCompany(resource.data.companyId))
       );
     }
     

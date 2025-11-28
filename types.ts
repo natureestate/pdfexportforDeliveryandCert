@@ -724,6 +724,36 @@ export const DEFAULT_MENU_CONFIG: MenuItemConfig[] = [
     { id: 'subcontract', label: 'สัญญาช่าง', shortLabel: 'สัญญาช่าง', icon: 'HardHat', visible: true, order: 9 },
 ];
 
+// ============================================================
+// การตั้งค่าเมนูรายบุคคล (Per-User Menu Settings)
+// ============================================================
+
+// การตั้งค่าเมนูสำหรับ user แต่ละคน
+export interface UserMenuSettings {
+    id?: string;                        // Document ID (format: {companyId}_{userId})
+    companyId: string;                  // ID ของบริษัท
+    userId: string;                     // User ID ที่ถูกกำหนดสิทธิ์
+    userEmail?: string;                 // Email ของ user (สำหรับแสดงผล)
+    userDisplayName?: string;           // ชื่อของ user (สำหรับแสดงผล)
+    useCustomSettings: boolean;         // ใช้การตั้งค่าเฉพาะ user หรือใช้ค่าจาก role
+    menus: MenuItemConfig[];            // รายการเมนูพร้อมการตั้งค่า (ถ้า useCustomSettings = true)
+    createdAt?: Date;
+    updatedAt?: Date;
+    updatedBy?: string;                 // User ID ของ Admin ที่อัปเดต
+}
+
+// ข้อมูลสมาชิกพร้อมการตั้งค่าเมนู (สำหรับแสดงในหน้าตั้งค่า)
+export interface MemberWithMenuSettings {
+    memberId: string;                   // ID ของ CompanyMember
+    userId: string;                     // User ID
+    email: string;                      // Email
+    displayName?: string;               // ชื่อแสดง
+    role: UserRole;                     // บทบาท (admin/member)
+    status: MemberStatus;               // สถานะ
+    hasCustomMenuSettings: boolean;     // มีการตั้งค่าเมนูเฉพาะหรือไม่
+    menuSettings?: UserMenuSettings;    // การตั้งค่าเมนู (ถ้ามี)
+}
+
 // ข้อมูลคำเชิญเข้าองค์กร
 export interface Invitation {
     id?: string;                   // Document ID
