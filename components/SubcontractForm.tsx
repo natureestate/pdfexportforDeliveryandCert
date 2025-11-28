@@ -11,6 +11,7 @@ import { Customer } from '../services/customers';
 import { Contractor } from '../services/contractors';
 import { generateDocumentNumber } from '../services/documentNumber';
 import { useCompany } from '../contexts/CompanyContext';
+import { numberToThaiText } from '../utils/numberToThaiText';
 
 export interface SubcontractFormProps {
     data: SubcontractData;
@@ -199,6 +200,7 @@ const SubcontractForm: React.FC<SubcontractFormProps> = ({
     }, [currentCompany?.id]);
 
     // คำนวณ amount ของงวดงานเมื่อ totalContractAmount เปลี่ยน
+    // และแปลงตัวเลขเป็นตัวอักษรภาษาไทยอัตโนมัติ
     useEffect(() => {
         if (data.totalContractAmount > 0) {
             const newMilestones = data.paymentMilestones.map(m => ({
@@ -206,6 +208,13 @@ const SubcontractForm: React.FC<SubcontractFormProps> = ({
                 amount: (data.totalContractAmount * m.percentage) / 100
             }));
             handleDataChange('paymentMilestones', newMilestones);
+            
+            // แปลงตัวเลขเป็นตัวอักษรภาษาไทยอัตโนมัติ
+            const thaiText = numberToThaiText(data.totalContractAmount);
+            handleDataChange('totalContractAmountText', thaiText);
+        } else {
+            // ถ้าเป็น 0 ให้ล้างข้อความ
+            handleDataChange('totalContractAmountText', '');
         }
     }, [data.totalContractAmount]);
 
@@ -441,8 +450,8 @@ const SubcontractForm: React.FC<SubcontractFormProps> = ({
                             <input type="number" id="totalContractAmount" value={data.totalContractAmount} onChange={(e) => handleDataChange('totalContractAmount', parseFloat(e.target.value) || 0)} className="mt-1 block w-full rounded-md border-gray-300 shadow-sm focus:border-indigo-500 focus:ring-indigo-500 text-xs sm:text-sm bg-gray-50" />
                         </div>
                         <div>
-                            <label htmlFor="totalContractAmountText" className="block text-xs sm:text-sm font-medium text-slate-700">ค่าจ้างเป็นตัวอักษร</label>
-                            <input type="text" id="totalContractAmountText" value={data.totalContractAmountText} onChange={(e) => handleDataChange('totalContractAmountText', e.target.value)} className="mt-1 block w-full rounded-md border-gray-300 shadow-sm focus:border-indigo-500 focus:ring-indigo-500 text-xs sm:text-sm bg-gray-50" placeholder="สามหมื่นบาทถ้วน" />
+                            <label htmlFor="totalContractAmountText" className="block text-xs sm:text-sm font-medium text-slate-700">ค่าจ้างเป็นตัวอักษร (คำนวณอัตโนมัติ)</label>
+                            <input type="text" id="totalContractAmountText" value={data.totalContractAmountText} readOnly className="mt-1 block w-full rounded-md border-gray-300 shadow-sm text-xs sm:text-sm bg-gray-100 text-gray-700 font-medium" placeholder="แสดงอัตโนมัติเมื่อกรอกค่าจ้าง" />
                         </div>
                     </div>
                     

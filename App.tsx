@@ -391,7 +391,7 @@ const initialSubcontractData: SubcontractData = {
     materialNote: '',
     totalWorkAmount: 0,
     // ข้อ 2: ระยะเวลาการทำงาน
-    showWorkPeriod: true,
+    showWorkPeriod: false, // Default เป็น off (ส่วนที่ 4)
     startDate: null,
     endDate: null,
     // ข้อ 3: การชำระเงินและการแบ่งงวดงาน
@@ -403,14 +403,14 @@ const initialSubcontractData: SubcontractData = {
         { milestone: 3, description: 'เมื่อส่งมอบงานทั้งหมด และผ่านการตรวจรับ', percentage: 50, amount: 0 },
     ],
     // ข้อ 4: เครื่องมือและวัสดุอุปกรณ์
-    showToolsSection: true,
+    showToolsSection: false, // Default เป็น off (ส่วนที่ 6)
     consumableResponsibility: 'contractor',
     // ข้อ 5: มาตรฐานงานและการรับประกัน
-    showWarrantySection: true,
+    showWarrantySection: false, // Default เป็น off (ส่วนที่ 7)
     defectFixDays: 7,
     warrantyMonths: 6,
     // ข้อ 6: การทิ้งงานและการปรับ
-    showPenaltySection: true,
+    showPenaltySection: false, // Default เป็น off (ส่วนที่ 8)
     abandonDays: 3,
     penaltyPerDay: 500,
     // ส่วนลงนาม

@@ -4,6 +4,7 @@ import { formatDateForInput } from '../utils/dateUtils';
 import CustomerSelector from './CustomerSelector';
 import { generateDocumentNumber } from '../services/documentNumber';
 import { useCompany } from '../contexts/CompanyContext';
+import { numberToThaiText } from '../utils/numberToThaiText';
 
 export interface ReceiptFormProps {
     data: ReceiptData;
@@ -364,6 +365,12 @@ const ReceiptForm: React.FC<ReceiptFormProps> = ({
                             <span className="text-base font-semibold text-gray-900">ยอดรวมทั้งสิ้น:</span>
                             <span className="text-base font-bold text-indigo-600">{data.total.toLocaleString('th-TH', { minimumFractionDigits: 2, maximumFractionDigits: 2 })} บาท</span>
                         </div>
+                        {/* แสดงยอดรวมเป็นตัวอักษรภาษาไทย */}
+                        {data.total > 0 && (
+                            <div className="pt-2 text-center">
+                                <span className="text-sm text-gray-600 italic">({numberToThaiText(data.total)})</span>
+                            </div>
+                        )}
                     </div>
                 </div>
 
