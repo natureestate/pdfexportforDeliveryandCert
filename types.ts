@@ -667,6 +667,63 @@ export interface VariationOrderData {
     issuedBy?: string;              // ผู้ออกเอกสาร (optional)
 }
 
+// ============================================================
+// ระบบตั้งค่าเมนู (Menu Settings System)
+// ============================================================
+
+// ประเภทเอกสารที่รองรับ (Document Types)
+export type MenuDocType = 
+    | 'delivery'        // ใบส่งมอบงาน
+    | 'warranty'        // ใบรับประกัน
+    | 'invoice'         // ใบแจ้งหนี้
+    | 'receipt'         // ใบเสร็จ
+    | 'tax-invoice'     // ใบกำกับภาษี
+    | 'quotation'       // ใบเสนอราคา
+    | 'purchase-order'  // ใบสั่งซื้อ
+    | 'memo'            // บันทึก
+    | 'variation-order' // ใบส่วนต่าง
+    | 'subcontract';    // สัญญาจ้างเหมาช่วง
+
+// ข้อมูลเมนูแต่ละรายการ
+export interface MenuItemConfig {
+    id: MenuDocType;        // ID ของเมนู (ตรงกับ DocType)
+    label: string;          // ชื่อเมนูที่แสดง
+    shortLabel: string;     // ชื่อย่อ (สำหรับ mobile)
+    icon: string;           // ชื่อ icon (lucide-react)
+    visible: boolean;       // แสดงเมนูนี้หรือไม่
+    order: number;          // ลำดับการแสดง (0 = แรกสุด)
+}
+
+// การตั้งค่าเมนูตาม Role
+export interface RoleMenuSettings {
+    role: UserRole;                     // บทบาท (admin หรือ member)
+    menus: MenuItemConfig[];            // รายการเมนูพร้อมการตั้งค่า
+}
+
+// การตั้งค่าเมนูของบริษัท
+export interface CompanyMenuSettings {
+    id?: string;                        // Document ID
+    companyId: string;                  // ID ของบริษัท
+    settings: RoleMenuSettings[];       // การตั้งค่าแยกตาม role
+    createdAt?: Date;
+    updatedAt?: Date;
+    updatedBy?: string;                 // User ID ของผู้อัปเดตล่าสุด
+}
+
+// Default Menu Configuration - เมนูทั้งหมดที่มีในระบบ
+export const DEFAULT_MENU_CONFIG: MenuItemConfig[] = [
+    { id: 'delivery', label: 'ส่งมอบงาน', shortLabel: 'ส่งมอบ', icon: 'Package', visible: true, order: 0 },
+    { id: 'warranty', label: 'รับประกัน', shortLabel: 'รับประกัน', icon: 'Shield', visible: true, order: 1 },
+    { id: 'invoice', label: 'แจ้งหนี้', shortLabel: 'แจ้งหนี้', icon: 'FileText', visible: true, order: 2 },
+    { id: 'receipt', label: 'ใบเสร็จ', shortLabel: 'ใบเสร็จ', icon: 'Receipt', visible: true, order: 3 },
+    { id: 'tax-invoice', label: 'กำกับภาษี', shortLabel: 'กำกับภาษี', icon: 'FileCheck', visible: true, order: 4 },
+    { id: 'quotation', label: 'เสนอราคา', shortLabel: 'เสนอราคา', icon: 'DollarSign', visible: true, order: 5 },
+    { id: 'purchase-order', label: 'สั่งซื้อ', shortLabel: 'สั่งซื้อ', icon: 'ShoppingCart', visible: true, order: 6 },
+    { id: 'memo', label: 'บันทึก', shortLabel: 'บันทึก', icon: 'StickyNote', visible: true, order: 7 },
+    { id: 'variation-order', label: 'ส่วนต่าง', shortLabel: 'ส่วนต่าง', icon: 'PlusCircle', visible: true, order: 8 },
+    { id: 'subcontract', label: 'สัญญาช่าง', shortLabel: 'สัญญาช่าง', icon: 'HardHat', visible: true, order: 9 },
+];
+
 // ข้อมูลคำเชิญเข้าองค์กร
 export interface Invitation {
     id?: string;                   // Document ID

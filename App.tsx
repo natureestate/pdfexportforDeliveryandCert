@@ -1,9 +1,10 @@
 import React, { useState, useRef, useCallback, useEffect } from 'react';
 import { Routes, Route, Navigate } from 'react-router-dom';
-import { Package, Shield, FileText, Receipt, FileCheck, DollarSign, ShoppingCart, StickyNote, PlusCircle, FilePlus, History, Save, HardHat } from 'lucide-react';
-import { DeliveryNoteData, WarrantyData, InvoiceData, ReceiptData, TaxInvoiceData, QuotationData, PurchaseOrderData, MemoData, VariationOrderData, SubcontractData, LogoType } from './types';
+import { Package, Shield, FileText, Receipt, FileCheck, DollarSign, ShoppingCart, StickyNote, PlusCircle, FilePlus, History, Save, HardHat, Settings } from 'lucide-react';
+import { DeliveryNoteData, WarrantyData, InvoiceData, ReceiptData, TaxInvoiceData, QuotationData, PurchaseOrderData, MemoData, VariationOrderData, SubcontractData, LogoType, MenuItemConfig } from './types';
 import { AuthProvider } from './contexts/AuthContext';
 import { CompanyProvider, useCompany } from './contexts/CompanyContext';
+import { MenuProvider, useMenu } from './contexts/MenuContext';
 import ProtectedRoute from './components/ProtectedRoute';
 import Header from './components/Header';
 import DeliveryForm from './components/DeliveryForm';
@@ -30,6 +31,7 @@ import HistoryList from './components/HistoryList';
 import AcceptInvitationPage from './components/AcceptInvitationPage';
 import SuperAdminDashboard from './components/SuperAdminDashboard';
 import CookieConsentModal from './components/CookieConsentModal';
+import MenuSettingsModal from './components/MenuSettingsModal';
 import { generatePdf } from './services/pdfGenerator';
 import { saveDeliveryNote, saveWarrantyCard, saveInvoice, saveReceipt, saveTaxInvoice, saveQuotation, savePurchaseOrder } from './services/firestore';
 import type { DeliveryNoteDocument, WarrantyDocument, InvoiceDocument, ReceiptDocument, TaxInvoiceDocument, QuotationDocument, PurchaseOrderDocument, MemoDocument, VariationOrderDocument, SubcontractDocument } from './services/firestore';
@@ -425,9 +427,24 @@ const initialSubcontractData: SubcontractData = {
 type ViewMode = 'form' | 'history';
 type Notification = { show: boolean; message: string; type: 'success' | 'info' | 'error' };
 
+// Icon mapping สำหรับ dynamic menu rendering
+const iconMap: Record<string, React.ComponentType<{ className?: string }>> = {
+    Package,
+    Shield,
+    FileText,
+    Receipt,
+    FileCheck,
+    DollarSign,
+    ShoppingCart,
+    StickyNote,
+    PlusCircle,
+    HardHat,
+};
+
 // Main Content Component ที่ใช้ useCompany hook
 const AppContent: React.FC = () => {
     const { currentCompany } = useCompany(); // ใช้ CompanyContext
+    const { visibleMenus, isAdmin, refreshMenus } = useMenu(); // ใช้ MenuContext
     const [deliveryData, setDeliveryData] = useState<DeliveryNoteData>(initialDeliveryData);
     const [warrantyData, setWarrantyData] = useState<WarrantyData>(initialWarrantyData);
     const [invoiceData, setInvoiceData] = useState<InvoiceData>(initialInvoiceData);
@@ -447,6 +464,9 @@ const AppContent: React.FC = () => {
     
     // Edit Mode - track ว่ากำลัง edit document เดิมหรือสร้างใหม่
     const [editingDocumentId, setEditingDocumentId] = useState<string | null>(null);
+    
+    // Menu Settings Modal
+    const [showMenuSettings, setShowMenuSettings] = useState(false);
     
     // Shared Logo State - ใช้ร่วมกันระหว่างทั้ง 2 แท็บ
     const [sharedLogo, setSharedLogo] = useState<string | null>(null);
@@ -974,90 +994,55 @@ const AppContent: React.FC = () => {
                                 </div>
                             )}
                             
-                            {/* Tab Menu Container พร้อม Fade Indicator */}
-                            <div className="relative border-b border-gray-200">
-                                {/* Fade indicator ด้านซ้าย */}
-                                <div className="absolute left-0 top-0 bottom-0 w-6 bg-gradient-to-r from-white to-transparent z-10 pointer-events-none sm:hidden"></div>
-                                
-                                {/* Tab Menu */}
-                                <div className="overflow-x-auto -mx-4 sm:mx-0 px-4 sm:px-0 tab-menu-scroll overscroll-x-contain touch-pan-x">
-                                    <nav className="-mb-px flex space-x-1 sm:space-x-2 min-w-max" aria-label="Tabs">
-                                        <button
-                                            onClick={() => setActiveTab('delivery')}
-                                            className={`${activeTab === 'delivery' ? 'border-indigo-500 text-indigo-600 bg-indigo-50' : 'border-transparent text-gray-500 hover:text-gray-700 hover:border-gray-300'} whitespace-nowrap py-2.5 sm:py-3 px-3 sm:px-4 border-b-2 font-medium text-xs sm:text-sm transition-all flex-shrink-0 rounded-t-lg flex items-center gap-1.5`}
-                                        >
-                                            <Package className="w-4 h-4" />
-                                            <span className="hidden sm:inline">ส่งมอบงาน</span>
-                                        </button>
-                                        <button
-                                            onClick={() => setActiveTab('warranty')}
-                                            className={`${activeTab === 'warranty' ? 'border-indigo-500 text-indigo-600 bg-indigo-50' : 'border-transparent text-gray-500 hover:text-gray-700 hover:border-gray-300'} whitespace-nowrap py-2.5 sm:py-3 px-3 sm:px-4 border-b-2 font-medium text-xs sm:text-sm transition-all flex-shrink-0 rounded-t-lg flex items-center gap-1.5`}
-                                        >
-                                            <Shield className="w-4 h-4" />
-                                            <span className="hidden sm:inline">รับประกัน</span>
-                                        </button>
-                                        <button
-                                            onClick={() => setActiveTab('invoice')}
-                                            className={`${activeTab === 'invoice' ? 'border-indigo-500 text-indigo-600 bg-indigo-50' : 'border-transparent text-gray-500 hover:text-gray-700 hover:border-gray-300'} whitespace-nowrap py-2.5 sm:py-3 px-3 sm:px-4 border-b-2 font-medium text-xs sm:text-sm transition-all flex-shrink-0 rounded-t-lg flex items-center gap-1.5`}
-                                        >
-                                            <FileText className="w-4 h-4" />
-                                            <span className="hidden sm:inline">แจ้งหนี้</span>
-                                        </button>
-                                        <button
-                                            onClick={() => setActiveTab('receipt')}
-                                            className={`${activeTab === 'receipt' ? 'border-indigo-500 text-indigo-600 bg-indigo-50' : 'border-transparent text-gray-500 hover:text-gray-700 hover:border-gray-300'} whitespace-nowrap py-2.5 sm:py-3 px-3 sm:px-4 border-b-2 font-medium text-xs sm:text-sm transition-all flex-shrink-0 rounded-t-lg flex items-center gap-1.5`}
-                                        >
-                                            <Receipt className="w-4 h-4" />
-                                            <span className="hidden sm:inline">ใบเสร็จ</span>
-                                        </button>
-                                        <button
-                                            onClick={() => setActiveTab('tax-invoice')}
-                                            className={`${activeTab === 'tax-invoice' ? 'border-indigo-500 text-indigo-600 bg-indigo-50' : 'border-transparent text-gray-500 hover:text-gray-700 hover:border-gray-300'} whitespace-nowrap py-2.5 sm:py-3 px-3 sm:px-4 border-b-2 font-medium text-xs sm:text-sm transition-all flex-shrink-0 rounded-t-lg flex items-center gap-1.5`}
-                                        >
-                                            <FileCheck className="w-4 h-4" />
-                                            <span className="hidden sm:inline">กำกับภาษี</span>
-                                        </button>
-                                        <button
-                                            onClick={() => setActiveTab('quotation')}
-                                            className={`${activeTab === 'quotation' ? 'border-indigo-500 text-indigo-600 bg-indigo-50' : 'border-transparent text-gray-500 hover:text-gray-700 hover:border-gray-300'} whitespace-nowrap py-2.5 sm:py-3 px-3 sm:px-4 border-b-2 font-medium text-xs sm:text-sm transition-all flex-shrink-0 rounded-t-lg flex items-center gap-1.5`}
-                                        >
-                                            <DollarSign className="w-4 h-4" />
-                                            <span className="hidden sm:inline">เสนอราคา</span>
-                                        </button>
-                                        <button
-                                            onClick={() => setActiveTab('purchase-order')}
-                                            className={`${activeTab === 'purchase-order' ? 'border-indigo-500 text-indigo-600 bg-indigo-50' : 'border-transparent text-gray-500 hover:text-gray-700 hover:border-gray-300'} whitespace-nowrap py-2.5 sm:py-3 px-3 sm:px-4 border-b-2 font-medium text-xs sm:text-sm transition-all flex-shrink-0 rounded-t-lg flex items-center gap-1.5`}
-                                        >
-                                            <ShoppingCart className="w-4 h-4" />
-                                            <span className="hidden sm:inline">สั่งซื้อ</span>
-                                        </button>
-                                        <button
-                                            onClick={() => setActiveTab('memo')}
-                                            className={`${activeTab === 'memo' ? 'border-indigo-500 text-indigo-600 bg-indigo-50' : 'border-transparent text-gray-500 hover:text-gray-700 hover:border-gray-300'} whitespace-nowrap py-2.5 sm:py-3 px-3 sm:px-4 border-b-2 font-medium text-xs sm:text-sm transition-all flex-shrink-0 rounded-t-lg flex items-center gap-1.5`}
-                                        >
-                                            <StickyNote className="w-4 h-4" />
-                                            <span className="hidden sm:inline">บันทึก</span>
-                                        </button>
-                                        <button
-                                            onClick={() => setActiveTab('variation-order')}
-                                            className={`${activeTab === 'variation-order' ? 'border-indigo-500 text-indigo-600 bg-indigo-50' : 'border-transparent text-gray-500 hover:text-gray-700 hover:border-gray-300'} whitespace-nowrap py-2.5 sm:py-3 px-3 sm:px-4 border-b-2 font-medium text-xs sm:text-sm transition-all flex-shrink-0 rounded-t-lg flex items-center gap-1.5`}
-                                        >
-                                            <PlusCircle className="w-4 h-4" />
-                                            <span className="hidden sm:inline">ส่วนต่าง</span>
-                                        </button>
-                                        <button
-                                            onClick={() => setActiveTab('subcontract')}
-                                            className={`${activeTab === 'subcontract' ? 'border-indigo-500 text-indigo-600 bg-indigo-50' : 'border-transparent text-gray-500 hover:text-gray-700 hover:border-gray-300'} whitespace-nowrap py-2.5 sm:py-3 px-3 sm:px-4 border-b-2 font-medium text-xs sm:text-sm transition-all flex-shrink-0 rounded-t-lg flex items-center gap-1.5`}
-                                        >
-                                            <HardHat className="w-4 h-4" />
-                                            <span className="hidden sm:inline">สัญญาช่าง</span>
-                                        </button>
-                                    </nav>
-                                </div>
-                                
-                                {/* Fade indicator ด้านขวา */}
-                                <div className="absolute right-0 top-0 bottom-0 w-8 bg-gradient-to-l from-white to-transparent z-10 pointer-events-none sm:hidden"></div>
-                            </div>
+{/* Tab Menu Container พร้อม Fade Indicator */}
+                                            <div className="relative border-b border-gray-200">
+                                                {/* Fade indicator ด้านซ้าย */}
+                                                <div className="absolute left-0 top-0 bottom-0 w-6 bg-gradient-to-r from-white to-transparent z-10 pointer-events-none sm:hidden"></div>
+                                                
+                                                {/* Tab Menu */}
+                                                <div className="overflow-x-auto -mx-4 sm:mx-0 px-4 sm:px-0 tab-menu-scroll overscroll-x-contain touch-pan-x">
+                                                    <nav className="-mb-px flex space-x-1 sm:space-x-2 min-w-max" aria-label="Tabs">
+                                                        {/* Dynamic Menu Rendering - แสดงเมนูตามการตั้งค่า */}
+                                                        {visibleMenus.map((menu) => {
+                                                            const IconComponent = iconMap[menu.icon];
+                                                            return (
+                                                                <button
+                                                                    key={menu.id}
+                                                                    onClick={() => setActiveTab(menu.id as DocType)}
+                                                                    className={`${activeTab === menu.id ? 'border-indigo-500 text-indigo-600 bg-indigo-50' : 'border-transparent text-gray-500 hover:text-gray-700 hover:border-gray-300'} whitespace-nowrap py-2.5 sm:py-3 px-3 sm:px-4 border-b-2 font-medium text-xs sm:text-sm transition-all flex-shrink-0 rounded-t-lg flex items-center gap-1.5`}
+                                                                >
+                                                                    {IconComponent && <IconComponent className="w-4 h-4" />}
+                                                                    <span className="hidden sm:inline">{menu.label}</span>
+                                                                </button>
+                                                            );
+                                                        })}
+                                                        
+                                                        {/* ปุ่มตั้งค่าเมนู - แสดงเฉพาะ Admin */}
+                                                        {isAdmin && (
+                                                            <button
+                                                                onClick={() => setShowMenuSettings(true)}
+                                                                className="whitespace-nowrap py-2.5 sm:py-3 px-3 sm:px-4 border-b-2 border-transparent text-gray-400 hover:text-gray-600 hover:bg-gray-50 font-medium text-xs sm:text-sm transition-all flex-shrink-0 rounded-t-lg flex items-center gap-1.5"
+                                                                title="ตั้งค่าเมนู"
+                                                            >
+                                                                <Settings className="w-4 h-4" />
+                                                            </button>
+                                                        )}
+                                                    </nav>
+                                                </div>
+                                                
+                                                {/* Fade indicator ด้านขวา */}
+                                                <div className="absolute right-0 top-0 bottom-0 w-8 bg-gradient-to-l from-white to-transparent z-10 pointer-events-none sm:hidden"></div>
+                                            </div>
+                                            
+                                            {/* Menu Settings Modal */}
+                                            <MenuSettingsModal
+                                                isOpen={showMenuSettings}
+                                                onClose={() => setShowMenuSettings(false)}
+                                                onSave={() => {
+                                                    refreshMenus();
+                                                    setShowMenuSettings(false);
+                                                }}
+                                            />
                             
                             {activeTab === 'delivery' ? (
                                 <DeliveryForm
@@ -1350,14 +1335,16 @@ const App: React.FC = () => {
                     } 
                 />
                 
-                {/* หน้าหลัก - ต้อง login และมี CompanyProvider */}
+                {/* หน้าหลัก - ต้อง login และมี CompanyProvider + MenuProvider */}
                 <Route
                     path="*"
                     element={
                         <CompanyProvider>
-                            <ProtectedRoute>
-                                <AppContent />
-                            </ProtectedRoute>
+                            <MenuProvider>
+                                <ProtectedRoute>
+                                    <AppContent />
+                                </ProtectedRoute>
+                            </MenuProvider>
                         </CompanyProvider>
                     }
                 />

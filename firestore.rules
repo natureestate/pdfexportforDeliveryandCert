@@ -436,6 +436,42 @@ service cloud.firestore {
     }
     
     // ============================================================
+    // ระบบตั้งค่าเมนู (Menu Settings System)
+    // ============================================================
+    
+    // Menu Settings (การตั้งค่าเมนูของบริษัท)
+    // Document ID = companyId
+    match /menuSettings/{companyId} {
+      // อ่าน: สมาชิกบริษัท หรือ เจ้าของบริษัท หรือ Super Admin
+      allow read: if isAuthenticated() && (
+        isSuperAdmin() ||
+        isMemberOfCompany(companyId) ||
+        isCompanyOwner(companyId)
+      );
+      
+      // สร้าง: Admin ของบริษัท หรือ เจ้าของบริษัท หรือ Super Admin
+      allow create: if isAuthenticated() && (
+        isSuperAdmin() ||
+        isCompanyOwner(companyId) ||
+        isAdminOfCompany(companyId)
+      );
+      
+      // แก้ไข: Admin ของบริษัท หรือ เจ้าของบริษัท หรือ Super Admin
+      allow update: if isAuthenticated() && (
+        isSuperAdmin() ||
+        isCompanyOwner(companyId) ||
+        isAdminOfCompany(companyId)
+      );
+      
+      // ลบ: Admin ของบริษัท หรือ เจ้าของบริษัท หรือ Super Admin
+      allow delete: if isAuthenticated() && (
+        isSuperAdmin() ||
+        isCompanyOwner(companyId) ||
+        isAdminOfCompany(companyId)
+      );
+    }
+    
+    // ============================================================
     // Default Rule - ปฏิเสธทุก collection อื่นๆ
     // ============================================================
     match /{document=**} {
