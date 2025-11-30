@@ -659,6 +659,39 @@ export const getActivePlanTemplates = async (): Promise<PlanTemplate[]> => {
 };
 
 /**
+ * Migrate Plan Names (สำหรับ backward compatibility)
+ * ลบ emoji ออกจากชื่อแผนใน database
+ */
+export const migratePlanNames = async (): Promise<void> => {
+    try {
+        console.log('🔄 กำลัง Migrate Plan Names...');
+        
+        const templates = await getAllPlanTemplates();
+        
+        for (const template of templates) {
+            // ตรวจสอบว่าชื่อมี emoji หรือไม่
+            const hasEmoji = /[\u{1F300}-\u{1F9FF}]/u.test(template.name);
+            
+            if (hasEmoji) {
+                // ลบ emoji ออกจากชื่อ
+                const cleanName = template.name.replace(/[\u{1F300}-\u{1F9FF}]/gu, '').trim();
+                
+                await updatePlanTemplate(template.id!, {
+                    name: cleanName,
+                });
+                
+                console.log(`✅ Migrated: ${template.name} -> ${cleanName}`);
+            }
+        }
+        
+        console.log('✅ Migrate Plan Names เสร็จสิ้น');
+    } catch (error) {
+        console.error('❌ Migrate Plan Names ล้มเหลว:', error);
+        throw error;
+    }
+};
+
+/**
  * Export Default Templates สำหรับใช้ใน quota.ts
  */
 export { DEFAULT_PLAN_TEMPLATES };
