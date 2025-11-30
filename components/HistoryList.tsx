@@ -805,7 +805,7 @@ const HistoryList: React.FC<HistoryListProps> = ({ activeDocType, onLoadDocument
                                             <span className="font-medium">ผู้ขาย:</span> <span className="break-words">{invoiceItem.companyName || 'ไม่ระบุ'}</span>
                                         </div>
                                         <div>
-                                            <span className="font-medium">ยอดรวม:</span> <span className={`font-bold ${isCancelled ? 'text-gray-500' : 'text-indigo-600'}`}>{invoiceItem.total.toLocaleString('th-TH', { minimumFractionDigits: 2, maximumFractionDigits: 2 })} บาท</span>
+                                            <span className="font-medium">ยอดรวม:</span> <span className={`font-bold ${isCancelled ? 'text-gray-500' : 'text-indigo-600'}`}>{(invoiceItem.total ?? 0).toLocaleString('th-TH', { minimumFractionDigits: 2, maximumFractionDigits: 2 })} บาท</span>
                                         </div>
                                     </div>
                                     <div className="mt-2 text-xs text-gray-400">
@@ -858,7 +858,7 @@ const HistoryList: React.FC<HistoryListProps> = ({ activeDocType, onLoadDocument
                                             <span className="font-medium">ผู้ขาย:</span> <span className="break-words">{receiptItem.companyName || 'ไม่ระบุ'}</span>
                                         </div>
                                         <div>
-                                            <span className="font-medium">ยอดรวม:</span> <span className="font-bold text-green-600">{receiptItem.total.toLocaleString('th-TH', { minimumFractionDigits: 2, maximumFractionDigits: 2 })} บาท</span>
+                                            <span className="font-medium">ยอดรวม:</span> <span className="font-bold text-green-600">{(receiptItem.total ?? 0).toLocaleString('th-TH', { minimumFractionDigits: 2, maximumFractionDigits: 2 })} บาท</span>
                                         </div>
                                         {receiptItem.paymentMethod && (
                                             <div className="col-span-2">
@@ -911,7 +911,7 @@ const HistoryList: React.FC<HistoryListProps> = ({ activeDocType, onLoadDocument
                                             <span className="font-medium">ผู้เสนอราคา:</span> <span className="break-words">{quotationItem.companyName || 'ไม่ระบุ'}</span>
                                         </div>
                                         <div>
-                                            <span className="font-medium">ยอดรวม:</span> <span className="font-bold text-green-600">{quotationItem.total.toLocaleString('th-TH', { minimumFractionDigits: 2, maximumFractionDigits: 2 })} บาท</span>
+                                            <span className="font-medium">ยอดรวม:</span> <span className="font-bold text-green-600">{(quotationItem.total ?? 0).toLocaleString('th-TH', { minimumFractionDigits: 2, maximumFractionDigits: 2 })} บาท</span>
                                         </div>
                                         {quotationItem.validUntilDate && (
                                             <div className="col-span-1 sm:col-span-2">
@@ -964,7 +964,7 @@ const HistoryList: React.FC<HistoryListProps> = ({ activeDocType, onLoadDocument
                                             <span className="font-medium">ผู้สั่งซื้อ:</span> <span className="break-words">{poItem.companyName || 'ไม่ระบุ'}</span>
                                         </div>
                                         <div>
-                                            <span className="font-medium">ยอดรวม:</span> <span className="font-bold text-indigo-600">{poItem.total.toLocaleString('th-TH', { minimumFractionDigits: 2, maximumFractionDigits: 2 })} บาท</span>
+                                            <span className="font-medium">ยอดรวม:</span> <span className="font-bold text-indigo-600">{(poItem.total ?? 0).toLocaleString('th-TH', { minimumFractionDigits: 2, maximumFractionDigits: 2 })} บาท</span>
                                         </div>
                                         {poItem.expectedDeliveryDate && (
                                             <div className="col-span-1 sm:col-span-2">

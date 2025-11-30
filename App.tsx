@@ -1341,6 +1341,36 @@ const AppContent: React.FC = () => {
                 ) : (
                     // History View
                     <div className="bg-white p-3 sm:p-4 md:p-6 rounded-lg shadow-lg">
+                        {/* Tab Menu สำหรับเลือกประเภทเอกสารใน History View */}
+                        <div className="relative border-b border-gray-200 mb-4">
+                            {/* Fade indicator ด้านซ้าย */}
+                            <div className="absolute left-0 top-0 bottom-0 w-6 bg-gradient-to-r from-white to-transparent z-10 pointer-events-none sm:hidden"></div>
+                            
+                            {/* Tab Menu */}
+                            <div className="overflow-x-auto -mx-3 sm:mx-0 px-3 sm:px-0 tab-menu-scroll overscroll-x-contain touch-pan-x">
+                                <nav className="-mb-px flex space-x-1 sm:space-x-2 min-w-max" aria-label="Document Type Tabs">
+                                    {/* Dynamic Menu Rendering - แสดงเมนูตามการตั้งค่า */}
+                                    {visibleMenus.map((menu) => {
+                                        const IconComponent = iconMap[menu.icon];
+                                        return (
+                                            <button
+                                                key={menu.id}
+                                                onClick={() => setActiveTab(menu.id as DocType)}
+                                                className={`${activeTab === menu.id ? 'border-indigo-500 text-indigo-600 bg-indigo-50' : 'border-transparent text-gray-500 hover:text-gray-700 hover:border-gray-300'} whitespace-nowrap py-2 sm:py-2.5 px-2.5 sm:px-3 border-b-2 font-medium text-xs sm:text-sm transition-all flex-shrink-0 rounded-t-lg flex items-center gap-1.5`}
+                                            >
+                                                {IconComponent && <IconComponent className="w-3.5 h-3.5 sm:w-4 sm:h-4" />}
+                                                <span className="hidden sm:inline">{menu.label}</span>
+                                                <span className="sm:hidden">{menu.shortLabel || menu.label}</span>
+                                            </button>
+                                        );
+                                    })}
+                                </nav>
+                            </div>
+                            
+                            {/* Fade indicator ด้านขวา */}
+                            <div className="absolute right-0 top-0 bottom-0 w-8 bg-gradient-to-l from-white to-transparent z-10 pointer-events-none sm:hidden"></div>
+                        </div>
+                        
                         <HistoryList 
                             activeDocType={activeTab} 
                             onLoadDocument={handleLoadDocument}
