@@ -1,5 +1,5 @@
 import React, { useEffect, useState, useCallback, useRef } from 'react';
-import type { DeliveryNoteDocument, WarrantyDocument, InvoiceDocument, ReceiptDocument, QuotationDocument, PurchaseOrderDocument, MemoDocument, VariationOrderDocument, SubcontractDocument } from '../services/firestore';
+import type { DeliveryNoteDocument, WarrantyDocument, InvoiceDocument, ReceiptDocument, QuotationDocument, PurchaseOrderDocument, MemoDocument, VariationOrderDocument, SubcontractDocument, TaxInvoiceDocument } from '../services/firestore';
 import { useCompany } from '../contexts/CompanyContext';
 import { generatePdf } from '../services/pdfGenerator';
 import { generatePdfFilename as generatePdfFilenameFromRegistry, type DocType, type DocumentDocument } from '../utils/documentRegistry';
@@ -14,6 +14,10 @@ import MemoPreview from './MemoPreview';
 import VariationOrderPreview from './VariationOrderPreview';
 import SubcontractPreview from './SubcontractPreview';
 import type { DeliveryNoteData, WarrantyData, InvoiceData, ReceiptData, QuotationData, PurchaseOrderData, MemoData, VariationOrderData, SubcontractData } from '../types';
+
+// Type alias สำหรับข้อมูลเอกสารทั้งหมด
+type DocumentDataType = DeliveryNoteData | WarrantyData | InvoiceData | ReceiptData | QuotationData | PurchaseOrderData | MemoData | VariationOrderData | SubcontractData;
+type AllDocumentDocument = DeliveryNoteDocument | WarrantyDocument | InvoiceDocument | ReceiptDocument | QuotationDocument | PurchaseOrderDocument | MemoDocument | VariationOrderDocument | SubcontractDocument | TaxInvoiceDocument;
 
 interface HistoryListProps {
     activeDocType: DocType;
@@ -41,7 +45,7 @@ const HistoryList: React.FC<HistoryListProps> = ({ activeDocType, onLoadDocument
     const previewRef = useRef<HTMLDivElement>(null); // Ref สำหรับ preview component ที่ซ่อนอยู่
     const [previewData, setPreviewData] = useState<DeliveryNoteData | WarrantyData | InvoiceData | ReceiptData | QuotationData | PurchaseOrderData | MemoData | VariationOrderData | SubcontractData | null>(null); // ข้อมูลสำหรับ preview
     const [showPreviewModal, setShowPreviewModal] = useState(false); // แสดง preview modal หรือไม่
-    const [previewDoc, setPreviewDoc] = useState<DeliveryNoteDocument | WarrantyDocument | InvoiceDocument | ReceiptDocument | QuotationDocument | PurchaseOrderDocument | MemoDocument | VariationOrderDocument | SubcontractDocument | null>(null); // เอกสารที่กำลัง preview
+    const [previewDoc, setPreviewDoc] = useState<AllDocumentDocument | null>(null); // เอกสารที่กำลัง preview
     const previewModalRef = useRef<HTMLDivElement>(null); // Ref สำหรับ preview component ใน modal
     
     // State สำหรับ filter และ pagination
@@ -80,14 +84,14 @@ const HistoryList: React.FC<HistoryListProps> = ({ activeDocType, onLoadDocument
     };
 
     // ฟังก์ชันสร้างชื่อไฟล์ PDF - Refactored: ใช้ Document Registry
-    const generatePdfFilename = (type: DocType, data: DocumentData): string => {
+    const generatePdfFilename = (type: DocType, data: DocumentDataType): string => {
         return generatePdfFilenameFromRegistry(type, data);
     };
 
     // ฟังก์ชันเปิด preview modal
     const handleShowPreview = useCallback((doc: DocumentDocument) => {
-        setPreviewDoc(doc);
-        setPreviewData(doc as DocumentData);
+        setPreviewDoc(doc as AllDocumentDocument);
+        setPreviewData(doc as DocumentDataType);
         setShowPreviewModal(true);
     }, []);
 
@@ -141,7 +145,7 @@ const HistoryList: React.FC<HistoryListProps> = ({ activeDocType, onLoadDocument
             }
 
             // สร้างชื่อไฟล์
-            const filename = generatePdfFilename(activeDocType, previewDoc as DocumentData);
+            const filename = generatePdfFilename(activeDocType, previewDoc as DocumentDataType);
             
             // สร้าง PDF
             await generatePdf(previewModalRef.current, filename);
@@ -179,7 +183,7 @@ const HistoryList: React.FC<HistoryListProps> = ({ activeDocType, onLoadDocument
             }
 
             // ตั้งค่าข้อมูลสำหรับ preview
-            setPreviewData(doc as DocumentData);
+            setPreviewData(doc as DocumentDataType);
             
             // รอให้ React render preview component และ ref พร้อม
             // ใช้ polling เพื่อรอให้ ref พร้อม (รอสูงสุด 2 วินาที)
@@ -199,7 +203,7 @@ const HistoryList: React.FC<HistoryListProps> = ({ activeDocType, onLoadDocument
             }
 
             // สร้างชื่อไฟล์
-            const filename = generatePdfFilename(activeDocType, doc as DocumentData);
+            const filename = generatePdfFilename(activeDocType, doc as DocumentDataType);
             
             // สร้าง PDF
             await generatePdf(previewRef.current, filename);
@@ -232,7 +236,7 @@ const HistoryList: React.FC<HistoryListProps> = ({ activeDocType, onLoadDocument
             <div className="bg-red-50 border border-red-200 rounded-lg p-4 text-center">
                 <p className="text-red-600">{error}</p>
                 <button 
-                    onClick={fetchData}
+                    onClick={() => fetchData()}
                     className="mt-2 px-4 py-2 bg-red-600 text-white rounded hover:bg-red-700"
                 >
                     ลองใหม่
@@ -509,7 +513,7 @@ const HistoryList: React.FC<HistoryListProps> = ({ activeDocType, onLoadDocument
                         )}
                     </div>
                     <button
-                        onClick={fetchData}
+                        onClick={() => fetchData()}
                         className="px-2 sm:px-3 py-2 text-xs sm:text-sm bg-white border border-gray-300 rounded-md hover:bg-gray-50 flex items-center gap-1 sm:gap-2"
                     >
                         <svg className="w-3 h-3 sm:w-4 sm:h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
