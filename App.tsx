@@ -40,6 +40,7 @@ import { generatePdf } from './services/pdfGenerator';
 import { saveDeliveryNote, saveWarrantyCard, saveInvoice, saveReceipt, saveTaxInvoice, saveQuotation, savePurchaseOrder } from './services/firestore';
 import type { DeliveryNoteDocument, WarrantyDocument, InvoiceDocument, ReceiptDocument, TaxInvoiceDocument, QuotationDocument, PurchaseOrderDocument, MemoDocument, VariationOrderDocument, SubcontractDocument } from './services/firestore';
 import { DOCUMENT_REGISTRY, generatePdfFilename as generatePdfFilenameFromRegistry, saveOrUpdateDocument, type DocType } from './utils/documentRegistry';
+import { generateVerificationToken } from './services/verification';
 
 const getInitialDeliveryData = (): DeliveryNoteData => ({
     logo: null,
@@ -722,14 +723,59 @@ const AppContent: React.FC = () => {
         try {
             const companyId = currentCompany?.id;
             
-            // ดึงข้อมูลตาม activeTab และใช้ Document Registry เพื่อ save หรือ update
-            const data = getCurrentData();
+            // ดึงข้อมูลตาม activeTab
+            let data = getCurrentData();
+            
+            // ถ้าเป็น create mode และยังไม่มี verificationToken ให้สร้างใหม่
+            let newToken: string | null = null;
+            if (!isEditMode && !(data as any).verificationToken) {
+                newToken = generateVerificationToken();
+                data = { ...data, verificationToken: newToken } as typeof data;
+            }
+            
+            // ใช้ Document Registry เพื่อ save หรือ update
             const result = await saveOrUpdateDocument(activeTab, data, editingDocumentId, companyId);
             showToast(result.message, 'success');
             
-            // ถ้าเป็น create mode ให้ set editingDocumentId
+            // ถ้าเป็น create mode ให้ set editingDocumentId และอัปเดต form state ด้วย verificationToken
             if (!isEditMode) {
                 setEditingDocumentId(result.id);
+                
+                // อัปเดต form state ด้วย verificationToken เพื่อให้ QR Code แสดงทันที
+                if (newToken) {
+                    switch (activeTab) {
+                        case 'delivery':
+                            setDeliveryData(prev => ({ ...prev, verificationToken: newToken! }));
+                            break;
+                        case 'warranty':
+                            setWarrantyData(prev => ({ ...prev, verificationToken: newToken! }));
+                            break;
+                        case 'invoice':
+                            setInvoiceData(prev => ({ ...prev, verificationToken: newToken! }));
+                            break;
+                        case 'receipt':
+                            setReceiptData(prev => ({ ...prev, verificationToken: newToken! }));
+                            break;
+                        case 'tax-invoice':
+                            setTaxInvoiceData(prev => ({ ...prev, verificationToken: newToken! }));
+                            break;
+                        case 'quotation':
+                            setQuotationData(prev => ({ ...prev, verificationToken: newToken! }));
+                            break;
+                        case 'purchase-order':
+                            setPurchaseOrderData(prev => ({ ...prev, verificationToken: newToken! }));
+                            break;
+                        case 'memo':
+                            setMemoData(prev => ({ ...prev, verificationToken: newToken! }));
+                            break;
+                        case 'variation-order':
+                            setVariationOrderData(prev => ({ ...prev, verificationToken: newToken! }));
+                            break;
+                        case 'subcontract':
+                            setSubcontractData(prev => ({ ...prev, verificationToken: newToken! }));
+                            break;
+                    }
+                }
             }
         } catch (error) {
             console.error('Failed to save to Firestore:', error);

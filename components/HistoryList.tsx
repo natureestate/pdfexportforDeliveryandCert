@@ -14,6 +14,7 @@ import PurchaseOrderPreview from './PurchaseOrderPreview';
 import MemoPreview from './MemoPreview';
 import VariationOrderPreview from './VariationOrderPreview';
 import SubcontractPreview from './SubcontractPreview';
+import DocumentActions from './DocumentActions';
 import type { DeliveryNoteData, WarrantyData, InvoiceData, ReceiptData, QuotationData, PurchaseOrderData, MemoData, VariationOrderData, SubcontractData } from '../types';
 
 // Type alias สำหรับข้อมูลเอกสารทั้งหมด
@@ -660,7 +661,7 @@ const HistoryList: React.FC<HistoryListProps> = ({ activeDocType, onLoadDocument
                         const noteItem = note as DeliveryNoteDocument;
                         const isCancelled = (noteItem as any).documentStatus === 'cancelled';
                         return (
-                        <div key={noteItem.id} className={`bg-white border rounded-lg p-3 sm:p-4 hover:shadow-md transition-shadow ${isCancelled ? 'border-red-300 bg-red-50' : 'border-gray-200'}`}>
+                        <div key={noteItem.id} className={`group bg-white border rounded-lg p-3 sm:p-4 hover:shadow-md transition-shadow ${isCancelled ? 'border-red-300 bg-red-50' : 'border-gray-200'}`}>
                             <div className="flex flex-col sm:flex-row sm:justify-between sm:items-start gap-3">
                                 <div className="flex-1 min-w-0">
                                     {/* แสดงสถานะเอกสาร */}
@@ -697,86 +698,21 @@ const HistoryList: React.FC<HistoryListProps> = ({ activeDocType, onLoadDocument
                                         บันทึกเมื่อ: {formatDate(noteItem.createdAt)}
                                     </div>
                                 </div>
-                                <div className="flex flex-row sm:flex-col gap-2 sm:ml-4">
-                                    <button
-                                        onClick={() => onLoadDocument(noteItem)}
-                                        className="flex-1 sm:flex-none px-2 sm:px-3 py-1.5 sm:py-1 bg-amber-600 text-white text-xs sm:text-sm rounded hover:bg-amber-700 flex items-center justify-center gap-1"
-                                        title="โหลดเอกสารเพื่อแก้ไข"
-                                    >
-                                        <svg className="w-3 h-3 sm:w-4 sm:h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                                            <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M11 5H6a2 2 0 00-2 2v11a2 2 0 002 2h11a2 2 0 002-2v-5m-1.414-9.414a2 2 0 112.828 2.828L11.828 15H9v-2.828l8.586-8.586z" />
-                                        </svg>
-                                        <span className="hidden sm:inline">✏️ แก้ไข</span>
-                                        <span className="sm:hidden">แก้ไข</span>
-                                    </button>
-                                    <button
-                                        onClick={() => handleDownloadPdf(noteItem)}
-                                        disabled={downloadingPdfId === noteItem.id}
-                                        className="flex-1 sm:flex-none px-2 sm:px-3 py-1.5 sm:py-1 bg-blue-600 text-white text-xs sm:text-sm rounded hover:bg-blue-700 flex items-center justify-center gap-1 disabled:opacity-50 disabled:cursor-not-allowed"
-                                        title="ดาวน์โหลด PDF"
-                                    >
-                                        {downloadingPdfId === noteItem.id ? (
-                                            <>
-                                                <svg className="animate-spin h-3 w-3 sm:h-4 sm:w-4" xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24">
-                                                    <circle className="opacity-25" cx="12" cy="12" r="10" stroke="currentColor" strokeWidth="4"></circle>
-                                                    <path className="opacity-75" fill="currentColor" d="M4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4zm2 5.291A7.962 7.962 0 014 12H0c0 3.042 1.135 5.824 3 7.938l3-2.647z"></path>
-                                                </svg>
-                                                <span className="hidden sm:inline">กำลังสร้าง...</span>
-                                                <span className="sm:hidden">กำลังสร้าง</span>
-                                            </>
-                                        ) : (
-                                            <>
-                                                <svg className="w-3 h-3 sm:w-4 sm:h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                                                    <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M12 10v6m0 0l-3-3m3 3l3-3m2 8H7a2 2 0 01-2-2V5a2 2 0 012-2h5.586a1 1 0 01.707.293l5.414 5.414a1 1 0 01.293.707V19a2 2 0 01-2 2z" />
-                                                </svg>
-                                                <span className="hidden sm:inline">ดาวน์โหลด PDF</span>
-                                                <span className="sm:hidden">PDF</span>
-                                            </>
-                                        )}
-                                    </button>
-                                    {/* ปุ่มยกเลิก/กู้คืนเอกสาร */}
-                                    {isCancelled ? (
-                                        <button
-                                            onClick={() => handleRestoreDocument(noteItem.id!)}
-                                            disabled={restoringId === noteItem.id}
-                                            className="flex-1 sm:flex-none px-2 sm:px-3 py-1.5 sm:py-1 bg-green-600 text-white text-xs sm:text-sm rounded hover:bg-green-700 flex items-center justify-center gap-1 disabled:opacity-50 disabled:cursor-not-allowed"
-                                            title="กู้คืนเอกสาร"
-                                        >
-                                            {restoringId === noteItem.id ? (
-                                                <span>กำลังกู้คืน...</span>
-                                            ) : (
-                                                <>
-                                                    <svg className="w-3 h-3 sm:w-4 sm:h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                                                        <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M4 4v5h.582m15.356 2A8.001 8.001 0 004.582 9m0 0H9m11 11v-5h-.581m0 0a8.003 8.003 0 01-15.357-2m15.357 2H15" />
-                                                    </svg>
-                                                    <span className="hidden sm:inline">กู้คืน</span>
-                                                    <span className="sm:hidden">กู้คืน</span>
-                                                </>
-                                            )}
-                                        </button>
-                                    ) : (
-                                        <button
-                                            onClick={() => setCancelConfirm({ id: noteItem.id!, docNumber: noteItem.docNumber })}
-                                            className="flex-1 sm:flex-none px-2 sm:px-3 py-1.5 sm:py-1 bg-orange-500 text-white text-xs sm:text-sm rounded hover:bg-orange-600 flex items-center justify-center gap-1"
-                                            title="ยกเลิกเอกสาร"
-                                        >
-                                            <svg className="w-3 h-3 sm:w-4 sm:h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                                                <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M18.364 18.364A9 9 0 005.636 5.636m12.728 12.728A9 9 0 015.636 5.636m12.728 12.728L5.636 5.636" />
-                                            </svg>
-                                            <span className="hidden sm:inline">ยกเลิก</span>
-                                            <span className="sm:hidden">ยกเลิก</span>
-                                        </button>
-                                    )}
-                                    <button
-                                        onClick={() => setDeleteConfirm({ type: 'delivery', id: noteItem.id! })}
-                                        className="flex-1 sm:flex-none px-2 sm:px-3 py-1.5 sm:py-1 bg-red-600 text-white text-xs sm:text-sm rounded hover:bg-red-700 flex items-center justify-center gap-1"
-                                    >
-                                        <svg className="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                                            <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M19 7l-.867 12.142A2 2 0 0116.138 21H7.862a2 2 0 01-1.995-1.858L5 7m5 4v6m4-6v6m1-10V4a1 1 0 00-1-1h-4a1 1 0 00-1 1v3M4 7h16" />
-                                        </svg>
-                                        ลบ
-                                    </button>
-                                </div>
+                                {/* ปุ่ม Actions - ใช้ DocumentActions component (แสดงเมื่อ hover) */}
+                                <DocumentActions
+                                    onEdit={() => onLoadDocument(noteItem)}
+                                    onDownload={() => handleDownloadPdf(noteItem)}
+                                    onCancel={() => setCancelConfirm({ id: noteItem.id!, docNumber: noteItem.docNumber })}
+                                    onRestore={() => handleRestoreDocument(noteItem.id!)}
+                                    onDelete={() => setDeleteConfirm({ type: 'delivery', id: noteItem.id! })}
+                                    onPreview={() => handleShowPreview(noteItem)}
+                                    isCancelled={isCancelled}
+                                    isDownloading={downloadingPdfId === noteItem.id}
+                                    isCancelling={cancellingId === noteItem.id}
+                                    isRestoring={restoringId === noteItem.id}
+                                    showPreview={true}
+                                    showOnHover={true}
+                                />
                             </div>
                         </div>
                     );
@@ -786,7 +722,7 @@ const HistoryList: React.FC<HistoryListProps> = ({ activeDocType, onLoadDocument
                     paginatedList.map((card) => {
                         const cardItem = card as WarrantyDocument;
                         return (
-                        <div key={cardItem.id} className="bg-white border border-gray-200 rounded-lg p-3 sm:p-4 hover:shadow-md transition-shadow">
+                        <div key={cardItem.id} className="group bg-white border border-gray-200 rounded-lg p-3 sm:p-4 hover:shadow-md transition-shadow">
                             <div className="flex flex-col sm:flex-row sm:justify-between sm:items-start gap-3">
                                 <div className="flex-1 min-w-0">
                                     <h3 className="text-base sm:text-lg font-semibold text-gray-900 break-words">{cardItem.serviceName || cardItem.projectName || 'ไม่ระบุสินค้า'}</h3>
@@ -819,53 +755,16 @@ const HistoryList: React.FC<HistoryListProps> = ({ activeDocType, onLoadDocument
                                         บันทึกเมื่อ: {formatDate(cardItem.createdAt)}
                                     </div>
                                 </div>
-                                <div className="flex flex-row sm:flex-col gap-2 sm:ml-4">
-                                    <button
-                                        onClick={() => onLoadDocument(cardItem)}
-                                        className="flex-1 sm:flex-none px-2 sm:px-3 py-1.5 sm:py-1 bg-amber-600 text-white text-xs sm:text-sm rounded hover:bg-amber-700 flex items-center justify-center gap-1"
-                                        title="โหลดเอกสารเพื่อแก้ไข"
-                                    >
-                                        <svg className="w-3 h-3 sm:w-4 sm:h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                                            <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M11 5H6a2 2 0 00-2 2v11a2 2 0 002 2h11a2 2 0 002-2v-5m-1.414-9.414a2 2 0 112.828 2.828L11.828 15H9v-2.828l8.586-8.586z" />
-                                        </svg>
-                                        <span className="hidden sm:inline">✏️ แก้ไข</span>
-                                        <span className="sm:hidden">แก้ไข</span>
-                                    </button>
-                                    <button
-                                        onClick={() => handleDownloadPdf(cardItem)}
-                                        disabled={downloadingPdfId === cardItem.id}
-                                        className="flex-1 sm:flex-none px-2 sm:px-3 py-1.5 sm:py-1 bg-blue-600 text-white text-xs sm:text-sm rounded hover:bg-blue-700 flex items-center justify-center gap-1 disabled:opacity-50 disabled:cursor-not-allowed"
-                                        title="ดาวน์โหลด PDF"
-                                    >
-                                        {downloadingPdfId === cardItem.id ? (
-                                            <>
-                                                <svg className="animate-spin h-3 w-3 sm:h-4 sm:w-4" xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24">
-                                                    <circle className="opacity-25" cx="12" cy="12" r="10" stroke="currentColor" strokeWidth="4"></circle>
-                                                    <path className="opacity-75" fill="currentColor" d="M4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4zm2 5.291A7.962 7.962 0 014 12H0c0 3.042 1.135 5.824 3 7.938l3-2.647z"></path>
-                                                </svg>
-                                                <span className="hidden sm:inline">กำลังสร้าง...</span>
-                                                <span className="sm:hidden">กำลังสร้าง</span>
-                                            </>
-                                        ) : (
-                                            <>
-                                                <svg className="w-3 h-3 sm:w-4 sm:h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                                                    <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M12 10v6m0 0l-3-3m3 3l3-3m2 8H7a2 2 0 01-2-2V5a2 2 0 012-2h5.586a1 1 0 01.707.293l5.414 5.414a1 1 0 01.293.707V19a2 2 0 01-2 2z" />
-                                                </svg>
-                                                <span className="hidden sm:inline">ดาวน์โหลด PDF</span>
-                                                <span className="sm:hidden">PDF</span>
-                                            </>
-                                        )}
-                                    </button>
-                                    <button
-                                        onClick={() => setDeleteConfirm({ type: 'warranty', id: cardItem.id! })}
-                                        className="flex-1 sm:flex-none px-2 sm:px-3 py-1.5 sm:py-1 bg-red-600 text-white text-xs sm:text-sm rounded hover:bg-red-700 flex items-center justify-center gap-1"
-                                    >
-                                        <svg className="w-3 h-3 sm:w-4 sm:h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                                            <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M19 7l-.867 12.142A2 2 0 0116.138 21H7.862a2 2 0 01-1.995-1.858L5 7m5 4v6m4-6v6m1-10V4a1 1 0 00-1-1h-4a1 1 0 00-1 1v3M4 7h16" />
-                                        </svg>
-                                        ลบ
-                                    </button>
-                                </div>
+                                {/* ปุ่ม Actions - ใช้ DocumentActions component */}
+                                <DocumentActions
+                                    onEdit={() => onLoadDocument(cardItem)}
+                                    onDownload={() => handleDownloadPdf(cardItem)}
+                                    onDelete={() => setDeleteConfirm({ type: 'warranty', id: cardItem.id! })}
+                                    onPreview={() => handleShowPreview(cardItem)}
+                                    isDownloading={downloadingPdfId === cardItem.id}
+                                    showPreview={true}
+                                    showOnHover={true}
+                                />
                             </div>
                         </div>
                     );
@@ -876,7 +775,7 @@ const HistoryList: React.FC<HistoryListProps> = ({ activeDocType, onLoadDocument
                         const invoiceItem = invoice as InvoiceDocument;
                         const isCancelled = (invoiceItem as any).documentStatus === 'cancelled';
                         return (
-                        <div key={invoiceItem.id} className={`bg-white border rounded-lg p-3 sm:p-4 hover:shadow-md transition-shadow ${isCancelled ? 'border-red-300 bg-red-50' : 'border-gray-200'}`}>
+                        <div key={invoiceItem.id} className={`group bg-white border rounded-lg p-3 sm:p-4 hover:shadow-md transition-shadow ${isCancelled ? 'border-red-300 bg-red-50' : 'border-gray-200'}`}>
                             <div className="flex flex-col sm:flex-row sm:justify-between sm:items-start gap-3">
                                 <div className="flex-1 min-w-0">
                                     {/* แสดงสถานะเอกสาร */}
@@ -913,86 +812,21 @@ const HistoryList: React.FC<HistoryListProps> = ({ activeDocType, onLoadDocument
                                         บันทึกเมื่อ: {formatDate(invoiceItem.createdAt)}
                                     </div>
                                 </div>
-                                <div className="flex flex-row sm:flex-col gap-2 sm:ml-4">
-                                    <button
-                                        onClick={() => onLoadDocument(invoiceItem)}
-                                        className="flex-1 sm:flex-none px-2 sm:px-3 py-1.5 sm:py-1 bg-amber-600 text-white text-xs sm:text-sm rounded hover:bg-amber-700 flex items-center justify-center gap-1"
-                                        title="โหลดเอกสารเพื่อแก้ไข"
-                                    >
-                                        <svg className="w-3 h-3 sm:w-4 sm:h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                                            <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M11 5H6a2 2 0 00-2 2v11a2 2 0 002 2h11a2 2 0 002-2v-5m-1.414-9.414a2 2 0 112.828 2.828L11.828 15H9v-2.828l8.586-8.586z" />
-                                        </svg>
-                                        <span className="hidden sm:inline">✏️ แก้ไข</span>
-                                        <span className="sm:hidden">แก้ไข</span>
-                                    </button>
-                                    <button
-                                        onClick={() => handleDownloadPdf(invoiceItem)}
-                                        disabled={downloadingPdfId === invoiceItem.id}
-                                        className="flex-1 sm:flex-none px-2 sm:px-3 py-1.5 sm:py-1 bg-blue-600 text-white text-xs sm:text-sm rounded hover:bg-blue-700 flex items-center justify-center gap-1 disabled:opacity-50 disabled:cursor-not-allowed"
-                                        title="ดาวน์โหลด PDF"
-                                    >
-                                        {downloadingPdfId === invoiceItem.id ? (
-                                            <>
-                                                <svg className="animate-spin h-3 w-3 sm:h-4 sm:w-4" xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24">
-                                                    <circle className="opacity-25" cx="12" cy="12" r="10" stroke="currentColor" strokeWidth="4"></circle>
-                                                    <path className="opacity-75" fill="currentColor" d="M4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4zm2 5.291A7.962 7.962 0 014 12H0c0 3.042 1.135 5.824 3 7.938l3-2.647z"></path>
-                                                </svg>
-                                                <span className="hidden sm:inline">กำลังสร้าง...</span>
-                                                <span className="sm:hidden">กำลังสร้าง</span>
-                                            </>
-                                        ) : (
-                                            <>
-                                                <svg className="w-3 h-3 sm:w-4 sm:h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                                                    <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M12 10v6m0 0l-3-3m3 3l3-3m2 8H7a2 2 0 01-2-2V5a2 2 0 012-2h5.586a1 1 0 01.707.293l5.414 5.414a1 1 0 01.293.707V19a2 2 0 01-2 2z" />
-                                                </svg>
-                                                <span className="hidden sm:inline">ดาวน์โหลด PDF</span>
-                                                <span className="sm:hidden">PDF</span>
-                                            </>
-                                        )}
-                                    </button>
-                                    {/* ปุ่มยกเลิก/กู้คืนเอกสาร */}
-                                    {isCancelled ? (
-                                        <button
-                                            onClick={() => handleRestoreDocument(invoiceItem.id!)}
-                                            disabled={restoringId === invoiceItem.id}
-                                            className="flex-1 sm:flex-none px-2 sm:px-3 py-1.5 sm:py-1 bg-green-600 text-white text-xs sm:text-sm rounded hover:bg-green-700 flex items-center justify-center gap-1 disabled:opacity-50 disabled:cursor-not-allowed"
-                                            title="กู้คืนเอกสาร"
-                                        >
-                                            {restoringId === invoiceItem.id ? (
-                                                <span>กำลังกู้คืน...</span>
-                                            ) : (
-                                                <>
-                                                    <svg className="w-3 h-3 sm:w-4 sm:h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                                                        <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M4 4v5h.582m15.356 2A8.001 8.001 0 004.582 9m0 0H9m11 11v-5h-.581m0 0a8.003 8.003 0 01-15.357-2m15.357 2H15" />
-                                                    </svg>
-                                                    <span className="hidden sm:inline">กู้คืน</span>
-                                                    <span className="sm:hidden">กู้คืน</span>
-                                                </>
-                                            )}
-                                        </button>
-                                    ) : (
-                                        <button
-                                            onClick={() => setCancelConfirm({ id: invoiceItem.id!, docNumber: invoiceItem.invoiceNumber })}
-                                            className="flex-1 sm:flex-none px-2 sm:px-3 py-1.5 sm:py-1 bg-orange-500 text-white text-xs sm:text-sm rounded hover:bg-orange-600 flex items-center justify-center gap-1"
-                                            title="ยกเลิกเอกสาร"
-                                        >
-                                            <svg className="w-3 h-3 sm:w-4 sm:h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                                                <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M18.364 18.364A9 9 0 005.636 5.636m12.728 12.728A9 9 0 015.636 5.636m12.728 12.728L5.636 5.636" />
-                                            </svg>
-                                            <span className="hidden sm:inline">ยกเลิก</span>
-                                            <span className="sm:hidden">ยกเลิก</span>
-                                        </button>
-                                    )}
-                                    <button
-                                        onClick={() => setDeleteConfirm({ type: 'invoice', id: invoiceItem.id! })}
-                                        className="flex-1 sm:flex-none px-2 sm:px-3 py-1.5 sm:py-1 bg-red-600 text-white text-xs sm:text-sm rounded hover:bg-red-700 flex items-center justify-center gap-1"
-                                    >
-                                        <svg className="w-3 h-3 sm:w-4 sm:h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                                            <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M19 7l-.867 12.142A2 2 0 0116.138 21H7.862a2 2 0 01-1.995-1.858L5 7m5 4v6m4-6v6m1-10V4a1 1 0 00-1-1h-4a1 1 0 00-1 1v3M4 7h16" />
-                                        </svg>
-                                        ลบ
-                                    </button>
-                                </div>
+                                {/* ปุ่ม Actions - ใช้ DocumentActions component */}
+                                <DocumentActions
+                                    onEdit={() => onLoadDocument(invoiceItem)}
+                                    onDownload={() => handleDownloadPdf(invoiceItem)}
+                                    onCancel={() => setCancelConfirm({ id: invoiceItem.id!, docNumber: invoiceItem.invoiceNumber })}
+                                    onRestore={() => handleRestoreDocument(invoiceItem.id!)}
+                                    onDelete={() => setDeleteConfirm({ type: 'invoice', id: invoiceItem.id! })}
+                                    onPreview={() => handleShowPreview(invoiceItem)}
+                                    isCancelled={isCancelled}
+                                    isDownloading={downloadingPdfId === invoiceItem.id}
+                                    isCancelling={cancellingId === invoiceItem.id}
+                                    isRestoring={restoringId === invoiceItem.id}
+                                    showPreview={true}
+                                    showOnHover={true}
+                                />
                             </div>
                         </div>
                     );
@@ -1002,7 +836,7 @@ const HistoryList: React.FC<HistoryListProps> = ({ activeDocType, onLoadDocument
                     paginatedList.map((receipt) => {
                         const receiptItem = receipt as ReceiptDocument;
                         return (
-                        <div key={receiptItem.id} className="bg-white border border-gray-200 rounded-lg p-3 sm:p-4 hover:shadow-md transition-shadow">
+                        <div key={receiptItem.id} className="group bg-white border border-gray-200 rounded-lg p-3 sm:p-4 hover:shadow-md transition-shadow">
                             <div className="flex flex-col sm:flex-row sm:justify-between sm:items-start gap-3">
                                 <div className="flex-1 min-w-0">
                                     <h3 className="text-base sm:text-lg font-semibold text-gray-900 break-words">{receiptItem.customerName || 'ไม่ระบุลูกค้า'}</h3>
@@ -1036,53 +870,16 @@ const HistoryList: React.FC<HistoryListProps> = ({ activeDocType, onLoadDocument
                                         บันทึกเมื่อ: {formatDate(receiptItem.createdAt)}
                                     </div>
                                 </div>
-                                <div className="flex flex-row sm:flex-col gap-2 sm:ml-4">
-                                    <button
-                                        onClick={() => onLoadDocument(receiptItem)}
-                                        className="flex-1 sm:flex-none px-2 sm:px-3 py-1.5 sm:py-1 bg-amber-600 text-white text-xs sm:text-sm rounded hover:bg-amber-700 flex items-center justify-center gap-1"
-                                        title="โหลดเอกสารเพื่อแก้ไข"
-                                    >
-                                        <svg className="w-3 h-3 sm:w-4 sm:h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                                            <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M11 5H6a2 2 0 00-2 2v11a2 2 0 002 2h11a2 2 0 002-2v-5m-1.414-9.414a2 2 0 112.828 2.828L11.828 15H9v-2.828l8.586-8.586z" />
-                                        </svg>
-                                        <span className="hidden sm:inline">✏️ แก้ไข</span>
-                                        <span className="sm:hidden">แก้ไข</span>
-                                    </button>
-                                    <button
-                                        onClick={() => handleDownloadPdf(receiptItem)}
-                                        disabled={downloadingPdfId === receiptItem.id}
-                                        className="flex-1 sm:flex-none px-2 sm:px-3 py-1.5 sm:py-1 bg-blue-600 text-white text-xs sm:text-sm rounded hover:bg-blue-700 flex items-center justify-center gap-1 disabled:opacity-50 disabled:cursor-not-allowed"
-                                        title="ดาวน์โหลด PDF"
-                                    >
-                                        {downloadingPdfId === receiptItem.id ? (
-                                            <>
-                                                <svg className="animate-spin h-3 w-3 sm:h-4 sm:w-4" xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24">
-                                                    <circle className="opacity-25" cx="12" cy="12" r="10" stroke="currentColor" strokeWidth="4"></circle>
-                                                    <path className="opacity-75" fill="currentColor" d="M4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4zm2 5.291A7.962 7.962 0 014 12H0c0 3.042 1.135 5.824 3 7.938l3-2.647z"></path>
-                                                </svg>
-                                                <span className="hidden sm:inline">กำลังสร้าง...</span>
-                                                <span className="sm:hidden">กำลังสร้าง</span>
-                                            </>
-                                        ) : (
-                                            <>
-                                                <svg className="w-3 h-3 sm:w-4 sm:h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                                                    <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M12 10v6m0 0l-3-3m3 3l3-3m2 8H7a2 2 0 01-2-2V5a2 2 0 012-2h5.586a1 1 0 01.707.293l5.414 5.414a1 1 0 01.293.707V19a2 2 0 01-2 2z" />
-                                                </svg>
-                                                <span className="hidden sm:inline">ดาวน์โหลด PDF</span>
-                                                <span className="sm:hidden">PDF</span>
-                                            </>
-                                        )}
-                                    </button>
-                                    <button
-                                        onClick={() => setDeleteConfirm({ type: 'receipt', id: receiptItem.id! })}
-                                        className="flex-1 sm:flex-none px-2 sm:px-3 py-1.5 sm:py-1 bg-red-600 text-white text-xs sm:text-sm rounded hover:bg-red-700 flex items-center justify-center gap-1"
-                                    >
-                                        <svg className="w-3 h-3 sm:w-4 sm:h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                                            <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M19 7l-.867 12.142A2 2 0 0116.138 21H7.862a2 2 0 01-1.995-1.858L5 7m5 4v6m4-6v6m1-10V4a1 1 0 00-1-1h-4a1 1 0 00-1 1v3M4 7h16" />
-                                        </svg>
-                                        ลบ
-                                    </button>
-                                </div>
+                                {/* ปุ่ม Actions - ใช้ DocumentActions component */}
+                                <DocumentActions
+                                    onEdit={() => onLoadDocument(receiptItem)}
+                                    onDownload={() => handleDownloadPdf(receiptItem)}
+                                    onDelete={() => setDeleteConfirm({ type: 'receipt', id: receiptItem.id! })}
+                                    onPreview={() => handleShowPreview(receiptItem)}
+                                    isDownloading={downloadingPdfId === receiptItem.id}
+                                    showPreview={true}
+                                    showOnHover={true}
+                                />
                             </div>
                         </div>
                     );
@@ -1092,7 +889,7 @@ const HistoryList: React.FC<HistoryListProps> = ({ activeDocType, onLoadDocument
                     paginatedList.map((quotation) => {
                         const quotationItem = quotation as QuotationDocument;
                         return (
-                        <div key={quotationItem.id} className="bg-white border border-gray-200 rounded-lg p-3 sm:p-4 hover:shadow-md transition-shadow">
+                        <div key={quotationItem.id} className="group bg-white border border-gray-200 rounded-lg p-3 sm:p-4 hover:shadow-md transition-shadow">
                             <div className="flex flex-col sm:flex-row sm:justify-between sm:items-start gap-3">
                                 <div className="flex-1 min-w-0">
                                     <h3 className="text-base sm:text-lg font-semibold text-gray-900 break-words">{quotationItem.customerName || 'ไม่ระบุลูกค้า'}</h3>
@@ -1126,53 +923,16 @@ const HistoryList: React.FC<HistoryListProps> = ({ activeDocType, onLoadDocument
                                         บันทึกเมื่อ: {formatDate(quotationItem.createdAt)}
                                     </div>
                                 </div>
-                                <div className="flex flex-row sm:flex-col gap-2 sm:ml-4">
-                                    <button
-                                        onClick={() => onLoadDocument(quotationItem)}
-                                        className="flex-1 sm:flex-none px-2 sm:px-3 py-1.5 sm:py-1 bg-amber-600 text-white text-xs sm:text-sm rounded hover:bg-amber-700 flex items-center justify-center gap-1"
-                                        title="โหลดเอกสารเพื่อแก้ไข"
-                                    >
-                                        <svg className="w-3 h-3 sm:w-4 sm:h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                                            <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M11 5H6a2 2 0 00-2 2v11a2 2 0 002 2h11a2 2 0 002-2v-5m-1.414-9.414a2 2 0 112.828 2.828L11.828 15H9v-2.828l8.586-8.586z" />
-                                        </svg>
-                                        <span className="hidden sm:inline">✏️ แก้ไข</span>
-                                        <span className="sm:hidden">แก้ไข</span>
-                                    </button>
-                                    <button
-                                        onClick={() => handleDownloadPdf(quotationItem)}
-                                        disabled={downloadingPdfId === quotationItem.id}
-                                        className="flex-1 sm:flex-none px-2 sm:px-3 py-1.5 sm:py-1 bg-blue-600 text-white text-xs sm:text-sm rounded hover:bg-blue-700 flex items-center justify-center gap-1 disabled:opacity-50 disabled:cursor-not-allowed"
-                                        title="ดาวน์โหลด PDF"
-                                    >
-                                        {downloadingPdfId === quotationItem.id ? (
-                                            <>
-                                                <svg className="animate-spin h-3 w-3 sm:h-4 sm:w-4" xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24">
-                                                    <circle className="opacity-25" cx="12" cy="12" r="10" stroke="currentColor" strokeWidth="4"></circle>
-                                                    <path className="opacity-75" fill="currentColor" d="M4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4zm2 5.291A7.962 7.962 0 014 12H0c0 3.042 1.135 5.824 3 7.938l3-2.647z"></path>
-                                                </svg>
-                                                <span className="hidden sm:inline">กำลังสร้าง...</span>
-                                                <span className="sm:hidden">กำลังสร้าง</span>
-                                            </>
-                                        ) : (
-                                            <>
-                                                <svg className="w-3 h-3 sm:w-4 sm:h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                                                    <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M12 10v6m0 0l-3-3m3 3l3-3m2 8H7a2 2 0 01-2-2V5a2 2 0 012-2h5.586a1 1 0 01.707.293l5.414 5.414a1 1 0 01.293.707V19a2 2 0 01-2 2z" />
-                                                </svg>
-                                                <span className="hidden sm:inline">ดาวน์โหลด PDF</span>
-                                                <span className="sm:hidden">PDF</span>
-                                            </>
-                                        )}
-                                    </button>
-                                    <button
-                                        onClick={() => setDeleteConfirm({ type: 'quotation', id: quotationItem.id! })}
-                                        className="flex-1 sm:flex-none px-2 sm:px-3 py-1.5 sm:py-1 bg-red-600 text-white text-xs sm:text-sm rounded hover:bg-red-700 flex items-center justify-center gap-1"
-                                    >
-                                        <svg className="w-3 h-3 sm:w-4 sm:h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                                            <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M19 7l-.867 12.142A2 2 0 0116.138 21H7.862a2 2 0 01-1.995-1.858L5 7m5 4v6m4-6v6m1-10V4a1 1 0 00-1-1h-4a1 1 0 00-1 1v3M4 7h16" />
-                                        </svg>
-                                        ลบ
-                                    </button>
-                                </div>
+                                {/* ปุ่ม Actions - ใช้ DocumentActions component */}
+                                <DocumentActions
+                                    onEdit={() => onLoadDocument(quotationItem)}
+                                    onDownload={() => handleDownloadPdf(quotationItem)}
+                                    onDelete={() => setDeleteConfirm({ type: 'quotation', id: quotationItem.id! })}
+                                    onPreview={() => handleShowPreview(quotationItem)}
+                                    isDownloading={downloadingPdfId === quotationItem.id}
+                                    showPreview={true}
+                                    showOnHover={true}
+                                />
                             </div>
                         </div>
                     );
@@ -1182,7 +942,7 @@ const HistoryList: React.FC<HistoryListProps> = ({ activeDocType, onLoadDocument
                     paginatedList.map((po) => {
                         const poItem = po as PurchaseOrderDocument;
                         return (
-                        <div key={poItem.id} className="bg-white border border-gray-200 rounded-lg p-3 sm:p-4 hover:shadow-md transition-shadow">
+                        <div key={poItem.id} className="group bg-white border border-gray-200 rounded-lg p-3 sm:p-4 hover:shadow-md transition-shadow">
                             <div className="flex flex-col sm:flex-row sm:justify-between sm:items-start gap-3">
                                 <div className="flex-1 min-w-0">
                                     <h3 className="text-base sm:text-lg font-semibold text-gray-900 break-words">{poItem.supplierName || 'ไม่ระบุผู้ขาย'}</h3>
@@ -1216,53 +976,16 @@ const HistoryList: React.FC<HistoryListProps> = ({ activeDocType, onLoadDocument
                                         บันทึกเมื่อ: {formatDate(poItem.createdAt)}
                                     </div>
                                 </div>
-                                <div className="flex flex-row sm:flex-col gap-2 sm:ml-4">
-                                    <button
-                                        onClick={() => onLoadDocument(poItem)}
-                                        className="flex-1 sm:flex-none px-2 sm:px-3 py-1.5 sm:py-1 bg-amber-600 text-white text-xs sm:text-sm rounded hover:bg-amber-700 flex items-center justify-center gap-1"
-                                        title="โหลดเอกสารเพื่อแก้ไข"
-                                    >
-                                        <svg className="w-3 h-3 sm:w-4 sm:h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                                            <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M11 5H6a2 2 0 00-2 2v11a2 2 0 002 2h11a2 2 0 002-2v-5m-1.414-9.414a2 2 0 112.828 2.828L11.828 15H9v-2.828l8.586-8.586z" />
-                                        </svg>
-                                        <span className="hidden sm:inline">✏️ แก้ไข</span>
-                                        <span className="sm:hidden">แก้ไข</span>
-                                    </button>
-                                    <button
-                                        onClick={() => handleDownloadPdf(poItem)}
-                                        disabled={downloadingPdfId === poItem.id}
-                                        className="flex-1 sm:flex-none px-2 sm:px-3 py-1.5 sm:py-1 bg-blue-600 text-white text-xs sm:text-sm rounded hover:bg-blue-700 flex items-center justify-center gap-1 disabled:opacity-50 disabled:cursor-not-allowed"
-                                        title="ดาวน์โหลด PDF"
-                                    >
-                                        {downloadingPdfId === poItem.id ? (
-                                            <>
-                                                <svg className="animate-spin h-3 w-3 sm:h-4 sm:w-4" xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24">
-                                                    <circle className="opacity-25" cx="12" cy="12" r="10" stroke="currentColor" strokeWidth="4"></circle>
-                                                    <path className="opacity-75" fill="currentColor" d="M4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4zm2 5.291A7.962 7.962 0 014 12H0c0 3.042 1.135 5.824 3 7.938l3-2.647z"></path>
-                                                </svg>
-                                                <span className="hidden sm:inline">กำลังสร้าง...</span>
-                                                <span className="sm:hidden">กำลังสร้าง</span>
-                                            </>
-                                        ) : (
-                                            <>
-                                                <svg className="w-3 h-3 sm:w-4 sm:h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                                                    <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M12 10v6m0 0l-3-3m3 3l3-3m2 8H7a2 2 0 01-2-2V5a2 2 0 012-2h5.586a1 1 0 01.707.293l5.414 5.414a1 1 0 01.293.707V19a2 2 0 01-2 2z" />
-                                                </svg>
-                                                <span className="hidden sm:inline">ดาวน์โหลด PDF</span>
-                                                <span className="sm:hidden">PDF</span>
-                                            </>
-                                        )}
-                                    </button>
-                                    <button
-                                        onClick={() => setDeleteConfirm({ type: 'purchase-order', id: poItem.id! })}
-                                        className="flex-1 sm:flex-none px-2 sm:px-3 py-1.5 sm:py-1 bg-red-600 text-white text-xs sm:text-sm rounded hover:bg-red-700 flex items-center justify-center gap-1"
-                                    >
-                                        <svg className="w-3 h-3 sm:w-4 sm:h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                                            <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M19 7l-.867 12.142A2 2 0 0116.138 21H7.862a2 2 0 01-1.995-1.858L5 7m5 4v6m4-6v6m1-10V4a1 1 0 00-1-1h-4a1 1 0 00-1 1v3M4 7h16" />
-                                        </svg>
-                                        ลบ
-                                    </button>
-                                </div>
+                                {/* ปุ่ม Actions - ใช้ DocumentActions component */}
+                                <DocumentActions
+                                    onEdit={() => onLoadDocument(poItem)}
+                                    onDownload={() => handleDownloadPdf(poItem)}
+                                    onDelete={() => setDeleteConfirm({ type: 'purchase-order', id: poItem.id! })}
+                                    onPreview={() => handleShowPreview(poItem)}
+                                    isDownloading={downloadingPdfId === poItem.id}
+                                    showPreview={true}
+                                    showOnHover={true}
+                                />
                             </div>
                         </div>
                     );
@@ -1272,7 +995,7 @@ const HistoryList: React.FC<HistoryListProps> = ({ activeDocType, onLoadDocument
                     paginatedList.map((memo) => {
                         const memoItem = memo as MemoDocument;
                         return (
-                        <div key={memoItem.id} className="bg-white border border-gray-200 rounded-lg p-3 sm:p-4 hover:shadow-md transition-shadow">
+                        <div key={memoItem.id} className="group bg-white border border-gray-200 rounded-lg p-3 sm:p-4 hover:shadow-md transition-shadow">
                             <div className="flex flex-col sm:flex-row sm:justify-between sm:items-start gap-3">
                                 <div className="flex-1 min-w-0">
                                     <h3 className="text-base sm:text-lg font-semibold text-gray-900 break-words">{memoItem.subject || 'ไม่ระบุเรื่อง'}</h3>
@@ -1306,53 +1029,16 @@ const HistoryList: React.FC<HistoryListProps> = ({ activeDocType, onLoadDocument
                                         บันทึกเมื่อ: {formatDate(memoItem.createdAt)}
                                     </div>
                                 </div>
-                                <div className="flex flex-row sm:flex-col gap-2 sm:ml-4">
-                                    <button
-                                        onClick={() => onLoadDocument(memoItem)}
-                                        className="flex-1 sm:flex-none px-2 sm:px-3 py-1.5 sm:py-1 bg-amber-600 text-white text-xs sm:text-sm rounded hover:bg-amber-700 flex items-center justify-center gap-1"
-                                        title="โหลดเอกสารเพื่อแก้ไข"
-                                    >
-                                        <svg className="w-3 h-3 sm:w-4 sm:h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                                            <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M11 5H6a2 2 0 00-2 2v11a2 2 0 002 2h11a2 2 0 002-2v-5m-1.414-9.414a2 2 0 112.828 2.828L11.828 15H9v-2.828l8.586-8.586z" />
-                                        </svg>
-                                        <span className="hidden sm:inline">✏️ แก้ไข</span>
-                                        <span className="sm:hidden">แก้ไข</span>
-                                    </button>
-                                    <button
-                                        onClick={() => handleDownloadPdf(memoItem)}
-                                        disabled={downloadingPdfId === memoItem.id}
-                                        className="flex-1 sm:flex-none px-2 sm:px-3 py-1.5 sm:py-1 bg-blue-600 text-white text-xs sm:text-sm rounded hover:bg-blue-700 flex items-center justify-center gap-1 disabled:opacity-50 disabled:cursor-not-allowed"
-                                        title="ดาวน์โหลด PDF"
-                                    >
-                                        {downloadingPdfId === memoItem.id ? (
-                                            <>
-                                                <svg className="animate-spin h-3 w-3 sm:h-4 sm:w-4" xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24">
-                                                    <circle className="opacity-25" cx="12" cy="12" r="10" stroke="currentColor" strokeWidth="4"></circle>
-                                                    <path className="opacity-75" fill="currentColor" d="M4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4zm2 5.291A7.962 7.962 0 014 12H0c0 3.042 1.135 5.824 3 7.938l3-2.647z"></path>
-                                                </svg>
-                                                <span className="hidden sm:inline">กำลังสร้าง...</span>
-                                                <span className="sm:hidden">กำลังสร้าง</span>
-                                            </>
-                                        ) : (
-                                            <>
-                                                <svg className="w-3 h-3 sm:w-4 sm:h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                                                    <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M12 10v6m0 0l-3-3m3 3l3-3m2 8H7a2 2 0 01-2-2V5a2 2 0 012-2h5.586a1 1 0 01.707.293l5.414 5.414a1 1 0 01.293.707V19a2 2 0 01-2 2z" />
-                                                </svg>
-                                                <span className="hidden sm:inline">ดาวน์โหลด PDF</span>
-                                                <span className="sm:hidden">PDF</span>
-                                            </>
-                                        )}
-                                    </button>
-                                    <button
-                                        onClick={() => setDeleteConfirm({ type: 'memo', id: memoItem.id! })}
-                                        className="flex-1 sm:flex-none px-2 sm:px-3 py-1.5 sm:py-1 bg-red-600 text-white text-xs sm:text-sm rounded hover:bg-red-700 flex items-center justify-center gap-1"
-                                    >
-                                        <svg className="w-3 h-3 sm:w-4 sm:h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                                            <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M19 7l-.867 12.142A2 2 0 0116.138 21H7.862a2 2 0 01-1.995-1.858L5 7m5 4v6m4-6v6m1-10V4a1 1 0 00-1-1h-4a1 1 0 00-1 1v3M4 7h16" />
-                                        </svg>
-                                        ลบ
-                                    </button>
-                                </div>
+                                {/* ปุ่ม Actions - ใช้ DocumentActions component */}
+                                <DocumentActions
+                                    onEdit={() => onLoadDocument(memoItem)}
+                                    onDownload={() => handleDownloadPdf(memoItem)}
+                                    onDelete={() => setDeleteConfirm({ type: 'memo', id: memoItem.id! })}
+                                    onPreview={() => handleShowPreview(memoItem)}
+                                    isDownloading={downloadingPdfId === memoItem.id}
+                                    showPreview={true}
+                                    showOnHover={true}
+                                />
                             </div>
                         </div>
                     );
