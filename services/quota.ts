@@ -1,6 +1,12 @@
 /**
  * Quota Service
  * บริการจัดการโควตาและแผนการใช้งานของบริษัท
+ * 
+ * อัปเดต: รองรับ Pricing Plan ใหม่ 4 ระดับ
+ * - Free (ทดลองใช้)
+ * - Starter (199 บาท/เดือน)
+ * - Business (499 บาท/เดือน)
+ * - Enterprise (ติดต่อฝ่ายขาย)
  */
 
 import { db } from '../firebase.config';
@@ -15,57 +21,81 @@ import {
     getDocs,
     Timestamp,
 } from 'firebase/firestore';
-import { CompanyQuota, SubscriptionPlan, SubscriptionStatus } from '../types';
+import { CompanyQuota, SubscriptionPlan, SubscriptionStatus, BillingCycle, DocumentAccessLevel } from '../types';
 import { getPlanTemplate, getAllPlanTemplates } from './planTemplates';
 
 // Collection name
 const QUOTAS_COLLECTION = 'companyQuotas';
 
 /**
- * Default quotas สำหรับแต่ละแผน
+ * Default quotas สำหรับแต่ละแผน (ตาม Pricing Plan ใหม่)
+ * 
+ * Free: 1 user, 15 docs/เดือน, เอกสารพื้นฐาน, มีลายน้ำ, CRM 10, ช่าง 2, PDF 20 ครั้ง, ประวัติ 7 วัน
+ * Starter: 1 user, docs ไม่จำกัด, ครบทุกประเภท, ไม่มีลายน้ำ, CRM 100, ช่าง 20, PDF ไม่จำกัด, ประวัติ 1 ปี
+ * Business: 5 users, docs ไม่จำกัด, ครบทุกประเภท, ไม่มีลายน้ำ, CRM ไม่จำกัด, ช่าง ไม่จำกัด, PDF ไม่จำกัด, ประวัติ 3 ปี
+ * Enterprise: ไม่จำกัดทุกอย่าง, Audit Log
  */
 const DEFAULT_QUOTAS: Record<SubscriptionPlan, Omit<CompanyQuota, 'startDate' | 'createdAt' | 'updatedAt'>> = {
     free: {
         plan: 'free',
         status: 'active',
-        maxCompanies: 1,             // สร้างได้แค่ 1 องค์กร
+        maxCompanies: 1,
         currentCompanies: 0,
-        maxUsers: 3,                 // สูงสุด 3 คน
+        maxUsers: 1,
         currentUsers: 0,
-        maxDocuments: 50,            // 50 เอกสาร/เดือน
+        maxDocuments: 15,
         currentDocuments: 0,
-        maxLogos: 1,                 // 1 โลโก้
+        maxLogos: 1,
         currentLogos: 0,
-        allowCustomLogo: false,      // ไม่อนุญาตให้ใช้โลโก้กำหนดเอง
-        maxStorageMB: 100,           // 100 MB
+        allowCustomLogo: false,
+        maxStorageMB: 50,
         currentStorageMB: 0,
+        maxCustomers: 10,
+        currentCustomers: 0,
+        maxContractors: 2,
+        currentContractors: 0,
+        maxPdfExports: 20,
+        currentPdfExports: 0,
+        historyRetentionDays: 7,
         features: {
             multipleProfiles: false,
             apiAccess: false,
             customDomain: false,
             prioritySupport: false,
-            exportPDF: true,             // ✅ Free plan สามารถ Export PDF ได้
+            exportPDF: true,
             exportExcel: false,
             advancedReports: false,
             customTemplates: false,
+            documentAccess: 'basic' as DocumentAccessLevel,
+            hasWatermark: true,
+            lineNotification: false,
+            dedicatedSupport: false,
+            auditLog: false,
         },
     },
-    basic: {
-        plan: 'basic',
+    starter: {
+        plan: 'starter',
         status: 'active',
-        maxCompanies: 3,             // สร้างได้สูงสุด 3 องค์กร
+        maxCompanies: 1,
         currentCompanies: 0,
-        maxUsers: 10,                // สูงสุด 10 คน
+        maxUsers: 1,
         currentUsers: 0,
-        maxDocuments: 200,           // 200 เอกสาร/เดือน
+        maxDocuments: -1,           // ไม่จำกัด
         currentDocuments: 0,
-        maxLogos: 5,                 // 5 โลโก้
+        maxLogos: 5,
         currentLogos: 0,
-        allowCustomLogo: true,       // อนุญาตให้ใช้โลโก้กำหนดเอง
-        maxStorageMB: 500,           // 500 MB
+        allowCustomLogo: true,
+        maxStorageMB: 500,
         currentStorageMB: 0,
+        maxCustomers: 100,
+        currentCustomers: 0,
+        maxContractors: 20,
+        currentContractors: 0,
+        maxPdfExports: -1,          // ไม่จำกัด
+        currentPdfExports: 0,
+        historyRetentionDays: 365,  // 1 ปี
         features: {
-            multipleProfiles: true,
+            multipleProfiles: false,
             apiAccess: false,
             customDomain: false,
             prioritySupport: false,
@@ -73,51 +103,75 @@ const DEFAULT_QUOTAS: Record<SubscriptionPlan, Omit<CompanyQuota, 'startDate' | 
             exportExcel: true,
             advancedReports: false,
             customTemplates: true,
+            documentAccess: 'full' as DocumentAccessLevel,
+            hasWatermark: false,
+            lineNotification: false,
+            dedicatedSupport: false,
+            auditLog: false,
         },
-        paymentAmount: 299,          // 299 บาท/เดือน
+        paymentAmount: 199,
         currency: 'THB',
     },
-    premium: {
-        plan: 'premium',
+    business: {
+        plan: 'business',
         status: 'active',
-        maxCompanies: 10,            // สร้างได้สูงสุด 10 องค์กร
+        maxCompanies: 3,
         currentCompanies: 0,
-        maxUsers: 50,                // สูงสุด 50 คน
+        maxUsers: 5,
         currentUsers: 0,
-        maxDocuments: 1000,          // 1000 เอกสาร/เดือน
+        maxDocuments: -1,           // ไม่จำกัด
         currentDocuments: 0,
-        maxLogos: 20,                // 20 โลโก้
+        maxLogos: 20,
         currentLogos: 0,
         allowCustomLogo: true,
-        maxStorageMB: 2000,          // 2 GB
+        maxStorageMB: 2000,
         currentStorageMB: 0,
+        maxCustomers: -1,           // ไม่จำกัด
+        currentCustomers: 0,
+        maxContractors: -1,         // ไม่จำกัด
+        currentContractors: 0,
+        maxPdfExports: -1,          // ไม่จำกัด
+        currentPdfExports: 0,
+        historyRetentionDays: 1095, // 3 ปี
         features: {
             multipleProfiles: true,
-            apiAccess: true,
+            apiAccess: false,
             customDomain: false,
             prioritySupport: true,
             exportPDF: true,
             exportExcel: true,
             advancedReports: true,
             customTemplates: true,
+            documentAccess: 'full' as DocumentAccessLevel,
+            hasWatermark: false,
+            lineNotification: true,
+            dedicatedSupport: false,
+            auditLog: false,
         },
-        paymentAmount: 999,          // 999 บาท/เดือน
+        paymentAmount: 499,
         currency: 'THB',
     },
     enterprise: {
         plan: 'enterprise',
         status: 'active',
-        maxCompanies: -1,            // ไม่จำกัด
+        maxCompanies: -1,           // ไม่จำกัด
         currentCompanies: 0,
-        maxUsers: -1,                // ไม่จำกัด
+        maxUsers: -1,               // ไม่จำกัด
         currentUsers: 0,
-        maxDocuments: -1,            // ไม่จำกัด
+        maxDocuments: -1,           // ไม่จำกัด
         currentDocuments: 0,
-        maxLogos: -1,                // ไม่จำกัด
+        maxLogos: -1,               // ไม่จำกัด
         currentLogos: 0,
         allowCustomLogo: true,
-        maxStorageMB: -1,            // ไม่จำกัด
+        maxStorageMB: -1,           // ไม่จำกัด
         currentStorageMB: 0,
+        maxCustomers: -1,           // ไม่จำกัด
+        currentCustomers: 0,
+        maxContractors: -1,         // ไม่จำกัด
+        currentContractors: 0,
+        maxPdfExports: -1,          // ไม่จำกัด
+        currentPdfExports: 0,
+        historyRetentionDays: -1,   // Audit Log (ไม่จำกัด)
         features: {
             multipleProfiles: true,
             apiAccess: true,
@@ -127,8 +181,13 @@ const DEFAULT_QUOTAS: Record<SubscriptionPlan, Omit<CompanyQuota, 'startDate' | 
             exportExcel: true,
             advancedReports: true,
             customTemplates: true,
+            documentAccess: 'full' as DocumentAccessLevel,
+            hasWatermark: false,
+            lineNotification: true,
+            dedicatedSupport: true,
+            auditLog: true,
         },
-        paymentAmount: 2999,         // 2999 บาท/เดือน
+        paymentAmount: -1,          // ติดต่อฝ่ายขาย
         currency: 'THB',
     },
 };
@@ -137,11 +196,13 @@ const DEFAULT_QUOTAS: Record<SubscriptionPlan, Omit<CompanyQuota, 'startDate' | 
  * สร้าง quota ใหม่สำหรับบริษัท (ใช้ Plan Template แบบ Dynamic)
  * @param companyId - ID ของบริษัท
  * @param plan - แผนที่ต้องการ (default: free)
+ * @param billingCycle - รอบการเรียกเก็บเงิน (default: monthly)
  * @returns Quota ID
  */
 export const createQuota = async (
     companyId: string,
-    plan: SubscriptionPlan = 'free'
+    plan: SubscriptionPlan = 'free',
+    billingCycle: BillingCycle = 'monthly'
 ): Promise<string> => {
     try {
         const quotaRef = doc(db, QUOTAS_COLLECTION, companyId);
@@ -158,6 +219,7 @@ export const createQuota = async (
             
             const quotaData: CompanyQuota = {
                 ...defaultQuota,
+                billingCycle,
                 startDate: now,
                 documentResetDate: nextMonth,
                 createdAt: now,
@@ -183,7 +245,8 @@ export const createQuota = async (
         const quotaData: CompanyQuota = {
             plan: plan,
             status: 'active',
-            maxCompanies: planTemplate.maxCompanies ?? DEFAULT_QUOTAS[plan].maxCompanies,  // ใช้จาก template หรือ fallback
+            billingCycle,
+            maxCompanies: planTemplate.maxCompanies ?? DEFAULT_QUOTAS[plan].maxCompanies,
             currentCompanies: 0,
             maxUsers: planTemplate.maxUsers,
             currentUsers: 0,
@@ -195,15 +258,31 @@ export const createQuota = async (
             allowCustomLogo: planTemplate.allowCustomLogo,
             maxStorageMB: planTemplate.maxStorageMB,
             currentStorageMB: 0,
-            features: planTemplate.features,
+            maxCustomers: planTemplate.maxCustomers ?? 10,
+            currentCustomers: 0,
+            maxContractors: planTemplate.maxContractors ?? 2,
+            currentContractors: 0,
+            maxPdfExports: planTemplate.maxPdfExports ?? 20,
+            currentPdfExports: 0,
+            historyRetentionDays: planTemplate.historyRetentionDays ?? 7,
+            features: {
+                ...planTemplate.features,
+                documentAccess: planTemplate.features.documentAccess ?? 'basic',
+                hasWatermark: planTemplate.features.hasWatermark ?? true,
+                lineNotification: planTemplate.features.lineNotification ?? false,
+                dedicatedSupport: planTemplate.features.dedicatedSupport ?? false,
+                auditLog: planTemplate.features.auditLog ?? false,
+            },
             startDate: now,
             createdAt: now,
             updatedAt: now,
         };
 
         // เพิ่มข้อมูลราคาถ้ามี
-        if (planTemplate.price > 0) {
-            quotaData.paymentAmount = planTemplate.price;
+        if (planTemplate.priceMonthly > 0) {
+            quotaData.paymentAmount = billingCycle === 'yearly' 
+                ? planTemplate.priceYearly 
+                : planTemplate.priceMonthly;
             quotaData.currency = planTemplate.currency;
         }
 
@@ -243,7 +322,6 @@ export const getQuota = async (companyId: string): Promise<CompanyQuota | null> 
         // ดึง maxCompanies จาก template หรือใช้ default จาก DEFAULT_QUOTAS
         let maxCompanies = data.maxCompanies;
         if (maxCompanies === undefined || maxCompanies === null) {
-            // ถ้าไม่มีใน quota document ให้ดึงจาก template หรือ DEFAULT_QUOTAS
             const planTemplate = await getPlanTemplate(data.plan);
             if (planTemplate && planTemplate.maxCompanies !== undefined) {
                 maxCompanies = planTemplate.maxCompanies;
@@ -255,6 +333,7 @@ export const getQuota = async (companyId: string): Promise<CompanyQuota | null> 
         return {
             plan: data.plan,
             status: data.status,
+            billingCycle: data.billingCycle,
             maxCompanies: maxCompanies,
             currentCompanies: data.currentCompanies ?? 0,
             maxUsers: data.maxUsers,
@@ -267,7 +346,28 @@ export const getQuota = async (companyId: string): Promise<CompanyQuota | null> 
             allowCustomLogo: data.allowCustomLogo,
             maxStorageMB: data.maxStorageMB,
             currentStorageMB: data.currentStorageMB,
-            features: data.features,
+            maxCustomers: data.maxCustomers ?? 10,
+            currentCustomers: data.currentCustomers ?? 0,
+            maxContractors: data.maxContractors ?? 2,
+            currentContractors: data.currentContractors ?? 0,
+            maxPdfExports: data.maxPdfExports ?? 20,
+            currentPdfExports: data.currentPdfExports ?? 0,
+            historyRetentionDays: data.historyRetentionDays ?? 7,
+            features: {
+                multipleProfiles: data.features?.multipleProfiles ?? false,
+                apiAccess: data.features?.apiAccess ?? false,
+                customDomain: data.features?.customDomain ?? false,
+                prioritySupport: data.features?.prioritySupport ?? false,
+                exportPDF: data.features?.exportPDF ?? true,
+                exportExcel: data.features?.exportExcel ?? false,
+                advancedReports: data.features?.advancedReports ?? false,
+                customTemplates: data.features?.customTemplates ?? false,
+                documentAccess: data.features?.documentAccess ?? 'basic',
+                hasWatermark: data.features?.hasWatermark ?? true,
+                lineNotification: data.features?.lineNotification ?? false,
+                dedicatedSupport: data.features?.dedicatedSupport ?? false,
+                auditLog: data.features?.auditLog ?? false,
+            },
             startDate: data.startDate?.toDate(),
             endDate: data.endDate?.toDate(),
             trialEndDate: data.trialEndDate?.toDate(),
@@ -275,6 +375,9 @@ export const getQuota = async (companyId: string): Promise<CompanyQuota | null> 
             nextPaymentDate: data.nextPaymentDate?.toDate(),
             paymentAmount: data.paymentAmount,
             currency: data.currency,
+            stripeCustomerId: data.stripeCustomerId,
+            stripeSubscriptionId: data.stripeSubscriptionId,
+            stripePriceId: data.stripePriceId,
             createdAt: data.createdAt?.toDate(),
             updatedAt: data.updatedAt?.toDate(),
             updatedBy: data.updatedBy,
@@ -330,11 +433,13 @@ export const updateQuota = async (
  * เปลี่ยนแผนการใช้งาน
  * @param companyId - ID ของบริษัท
  * @param newPlan - แผนใหม่
+ * @param billingCycle - รอบการเรียกเก็บเงิน
  * @param updatedBy - User ID ของผู้อัปเดต
  */
 export const changePlan = async (
     companyId: string,
     newPlan: SubscriptionPlan,
+    billingCycle: BillingCycle = 'monthly',
     updatedBy?: string
 ): Promise<void> => {
     try {
@@ -345,25 +450,41 @@ export const changePlan = async (
             throw new Error('ไม่พบ quota ของบริษัทนี้');
         }
 
+        // ดึง Plan Template
+        const planTemplate = await getPlanTemplate(newPlan);
+
         const updates: Partial<CompanyQuota> = {
             plan: newPlan,
             status: 'active',
-            maxCompanies: newQuotaDefaults.maxCompanies,  // อัปเดต maxCompanies ด้วย
-            maxUsers: newQuotaDefaults.maxUsers,
-            maxDocuments: newQuotaDefaults.maxDocuments,
-            maxLogos: newQuotaDefaults.maxLogos,
-            allowCustomLogo: newQuotaDefaults.allowCustomLogo,
-            maxStorageMB: newQuotaDefaults.maxStorageMB,
-            features: newQuotaDefaults.features,
+            billingCycle,
+            maxCompanies: planTemplate?.maxCompanies ?? newQuotaDefaults.maxCompanies,
+            maxUsers: planTemplate?.maxUsers ?? newQuotaDefaults.maxUsers,
+            maxDocuments: planTemplate?.maxDocuments ?? newQuotaDefaults.maxDocuments,
+            maxLogos: planTemplate?.maxLogos ?? newQuotaDefaults.maxLogos,
+            allowCustomLogo: planTemplate?.allowCustomLogo ?? newQuotaDefaults.allowCustomLogo,
+            maxStorageMB: planTemplate?.maxStorageMB ?? newQuotaDefaults.maxStorageMB,
+            maxCustomers: planTemplate?.maxCustomers ?? newQuotaDefaults.maxCustomers,
+            maxContractors: planTemplate?.maxContractors ?? newQuotaDefaults.maxContractors,
+            maxPdfExports: planTemplate?.maxPdfExports ?? newQuotaDefaults.maxPdfExports,
+            historyRetentionDays: planTemplate?.historyRetentionDays ?? newQuotaDefaults.historyRetentionDays,
+            features: planTemplate?.features ?? newQuotaDefaults.features,
             startDate: new Date(),
-            paymentAmount: newQuotaDefaults.paymentAmount,
-            currency: newQuotaDefaults.currency,
         };
 
-        // ถ้าเป็นแผนที่ต้องจ่ายเงิน ตั้งค่าวันหมดอายุ (30 วัน)
-        if (newPlan !== 'free') {
+        // เพิ่มข้อมูลราคาถ้าไม่ใช่ Free plan
+        if (newPlan !== 'free' && planTemplate) {
+            updates.paymentAmount = billingCycle === 'yearly' 
+                ? planTemplate.priceYearly 
+                : planTemplate.priceMonthly;
+            updates.currency = planTemplate.currency;
+            
+            // ตั้งค่าวันหมดอายุ
             const endDate = new Date();
-            endDate.setDate(endDate.getDate() + 30);
+            if (billingCycle === 'yearly') {
+                endDate.setFullYear(endDate.getFullYear() + 1);
+            } else {
+                endDate.setMonth(endDate.getMonth() + 1);
+            }
             updates.endDate = endDate;
         }
 
@@ -379,12 +500,12 @@ export const changePlan = async (
 /**
  * ตรวจสอบว่าเกินโควตาหรือไม่
  * @param companyId - ID ของบริษัท
- * @param quotaType - ประเภทโควตา (users, documents, logos, storage)
+ * @param quotaType - ประเภทโควตา
  * @returns true ถ้าเกินโควตา, false ถ้ายังไม่เกิน
  */
 export const checkQuotaExceeded = async (
     companyId: string,
-    quotaType: 'users' | 'documents' | 'logos' | 'storage'
+    quotaType: 'users' | 'documents' | 'logos' | 'storage' | 'customers' | 'contractors' | 'pdfExports'
 ): Promise<boolean> => {
     try {
         const quota = await getQuota(companyId);
@@ -403,6 +524,12 @@ export const checkQuotaExceeded = async (
                 return quota.maxLogos !== -1 && quota.currentLogos >= quota.maxLogos;
             case 'storage':
                 return quota.maxStorageMB !== -1 && quota.currentStorageMB >= quota.maxStorageMB;
+            case 'customers':
+                return quota.maxCustomers !== -1 && quota.currentCustomers >= quota.maxCustomers;
+            case 'contractors':
+                return quota.maxContractors !== -1 && quota.currentContractors >= quota.maxContractors;
+            case 'pdfExports':
+                return quota.maxPdfExports !== -1 && quota.currentPdfExports >= quota.maxPdfExports;
             default:
                 return false;
         }
@@ -420,7 +547,7 @@ export const checkQuotaExceeded = async (
  */
 export const incrementQuota = async (
     companyId: string,
-    quotaType: 'users' | 'documents' | 'logos' | 'storage',
+    quotaType: 'users' | 'documents' | 'logos' | 'storage' | 'customers' | 'contractors' | 'pdfExports',
     amount: number = 1
 ): Promise<void> => {
     try {
@@ -445,6 +572,15 @@ export const incrementQuota = async (
             case 'storage':
                 updates.currentStorageMB = quota.currentStorageMB + amount;
                 break;
+            case 'customers':
+                updates.currentCustomers = (quota.currentCustomers || 0) + amount;
+                break;
+            case 'contractors':
+                updates.currentContractors = (quota.currentContractors || 0) + amount;
+                break;
+            case 'pdfExports':
+                updates.currentPdfExports = (quota.currentPdfExports || 0) + amount;
+                break;
         }
 
         await updateQuota(companyId, updates);
@@ -464,7 +600,7 @@ export const incrementQuota = async (
  */
 export const decrementQuota = async (
     companyId: string,
-    quotaType: 'users' | 'documents' | 'logos' | 'storage',
+    quotaType: 'users' | 'documents' | 'logos' | 'storage' | 'customers' | 'contractors' | 'pdfExports',
     amount: number = 1
 ): Promise<void> => {
     try {
@@ -489,6 +625,15 @@ export const decrementQuota = async (
             case 'storage':
                 updates.currentStorageMB = Math.max(0, quota.currentStorageMB - amount);
                 break;
+            case 'customers':
+                updates.currentCustomers = Math.max(0, (quota.currentCustomers || 0) - amount);
+                break;
+            case 'contractors':
+                updates.currentContractors = Math.max(0, (quota.currentContractors || 0) - amount);
+                break;
+            case 'pdfExports':
+                updates.currentPdfExports = Math.max(0, (quota.currentPdfExports || 0) - amount);
+                break;
         }
 
         await updateQuota(companyId, updates);
@@ -501,23 +646,24 @@ export const decrementQuota = async (
 };
 
 /**
- * รีเซ็ตจำนวนเอกสารรายเดือน
+ * รีเซ็ตจำนวนเอกสารและ PDF exports รายเดือน
  * @param companyId - ID ของบริษัท
  */
-export const resetMonthlyDocuments = async (companyId: string): Promise<void> => {
+export const resetMonthlyQuotas = async (companyId: string): Promise<void> => {
     try {
         const now = new Date();
         const nextMonth = new Date(now.getFullYear(), now.getMonth() + 1, 1);
 
         await updateQuota(companyId, {
             currentDocuments: 0,
+            currentPdfExports: 0,
             documentResetDate: nextMonth,
         });
 
-        console.log('✅ รีเซ็ตจำนวนเอกสารสำเร็จ:', companyId);
+        console.log('✅ รีเซ็ตโควตารายเดือนสำเร็จ:', companyId);
     } catch (error) {
-        console.error('❌ รีเซ็ตจำนวนเอกสารล้มเหลว:', error);
-        throw new Error('ไม่สามารถรีเซ็ตจำนวนเอกสารได้');
+        console.error('❌ รีเซ็ตโควตารายเดือนล้มเหลว:', error);
+        throw new Error('ไม่สามารถรีเซ็ตโควตารายเดือนได้');
     }
 };
 
@@ -532,12 +678,13 @@ export const getAllQuotas = async (): Promise<(CompanyQuota & { companyId: strin
 
         const quotas: (CompanyQuota & { companyId: string })[] = [];
 
-        for (const doc of querySnapshot.docs) {
-            const data = doc.data();
+        for (const docSnap of querySnapshot.docs) {
+            const data = docSnap.data();
             quotas.push({
-                companyId: doc.id,
+                companyId: docSnap.id,
                 plan: data.plan,
                 status: data.status,
+                billingCycle: data.billingCycle,
                 maxCompanies: data.maxCompanies ?? 1,
                 currentCompanies: data.currentCompanies ?? 0,
                 maxUsers: data.maxUsers,
@@ -550,7 +697,14 @@ export const getAllQuotas = async (): Promise<(CompanyQuota & { companyId: strin
                 allowCustomLogo: data.allowCustomLogo,
                 maxStorageMB: data.maxStorageMB,
                 currentStorageMB: data.currentStorageMB,
-                features: data.features,
+                maxCustomers: data.maxCustomers ?? 10,
+                currentCustomers: data.currentCustomers ?? 0,
+                maxContractors: data.maxContractors ?? 2,
+                currentContractors: data.currentContractors ?? 0,
+                maxPdfExports: data.maxPdfExports ?? 20,
+                currentPdfExports: data.currentPdfExports ?? 0,
+                historyRetentionDays: data.historyRetentionDays ?? 7,
+                features: data.features ?? DEFAULT_QUOTAS.free.features,
                 startDate: data.startDate?.toDate(),
                 endDate: data.endDate?.toDate(),
                 trialEndDate: data.trialEndDate?.toDate(),
@@ -558,6 +712,9 @@ export const getAllQuotas = async (): Promise<(CompanyQuota & { companyId: strin
                 nextPaymentDate: data.nextPaymentDate?.toDate(),
                 paymentAmount: data.paymentAmount,
                 currency: data.currency,
+                stripeCustomerId: data.stripeCustomerId,
+                stripeSubscriptionId: data.stripeSubscriptionId,
+                stripePriceId: data.stripePriceId,
                 createdAt: data.createdAt?.toDate(),
                 updatedAt: data.updatedAt?.toDate(),
                 updatedBy: data.updatedBy,
@@ -693,6 +850,69 @@ export const canCreateCompany = async (userId: string): Promise<{
 };
 
 /**
+ * ตรวจสอบว่าสามารถใช้ประเภทเอกสารได้หรือไม่
+ * @param companyId - ID ของบริษัท
+ * @param documentType - ประเภทเอกสาร
+ * @returns boolean
+ */
+export const canUseDocumentType = async (
+    companyId: string,
+    documentType: string
+): Promise<boolean> => {
+    try {
+        const quota = await getQuota(companyId);
+        
+        if (!quota) {
+            return false;
+        }
+        
+        // ถ้าเป็น full access ใช้ได้ทุกประเภท
+        if (quota.features.documentAccess === 'full') {
+            return true;
+        }
+        
+        // ถ้าเป็น basic access ใช้ได้เฉพาะ quotation และ receipt
+        const basicDocTypes = ['quotation', 'receipt', 'invoice'];
+        return basicDocTypes.includes(documentType);
+    } catch (error) {
+        console.error('❌ ตรวจสอบสิทธิ์เอกสารล้มเหลว:', error);
+        return false;
+    }
+};
+
+/**
+ * ตรวจสอบว่าสามารถ export PDF ได้หรือไม่
+ * @param companyId - ID ของบริษัท
+ * @returns { canExport: boolean, remaining: number }
+ */
+export const canExportPdf = async (companyId: string): Promise<{
+    canExport: boolean;
+    remaining: number;
+}> => {
+    try {
+        const quota = await getQuota(companyId);
+        
+        if (!quota) {
+            return { canExport: false, remaining: 0 };
+        }
+        
+        // ถ้าไม่จำกัด
+        if (quota.maxPdfExports === -1) {
+            return { canExport: true, remaining: -1 };
+        }
+        
+        const remaining = quota.maxPdfExports - quota.currentPdfExports;
+        return {
+            canExport: remaining > 0,
+            remaining: Math.max(0, remaining),
+        };
+    } catch (error) {
+        console.error('❌ ตรวจสอบสิทธิ์ export PDF ล้มเหลว:', error);
+        return { canExport: false, remaining: 0 };
+    }
+};
+
+/**
  * เพิ่มจำนวนบริษัทปัจจุบันใน quota
  * @param companyId - ID ของบริษัท
  */
@@ -748,3 +968,5 @@ export const decrementCompanyCount = async (companyId: string): Promise<void> =>
     }
 };
 
+// Export DEFAULT_QUOTAS สำหรับใช้ในที่อื่น
+export { DEFAULT_QUOTAS };

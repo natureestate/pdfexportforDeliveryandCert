@@ -21,16 +21,110 @@ export type InvitationStatus = 'pending' | 'accepted' | 'rejected' | 'expired';
 export type SystemRole = 'superadmin' | 'user';
 
 // แผนการใช้งาน (Subscription Plan)
-export type SubscriptionPlan = 'free' | 'basic' | 'premium' | 'enterprise';
+// อัปเดต: เปลี่ยนจาก basic เป็น starter ตาม pricing ใหม่
+export type SubscriptionPlan = 'free' | 'starter' | 'business' | 'enterprise';
 
 // สถานะของแผนการใช้งาน
-export type SubscriptionStatus = 'active' | 'expired' | 'suspended' | 'trial';
+export type SubscriptionStatus = 'active' | 'expired' | 'suspended' | 'trial' | 'canceled' | 'past_due';
+
+// ============================================================
+// Stripe Integration Types
+// ============================================================
+
+// รอบการเรียกเก็บเงิน (Billing Cycle)
+export type BillingCycle = 'monthly' | 'yearly';
+
+// โหมดการใช้งาน Stripe
+export type StripeMode = 'test' | 'live';
+
+// ประเภทเอกสารที่ใช้ได้ในแต่ละ Plan
+export type DocumentAccessLevel = 'basic' | 'full';
+
+// ข้อมูล Stripe Customer
+export interface StripeCustomer {
+    id: string;                           // Stripe Customer ID (cus_xxx)
+    email: string;                        // อีเมลลูกค้า
+    name?: string;                        // ชื่อลูกค้า
+    phone?: string;                       // เบอร์โทรศัพท์
+    createdAt?: Date;                     // วันที่สร้าง
+}
+
+// ข้อมูล Stripe Subscription
+export interface StripeSubscription {
+    id: string;                           // Stripe Subscription ID (sub_xxx)
+    customerId: string;                   // Stripe Customer ID
+    status: SubscriptionStatus;           // สถานะ subscription
+    plan: SubscriptionPlan;               // แผนที่สมัคร
+    billingCycle: BillingCycle;           // รอบการเรียกเก็บเงิน
+    priceId: string;                      // Stripe Price ID
+    productId: string;                    // Stripe Product ID
+    currentPeriodStart: Date;             // วันเริ่มต้นรอบปัจจุบัน
+    currentPeriodEnd: Date;               // วันสิ้นสุดรอบปัจจุบัน
+    cancelAtPeriodEnd: boolean;           // จะยกเลิกเมื่อสิ้นสุดรอบหรือไม่
+    canceledAt?: Date;                    // วันที่ยกเลิก (ถ้ามี)
+    createdAt?: Date;
+    updatedAt?: Date;
+}
+
+// ข้อมูล Stripe Price
+export interface StripePrice {
+    id: string;                           // Stripe Price ID (price_xxx)
+    productId: string;                    // Stripe Product ID
+    plan: SubscriptionPlan;               // แผนที่เกี่ยวข้อง
+    billingCycle: BillingCycle;           // รอบการเรียกเก็บเงิน
+    unitAmount: number;                   // ราคา (สตางค์)
+    currency: string;                     // สกุลเงิน
+    active: boolean;                      // ใช้งานอยู่หรือไม่
+}
+
+// ข้อมูล Stripe Product
+export interface StripeProduct {
+    id: string;                           // Stripe Product ID (prod_xxx)
+    name: string;                         // ชื่อ product
+    description?: string;                 // คำอธิบาย
+    plan: SubscriptionPlan;               // แผนที่เกี่ยวข้อง
+    active: boolean;                      // ใช้งานอยู่หรือไม่
+    prices: StripePrice[];                // รายการราคา
+}
+
+// ข้อมูล Payment Intent
+export interface StripePaymentIntent {
+    id: string;                           // Payment Intent ID (pi_xxx)
+    amount: number;                       // จำนวนเงิน (สตางค์)
+    currency: string;                     // สกุลเงิน
+    status: 'succeeded' | 'processing' | 'requires_payment_method' | 'canceled';
+    customerId?: string;                  // Stripe Customer ID
+    createdAt?: Date;
+}
+
+// ข้อมูล Checkout Session
+export interface CheckoutSession {
+    id: string;                           // Session ID
+    url: string;                          // URL สำหรับ redirect
+    plan: SubscriptionPlan;               // แผนที่เลือก
+    billingCycle: BillingCycle;           // รอบการเรียกเก็บเงิน
+    customerId?: string;                  // Stripe Customer ID
+    successUrl: string;                   // URL หลังชำระสำเร็จ
+    cancelUrl: string;                    // URL หลังยกเลิก
+}
+
+// การตั้งค่า Stripe ของบริษัท
+export interface CompanyStripeSettings {
+    id?: string;                          // Document ID
+    companyId: string;                    // Company ID
+    stripeCustomerId?: string;            // Stripe Customer ID
+    stripeSubscriptionId?: string;        // Stripe Subscription ID
+    stripeMode: StripeMode;               // โหมด test/live
+    createdAt?: Date;
+    updatedAt?: Date;
+}
 
 // โควตาการใช้งานของบริษัท
 export interface CompanyQuota {
     // แผนการใช้งาน
     plan: SubscriptionPlan;                  // แผนที่ใช้งานอยู่
     status: SubscriptionStatus;              // สถานะแผน
+    billingCycle?: BillingCycle;             // รอบการเรียกเก็บเงิน (monthly/yearly)
     
     // โควตาองค์กร
     maxCompanies: number;                    // จำนวนองค์กรสูงสุดที่สร้างได้ (-1 = ไม่จำกัด)
@@ -54,6 +148,21 @@ export interface CompanyQuota {
     maxStorageMB: number;                    // พื้นที่เก็บข้อมูลสูงสุด (MB) (-1 = ไม่จำกัด)
     currentStorageMB: number;                // พื้นที่ที่ใช้ไปแล้ว (MB)
     
+    // โควตา CRM (ลูกค้า)
+    maxCustomers: number;                    // จำนวนลูกค้าสูงสุด (-1 = ไม่จำกัด)
+    currentCustomers: number;                // จำนวนลูกค้าปัจจุบัน
+    
+    // โควตาช่าง/ผู้รับเหมา
+    maxContractors: number;                  // จำนวนช่าง/ผู้รับเหมาสูงสุด (-1 = ไม่จำกัด)
+    currentContractors: number;              // จำนวนช่าง/ผู้รับเหมาปัจจุบัน
+    
+    // โควตา Export PDF
+    maxPdfExports: number;                   // จำนวน export PDF สูงสุดต่อเดือน (-1 = ไม่จำกัด)
+    currentPdfExports: number;               // จำนวน export PDF ในเดือนนี้
+    
+    // ประวัติเอกสาร (Document History)
+    historyRetentionDays: number;            // จำนวนวันที่เก็บประวัติเอกสาร (-1 = ไม่จำกัด/Audit Log)
+    
     // Features พิเศษ
     features: {
         multipleProfiles: boolean;           // ใช้ Profile หลายอันได้หรือไม่
@@ -64,6 +173,11 @@ export interface CompanyQuota {
         exportExcel: boolean;                // Export Excel ได้หรือไม่
         advancedReports: boolean;            // รายงานขั้นสูง
         customTemplates: boolean;            // Template กำหนดเอง
+        documentAccess: DocumentAccessLevel; // ระดับการเข้าถึงเอกสาร (basic/full)
+        hasWatermark: boolean;               // มีลายน้ำบนเอกสารหรือไม่
+        lineNotification: boolean;           // แจ้งเตือนผ่าน Line
+        dedicatedSupport: boolean;           // ผู้ดูแลส่วนตัว
+        auditLog: boolean;                   // Audit Log เต็มรูปแบบ
     };
     
     // ข้อมูลการสมัคร
@@ -76,6 +190,11 @@ export interface CompanyQuota {
     nextPaymentDate?: Date;                  // วันที่จ่ายเงินครั้งถัดไป
     paymentAmount?: number;                  // จำนวนเงินที่ต้องจ่าย
     currency?: string;                       // สกุลเงิน (THB, USD)
+    
+    // Stripe Integration
+    stripeCustomerId?: string;               // Stripe Customer ID
+    stripeSubscriptionId?: string;           // Stripe Subscription ID
+    stripePriceId?: string;                  // Stripe Price ID
     
     // Metadata
     createdAt?: Date;

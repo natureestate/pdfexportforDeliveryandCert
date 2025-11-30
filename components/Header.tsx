@@ -1,4 +1,5 @@
 import React, { useState, useEffect } from 'react';
+import { useNavigate } from 'react-router-dom';
 import { useAuth } from '../contexts/AuthContext';
 import { useCompany } from '../contexts/CompanyContext';
 import { signOut, getLinkedProviders, linkWithEmailPassword, changePassword, sendPasswordReset, checkLinkedProviders } from '../services/auth';
@@ -11,9 +12,10 @@ import { checkIsAdmin } from '../services/companyMembers';
 import { getQuota } from '../services/quota';
 import { updateCompany } from '../services/companies';
 import { CompanyQuota, LogoType } from '../types';
-import { Link2, Key, Building2, Palette, BarChart3, Users, HardDrive, Crown, User } from 'lucide-react';
+import { Link2, Key, Building2, Palette, BarChart3, Users, HardDrive, Crown, User, CreditCard, Sparkles } from 'lucide-react';
 
 const Header: React.FC = () => {
+    const navigate = useNavigate();
     const { user } = useAuth();
     const { currentCompany, refreshCompanies } = useCompany();
     const [showDropdown, setShowDropdown] = useState(false);
@@ -578,6 +580,20 @@ const Header: React.FC = () => {
                                                     </button>
                                                 )}
 
+                                                {/* ปุ่มแพ็กเกจ/อัปเกรด */}
+                                                {currentCompany && (
+                                                    <button
+                                                        onClick={() => {
+                                                            navigate('/pricing');
+                                                            setShowDropdown(false);
+                                                        }}
+                                                        className="w-full px-4 py-3 text-left text-sm text-amber-600 hover:bg-amber-50 transition-colors duration-200 flex items-center gap-3 border-b border-gray-200"
+                                                    >
+                                                        <Sparkles className="w-5 h-5" />
+                                                        <span className="font-medium"><CreditCard className="w-4 h-4 inline mr-1" />แพ็กเกจ/อัปเกรด</span>
+                                                    </button>
+                                                )}
+
                                                 {currentCompany && isAdmin && (
                                                     <button
                                                         onClick={() => {
@@ -855,6 +871,22 @@ const Header: React.FC = () => {
                                             </svg>
                                         </div>
                                         <span><BarChart3 className="w-4 h-4 inline mr-1" />ดูโควตา</span>
+                                    </button>
+                                )}
+
+                                {/* ปุ่มแพ็กเกจ/อัปเกรด */}
+                                {currentCompany && (
+                                    <button
+                                        onClick={() => {
+                                            navigate('/pricing');
+                                            setShowMobileMenu(false);
+                                        }}
+                                        className="w-full px-4 py-3.5 text-left text-sm font-medium text-amber-700 bg-gradient-to-r from-amber-50 to-orange-50 hover:from-amber-100 hover:to-orange-100 rounded-lg transition-all duration-200 flex items-center gap-3 mb-2 shadow-sm hover:shadow border border-amber-200"
+                                    >
+                                        <div className="w-9 h-9 rounded-lg bg-gradient-to-br from-amber-400 to-orange-500 flex items-center justify-center">
+                                            <Sparkles className="w-5 h-5 text-white" />
+                                        </div>
+                                        <span><CreditCard className="w-4 h-4 inline mr-1" />แพ็กเกจ/อัปเกรด</span>
                                     </button>
                                 )}
 

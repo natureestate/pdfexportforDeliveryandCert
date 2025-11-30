@@ -33,6 +33,8 @@ import SuperAdminDashboard from './components/SuperAdminDashboard';
 import CookieConsentModal from './components/CookieConsentModal';
 import MenuSettingsModal from './components/MenuSettingsModal';
 import UserMenuSettingsModal from './components/UserMenuSettingsModal';
+import PricingPage from './components/PricingPage';
+import SubscriptionManager from './components/SubscriptionManager';
 import { generatePdf } from './services/pdfGenerator';
 import { saveDeliveryNote, saveWarrantyCard, saveInvoice, saveReceipt, saveTaxInvoice, saveQuotation, savePurchaseOrder } from './services/firestore';
 import type { DeliveryNoteDocument, WarrantyDocument, InvoiceDocument, ReceiptDocument, TaxInvoiceDocument, QuotationDocument, PurchaseOrderDocument, MemoDocument, VariationOrderDocument, SubcontractDocument } from './services/firestore';
@@ -1345,6 +1347,30 @@ const App: React.FC = () => {
                             <SuperAdminDashboard />
                         </ProtectedRoute>
                     } 
+                />
+                
+                {/* หน้า Pricing - แสดงแผนราคาและซื้อ package */}
+                <Route
+                    path="/pricing"
+                    element={
+                        <CompanyProvider>
+                            <ProtectedRoute>
+                                <PricingPage />
+                            </ProtectedRoute>
+                        </CompanyProvider>
+                    }
+                />
+                
+                {/* หน้า Subscription - จัดการ subscription ปัจจุบัน */}
+                <Route
+                    path="/subscription"
+                    element={
+                        <CompanyProvider>
+                            <ProtectedRoute>
+                                <SubscriptionManager />
+                            </ProtectedRoute>
+                        </CompanyProvider>
+                    }
                 />
                 
                 {/* หน้าหลัก - ต้อง login และมี CompanyProvider + MenuProvider */}
