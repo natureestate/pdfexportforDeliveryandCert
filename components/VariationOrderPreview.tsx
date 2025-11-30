@@ -1,6 +1,7 @@
 import React, { forwardRef } from 'react';
 import { VariationOrderData } from '../types';
 import { getDefaultLogoUrl } from '../services/logoStorage';
+import QRCodeFooter from './QRCodeFooter';
 
 interface VariationOrderPreviewProps {
     data: VariationOrderData;
@@ -276,13 +277,23 @@ const VariationOrderPreview = forwardRef<HTMLDivElement, VariationOrderPreviewPr
             </section>
 
             {/* Footer */}
-            <footer className="mt-8 text-center text-xs">
-                {data.issuedBy && (
-                    <div className="mb-4">
-                        <p className="text-gray-600">ผู้ออกเอกสาร: {data.issuedBy}</p>
+            <footer className="mt-8 text-xs">
+                <div className="flex justify-between items-end">
+                    <div className="text-center flex-1">
+                        {data.issuedBy && (
+                            <div className="mb-4">
+                                <p className="text-gray-600">ผู้ออกเอกสาร: {data.issuedBy}</p>
+                            </div>
+                        )}
+                        <p className="text-gray-500">หมายเหตุ: ห้ามทำงานก่อนเซ็น - ทีมช่างจะเริ่มงานเปลี่ยนแปลงเมื่องานนี้ได้รับการอนุมัติและลงนาม</p>
                     </div>
-                )}
-                <p className="text-gray-500">หมายเหตุ: ห้ามทำงานก่อนเซ็น - ทีมช่างจะเริ่มงานเปลี่ยนแปลงเมื่องานนี้ได้รับการอนุมัติและลงนาม</p>
+                    {/* QR Code สำหรับตรวจสอบเอกสาร */}
+                    <QRCodeFooter 
+                        docType="variation-order" 
+                        verificationToken={data.verificationToken}
+                        size={70}
+                    />
+                </div>
             </footer>
         </div>
     );

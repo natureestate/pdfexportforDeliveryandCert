@@ -5,6 +5,7 @@
  */
 import React, { forwardRef, useMemo } from 'react';
 import { SubcontractData } from '../types';
+import QRCodeFooter from './QRCodeFooter';
 
 interface SubcontractPreviewProps {
     data: SubcontractData;
@@ -282,12 +283,22 @@ const SubcontractPreview = forwardRef<HTMLDivElement, SubcontractPreviewProps>((
                 </div>
             </div>
 
-            {/* Footer - ผู้ออกเอกสาร */}
-            {data.issuedBy && (
-                <div className="mt-6 pt-4 border-t text-xs text-gray-500 text-right">
-                    <p>ผู้ออกเอกสาร: {data.issuedBy}</p>
+            {/* Footer - ผู้ออกเอกสาร และ QR Code */}
+            <div className="mt-6 pt-4 border-t text-xs text-gray-500">
+                <div className="flex justify-between items-end">
+                    <div className="flex-1">
+                        {data.issuedBy && (
+                            <p>ผู้ออกเอกสาร: {data.issuedBy}</p>
+                        )}
+                    </div>
+                    {/* QR Code สำหรับตรวจสอบเอกสาร */}
+                    <QRCodeFooter 
+                        docType="subcontract" 
+                        verificationToken={data.verificationToken}
+                        size={70}
+                    />
                 </div>
-            )}
+            </div>
         </div>
     );
 });

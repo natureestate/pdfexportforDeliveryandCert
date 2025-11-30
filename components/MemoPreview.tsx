@@ -1,6 +1,7 @@
 import React, { forwardRef } from 'react';
 import { MemoData } from '../types';
 import { getDefaultLogoUrl } from '../services/logoStorage';
+import QRCodeFooter from './QRCodeFooter';
 
 interface MemoPreviewProps {
     data: MemoData;
@@ -178,12 +179,22 @@ const MemoPreview = forwardRef<HTMLDivElement, MemoPreviewProps>(({ data }, ref)
             </footer>
 
             {/* ข้อมูลบริษัท (ด้านล่างสุด) */}
-            <div className="mt-8 pt-4 border-t border-gray-200 text-xs text-slate-600 text-center">
-                <p className="font-semibold">{data.companyName || ''}</p>
-                {data.companyAddress && <p>{data.companyAddress}</p>}
-                {data.companyPhone && <p>โทร: {data.companyPhone}</p>}
-                {data.companyEmail && <p>อีเมล: {data.companyEmail}</p>}
-                {data.companyWebsite && <p>เว็บไซต์: {data.companyWebsite}</p>}
+            <div className="mt-8 pt-4 border-t border-gray-200 text-xs text-slate-600">
+                <div className="flex justify-between items-end">
+                    <div className="text-center flex-1">
+                        <p className="font-semibold">{data.companyName || ''}</p>
+                        {data.companyAddress && <p>{data.companyAddress}</p>}
+                        {data.companyPhone && <p>โทร: {data.companyPhone}</p>}
+                        {data.companyEmail && <p>อีเมล: {data.companyEmail}</p>}
+                        {data.companyWebsite && <p>เว็บไซต์: {data.companyWebsite}</p>}
+                    </div>
+                    {/* QR Code สำหรับตรวจสอบเอกสาร */}
+                    <QRCodeFooter 
+                        docType="memo" 
+                        verificationToken={data.verificationToken}
+                        size={70}
+                    />
+                </div>
             </div>
         </div>
     );

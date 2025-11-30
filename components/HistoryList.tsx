@@ -4,6 +4,7 @@ import { useCompany } from '../contexts/CompanyContext';
 import { generatePdf } from '../services/pdfGenerator';
 import { generatePdfFilename as generatePdfFilenameFromRegistry, type DocType, type DocumentDocument } from '../utils/documentRegistry';
 import { useDocumentList } from '../hooks/useDocumentList';
+import { cancelDocument, restoreDocument } from '../services/verification';
 import DocumentPreview from './DocumentPreview';
 import WarrantyPreview from './WarrantyPreview';
 import InvoicePreview from './InvoicePreview';
@@ -42,6 +43,12 @@ const HistoryList: React.FC<HistoryListProps> = ({ activeDocType, onLoadDocument
     
     const [deleteConfirm, setDeleteConfirm] = useState<{ type: 'delivery' | 'warranty' | 'invoice' | 'receipt' | 'quotation' | 'purchase-order' | 'memo', id: string } | null>(null);
     const [downloadingPdfId, setDownloadingPdfId] = useState<string | null>(null); // เก็บ ID ของเอกสารที่กำลัง download
+    
+    // State สำหรับยกเลิก/กู้คืนเอกสาร
+    const [cancelConfirm, setCancelConfirm] = useState<{ id: string; docNumber: string } | null>(null);
+    const [cancelReason, setCancelReason] = useState<string>('');
+    const [cancellingId, setCancellingId] = useState<string | null>(null);
+    const [restoringId, setRestoringId] = useState<string | null>(null);
     const previewRef = useRef<HTMLDivElement>(null); // Ref สำหรับ preview component ที่ซ่อนอยู่
     const [previewData, setPreviewData] = useState<DeliveryNoteData | WarrantyData | InvoiceData | ReceiptData | QuotationData | PurchaseOrderData | MemoData | VariationOrderData | SubcontractData | null>(null); // ข้อมูลสำหรับ preview
     const [showPreviewModal, setShowPreviewModal] = useState(false); // แสดง preview modal หรือไม่
@@ -68,6 +75,52 @@ const HistoryList: React.FC<HistoryListProps> = ({ activeDocType, onLoadDocument
         } catch (err) {
             console.error('❌ Error deleting document:', err);
             alert('ไม่สามารถลบเอกสารได้: ' + (err instanceof Error ? err.message : 'Unknown error'));
+        }
+    };
+
+    // ฟังก์ชันยกเลิกเอกสาร (Cancel Document)
+    const handleCancelDocument = async () => {
+        if (!cancelConfirm) return;
+        
+        try {
+            setCancellingId(cancelConfirm.id);
+            const result = await cancelDocument(cancelConfirm.id, activeDocType, cancelReason || undefined);
+            
+            if (result.success) {
+                console.log(`✅ ยกเลิกเอกสาร ${cancelConfirm.docNumber} สำเร็จ`);
+                alert(`✅ ยกเลิกเอกสาร ${cancelConfirm.docNumber} สำเร็จ`);
+                setCancelConfirm(null);
+                setCancelReason('');
+                fetchData(); // รีเฟรชรายการ
+            } else {
+                alert(`❌ ${result.error}`);
+            }
+        } catch (err) {
+            console.error('❌ Error cancelling document:', err);
+            alert('ไม่สามารถยกเลิกเอกสารได้: ' + (err instanceof Error ? err.message : 'Unknown error'));
+        } finally {
+            setCancellingId(null);
+        }
+    };
+
+    // ฟังก์ชันกู้คืนเอกสาร (Restore Document)
+    const handleRestoreDocument = async (docId: string) => {
+        try {
+            setRestoringId(docId);
+            const result = await restoreDocument(docId, activeDocType);
+            
+            if (result.success) {
+                console.log(`✅ กู้คืนเอกสารสำเร็จ`);
+                alert('✅ กู้คืนเอกสารสำเร็จ');
+                fetchData(); // รีเฟรชรายการ
+            } else {
+                alert(`❌ ${result.error}`);
+            }
+        } catch (err) {
+            console.error('❌ Error restoring document:', err);
+            alert('ไม่สามารถกู้คืนเอกสารได้: ' + (err instanceof Error ? err.message : 'Unknown error'));
+        } finally {
+            setRestoringId(null);
         }
     };
 
@@ -477,6 +530,61 @@ const HistoryList: React.FC<HistoryListProps> = ({ activeDocType, onLoadDocument
                 </div>
             )}
 
+            {/* Modal ยืนยันการยกเลิกเอกสาร (Cancel Document) */}
+            {cancelConfirm && (
+                <div className="fixed inset-0 bg-gray-600 bg-opacity-50 overflow-y-auto h-full w-full z-50 flex items-center justify-center">
+                    <div className="relative mx-auto p-5 border w-96 shadow-lg rounded-md bg-white">
+                        <div className="mt-3 text-center">
+                            <div className="mx-auto flex items-center justify-center h-12 w-12 rounded-full bg-orange-100">
+                                <svg className="h-6 w-6 text-orange-600" stroke="currentColor" fill="none" viewBox="0 0 24 24">
+                                    <path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M18.364 18.364A9 9 0 005.636 5.636m12.728 12.728A9 9 0 015.636 5.636m12.728 12.728L5.636 5.636" />
+                                </svg>
+                            </div>
+                            <h3 className="text-lg leading-6 font-medium text-gray-900 mt-2">ยืนยันการยกเลิกเอกสาร</h3>
+                            <div className="mt-2 px-4 py-3">
+                                <p className="text-sm text-gray-500 mb-3">
+                                    คุณต้องการยกเลิกเอกสารเลขที่ <strong className="text-gray-700">{cancelConfirm.docNumber}</strong> หรือไม่?
+                                </p>
+                                <p className="text-xs text-orange-600 mb-3">
+                                    ⚠️ เอกสารที่ถูกยกเลิกจะแสดงสถานะ "ยกเลิก" เมื่อสแกน QR Code
+                                </p>
+                                <div className="text-left">
+                                    <label className="block text-sm font-medium text-gray-700 mb-1">
+                                        เหตุผลในการยกเลิก (ไม่บังคับ):
+                                    </label>
+                                    <textarea
+                                        value={cancelReason}
+                                        onChange={(e) => setCancelReason(e.target.value)}
+                                        placeholder="ระบุเหตุผล เช่น ข้อมูลผิดพลาด, ออกเอกสารใหม่แทน"
+                                        className="w-full px-3 py-2 border border-gray-300 rounded-md text-sm focus:outline-none focus:ring-2 focus:ring-orange-500"
+                                        rows={2}
+                                    />
+                                </div>
+                            </div>
+                            <div className="items-center px-4 py-3 space-x-2">
+                                <button
+                                    onClick={handleCancelDocument}
+                                    disabled={cancellingId === cancelConfirm.id}
+                                    className="px-4 py-2 bg-orange-500 text-white text-base font-medium rounded-md w-auto shadow-sm hover:bg-orange-700 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-orange-500 disabled:opacity-50 disabled:cursor-not-allowed"
+                                >
+                                    {cancellingId === cancelConfirm.id ? 'กำลังยกเลิก...' : 'ยืนยันยกเลิก'}
+                                </button>
+                                <button
+                                    onClick={() => {
+                                        setCancelConfirm(null);
+                                        setCancelReason('');
+                                    }}
+                                    disabled={cancellingId === cancelConfirm.id}
+                                    className="px-4 py-2 bg-gray-200 text-gray-800 text-base font-medium rounded-md w-auto shadow-sm hover:bg-gray-300 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-gray-500 disabled:opacity-50"
+                                >
+                                    ปิด
+                                </button>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            )}
+
             {/* Header */}
             <div className="flex flex-col sm:flex-row justify-between items-start sm:items-center gap-3 sm:gap-4 mb-4">
                 <h2 className="text-lg sm:text-xl font-semibold text-slate-700">
@@ -550,17 +658,26 @@ const HistoryList: React.FC<HistoryListProps> = ({ activeDocType, onLoadDocument
                     // รายการใบส่งมอบงาน
                     paginatedList.map((note) => {
                         const noteItem = note as DeliveryNoteDocument;
+                        const isCancelled = (noteItem as any).documentStatus === 'cancelled';
                         return (
-                        <div key={noteItem.id} className="bg-white border border-gray-200 rounded-lg p-3 sm:p-4 hover:shadow-md transition-shadow">
+                        <div key={noteItem.id} className={`bg-white border rounded-lg p-3 sm:p-4 hover:shadow-md transition-shadow ${isCancelled ? 'border-red-300 bg-red-50' : 'border-gray-200'}`}>
                             <div className="flex flex-col sm:flex-row sm:justify-between sm:items-start gap-3">
                                 <div className="flex-1 min-w-0">
-                                    <h3 className="text-base sm:text-lg font-semibold text-gray-900 break-words">{noteItem.project || 'ไม่ระบุโครงการ'}</h3>
+                                    {/* แสดงสถานะเอกสาร */}
+                                    {isCancelled && (
+                                        <div className="mb-2">
+                                            <span className="inline-flex items-center px-2 py-0.5 rounded text-xs font-medium bg-red-100 text-red-800">
+                                                ❌ ยกเลิกแล้ว
+                                            </span>
+                                        </div>
+                                    )}
+                                    <h3 className={`text-base sm:text-lg font-semibold break-words ${isCancelled ? 'text-gray-500 line-through' : 'text-gray-900'}`}>{noteItem.project || 'ไม่ระบุโครงการ'}</h3>
                                     <div className="mt-2 grid grid-cols-1 sm:grid-cols-2 gap-2 text-xs sm:text-sm text-gray-600">
                                         <div>
                                             <span className="font-medium">เลขที่:</span>{' '}
                                             <button
                                                 onClick={() => handleShowPreview(noteItem)}
-                                                className="text-blue-600 hover:text-blue-800 hover:underline cursor-pointer break-all"
+                                                className={`hover:underline cursor-pointer break-all ${isCancelled ? 'text-gray-500' : 'text-blue-600 hover:text-blue-800'}`}
                                                 title="คลิกเพื่อดูตัวอย่าง"
                                             >
                                                 {noteItem.docNumber}
@@ -617,6 +734,39 @@ const HistoryList: React.FC<HistoryListProps> = ({ activeDocType, onLoadDocument
                                             </>
                                         )}
                                     </button>
+                                    {/* ปุ่มยกเลิก/กู้คืนเอกสาร */}
+                                    {isCancelled ? (
+                                        <button
+                                            onClick={() => handleRestoreDocument(noteItem.id!)}
+                                            disabled={restoringId === noteItem.id}
+                                            className="flex-1 sm:flex-none px-2 sm:px-3 py-1.5 sm:py-1 bg-green-600 text-white text-xs sm:text-sm rounded hover:bg-green-700 flex items-center justify-center gap-1 disabled:opacity-50 disabled:cursor-not-allowed"
+                                            title="กู้คืนเอกสาร"
+                                        >
+                                            {restoringId === noteItem.id ? (
+                                                <span>กำลังกู้คืน...</span>
+                                            ) : (
+                                                <>
+                                                    <svg className="w-3 h-3 sm:w-4 sm:h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                                        <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M4 4v5h.582m15.356 2A8.001 8.001 0 004.582 9m0 0H9m11 11v-5h-.581m0 0a8.003 8.003 0 01-15.357-2m15.357 2H15" />
+                                                    </svg>
+                                                    <span className="hidden sm:inline">กู้คืน</span>
+                                                    <span className="sm:hidden">กู้คืน</span>
+                                                </>
+                                            )}
+                                        </button>
+                                    ) : (
+                                        <button
+                                            onClick={() => setCancelConfirm({ id: noteItem.id!, docNumber: noteItem.docNumber })}
+                                            className="flex-1 sm:flex-none px-2 sm:px-3 py-1.5 sm:py-1 bg-orange-500 text-white text-xs sm:text-sm rounded hover:bg-orange-600 flex items-center justify-center gap-1"
+                                            title="ยกเลิกเอกสาร"
+                                        >
+                                            <svg className="w-3 h-3 sm:w-4 sm:h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                                <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M18.364 18.364A9 9 0 005.636 5.636m12.728 12.728A9 9 0 015.636 5.636m12.728 12.728L5.636 5.636" />
+                                            </svg>
+                                            <span className="hidden sm:inline">ยกเลิก</span>
+                                            <span className="sm:hidden">ยกเลิก</span>
+                                        </button>
+                                    )}
                                     <button
                                         onClick={() => setDeleteConfirm({ type: 'delivery', id: noteItem.id! })}
                                         className="flex-1 sm:flex-none px-2 sm:px-3 py-1.5 sm:py-1 bg-red-600 text-white text-xs sm:text-sm rounded hover:bg-red-700 flex items-center justify-center gap-1"
@@ -724,17 +874,26 @@ const HistoryList: React.FC<HistoryListProps> = ({ activeDocType, onLoadDocument
                     // รายการใบแจ้งหนี้
                     paginatedList.map((invoice) => {
                         const invoiceItem = invoice as InvoiceDocument;
+                        const isCancelled = (invoiceItem as any).documentStatus === 'cancelled';
                         return (
-                        <div key={invoiceItem.id} className="bg-white border border-gray-200 rounded-lg p-3 sm:p-4 hover:shadow-md transition-shadow">
+                        <div key={invoiceItem.id} className={`bg-white border rounded-lg p-3 sm:p-4 hover:shadow-md transition-shadow ${isCancelled ? 'border-red-300 bg-red-50' : 'border-gray-200'}`}>
                             <div className="flex flex-col sm:flex-row sm:justify-between sm:items-start gap-3">
                                 <div className="flex-1 min-w-0">
-                                    <h3 className="text-base sm:text-lg font-semibold text-gray-900 break-words">{invoiceItem.customerName || 'ไม่ระบุลูกค้า'}</h3>
+                                    {/* แสดงสถานะเอกสาร */}
+                                    {isCancelled && (
+                                        <div className="mb-2">
+                                            <span className="inline-flex items-center px-2 py-0.5 rounded text-xs font-medium bg-red-100 text-red-800">
+                                                ❌ ยกเลิกแล้ว
+                                            </span>
+                                        </div>
+                                    )}
+                                    <h3 className={`text-base sm:text-lg font-semibold break-words ${isCancelled ? 'text-gray-500 line-through' : 'text-gray-900'}`}>{invoiceItem.customerName || 'ไม่ระบุลูกค้า'}</h3>
                                     <div className="mt-2 grid grid-cols-1 sm:grid-cols-2 gap-2 text-xs sm:text-sm text-gray-600">
                                         <div>
                                             <span className="font-medium">เลขที่:</span>{' '}
                                             <button
                                                 onClick={() => handleShowPreview(invoiceItem)}
-                                                className="text-blue-600 hover:text-blue-800 hover:underline cursor-pointer break-all"
+                                                className={`hover:underline cursor-pointer break-all ${isCancelled ? 'text-gray-500' : 'text-blue-600 hover:text-blue-800'}`}
                                                 title="คลิกเพื่อดูตัวอย่าง"
                                             >
                                                 {invoiceItem.invoiceNumber}
@@ -747,7 +906,7 @@ const HistoryList: React.FC<HistoryListProps> = ({ activeDocType, onLoadDocument
                                             <span className="font-medium">ผู้ขาย:</span> <span className="break-words">{invoiceItem.companyName || 'ไม่ระบุ'}</span>
                                         </div>
                                         <div>
-                                            <span className="font-medium">ยอดรวม:</span> <span className="font-bold text-indigo-600">{invoiceItem.total.toLocaleString('th-TH', { minimumFractionDigits: 2, maximumFractionDigits: 2 })} บาท</span>
+                                            <span className="font-medium">ยอดรวม:</span> <span className={`font-bold ${isCancelled ? 'text-gray-500' : 'text-indigo-600'}`}>{invoiceItem.total.toLocaleString('th-TH', { minimumFractionDigits: 2, maximumFractionDigits: 2 })} บาท</span>
                                         </div>
                                     </div>
                                     <div className="mt-2 text-xs text-gray-400">
@@ -791,6 +950,39 @@ const HistoryList: React.FC<HistoryListProps> = ({ activeDocType, onLoadDocument
                                             </>
                                         )}
                                     </button>
+                                    {/* ปุ่มยกเลิก/กู้คืนเอกสาร */}
+                                    {isCancelled ? (
+                                        <button
+                                            onClick={() => handleRestoreDocument(invoiceItem.id!)}
+                                            disabled={restoringId === invoiceItem.id}
+                                            className="flex-1 sm:flex-none px-2 sm:px-3 py-1.5 sm:py-1 bg-green-600 text-white text-xs sm:text-sm rounded hover:bg-green-700 flex items-center justify-center gap-1 disabled:opacity-50 disabled:cursor-not-allowed"
+                                            title="กู้คืนเอกสาร"
+                                        >
+                                            {restoringId === invoiceItem.id ? (
+                                                <span>กำลังกู้คืน...</span>
+                                            ) : (
+                                                <>
+                                                    <svg className="w-3 h-3 sm:w-4 sm:h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                                        <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M4 4v5h.582m15.356 2A8.001 8.001 0 004.582 9m0 0H9m11 11v-5h-.581m0 0a8.003 8.003 0 01-15.357-2m15.357 2H15" />
+                                                    </svg>
+                                                    <span className="hidden sm:inline">กู้คืน</span>
+                                                    <span className="sm:hidden">กู้คืน</span>
+                                                </>
+                                            )}
+                                        </button>
+                                    ) : (
+                                        <button
+                                            onClick={() => setCancelConfirm({ id: invoiceItem.id!, docNumber: invoiceItem.invoiceNumber })}
+                                            className="flex-1 sm:flex-none px-2 sm:px-3 py-1.5 sm:py-1 bg-orange-500 text-white text-xs sm:text-sm rounded hover:bg-orange-600 flex items-center justify-center gap-1"
+                                            title="ยกเลิกเอกสาร"
+                                        >
+                                            <svg className="w-3 h-3 sm:w-4 sm:h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                                <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M18.364 18.364A9 9 0 005.636 5.636m12.728 12.728A9 9 0 015.636 5.636m12.728 12.728L5.636 5.636" />
+                                            </svg>
+                                            <span className="hidden sm:inline">ยกเลิก</span>
+                                            <span className="sm:hidden">ยกเลิก</span>
+                                        </button>
+                                    )}
                                     <button
                                         onClick={() => setDeleteConfirm({ type: 'invoice', id: invoiceItem.id! })}
                                         className="flex-1 sm:flex-none px-2 sm:px-3 py-1.5 sm:py-1 bg-red-600 text-white text-xs sm:text-sm rounded hover:bg-red-700 flex items-center justify-center gap-1"

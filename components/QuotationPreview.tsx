@@ -1,6 +1,7 @@
 import React, { forwardRef } from 'react';
 import { QuotationData } from '../types';
 import { getDefaultLogoUrl } from '../services/logoStorage';
+import QRCodeFooter from './QRCodeFooter';
 
 interface QuotationPreviewProps {
     data: QuotationData;
@@ -151,13 +152,23 @@ const QuotationPreview = forwardRef<HTMLDivElement, QuotationPreviewProps>(({ da
             )}
 
             {/* Footer */}
-            <footer className="mt-8 text-center text-xs">
-                {data.issuedBy && (
-                    <div className="mb-4">
-                        <p className="text-gray-600">ผู้ออกเอกสาร: {data.issuedBy}</p>
+            <footer className="mt-8 text-xs">
+                <div className="flex justify-between items-end">
+                    <div className="text-center flex-1">
+                        {data.issuedBy && (
+                            <div className="mb-4">
+                                <p className="text-gray-600">ผู้ออกเอกสาร: {data.issuedBy}</p>
+                            </div>
+                        )}
+                        <p className="text-gray-500">ขอบคุณที่ให้โอกาสในการเสนอราคา</p>
                     </div>
-                )}
-                <p className="text-gray-500">ขอบคุณที่ให้โอกาสในการเสนอราคา</p>
+                    {/* QR Code สำหรับตรวจสอบเอกสาร */}
+                    <QRCodeFooter 
+                        docType="quotation" 
+                        verificationToken={data.verificationToken}
+                        size={70}
+                    />
+                </div>
             </footer>
         </div>
     );

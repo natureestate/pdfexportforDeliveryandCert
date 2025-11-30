@@ -1,6 +1,7 @@
 import React, { forwardRef } from 'react';
 import { WarrantyData } from '../types';
 import { getDefaultLogoUrl } from '../services/logoStorage';
+import QRCodeFooter from './QRCodeFooter';
 
 interface WarrantyPreviewProps {
     data: WarrantyData;
@@ -195,24 +196,30 @@ const WarrantyPreview = forwardRef<HTMLDivElement, WarrantyPreviewProps>(({ data
                 
                 {/* Footer Section */}
                 <footer className="mt-1.5 pt-1.5 border-t-2 border-indigo-300">
-                    <div className="grid grid-cols-2 gap-2 items-end">
+                    <div className="grid grid-cols-3 gap-2 items-end">
                         <div className="text-xs text-slate-600">
                             <p className="font-semibold text-xs text-slate-900">วันที่ออกเอกสาร: {formatDate(data.issueDate)}</p>
                             <p className="text-xs">เอกสารนี้ออกโดยระบบอิเล็กโทรนิก</p>
                         </div>
                         <div className="text-center">
                             {/* แสดงโลโก้บริษัทแทนตราประทับ */}
-                            {/* ขยายเพิ่ม 30% จาก max-h-32 max-w-28 (128px x 112px) = 166.4px x 145.6px ≈ 168px x 144px */}
-                            {/* ลด padding โดยใช้ max-height แทน fixed height เพื่อ trim ขอบบนล่าง */}
-                            <div className="max-w-[144px] max-h-[168px] mx-auto flex items-center justify-center overflow-hidden">
+                            <div className="max-w-[120px] max-h-[120px] mx-auto flex items-center justify-center overflow-hidden">
                                 <img 
                                     src={displayLogo} 
                                     alt="Company Logo" 
-                                    className="max-h-[168px] w-auto max-w-[144px] object-contain object-center"
+                                    className="max-h-[120px] w-auto max-w-[120px] object-contain object-center"
                                     crossOrigin="anonymous"
                                 />
                             </div>
                             <p className="mt-0.5 text-indigo-700 text-xs font-medium">ขอขอบคุณที่เลือกใช้สินค้าและบริการของเรา</p>
+                        </div>
+                        {/* QR Code สำหรับตรวจสอบเอกสาร */}
+                        <div className="flex justify-end">
+                            <QRCodeFooter 
+                                docType="warranty" 
+                                verificationToken={data.verificationToken}
+                                size={60}
+                            />
                         </div>
                     </div>
                 </footer>

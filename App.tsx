@@ -32,6 +32,7 @@ import AcceptInvitationPage from './components/AcceptInvitationPage';
 import SuperAdminDashboard from './components/SuperAdminDashboard';
 import CookieConsentModal from './components/CookieConsentModal';
 import MenuSettingsModal from './components/MenuSettingsModal';
+import VerificationPage from './components/VerificationPage';
 import UserMenuSettingsModal from './components/UserMenuSettingsModal';
 import PricingPage from './components/PricingPage';
 import SubscriptionManager from './components/SubscriptionManager';
@@ -1338,6 +1339,9 @@ const App: React.FC = () => {
             <Routes>
                 {/* หน้ายอมรับคำเชิญ - ไม่ต้อง login ก่อน */}
                 <Route path="/accept-invitation" element={<AcceptInvitationPage />} />
+                
+                {/* หน้าตรวจสอบเอกสาร QR Code - Public Access (ไม่ต้อง login) */}
+                <Route path="/verify/:docType/:token" element={<VerificationPage />} />
                 
                 {/* หน้า Super Admin - ต้อง login และเป็น Super Admin (ไม่ต้องมี CompanyProvider) */}
                 <Route 

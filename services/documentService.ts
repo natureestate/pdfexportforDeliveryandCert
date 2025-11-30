@@ -16,6 +16,7 @@ import {
     QueryConstraint
 } from "firebase/firestore";
 import { db, auth } from "../firebase.config";
+import { generateVerificationToken } from "./verification";
 
 // Interface สำหรับ Document Data ที่มี logo และ logoUrl
 interface DocumentDataWithLogo {
@@ -132,6 +133,8 @@ export const createDocumentService = <T extends DocumentDataWithLogo>(
 ) => {
     /**
      * บันทึกเอกสารใหม่ลง Firestore
+     * - Auto-generate verification token สำหรับ QR Code
+     * - ตั้งค่า documentStatus เป็น 'active' โดย default
      */
     const save = async (data: T, companyId?: string): Promise<string> => {
         try {
@@ -145,6 +148,9 @@ export const createDocumentService = <T extends DocumentDataWithLogo>(
             const docId = config.generateId(docNumber);
             const docRef = doc(db, config.collection, docId);
             
+            // สร้าง Verification Token ถ้ายังไม่มี (สำหรับ QR Code)
+            const verificationToken = (data as any).verificationToken || generateVerificationToken();
+            
             // เตรียมข้อมูลสำหรับบันทึก
             const dataToSave = {
                 ...convertDatesToTimestamps(data, config.dateFields),
@@ -153,11 +159,15 @@ export const createDocumentService = <T extends DocumentDataWithLogo>(
                 userId: currentUser.uid,
                 companyId: companyId || null,
                 isDeleted: false,
+                // Verification fields สำหรับ QR Code
+                verificationToken: verificationToken,
+                documentStatus: (data as any).documentStatus || 'active',
                 createdAt: Timestamp.now(),
                 updatedAt: Timestamp.now(),
             };
             
             await setDoc(docRef, dataToSave);
+            console.log(`✅ [DocumentService] Saved with verification token: ${verificationToken.substring(0, 8)}...`);
             return docId;
         } catch (error) {
             console.error(`Error saving ${config.collection}:`, error);

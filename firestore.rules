@@ -69,12 +69,16 @@ service cloud.firestore {
     
     // ============================================================
     // เอกสารธุรกิจ (Business Documents)
+    // รองรับ Public Verification ผ่าน QR Code (ไม่ต้อง Login)
     // ============================================================
     
     // ใบส่งมอบงาน (Delivery Notes)
     match /deliveryNotes/{documentId} {
-      // อ่าน: เจ้าของ หรือ สมาชิกบริษัทเดียวกัน หรือ Super Admin
-      allow read: if isAuthenticated() && canAccessDocument();
+      // อ่าน: 
+      // 1. เจ้าของ หรือ สมาชิกบริษัทเดียวกัน หรือ Super Admin (ต้อง Login)
+      // 2. Public Verification ผ่าน verificationToken (ไม่ต้อง Login)
+      allow read: if (isAuthenticated() && canAccessDocument()) ||
+        (resource.data.verificationToken != null);
       
       // สร้าง: ต้อง Login และ userId ต้องตรงกับผู้ใช้
       allow create: if isAuthenticated() && request.resource.data.userId == request.auth.uid;
@@ -85,63 +89,72 @@ service cloud.firestore {
     
     // ใบรับประกันสินค้า (Warranty Cards)
     match /warrantyCards/{documentId} {
-      allow read: if isAuthenticated() && canAccessDocument();
+      allow read: if (isAuthenticated() && canAccessDocument()) ||
+        (resource.data.verificationToken != null);
       allow create: if isAuthenticated() && request.resource.data.userId == request.auth.uid;
       allow update, delete: if isAuthenticated() && canModifyDocument();
     }
     
     // ใบแจ้งหนี้ (Invoices)
     match /invoices/{documentId} {
-      allow read: if isAuthenticated() && canAccessDocument();
+      allow read: if (isAuthenticated() && canAccessDocument()) ||
+        (resource.data.verificationToken != null);
       allow create: if isAuthenticated() && request.resource.data.userId == request.auth.uid;
       allow update, delete: if isAuthenticated() && canModifyDocument();
     }
     
     // ใบเสร็จ (Receipts)
     match /receipts/{documentId} {
-      allow read: if isAuthenticated() && canAccessDocument();
+      allow read: if (isAuthenticated() && canAccessDocument()) ||
+        (resource.data.verificationToken != null);
       allow create: if isAuthenticated() && request.resource.data.userId == request.auth.uid;
       allow update, delete: if isAuthenticated() && canModifyDocument();
     }
     
     // ใบกำกับภาษี (Tax Invoices)
     match /taxInvoices/{documentId} {
-      allow read: if isAuthenticated() && canAccessDocument();
+      allow read: if (isAuthenticated() && canAccessDocument()) ||
+        (resource.data.verificationToken != null);
       allow create: if isAuthenticated() && request.resource.data.userId == request.auth.uid;
       allow update, delete: if isAuthenticated() && canModifyDocument();
     }
     
     // ใบเสนอราคา (Quotations)
     match /quotations/{documentId} {
-      allow read: if isAuthenticated() && canAccessDocument();
+      allow read: if (isAuthenticated() && canAccessDocument()) ||
+        (resource.data.verificationToken != null);
       allow create: if isAuthenticated() && request.resource.data.userId == request.auth.uid;
       allow update, delete: if isAuthenticated() && canModifyDocument();
     }
     
     // ใบสั่งซื้อ (Purchase Orders)
     match /purchaseOrders/{documentId} {
-      allow read: if isAuthenticated() && canAccessDocument();
+      allow read: if (isAuthenticated() && canAccessDocument()) ||
+        (resource.data.verificationToken != null);
       allow create: if isAuthenticated() && request.resource.data.userId == request.auth.uid;
       allow update, delete: if isAuthenticated() && canModifyDocument();
     }
     
     // ใบบันทึก (Memos)
     match /memos/{documentId} {
-      allow read: if isAuthenticated() && canAccessDocument();
+      allow read: if (isAuthenticated() && canAccessDocument()) ||
+        (resource.data.verificationToken != null);
       allow create: if isAuthenticated() && request.resource.data.userId == request.auth.uid;
       allow update, delete: if isAuthenticated() && canModifyDocument();
     }
     
     // ใบส่วนต่าง (Variation Orders)
     match /variationOrders/{documentId} {
-      allow read: if isAuthenticated() && canAccessDocument();
+      allow read: if (isAuthenticated() && canAccessDocument()) ||
+        (resource.data.verificationToken != null);
       allow create: if isAuthenticated() && request.resource.data.userId == request.auth.uid;
       allow update, delete: if isAuthenticated() && canModifyDocument();
     }
     
     // สัญญาจ้างเหมาช่วง (Subcontracts)
     match /subcontracts/{documentId} {
-      allow read: if isAuthenticated() && canAccessDocument();
+      allow read: if (isAuthenticated() && canAccessDocument()) ||
+        (resource.data.verificationToken != null);
       allow create: if isAuthenticated() && request.resource.data.userId == request.auth.uid;
       allow update, delete: if isAuthenticated() && canModifyDocument();
     }

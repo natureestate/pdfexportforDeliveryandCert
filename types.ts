@@ -17,6 +17,36 @@ export type MemberStatus = 'active' | 'pending' | 'inactive';
 // สถานะของคำเชิญ
 export type InvitationStatus = 'pending' | 'accepted' | 'rejected' | 'expired';
 
+// ============================================================
+// Document Verification Types (QR Code Verification System)
+// ============================================================
+
+// สถานะของเอกสาร (สำหรับระบบตรวจสอบ QR Code)
+export type DocumentStatus = 'active' | 'cancelled';
+
+// ข้อมูลการตรวจสอบเอกสาร (Verification Fields)
+// เพิ่มใน Document Data ทุกประเภท
+export interface DocumentVerificationFields {
+    verificationToken?: string;      // UUID v4 สำหรับตรวจสอบเอกสาร (สร้างอัตโนมัติ)
+    documentStatus?: DocumentStatus; // สถานะเอกสาร: active หรือ cancelled
+    cancelledAt?: Date;              // วันที่ยกเลิกเอกสาร (ถ้ามี)
+    cancelledBy?: string;            // User ID ของผู้ยกเลิก (ถ้ามี)
+    cancelledReason?: string;        // เหตุผลในการยกเลิก (ถ้ามี)
+}
+
+// ข้อมูลสำหรับหน้า Public Verification
+export interface PublicVerificationData {
+    documentType: string;            // ประเภทเอกสาร
+    documentNumber: string;          // เลขที่เอกสาร
+    documentDate: Date | null;       // วันที่เอกสาร
+    companyName: string;             // ชื่อบริษัทผู้ออกเอกสาร
+    customerName?: string;           // ชื่อลูกค้า (ถ้ามี)
+    totalAmount?: number;            // ยอดรวม (ถ้ามี)
+    documentStatus: DocumentStatus;  // สถานะเอกสาร
+    cancelledAt?: Date;              // วันที่ยกเลิก (ถ้ามี)
+    createdAt?: Date;                // วันที่สร้างเอกสาร
+}
+
 // บทบาทระดับระบบ (System-wide roles)
 export type SystemRole = 'superadmin' | 'user';
 
@@ -267,7 +297,7 @@ export interface Company {
     updatedAt?: Date;
 }
 
-export interface DeliveryNoteData {
+export interface DeliveryNoteData extends DocumentVerificationFields {
     logo: string | null;          // Base64 string หรือ URL ของโลโก้
     logoUrl?: string | null;       // URL จาก Firebase Storage (สำหรับบันทึกใน Firestore)
     logoType?: LogoType;           // ประเภทของโลโก้
@@ -287,7 +317,7 @@ export interface DeliveryNoteData {
     receiverName: string;
 }
 
-export interface WarrantyData {
+export interface WarrantyData extends DocumentVerificationFields {
     logo: string | null;           // Base64 string หรือ URL ของโลโก้
     logoUrl?: string | null;       // URL จาก Firebase Storage (สำหรับบันทึกใน Firestore)
     logoType?: LogoType;           // ประเภทของโลโก้
@@ -397,7 +427,7 @@ export interface InvoiceItem {
 }
 
 // Invoice Data - ข้อมูลใบแจ้งหนี้
-export interface InvoiceData {
+export interface InvoiceData extends DocumentVerificationFields {
     logo: string | null;           // Base64 string หรือ URL ของโลโก้
     logoUrl?: string | null;       // URL จาก Firebase Storage (สำหรับบันทึกใน Firestore)
     logoType?: LogoType;           // ประเภทของโลโก้
@@ -450,7 +480,7 @@ export interface ReceiptItem {
 }
 
 // Receipt Data - ข้อมูลใบเสร็จ
-export interface ReceiptData {
+export interface ReceiptData extends DocumentVerificationFields {
     logo: string | null;           // Base64 string หรือ URL ของโลโก้
     logoUrl?: string | null;       // URL จาก Firebase Storage (สำหรับบันทึกใน Firestore)
     logoType?: LogoType;           // ประเภทของโลโก้
@@ -506,7 +536,7 @@ export interface TaxInvoiceItem {
 }
 
 // Tax Invoice Data - ข้อมูลใบกำกับภาษี
-export interface TaxInvoiceData {
+export interface TaxInvoiceData extends DocumentVerificationFields {
     logo: string | null;           // Base64 string หรือ URL ของโลโก้
     logoUrl?: string | null;       // URL จาก Firebase Storage (สำหรับบันทึกใน Firestore)
     logoType?: LogoType;           // ประเภทของโลโก้
@@ -562,7 +592,7 @@ export interface QuotationItem {
 }
 
 // Quotation Data - ข้อมูลใบเสนอราคา
-export interface QuotationData {
+export interface QuotationData extends DocumentVerificationFields {
     logo: string | null;           // Base64 string หรือ URL ของโลโก้
     logoUrl?: string | null;       // URL จาก Firebase Storage (สำหรับบันทึกใน Firestore)
     logoType?: LogoType;           // ประเภทของโลโก้
@@ -616,7 +646,7 @@ export interface PurchaseOrderItem {
 }
 
 // Purchase Order Data - ข้อมูลใบสั่งซื้อ
-export interface PurchaseOrderData {
+export interface PurchaseOrderData extends DocumentVerificationFields {
     logo: string | null;           // Base64 string หรือ URL ของโลโก้
     logoUrl?: string | null;       // URL จาก Firebase Storage (สำหรับบันทึกใน Firestore)
     logoType?: LogoType;           // ประเภทของโลโก้
@@ -660,7 +690,7 @@ export interface PurchaseOrderData {
 }
 
 // Memo Data - ข้อมูลใบบันทึก (Memo)
-export interface MemoData {
+export interface MemoData extends DocumentVerificationFields {
     logo: string | null;           // Base64 string หรือ URL ของโลโก้
     logoUrl?: string | null;       // URL จาก Firebase Storage (สำหรับบันทึกใน Firestore)
     logoType?: LogoType;           // ประเภทของโลโก้
@@ -723,7 +753,7 @@ export interface VariationOrderItem {
 }
 
 // Variation Order Data - ข้อมูลใบส่วนต่าง (Variation Order)
-export interface VariationOrderData {
+export interface VariationOrderData extends DocumentVerificationFields {
     logo: string | null;           // Base64 string หรือ URL ของโลโก้
     logoUrl?: string | null;       // URL จาก Firebase Storage (สำหรับบันทึกใน Firestore)
     logoType?: LogoType;           // ประเภทของโลโก้
@@ -953,7 +983,7 @@ export interface SubcontractPaymentMilestone {
 }
 
 // Subcontract Data - ข้อมูลสัญญาจ้างเหมาช่วง
-export interface SubcontractData {
+export interface SubcontractData extends DocumentVerificationFields {
     logo: string | null;           // Base64 string หรือ URL ของโลโก้
     logoUrl?: string | null;       // URL จาก Firebase Storage (สำหรับบันทึกใน Firestore)
     logoType?: LogoType;           // ประเภทของโลโก้

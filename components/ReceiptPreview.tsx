@@ -1,6 +1,7 @@
 import React, { forwardRef } from 'react';
 import { ReceiptData } from '../types';
 import { getDefaultLogoUrl } from '../services/logoStorage';
+import QRCodeFooter from './QRCodeFooter';
 
 interface ReceiptPreviewProps {
     data: ReceiptData;
@@ -154,13 +155,23 @@ const ReceiptPreview = forwardRef<HTMLDivElement, ReceiptPreviewProps>(({ data }
             )}
 
             {/* Footer */}
-            <footer className="mt-8 text-center text-xs">
-                {data.issuedBy && (
-                    <div className="mb-4">
-                        <p className="text-gray-600">ผู้ออกเอกสาร: {data.issuedBy}</p>
+            <footer className="mt-8 text-xs">
+                <div className="flex justify-between items-end">
+                    <div className="text-center flex-1">
+                        {data.issuedBy && (
+                            <div className="mb-4">
+                                <p className="text-gray-600">ผู้ออกเอกสาร: {data.issuedBy}</p>
+                            </div>
+                        )}
+                        <p className="text-gray-500">ขอบคุณที่ใช้บริการ</p>
                     </div>
-                )}
-                <p className="text-gray-500">ขอบคุณที่ใช้บริการ</p>
+                    {/* QR Code สำหรับตรวจสอบเอกสาร */}
+                    <QRCodeFooter 
+                        docType="receipt" 
+                        verificationToken={data.verificationToken}
+                        size={70}
+                    />
+                </div>
             </footer>
         </div>
     );

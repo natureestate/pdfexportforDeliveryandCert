@@ -1,6 +1,7 @@
 import React, { forwardRef } from 'react';
 import { DeliveryNoteData } from '../types';
 import { getDefaultLogoUrl } from '../services/logoStorage';
+import QRCodeFooter from './QRCodeFooter';
 
 interface DocumentPreviewProps {
     data: DeliveryNoteData;
@@ -93,18 +94,28 @@ const DocumentPreview = forwardRef<HTMLDivElement, DocumentPreviewProps>(({ data
                 </table>
             </section>
 
-            <footer className="mt-16 grid grid-cols-2 gap-12 text-center text-xs">
-                <div>
-                    <div className="border-b border-dotted border-slate-400 w-3/4 mx-auto pb-1 mb-2"></div>
-                    <p>({data.senderName || '...........................'})</p>
-                    <p className="font-semibold mt-1">ผู้ส่งมอบ</p>
-                    <p className="mt-4">วันที่: ......./......./...........</p>
+            <footer className="mt-16 text-xs">
+                <div className="grid grid-cols-2 gap-12 text-center">
+                    <div>
+                        <div className="border-b border-dotted border-slate-400 w-3/4 mx-auto pb-1 mb-2"></div>
+                        <p>({data.senderName || '...........................'})</p>
+                        <p className="font-semibold mt-1">ผู้ส่งมอบ</p>
+                        <p className="mt-4">วันที่: ......./......./...........</p>
+                    </div>
+                    <div>
+                        <div className="border-b border-dotted border-slate-400 w-3/4 mx-auto pb-1 mb-2"></div>
+                        <p>({data.receiverName || '...........................'})</p>
+                        <p className="font-semibold mt-1">ผู้รับมอบ</p>
+                        <p className="mt-4">วันที่: ......./......./...........</p>
+                    </div>
                 </div>
-                <div>
-                    <div className="border-b border-dotted border-slate-400 w-3/4 mx-auto pb-1 mb-2"></div>
-                    <p>({data.receiverName || '...........................'})</p>
-                    <p className="font-semibold mt-1">ผู้รับมอบ</p>
-                    <p className="mt-4">วันที่: ......./......./...........</p>
+                {/* QR Code สำหรับตรวจสอบเอกสาร */}
+                <div className="mt-6">
+                    <QRCodeFooter 
+                        docType="delivery" 
+                        verificationToken={data.verificationToken}
+                        size={70}
+                    />
                 </div>
             </footer>
         </div>
