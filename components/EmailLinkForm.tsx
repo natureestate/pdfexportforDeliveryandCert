@@ -128,7 +128,7 @@ export const EmailLinkForm: React.FC<EmailLinkFormProps> = ({ onSuccess }) => {
             <div className="w-full max-w-md mx-auto text-center">
                 <div className="flex flex-col items-center justify-center space-y-4">
                     <svg
-                        className="animate-spin h-12 w-12 text-blue-600"
+                        className="animate-spin h-12 w-12 text-blue-600 dark:text-blue-400"
                         xmlns="http://www.w3.org/2000/svg"
                         fill="none"
                         viewBox="0 0 24 24"
@@ -147,8 +147,8 @@ export const EmailLinkForm: React.FC<EmailLinkFormProps> = ({ onSuccess }) => {
                             d="M4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4zm2 5.291A7.962 7.962 0 014 12H0c0 3.042 1.135 5.824 3 7.938l3-2.647z"
                         ></path>
                     </svg>
-                    <p className="text-lg font-medium text-gray-700">กำลังยืนยัน Email Link...</p>
-                    <p className="text-sm text-gray-500">กรุณารอสักครู่</p>
+                    <p className="text-lg font-medium text-gray-700 dark:text-slate-200">กำลังยืนยัน Email Link...</p>
+                    <p className="text-sm text-gray-500 dark:text-slate-400">กรุณารอสักครู่</p>
                 </div>
             </div>
         );
@@ -159,15 +159,15 @@ export const EmailLinkForm: React.FC<EmailLinkFormProps> = ({ onSuccess }) => {
         return (
             <div className="w-full max-w-md mx-auto">
                 <div className="mb-6 text-center">
-                    <h3 className="text-xl font-semibold text-gray-800 mb-2">ยืนยัน Email</h3>
-                    <p className="text-sm text-gray-600">
+                    <h3 className="text-xl font-semibold text-gray-800 dark:text-slate-100 mb-2">ยืนยัน Email</h3>
+                    <p className="text-sm text-gray-600 dark:text-slate-400">
                         กรุณากรอกอีเมลที่คุณใช้ส่ง link เพื่อยืนยันตัวตน
                     </p>
                 </div>
 
                 <form onSubmit={handleManualVerify} className="space-y-4">
                     <div>
-                        <label htmlFor="email" className="block text-sm font-medium text-gray-700 mb-1">
+                        <label htmlFor="email" className="block text-sm font-medium text-gray-700 dark:text-slate-200 mb-1">
                             อีเมล
                         </label>
                         <input
@@ -176,15 +176,15 @@ export const EmailLinkForm: React.FC<EmailLinkFormProps> = ({ onSuccess }) => {
                             value={email}
                             onChange={(e) => setEmail(e.target.value)}
                             placeholder="example@email.com"
-                            className="w-full px-4 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent"
+                            className="w-full px-4 py-2 border border-gray-300 dark:border-slate-600 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent bg-white dark:bg-slate-700 text-gray-900 dark:text-slate-100"
                             disabled={isVerifying}
                             required
                         />
                     </div>
 
                     {error && (
-                        <div className="p-3 bg-red-50 border border-red-200 rounded-lg">
-                            <p className="text-sm text-red-600">{error}</p>
+                        <div className="p-3 bg-red-50 dark:bg-red-900/30 border border-red-200 dark:border-red-800 rounded-lg">
+                            <p className="text-sm text-red-600 dark:text-red-300">{error}</p>
                         </div>
                     )}
 
@@ -193,8 +193,8 @@ export const EmailLinkForm: React.FC<EmailLinkFormProps> = ({ onSuccess }) => {
                         disabled={isVerifying}
                         className={`w-full py-3 px-4 rounded-lg font-medium text-white transition-colors ${
                             isVerifying
-                                ? 'bg-gray-400 cursor-not-allowed'
-                                : 'bg-blue-600 hover:bg-blue-700 active:bg-blue-800'
+                                ? 'bg-gray-400 dark:bg-slate-600 cursor-not-allowed'
+                                : 'bg-blue-600 dark:bg-blue-700 hover:bg-blue-700 dark:hover:bg-blue-800 active:bg-blue-800'
                         }`}
                     >
                         ยืนยันตัวตน
@@ -208,8 +208,8 @@ export const EmailLinkForm: React.FC<EmailLinkFormProps> = ({ onSuccess }) => {
     return (
         <div className="w-full max-w-md mx-auto">
             <div className="mb-6 text-center">
-                <h3 className="text-xl font-semibold text-gray-800 mb-2">Login ไม่ต้องใช้รหัสผ่าน</h3>
-                <p className="text-sm text-gray-600">
+                <h3 className="text-xl font-semibold text-gray-800 dark:text-slate-100 mb-2">Login ไม่ต้องใช้รหัสผ่าน</h3>
+                <p className="text-sm text-gray-600 dark:text-slate-400">
                     เราจะส่ง link ไปยังอีเมลของคุณ คลิก link เพื่อ login ทันที
                 </p>
             </div>
@@ -217,7 +217,7 @@ export const EmailLinkForm: React.FC<EmailLinkFormProps> = ({ onSuccess }) => {
             <form onSubmit={handleSendLink} className="space-y-4">
                 {/* Email Input */}
                 <div>
-                    <label htmlFor="email" className="block text-sm font-medium text-gray-700 mb-1">
+                    <label htmlFor="email" className="block text-sm font-medium text-gray-700 dark:text-slate-200 mb-1">
                         อีเมล
                     </label>
                     <input
@@ -226,7 +226,7 @@ export const EmailLinkForm: React.FC<EmailLinkFormProps> = ({ onSuccess }) => {
                         value={email}
                         onChange={(e) => setEmail(e.target.value)}
                         placeholder="example@email.com"
-                        className="w-full px-4 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent"
+                        className="w-full px-4 py-2 border border-gray-300 dark:border-slate-600 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent bg-white dark:bg-slate-700 text-gray-900 dark:text-slate-100"
                         disabled={loading}
                         required
                     />
@@ -234,17 +234,17 @@ export const EmailLinkForm: React.FC<EmailLinkFormProps> = ({ onSuccess }) => {
 
                 {/* Error Message */}
                 {error && (
-                    <div className="p-3 bg-red-50 border border-red-200 rounded-lg">
-                        <p className="text-sm text-red-600">{error}</p>
+                    <div className="p-3 bg-red-50 dark:bg-red-900/30 border border-red-200 dark:border-red-800 rounded-lg">
+                        <p className="text-sm text-red-600 dark:text-red-300">{error}</p>
                     </div>
                 )}
 
                 {/* Success Message */}
                 {success && (
-                    <div className="p-3 bg-green-50 border border-green-200 rounded-lg">
-                        <p className="text-sm text-green-600">{success}</p>
-                        <p className="text-xs text-green-500 mt-1">
-                            💡 ตรวจสอบทั้งกล่องจดหมายหลักและโฟลเดอร์ Spam
+                    <div className="p-3 bg-green-50 dark:bg-green-900/30 border border-green-200 dark:border-green-800 rounded-lg">
+                        <p className="text-sm text-green-600 dark:text-green-300">{success}</p>
+                        <p className="text-xs text-green-500 dark:text-green-400 mt-1">
+                            ตรวจสอบทั้งกล่องจดหมายหลักและโฟลเดอร์ Spam
                         </p>
                     </div>
                 )}
@@ -255,8 +255,8 @@ export const EmailLinkForm: React.FC<EmailLinkFormProps> = ({ onSuccess }) => {
                     disabled={loading}
                     className={`w-full py-3 px-4 rounded-lg font-medium text-white transition-colors ${
                         loading
-                            ? 'bg-gray-400 cursor-not-allowed'
-                            : 'bg-purple-600 hover:bg-purple-700 active:bg-purple-800'
+                            ? 'bg-gray-400 dark:bg-slate-600 cursor-not-allowed'
+                            : 'bg-purple-600 dark:bg-purple-700 hover:bg-purple-700 dark:hover:bg-purple-800 active:bg-purple-800'
                     }`}
                 >
                     {loading ? (
@@ -284,12 +284,12 @@ export const EmailLinkForm: React.FC<EmailLinkFormProps> = ({ onSuccess }) => {
                             กำลังส่ง Email...
                         </span>
                     ) : (
-                        '📧 ส่ง Link ไปยังอีเมล'
+                        'ส่ง Link ไปยังอีเมล'
                     )}
                 </button>
 
                 {/* Info */}
-                <div className="text-center text-xs text-gray-500">
+                <div className="text-center text-xs text-gray-500 dark:text-slate-400">
                     <p>Link จะหมดอายุภายใน 1 ชั่วโมง</p>
                 </div>
             </form>

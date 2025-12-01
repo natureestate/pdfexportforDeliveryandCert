@@ -195,29 +195,29 @@ const LoginPage: React.FC = () => {
     };
 
     return (
-        <div className="min-h-screen bg-gradient-to-br from-indigo-500 via-purple-500 to-pink-500 flex items-center justify-center p-4">
-            <div className="bg-white rounded-2xl shadow-2xl p-8 md:p-12 max-w-md w-full">
+        <div className="min-h-screen bg-gradient-to-br from-indigo-500 via-purple-500 to-pink-500 dark:from-slate-900 dark:via-slate-800 dark:to-slate-900 flex items-center justify-center p-4">
+            <div className="bg-white dark:bg-slate-800 rounded-2xl shadow-2xl dark:shadow-slate-900/50 p-8 md:p-12 max-w-md w-full">
                 {/* โลโก้แอป */}
                 <div className="text-center mb-8">
-                    <div className="inline-flex items-center justify-center w-20 h-20 bg-indigo-100 rounded-full mb-4">
-                        <svg className="w-12 h-12 text-indigo-600" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                    <div className="inline-flex items-center justify-center w-20 h-20 bg-indigo-100 dark:bg-indigo-900/30 rounded-full mb-4">
+                        <svg className="w-12 h-12 text-indigo-600 dark:text-indigo-400" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                             <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M9 12h6m-6 4h6m2 5H7a2 2 0 01-2-2V5a2 2 0 012-2h5.586a1 1 0 01.707.293l5.414 5.414a1 1 0 01.293.707V19a2 2 0 01-2 2z" />
                         </svg>
                     </div>
-                    <h1 className="text-3xl font-bold text-gray-800 mb-2">
+                    <h1 className="text-3xl font-bold text-gray-800 dark:text-slate-100 mb-2">
                         เครื่องมือสร้างเอกสาร
                     </h1>
-                    <p className="text-gray-600">
+                    <p className="text-gray-600 dark:text-slate-400">
                         ระบบจัดการใบส่งมอบงานและใบรับประกัน
                     </p>
                 </div>
 
                 {/* ข้อความต้อนรับ */}
                 <div className="mb-8 text-center">
-                    <h2 className="text-xl font-semibold text-gray-800 mb-2">
+                    <h2 className="text-xl font-semibold text-gray-800 dark:text-slate-100 mb-2">
                         ยินดีต้อนรับ
                     </h2>
-                    <p className="text-gray-600 text-sm">
+                    <p className="text-gray-600 dark:text-slate-400 text-sm">
                         กรุณา Login เพื่อเข้าใช้งานระบบ
                     </p>
                 </div>
@@ -265,7 +265,7 @@ const LoginPage: React.FC = () => {
                         className={`w-full py-4 px-6 rounded-xl font-medium transition-all duration-200 ${
                             loginMethod === 'phone'
                                 ? 'bg-gradient-to-r from-green-500 to-green-600 text-white shadow-lg scale-[1.02]'
-                                : 'bg-white text-gray-700 hover:bg-gray-50 border-2 border-gray-200 hover:border-green-400'
+                                : 'bg-white dark:bg-slate-700 text-gray-700 dark:text-slate-200 hover:bg-gray-50 dark:hover:bg-slate-600 border-2 border-gray-200 dark:border-slate-600 hover:border-green-400 dark:hover:border-green-500'
                         }`}
                     >
                         <div className="flex items-center gap-4">
@@ -285,7 +285,7 @@ const LoginPage: React.FC = () => {
                         className={`w-full py-4 px-6 rounded-xl font-medium transition-all duration-200 ${
                             loginMethod === 'email'
                                 ? 'bg-gradient-to-r from-purple-500 to-purple-600 text-white shadow-lg scale-[1.02]'
-                                : 'bg-white text-gray-700 hover:bg-gray-50 border-2 border-gray-200 hover:border-purple-400'
+                                : 'bg-white dark:bg-slate-700 text-gray-700 dark:text-slate-200 hover:bg-gray-50 dark:hover:bg-slate-600 border-2 border-gray-200 dark:border-slate-600 hover:border-purple-400 dark:hover:border-purple-500'
                         }`}
                     >
                         <div className="flex items-center gap-4">
@@ -305,7 +305,7 @@ const LoginPage: React.FC = () => {
                         className={`w-full py-4 px-6 rounded-xl font-medium transition-all duration-200 ${
                             loginMethod === 'emailLink'
                                 ? 'bg-gradient-to-r from-pink-500 to-pink-600 text-white shadow-lg scale-[1.02]'
-                                : 'bg-white text-gray-700 hover:bg-gray-50 border-2 border-gray-200 hover:border-pink-400'
+                                : 'bg-white dark:bg-slate-700 text-gray-700 dark:text-slate-200 hover:bg-gray-50 dark:hover:bg-slate-600 border-2 border-gray-200 dark:border-slate-600 hover:border-pink-400 dark:hover:border-pink-500'
                         }`}
                     >
                         <div className="flex items-center gap-4">
@@ -350,17 +350,17 @@ const LoginPage: React.FC = () => {
 
                 {/* Error Message */}
                 {error && (
-                    <div className="mt-4 bg-red-50 border border-red-200 rounded-lg p-3 flex items-start gap-2">
-                        <svg className="w-5 h-5 text-red-500 flex-shrink-0 mt-0.5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                    <div className="mt-4 bg-red-50 dark:bg-red-900/30 border border-red-200 dark:border-red-800 rounded-lg p-3 flex items-start gap-2">
+                        <svg className="w-5 h-5 text-red-500 dark:text-red-400 flex-shrink-0 mt-0.5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                             <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M12 8v4m0 4h.01M21 12a9 9 0 11-18 0 9 9 0 0118 0z" />
                         </svg>
-                        <p className="text-sm text-red-700">{error}</p>
+                        <p className="text-sm text-red-700 dark:text-red-300">{error}</p>
                     </div>
                 )}
 
                 {/* ข้อความด้านล่าง */}
                 <div className="mt-8 text-center space-y-3">
-                    <p className="text-xs text-gray-500">
+                    <p className="text-xs text-gray-500 dark:text-slate-400">
                         การ Login หมายถึงคุณยอมรับ
                         <br />
                         <button 
@@ -368,7 +368,7 @@ const LoginPage: React.FC = () => {
                                 e.preventDefault();
                                 handleOpenPolicy('terms');
                             }}
-                            className="text-indigo-600 hover:text-indigo-700 underline"
+                            className="text-indigo-600 dark:text-indigo-400 hover:text-indigo-700 dark:hover:text-indigo-300 underline"
                         >
                             เงื่อนไขการใช้งาน
                         </button>
@@ -378,13 +378,13 @@ const LoginPage: React.FC = () => {
                                 e.preventDefault();
                                 handleOpenPolicy('privacy');
                             }}
-                            className="text-indigo-600 hover:text-indigo-700 underline"
+                            className="text-indigo-600 dark:text-indigo-400 hover:text-indigo-700 dark:hover:text-indigo-300 underline"
                         >
                             นโยบายความเป็นส่วนตัว
                         </button>
                     </p>
                     <p 
-                        className="text-xs text-gray-400 flex items-center justify-center gap-1 cursor-pointer hover:text-gray-600 transition-colors"
+                        className="text-xs text-gray-400 dark:text-slate-500 flex items-center justify-center gap-1 cursor-pointer hover:text-gray-600 dark:hover:text-slate-300 transition-colors"
                         onClick={handleShowRecaptchaBadge}
                         title="คลิกเพื่อดู reCAPTCHA badge"
                     >

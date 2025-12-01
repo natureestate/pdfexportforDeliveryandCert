@@ -390,19 +390,19 @@ const Header: React.FC = () => {
 
     return (
         <>
-            <header className="bg-white shadow-md sticky top-0 z-30">
+            <header className="bg-white dark:bg-slate-800 shadow-md sticky top-0 z-30 transition-colors">
                 <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-3 md:py-4">
                 <div className="flex items-center justify-between">
                     {/* ส่วนซ้าย - โลโก้และชื่อแอป */}
                         <div className="flex items-center space-x-2 md:space-x-3 flex-1 min-w-0">
-                            <svg className="h-7 w-7 md:h-8 md:w-8 text-indigo-600 flex-shrink-0" xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke="currentColor" aria-hidden="true">
+                            <svg className="h-7 w-7 md:h-8 md:w-8 text-indigo-600 dark:text-indigo-400 flex-shrink-0" xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke="currentColor" aria-hidden="true">
                           <path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M9 12h6m-6 4h6m2 5H7a2 2 0 01-2-2V5a2 2 0 012-2h5.586a1 1 0 01.707.293l5.414 5.414a1 1 0 01.293.707V19a2 2 0 01-2 2z" />
                         </svg>
                             <div className="min-w-0 flex-1">
-                                <h1 className="text-lg md:text-2xl font-bold text-slate-800 truncate">
+                                <h1 className="text-lg md:text-2xl font-bold text-slate-800 dark:text-slate-100 truncate">
                                 เครื่องมือสร้างเอกสาร
                             </h1>
-                                <p className="text-slate-500 text-xs md:text-sm mt-0.5 hidden sm:block truncate">
+                                <p className="text-slate-500 dark:text-slate-400 text-xs md:text-sm mt-0.5 hidden sm:block truncate">
                                 เลือกประเภทเอกสารและกรอกข้อมูลเพื่อสร้างและดาวน์โหลดไฟล์ PDF
                             </p>
                         </div>
@@ -419,33 +419,33 @@ const Header: React.FC = () => {
                         <div className="relative">
                             <button
                                 onClick={() => setShowDropdown(!showDropdown)}
-                                className="flex items-center gap-3 px-4 py-2 rounded-lg hover:bg-gray-100 transition-colors duration-200"
+                                className="flex items-center gap-3 px-4 py-2 rounded-lg hover:bg-gray-100 dark:hover:bg-slate-700 transition-colors duration-200"
                             >
                                 {user.photoURL ? (
                                     <img
                                         src={user.photoURL}
                                         alt={user.displayName || 'User'}
-                                        className="w-10 h-10 rounded-full border-2 border-indigo-200"
+                                        className="w-10 h-10 rounded-full border-2 border-indigo-200 dark:border-indigo-600"
                                     />
                                 ) : (
-                                    <div className="w-10 h-10 rounded-full bg-indigo-100 flex items-center justify-center border-2 border-indigo-200">
-                                        <span className="text-indigo-600 font-semibold text-lg">
+                                    <div className="w-10 h-10 rounded-full bg-indigo-100 dark:bg-indigo-900 flex items-center justify-center border-2 border-indigo-200 dark:border-indigo-600">
+                                        <span className="text-indigo-600 dark:text-indigo-300 font-semibold text-lg">
                                             {user.displayName?.charAt(0) || user.email?.charAt(0) || '?'}
                                         </span>
                                     </div>
                                 )}
 
                                             <div className="text-left">
-                                    <p className="text-sm font-semibold text-gray-800">
+                                    <p className="text-sm font-semibold text-gray-800 dark:text-gray-100">
                                         {user.displayName || 'ผู้ใช้'}
                                     </p>
-                                                <p className="text-xs text-gray-500 truncate max-w-[150px]">
+                                                <p className="text-xs text-gray-500 dark:text-gray-400 truncate max-w-[150px]">
                                         {user.email}
                                     </p>
                                 </div>
 
                                 <svg
-                                    className={`w-4 h-4 text-gray-600 transition-transform duration-200 ${showDropdown ? 'rotate-180' : ''}`}
+                                    className={`w-4 h-4 text-gray-600 dark:text-gray-300 transition-transform duration-200 ${showDropdown ? 'rotate-180' : ''}`}
                                     fill="none"
                                     stroke="currentColor"
                                     viewBox="0 0 24 24"
@@ -456,23 +456,23 @@ const Header: React.FC = () => {
 
                                         {/* Desktop Dropdown */}
                                         {showDropdown && (
-                                            <div className="absolute right-0 mt-2 w-72 bg-white rounded-lg shadow-xl border border-gray-200 py-2 z-50">
+                                            <div className="absolute right-0 mt-2 w-72 bg-white dark:bg-slate-800 rounded-lg shadow-xl border border-gray-200 dark:border-slate-600 py-2 z-50">
                                                 {/* ข้อมูล Profile */}
-                                                <div className="px-4 py-3 border-b border-gray-200 bg-gradient-to-r from-indigo-50 to-purple-50">
-                                                    <p className="text-xs text-gray-500 font-medium mb-2 flex items-center gap-1">
+                                                <div className="px-4 py-3 border-b border-gray-200 dark:border-slate-600 bg-gradient-to-r from-indigo-50 to-purple-50 dark:from-indigo-900/30 dark:to-purple-900/30">
+                                                    <p className="text-xs text-gray-500 dark:text-gray-400 font-medium mb-2 flex items-center gap-1">
                                                         <UserCircle className="w-3.5 h-3.5" /> โปรไฟล์
                                                     </p>
                                                     <div className="space-y-1">
                                                         {user?.displayName && (
-                                                            <p className="text-sm font-semibold text-gray-800">{user.displayName}</p>
+                                                            <p className="text-sm font-semibold text-gray-800 dark:text-gray-100">{user.displayName}</p>
                                                         )}
                                                         {user?.email && (
-                                                            <p className="text-xs text-gray-600 flex items-center gap-1">
+                                                            <p className="text-xs text-gray-600 dark:text-gray-300 flex items-center gap-1">
                                                                 <Mail className="w-3 h-3" /> {user.email}
                                                             </p>
                                                         )}
                                                         {user?.phoneNumber && (
-                                                            <p className="text-xs text-gray-600 flex items-center gap-1">
+                                                            <p className="text-xs text-gray-600 dark:text-gray-300 flex items-center gap-1">
                                                                 <Phone className="w-3 h-3" /> {user.phoneNumber}
                                                             </p>
                                                         )}
@@ -492,9 +492,9 @@ const Header: React.FC = () => {
                                                 </div>
 
                                                 {currentCompany && (
-                                                    <div className="px-4 py-3 border-b border-gray-200">
+                                                    <div className="px-4 py-3 border-b border-gray-200 dark:border-slate-600">
                                                         <div className="flex items-center justify-between mb-2">
-                                                            <p className="text-xs text-gray-500 font-medium">องค์กรปัจจุบัน</p>
+                                                            <p className="text-xs text-gray-500 dark:text-gray-400 font-medium">องค์กรปัจจุบัน</p>
                                                             <div className={`px-2 py-1 rounded text-xs font-medium ${
                                                                 isAdmin 
                                                                     ? 'bg-amber-100 text-amber-800 border border-amber-200' 
@@ -503,7 +503,7 @@ const Header: React.FC = () => {
                                                                 {isAdmin ? <><Crown className="w-3 h-3 inline mr-0.5" /> Admin</> : <><User className="w-3 h-3 inline mr-0.5" /> Member</>}
                                                             </div>
                                                         </div>
-                                                        <p className="text-sm font-semibold text-gray-800 truncate">
+                                                        <p className="text-sm font-semibold text-gray-800 dark:text-gray-100 truncate">
                                                             {currentCompany.name}
                                                         </p>
                                                     </div>
@@ -515,7 +515,7 @@ const Header: React.FC = () => {
                                                         setShowAccountLinkingModal(true);
                                                         setShowDropdown(false);
                                                     }}
-                                                    className="w-full px-4 py-3 text-left text-sm text-cyan-600 hover:bg-cyan-50 transition-colors duration-200 flex items-center justify-between border-b border-gray-200"
+                                                    className="w-full px-4 py-3 text-left text-sm text-cyan-600 dark:text-cyan-400 hover:bg-cyan-50 dark:hover:bg-cyan-900/30 transition-colors duration-200 flex items-center justify-between border-b border-gray-200 dark:border-slate-600"
                                                 >
                                                     <div className="flex items-center gap-3">
                                                         <Link2 className="w-5 h-5" />
@@ -533,7 +533,7 @@ const Header: React.FC = () => {
                                                             setShowPasswordModal(true);
                                                             setShowDropdown(false);
                                                         }}
-                                                        className="w-full px-4 py-3 text-left text-sm text-blue-600 hover:bg-blue-50 transition-colors duration-200 flex items-center gap-3 border-b border-gray-200"
+                                                        className="w-full px-4 py-3 text-left text-sm text-blue-600 dark:text-blue-400 hover:bg-blue-50 dark:hover:bg-blue-900/30 transition-colors duration-200 flex items-center gap-3 border-b border-gray-200 dark:border-slate-600"
                                                     >
                                                         <Link2 className="w-5 h-5" />
                                                         <span className="font-medium">เพิ่มรหัสผ่าน</span>
@@ -544,7 +544,7 @@ const Header: React.FC = () => {
                                                             setShowChangePasswordModal(true);
                                                             setShowDropdown(false);
                                                         }}
-                                                        className="w-full px-4 py-3 text-left text-sm text-amber-600 hover:bg-amber-50 transition-colors duration-200 flex items-center gap-3 border-b border-gray-200"
+                                                        className="w-full px-4 py-3 text-left text-sm text-amber-600 dark:text-amber-400 hover:bg-amber-50 dark:hover:bg-amber-900/30 transition-colors duration-200 flex items-center gap-3 border-b border-gray-200 dark:border-slate-600"
                                                     >
                                                         <Key className="w-5 h-5" />
                                                         <span className="font-medium">เปลี่ยนรหัสผ่าน</span>
@@ -556,7 +556,7 @@ const Header: React.FC = () => {
                                                     <div className="relative">
                                                         <button
                                                             onClick={() => setShowSettingsSubmenu(!showSettingsSubmenu)}
-                                                            className="w-full px-4 py-3 text-left text-sm text-gray-600 hover:bg-gray-50 transition-colors duration-200 flex items-center justify-between border-b border-gray-200"
+                                                            className="w-full px-4 py-3 text-left text-sm text-gray-600 dark:text-gray-300 hover:bg-gray-50 dark:hover:bg-slate-700 transition-colors duration-200 flex items-center justify-between border-b border-gray-200 dark:border-slate-600"
                                                         >
                                                             <div className="flex items-center gap-3">
                                                                 <Settings className="w-5 h-5" />
@@ -567,14 +567,14 @@ const Header: React.FC = () => {
                                                         
                                                         {/* Settings Submenu */}
                                                         {showSettingsSubmenu && (
-                                                            <div className="bg-gray-50 border-b border-gray-200">
+                                                            <div className="bg-gray-50 dark:bg-slate-700 border-b border-gray-200 dark:border-slate-600">
                                                                 {/* ข้อมูลบริษัท */}
                                                                 <button
                                                                     onClick={() => {
                                                                         handleShowCompanyInfo();
                                                                         setShowSettingsSubmenu(false);
                                                                     }}
-                                                                    className="w-full px-6 py-2.5 text-left text-sm text-green-600 hover:bg-green-50 transition-colors duration-200 flex items-center gap-3"
+                                                                    className="w-full px-6 py-2.5 text-left text-sm text-green-600 dark:text-green-400 hover:bg-green-50 dark:hover:bg-green-900/30 transition-colors duration-200 flex items-center gap-3"
                                                                 >
                                                                     <Building2 className="w-4 h-4" />
                                                                     <span>ข้อมูลบริษัท</span>
@@ -586,7 +586,7 @@ const Header: React.FC = () => {
                                                                         handleShowLogoManager();
                                                                         setShowSettingsSubmenu(false);
                                                                     }}
-                                                                    className="w-full px-6 py-2.5 text-left text-sm text-pink-600 hover:bg-pink-50 transition-colors duration-200 flex items-center gap-3"
+                                                                    className="w-full px-6 py-2.5 text-left text-sm text-pink-600 dark:text-pink-400 hover:bg-pink-50 dark:hover:bg-pink-900/30 transition-colors duration-200 flex items-center gap-3"
                                                                 >
                                                                     <Palette className="w-4 h-4" />
                                                                     <span>จัดการโลโก้</span>
@@ -599,7 +599,7 @@ const Header: React.FC = () => {
                                                                         setShowDropdown(false);
                                                                         setShowSettingsSubmenu(false);
                                                                     }}
-                                                                    className="w-full px-6 py-2.5 text-left text-sm text-indigo-600 hover:bg-indigo-50 transition-colors duration-200 flex items-center gap-3"
+                                                                    className="w-full px-6 py-2.5 text-left text-sm text-indigo-600 dark:text-indigo-400 hover:bg-indigo-50 dark:hover:bg-indigo-900/30 transition-colors duration-200 flex items-center gap-3"
                                                                 >
                                                                     <Settings className="w-4 h-4" />
                                                                     <span>ตั้งค่าเมนูเอกสาร</span>
@@ -612,14 +612,14 @@ const Header: React.FC = () => {
                                                                         setShowDropdown(false);
                                                                         setShowSettingsSubmenu(false);
                                                                     }}
-                                                                    className="w-full px-6 py-2.5 text-left text-sm text-cyan-600 hover:bg-cyan-50 transition-colors duration-200 flex items-center gap-3"
+                                                                    className="w-full px-6 py-2.5 text-left text-sm text-cyan-600 dark:text-cyan-400 hover:bg-cyan-50 dark:hover:bg-cyan-900/30 transition-colors duration-200 flex items-center gap-3"
                                                                 >
                                                                     <LayoutDashboard className="w-4 h-4" />
                                                                     <span>ตั้งค่า Tab Menu</span>
                                                                 </button>
                                                                 
                                                                 {/* ธีม Dark/Light */}
-                                                                <div className="px-6 py-2.5 border-t border-gray-200">
+                                                                <div className="px-6 py-2.5 border-t border-gray-200 dark:border-slate-600">
                                                                     <ThemeToggle showLabel />
                                                                 </div>
                                                             </div>
@@ -631,7 +631,7 @@ const Header: React.FC = () => {
                                                 {currentCompany && (
                                                     <button
                                                         onClick={handleShowQuota}
-                                                        className="w-full px-4 py-3 text-left text-sm text-purple-600 hover:bg-purple-50 transition-colors duration-200 flex items-center gap-3 border-b border-gray-200"
+                                                        className="w-full px-4 py-3 text-left text-sm text-purple-600 dark:text-purple-400 hover:bg-purple-50 dark:hover:bg-purple-900/30 transition-colors duration-200 flex items-center gap-3 border-b border-gray-200 dark:border-slate-600"
                                                     >
                                                         <BarChart3 className="w-5 h-5" />
                                                         <span className="font-medium">ดูโควตา</span>
@@ -645,7 +645,7 @@ const Header: React.FC = () => {
                                                             navigate('/pricing');
                                                             setShowDropdown(false);
                                                         }}
-                                                        className="w-full px-4 py-3 text-left text-sm text-amber-600 hover:bg-amber-50 transition-colors duration-200 flex items-center gap-3 border-b border-gray-200"
+                                                        className="w-full px-4 py-3 text-left text-sm text-amber-600 dark:text-amber-400 hover:bg-amber-50 dark:hover:bg-amber-900/30 transition-colors duration-200 flex items-center gap-3 border-b border-gray-200 dark:border-slate-600"
                                                     >
                                                         <Sparkles className="w-5 h-5" />
                                                         <span className="font-medium">แพ็กเกจ/อัปเกรด</span>
@@ -658,7 +658,7 @@ const Header: React.FC = () => {
                                                             setShowUserManagement(true);
                                                             setShowDropdown(false);
                                                         }}
-                                                        className="w-full px-4 py-3 text-left text-sm text-indigo-600 hover:bg-indigo-50 transition-colors duration-200 flex items-center gap-3 border-b border-gray-200"
+                                                        className="w-full px-4 py-3 text-left text-sm text-indigo-600 dark:text-indigo-400 hover:bg-indigo-50 dark:hover:bg-indigo-900/30 transition-colors duration-200 flex items-center gap-3 border-b border-gray-200 dark:border-slate-600"
                                                     >
                                                         <Users className="w-5 h-5" />
                                                         <span className="font-medium">จัดการสมาชิก</span>
@@ -739,20 +739,20 @@ const Header: React.FC = () => {
                 
                 {/* Sidebar */}
                 <div 
-                    className={`absolute top-0 right-0 h-full w-80 max-w-[85vw] bg-white shadow-2xl transform transition-transform duration-300 ease-out ${
+                    className={`absolute top-0 right-0 h-full w-80 max-w-[85vw] bg-white dark:bg-slate-800 shadow-2xl transform transition-transform duration-300 ease-out ${
                         showMobileMenu ? 'translate-x-0' : 'translate-x-full'
                     }`}
                 >
                     <div className="flex flex-col h-full">
                         {/* Header ของ Sidebar */}
-                        <div className="flex items-center justify-between px-5 py-4 border-b border-gray-200 bg-gradient-to-r from-indigo-50 to-purple-50">
-                            <h2 className="text-lg font-bold text-gray-800">เมนู</h2>
+                        <div className="flex items-center justify-between px-5 py-4 border-b border-gray-200 dark:border-slate-600 bg-gradient-to-r from-indigo-50 to-purple-50 dark:from-indigo-900/30 dark:to-purple-900/30">
+                            <h2 className="text-lg font-bold text-gray-800 dark:text-gray-100">เมนู</h2>
                             <button
                                 onClick={() => setShowMobileMenu(false)}
-                                className="p-2 rounded-full hover:bg-white/80 transition-colors duration-200"
+                                className="p-2 rounded-full hover:bg-white/80 dark:hover:bg-slate-700 transition-colors duration-200"
                                 aria-label="Close Menu"
                             >
-                                <svg className="w-6 h-6 text-gray-600" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                <svg className="w-6 h-6 text-gray-600 dark:text-gray-300" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                                     <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M6 18L18 6M6 6l12 12" />
                                 </svg>
                             </button>
@@ -761,30 +761,30 @@ const Header: React.FC = () => {
                         {/* Content ของ Sidebar */}
                         <div className="flex-1 overflow-y-auto">
                             {/* ข้อมูลผู้ใช้ */}
-                            <div className="px-5 py-4 border-b border-gray-200 bg-gradient-to-br from-indigo-50 to-white">
+                            <div className="px-5 py-4 border-b border-gray-200 dark:border-slate-600 bg-gradient-to-br from-indigo-50 to-white dark:from-indigo-900/30 dark:to-slate-800">
                                 <div className="flex items-center gap-3 mb-3">
                                     {user?.photoURL ? (
                                         <img
                                             src={user.photoURL}
                                             alt={user.displayName || 'User'}
-                                            className="w-14 h-14 rounded-full border-2 border-indigo-300 shadow-md"
+                                            className="w-14 h-14 rounded-full border-2 border-indigo-300 dark:border-indigo-600 shadow-md"
                                         />
                                     ) : (
-                                        <div className="w-14 h-14 rounded-full bg-gradient-to-br from-indigo-500 to-purple-600 flex items-center justify-center border-2 border-indigo-300 shadow-md">
+                                        <div className="w-14 h-14 rounded-full bg-gradient-to-br from-indigo-500 to-purple-600 flex items-center justify-center border-2 border-indigo-300 dark:border-indigo-600 shadow-md">
                                             <span className="text-white font-bold text-xl">
                                                 {user?.displayName?.charAt(0) || user?.email?.charAt(0) || '?'}
                                             </span>
                                         </div>
                                     )}
                                     <div className="flex-1 min-w-0">
-                                        <p className="text-base font-bold text-gray-800 truncate">
+                                        <p className="text-base font-bold text-gray-800 dark:text-gray-100 truncate">
                                             {user?.displayName || 'ผู้ใช้'}
                                         </p>
-                                        <p className="text-xs text-gray-600 truncate mt-0.5">
+                                        <p className="text-xs text-gray-600 dark:text-gray-300 truncate mt-0.5">
                                             {user?.email}
                                         </p>
                                         {user?.phoneNumber && (
-                                            <p className="text-xs text-gray-600 truncate mt-0.5 flex items-center gap-1">
+                                            <p className="text-xs text-gray-600 dark:text-gray-300 truncate mt-0.5 flex items-center gap-1">
                                                 <Phone className="w-3 h-3" /> {user.phoneNumber}
                                             </p>
                                         )}
@@ -806,9 +806,9 @@ const Header: React.FC = () => {
 
                             {/* ข้อมูลองค์กร */}
                             {currentCompany && (
-                                <div className="px-5 py-4 border-b border-gray-200 bg-gray-50">
+                                <div className="px-5 py-4 border-b border-gray-200 dark:border-slate-600 bg-gray-50 dark:bg-slate-700/50">
                                     <div className="flex items-center justify-between mb-2">
-                                        <p className="text-xs text-gray-500 font-medium uppercase tracking-wide">องค์กรปัจจุบัน</p>
+                                        <p className="text-xs text-gray-500 dark:text-gray-400 font-medium uppercase tracking-wide">องค์กรปัจจุบัน</p>
                                         <div className={`px-2.5 py-1 rounded-full text-xs font-bold shadow-sm ${
                                             isAdmin 
                                                 ? 'bg-gradient-to-r from-amber-400 to-orange-500 text-white' 
@@ -817,15 +817,15 @@ const Header: React.FC = () => {
                                             {isAdmin ? <><Crown className="w-3 h-3 inline mr-0.5" /> Admin</> : <><User className="w-3 h-3 inline mr-0.5" /> Member</>}
                                         </div>
                                     </div>
-                                    <p className="text-sm font-bold text-gray-800 break-words">
+                                    <p className="text-sm font-bold text-gray-800 dark:text-gray-100 break-words">
                                         {currentCompany.name}
                                     </p>
                                 </div>
                             )}
 
                             {/* Company Selector สำหรับ Mobile */}
-                            <div className="px-5 py-4 border-b border-gray-200">
-                                <p className="text-xs text-gray-500 font-medium uppercase tracking-wide mb-3">เปลี่ยนองค์กร</p>
+                            <div className="px-5 py-4 border-b border-gray-200 dark:border-slate-600">
+                                <p className="text-xs text-gray-500 dark:text-gray-400 font-medium uppercase tracking-wide mb-3">เปลี่ยนองค์กร</p>
                                 <CompanySelector />
                             </div>
 
@@ -837,15 +837,15 @@ const Header: React.FC = () => {
                                         setShowAccountLinkingModal(true);
                                         setShowMobileMenu(false);
                                     }}
-                                    className="w-full px-4 py-3.5 text-left text-sm font-medium text-cyan-700 bg-cyan-50 hover:bg-cyan-100 rounded-lg transition-all duration-200 flex items-center justify-between mb-2 shadow-sm hover:shadow"
+                                    className="w-full px-4 py-3.5 text-left text-sm font-medium text-cyan-700 dark:text-cyan-300 bg-cyan-50 dark:bg-cyan-900/30 hover:bg-cyan-100 dark:hover:bg-cyan-900/50 rounded-lg transition-all duration-200 flex items-center justify-between mb-2 shadow-sm hover:shadow"
                                 >
                                     <div className="flex items-center gap-3">
-                                        <div className="w-9 h-9 rounded-lg bg-cyan-200 flex items-center justify-center">
-                                            <Link2 className="w-5 h-5 text-cyan-700" />
+                                        <div className="w-9 h-9 rounded-lg bg-cyan-200 dark:bg-cyan-800 flex items-center justify-center">
+                                            <Link2 className="w-5 h-5 text-cyan-700 dark:text-cyan-300" />
                                         </div>
                                         <span>Account Linking</span>
                                     </div>
-                                    <span className="text-xs px-2 py-0.5 bg-cyan-200 text-cyan-700 rounded-full">
+                                    <span className="text-xs px-2 py-0.5 bg-cyan-200 dark:bg-cyan-800 text-cyan-700 dark:text-cyan-300 rounded-full">
                                         {[linkedProviders.hasGoogle, linkedProviders.hasEmail, linkedProviders.hasPhone].filter(Boolean).length}/3
                                     </span>
                                 </button>
@@ -857,10 +857,10 @@ const Header: React.FC = () => {
                                             setShowPasswordModal(true);
                                             setShowMobileMenu(false);
                                         }}
-                                        className="w-full px-4 py-3.5 text-left text-sm font-medium text-blue-700 bg-blue-50 hover:bg-blue-100 rounded-lg transition-all duration-200 flex items-center gap-3 mb-2 shadow-sm hover:shadow"
+                                        className="w-full px-4 py-3.5 text-left text-sm font-medium text-blue-700 dark:text-blue-300 bg-blue-50 dark:bg-blue-900/30 hover:bg-blue-100 dark:hover:bg-blue-900/50 rounded-lg transition-all duration-200 flex items-center gap-3 mb-2 shadow-sm hover:shadow"
                                     >
-                                        <div className="w-9 h-9 rounded-lg bg-blue-200 flex items-center justify-center">
-                                            <Link2 className="w-5 h-5 text-blue-700" />
+                                        <div className="w-9 h-9 rounded-lg bg-blue-200 dark:bg-blue-800 flex items-center justify-center">
+                                            <Link2 className="w-5 h-5 text-blue-700 dark:text-blue-300" />
                                         </div>
                                         <span>เพิ่มรหัสผ่าน</span>
                                     </button>
@@ -870,10 +870,10 @@ const Header: React.FC = () => {
                                             setShowChangePasswordModal(true);
                                             setShowMobileMenu(false);
                                         }}
-                                        className="w-full px-4 py-3.5 text-left text-sm font-medium text-amber-700 bg-amber-50 hover:bg-amber-100 rounded-lg transition-all duration-200 flex items-center gap-3 mb-2 shadow-sm hover:shadow"
+                                        className="w-full px-4 py-3.5 text-left text-sm font-medium text-amber-700 dark:text-amber-300 bg-amber-50 dark:bg-amber-900/30 hover:bg-amber-100 dark:hover:bg-amber-900/50 rounded-lg transition-all duration-200 flex items-center gap-3 mb-2 shadow-sm hover:shadow"
                                     >
-                                        <div className="w-9 h-9 rounded-lg bg-amber-200 flex items-center justify-center">
-                                            <Key className="w-5 h-5 text-amber-700" />
+                                        <div className="w-9 h-9 rounded-lg bg-amber-200 dark:bg-amber-800 flex items-center justify-center">
+                                            <Key className="w-5 h-5 text-amber-700 dark:text-amber-300" />
                                         </div>
                                         <span>เปลี่ยนรหัสผ่าน</span>
                                     </button>
@@ -884,11 +884,11 @@ const Header: React.FC = () => {
                                     <div className="mb-2">
                                         <button
                                             onClick={() => setShowSettingsSubmenu(!showSettingsSubmenu)}
-                                            className="w-full px-4 py-3.5 text-left text-sm font-medium text-gray-700 bg-gray-50 hover:bg-gray-100 rounded-lg transition-all duration-200 flex items-center justify-between shadow-sm hover:shadow"
+                                            className="w-full px-4 py-3.5 text-left text-sm font-medium text-gray-700 dark:text-gray-200 bg-gray-50 dark:bg-slate-700 hover:bg-gray-100 dark:hover:bg-slate-600 rounded-lg transition-all duration-200 flex items-center justify-between shadow-sm hover:shadow"
                                         >
                                             <div className="flex items-center gap-3">
-                                                <div className="w-9 h-9 rounded-lg bg-gray-200 flex items-center justify-center">
-                                                    <Settings className="w-5 h-5 text-gray-700" />
+                                                <div className="w-9 h-9 rounded-lg bg-gray-200 dark:bg-slate-600 flex items-center justify-center">
+                                                    <Settings className="w-5 h-5 text-gray-700 dark:text-gray-200" />
                                                 </div>
                                                 <span>ตั้งค่า</span>
                                             </div>
@@ -905,7 +905,7 @@ const Header: React.FC = () => {
                                                         setShowMobileMenu(false);
                                                         setShowSettingsSubmenu(false);
                                                     }}
-                                                    className="w-full px-4 py-2.5 text-left text-sm font-medium text-green-700 bg-green-50 hover:bg-green-100 rounded-lg transition-all duration-200 flex items-center gap-3"
+                                                    className="w-full px-4 py-2.5 text-left text-sm font-medium text-green-700 dark:text-green-300 bg-green-50 dark:bg-green-900/30 hover:bg-green-100 dark:hover:bg-green-900/50 rounded-lg transition-all duration-200 flex items-center gap-3"
                                                 >
                                                     <Building2 className="w-4 h-4" />
                                                     <span>ข้อมูลบริษัท</span>
@@ -918,7 +918,7 @@ const Header: React.FC = () => {
                                                         setShowMobileMenu(false);
                                                         setShowSettingsSubmenu(false);
                                                     }}
-                                                    className="w-full px-4 py-2.5 text-left text-sm font-medium text-pink-700 bg-pink-50 hover:bg-pink-100 rounded-lg transition-all duration-200 flex items-center gap-3"
+                                                    className="w-full px-4 py-2.5 text-left text-sm font-medium text-pink-700 dark:text-pink-300 bg-pink-50 dark:bg-pink-900/30 hover:bg-pink-100 dark:hover:bg-pink-900/50 rounded-lg transition-all duration-200 flex items-center gap-3"
                                                 >
                                                     <Palette className="w-4 h-4" />
                                                     <span>จัดการโลโก้</span>
@@ -931,7 +931,7 @@ const Header: React.FC = () => {
                                                         setShowMobileMenu(false);
                                                         setShowSettingsSubmenu(false);
                                                     }}
-                                                    className="w-full px-4 py-2.5 text-left text-sm font-medium text-indigo-700 bg-indigo-50 hover:bg-indigo-100 rounded-lg transition-all duration-200 flex items-center gap-3"
+                                                    className="w-full px-4 py-2.5 text-left text-sm font-medium text-indigo-700 dark:text-indigo-300 bg-indigo-50 dark:bg-indigo-900/30 hover:bg-indigo-100 dark:hover:bg-indigo-900/50 rounded-lg transition-all duration-200 flex items-center gap-3"
                                                 >
                                                     <Settings className="w-4 h-4" />
                                                     <span>ตั้งค่าเมนูเอกสาร</span>
@@ -944,14 +944,14 @@ const Header: React.FC = () => {
                                                         setShowMobileMenu(false);
                                                         setShowSettingsSubmenu(false);
                                                     }}
-                                                    className="w-full px-4 py-2.5 text-left text-sm font-medium text-cyan-700 bg-cyan-50 hover:bg-cyan-100 rounded-lg transition-all duration-200 flex items-center gap-3"
+                                                    className="w-full px-4 py-2.5 text-left text-sm font-medium text-cyan-700 dark:text-cyan-300 bg-cyan-50 dark:bg-cyan-900/30 hover:bg-cyan-100 dark:hover:bg-cyan-900/50 rounded-lg transition-all duration-200 flex items-center gap-3"
                                                 >
                                                     <LayoutDashboard className="w-4 h-4" />
                                                     <span>ตั้งค่า Tab Menu</span>
                                                 </button>
                                                 
                                                 {/* ธีม Dark/Light */}
-                                                <div className="mt-2 pt-2 border-t border-gray-200">
+                                                <div className="mt-2 pt-2 border-t border-gray-200 dark:border-slate-600">
                                                     <ThemeToggle showLabel />
                                                 </div>
                                             </div>
@@ -963,10 +963,10 @@ const Header: React.FC = () => {
                                 {currentCompany && (
                                     <button
                                         onClick={handleShowQuota}
-                                        className="w-full px-4 py-3.5 text-left text-sm font-medium text-purple-700 bg-purple-50 hover:bg-purple-100 rounded-lg transition-all duration-200 flex items-center gap-3 mb-2 shadow-sm hover:shadow"
+                                        className="w-full px-4 py-3.5 text-left text-sm font-medium text-purple-700 dark:text-purple-300 bg-purple-50 dark:bg-purple-900/30 hover:bg-purple-100 dark:hover:bg-purple-900/50 rounded-lg transition-all duration-200 flex items-center gap-3 mb-2 shadow-sm hover:shadow"
                                     >
-                                        <div className="w-9 h-9 rounded-lg bg-purple-200 flex items-center justify-center">
-                                            <BarChart3 className="w-5 h-5 text-purple-700" />
+                                        <div className="w-9 h-9 rounded-lg bg-purple-200 dark:bg-purple-800 flex items-center justify-center">
+                                            <BarChart3 className="w-5 h-5 text-purple-700 dark:text-purple-300" />
                                         </div>
                                         <span>ดูโควตา</span>
                                     </button>
@@ -979,7 +979,7 @@ const Header: React.FC = () => {
                                             navigate('/pricing');
                                             setShowMobileMenu(false);
                                         }}
-                                        className="w-full px-4 py-3.5 text-left text-sm font-medium text-amber-700 bg-gradient-to-r from-amber-50 to-orange-50 hover:from-amber-100 hover:to-orange-100 rounded-lg transition-all duration-200 flex items-center gap-3 mb-2 shadow-sm hover:shadow border border-amber-200"
+                                        className="w-full px-4 py-3.5 text-left text-sm font-medium text-amber-700 dark:text-amber-300 bg-gradient-to-r from-amber-50 to-orange-50 dark:from-amber-900/30 dark:to-orange-900/30 hover:from-amber-100 hover:to-orange-100 dark:hover:from-amber-900/50 dark:hover:to-orange-900/50 rounded-lg transition-all duration-200 flex items-center gap-3 mb-2 shadow-sm hover:shadow border border-amber-200 dark:border-amber-700"
                                     >
                                         <div className="w-9 h-9 rounded-lg bg-gradient-to-br from-amber-400 to-orange-500 flex items-center justify-center">
                                             <Sparkles className="w-5 h-5 text-white" />
@@ -995,10 +995,10 @@ const Header: React.FC = () => {
                                             setShowUserManagement(true);
                                             setShowMobileMenu(false);
                                         }}
-                                        className="w-full px-4 py-3.5 text-left text-sm font-medium text-indigo-700 bg-indigo-50 hover:bg-indigo-100 rounded-lg transition-all duration-200 flex items-center gap-3 mb-2 shadow-sm hover:shadow"
+                                        className="w-full px-4 py-3.5 text-left text-sm font-medium text-indigo-700 dark:text-indigo-300 bg-indigo-50 dark:bg-indigo-900/30 hover:bg-indigo-100 dark:hover:bg-indigo-900/50 rounded-lg transition-all duration-200 flex items-center gap-3 mb-2 shadow-sm hover:shadow"
                                     >
-                                        <div className="w-9 h-9 rounded-lg bg-indigo-200 flex items-center justify-center">
-                                            <Users className="w-5 h-5 text-indigo-700" />
+                                        <div className="w-9 h-9 rounded-lg bg-indigo-200 dark:bg-indigo-800 flex items-center justify-center">
+                                            <Users className="w-5 h-5 text-indigo-700 dark:text-indigo-300" />
                                         </div>
                                         <span>จัดการสมาชิก</span>
                                     </button>
@@ -1007,7 +1007,7 @@ const Header: React.FC = () => {
                         </div>
 
                         {/* Logout Button ด้านล่าง */}
-                        <div className="border-t border-gray-200 p-4 bg-gray-50">
+                        <div className="border-t border-gray-200 dark:border-slate-600 p-4 bg-gray-50 dark:bg-slate-700">
                             <button
                                 onClick={() => {
                                     handleLogout();
@@ -1041,7 +1041,7 @@ const Header: React.FC = () => {
             {/* Modal จัดการสมาชิก */}
             {showUserManagement && currentCompany && (
                 <div className="fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center z-50 p-4">
-                    <div className="bg-white rounded-lg max-w-6xl w-full max-h-[90vh] overflow-y-auto shadow-2xl">
+                    <div className="bg-white dark:bg-slate-800 rounded-lg max-w-6xl w-full max-h-[90vh] overflow-y-auto shadow-2xl">
                         <UserManagement
                             companyId={currentCompany.id!}
                             companyName={currentCompany.name}

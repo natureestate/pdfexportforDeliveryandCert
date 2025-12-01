@@ -18,10 +18,10 @@ export interface DeliveryFormProps {
 const FormDivider: React.FC<{ title: string }> = ({ title }) => (
     <div className="relative">
         <div className="absolute inset-0 flex items-center" aria-hidden="true">
-            <div className="w-full border-t border-gray-300" />
+            <div className="w-full border-t border-gray-300 dark:border-slate-600" />
         </div>
         <div className="relative flex justify-start">
-            <span className="bg-white pr-3 text-lg font-medium text-gray-900">{title}</span>
+            <span className="bg-white dark:bg-slate-800 pr-3 text-lg font-medium text-gray-900 dark:text-gray-100">{title}</span>
         </div>
     </div>
 );
@@ -120,17 +120,17 @@ const DeliveryForm: React.FC<DeliveryFormProps> = ({
         <div className="space-y-8 pt-4">
             {/* Confirmation Modal */}
             {isConfirmModalOpen && itemToRemove !== null && (
-                <div className="fixed inset-0 bg-gray-600 bg-opacity-50 overflow-y-auto h-full w-full z-50 flex items-center justify-center">
-                    <div className="relative mx-auto p-5 border w-96 shadow-lg rounded-md bg-white">
+                <div className="fixed inset-0 bg-gray-600 bg-opacity-50 dark:bg-black dark:bg-opacity-60 overflow-y-auto h-full w-full z-50 flex items-center justify-center">
+                    <div className="relative mx-auto p-5 border w-96 shadow-lg rounded-md bg-white dark:bg-slate-800 dark:border-slate-700">
                         <div className="mt-3 text-center">
-                            <div className="mx-auto flex items-center justify-center h-12 w-12 rounded-full bg-red-100">
-                                <svg className="h-6 w-6 text-red-600" stroke="currentColor" fill="none" viewBox="0 0 24 24">
+                            <div className="mx-auto flex items-center justify-center h-12 w-12 rounded-full bg-red-100 dark:bg-red-900/30">
+                                <svg className="h-6 w-6 text-red-600 dark:text-red-400" stroke="currentColor" fill="none" viewBox="0 0 24 24">
                                     <path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M12 9v2m0 4h.01m-6.938 4h13.856c1.54 0 2.502-1.667 1.732-3L13.732 4c-.77-1.333-2.694-1.333-3.464 0L3.34 16c-.77 1.333.192 3 1.732 3z" />
                                 </svg>
                             </div>
-                            <h3 className="text-lg leading-6 font-medium text-gray-900 mt-2">ยืนยันการลบ</h3>
+                            <h3 className="text-lg leading-6 font-medium text-gray-900 dark:text-gray-100 mt-2">ยืนยันการลบ</h3>
                             <div className="mt-2 px-7 py-3">
-                                <p className="text-sm text-gray-500">
+                                <p className="text-sm text-gray-500 dark:text-gray-400">
                                     คุณแน่ใจหรือไม่ว่าต้องการลบรายการนี้?
                                 </p>
                             </div>
@@ -143,7 +143,7 @@ const DeliveryForm: React.FC<DeliveryFormProps> = ({
                                 </button>
                                 <button
                                     onClick={() => setIsConfirmModalOpen(false)}
-                                    className="px-4 py-2 bg-gray-200 text-gray-800 text-base font-medium rounded-md w-auto shadow-sm hover:bg-gray-300 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-gray-500"
+                                    className="px-4 py-2 bg-gray-200 dark:bg-slate-700 text-gray-800 dark:text-gray-200 text-base font-medium rounded-md w-auto shadow-sm hover:bg-gray-300 dark:hover:bg-slate-600 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-gray-500"
                                 >
                                     ยกเลิก
                                 </button>
@@ -185,15 +185,15 @@ const DeliveryForm: React.FC<DeliveryFormProps> = ({
                     />
 
                     <div>
-                        <label htmlFor="toCompany" className="block text-xs sm:text-sm font-medium text-slate-700">ชื่อบริษัท/ผู้รับ</label>
+                        <label htmlFor="toCompany" className="block text-xs sm:text-sm font-medium text-slate-700 dark:text-slate-200">ชื่อบริษัท/ผู้รับ</label>
                         <input type="text" id="toCompany" value={data.toCompany} onChange={(e) => handleDataChange('toCompany', e.target.value)} className="mt-1 block w-full rounded-md border-gray-300 shadow-sm focus:border-indigo-500 focus:ring-indigo-500 text-xs sm:text-sm bg-gray-50" />
                     </div>
                     <div>
-                        <label htmlFor="toAddress" className="block text-xs sm:text-sm font-medium text-slate-700">ที่อยู่</label>
+                        <label htmlFor="toAddress" className="block text-xs sm:text-sm font-medium text-slate-700 dark:text-slate-200">ที่อยู่</label>
                         <textarea id="toAddress" value={data.toAddress} onChange={(e) => handleDataChange('toAddress', e.target.value)} rows={3} className="mt-1 block w-full rounded-md border-gray-300 shadow-sm focus:border-indigo-500 focus:ring-indigo-500 text-xs sm:text-sm bg-gray-50" />
                     </div>
                     <div>
-                        <label htmlFor="toEmail" className="block text-xs sm:text-sm font-medium text-slate-700">อีเมลผู้รับ</label>
+                        <label htmlFor="toEmail" className="block text-xs sm:text-sm font-medium text-slate-700 dark:text-slate-200">อีเมลผู้รับ</label>
                         <input type="email" id="toEmail" value={data.toEmail || ''} onChange={(e) => handleDataChange('toEmail', e.target.value)} className="mt-1 block w-full rounded-md border-gray-300 shadow-sm focus:border-indigo-500 focus:ring-indigo-500 text-xs sm:text-sm bg-gray-50" placeholder="เช่น customer@example.com" />
                     </div>
                 </div>
@@ -202,11 +202,11 @@ const DeliveryForm: React.FC<DeliveryFormProps> = ({
                 <FormDivider title="ส่วนที่ 2: รายละเอียดเอกสาร" />
                 <div className="grid grid-cols-1 md:grid-cols-2 gap-3 sm:gap-4">
                     <div>
-                        <label htmlFor="date" className="block text-xs sm:text-sm font-medium text-slate-700">วันที่</label>
+                        <label htmlFor="date" className="block text-xs sm:text-sm font-medium text-slate-700 dark:text-slate-200">วันที่</label>
                         <input type="date" id="date" value={formatDateForInput(data.date)} onChange={(e) => handleDataChange('date', e.target.value ? new Date(e.target.value) : null)} className="mt-1 block w-full rounded-md border-gray-300 shadow-sm focus:border-indigo-500 focus:ring-indigo-500 text-xs sm:text-sm bg-gray-50" />
                     </div>
                     <div>
-                        <label htmlFor="project" className="block text-xs sm:text-sm font-medium text-slate-700">โครงการ/เรื่อง</label>
+                        <label htmlFor="project" className="block text-xs sm:text-sm font-medium text-slate-700 dark:text-slate-200">โครงการ/เรื่อง</label>
                         <input type="text" id="project" value={data.project} onChange={(e) => handleDataChange('project', e.target.value)} className="mt-1 block w-full rounded-md border-gray-300 shadow-sm focus:border-indigo-500 focus:ring-indigo-500 text-xs sm:text-sm bg-gray-50" />
                     </div>
                 </div>
@@ -261,11 +261,11 @@ const DeliveryForm: React.FC<DeliveryFormProps> = ({
             <FormDivider title="ส่วนที่ 4: ข้อมูลผู้ลงนาม" />
             <div className="grid grid-cols-1 md:grid-cols-2 gap-3 sm:gap-4">
                 <div>
-                    <label htmlFor="senderName" className="block text-xs sm:text-sm font-medium text-slate-700">ชื่อผู้ส่งมอบ</label>
+                    <label htmlFor="senderName" className="block text-xs sm:text-sm font-medium text-slate-700 dark:text-slate-200">ชื่อผู้ส่งมอบ</label>
                     <input type="text" id="senderName" value={data.senderName} onChange={(e) => handleDataChange('senderName', e.target.value)} className="mt-1 block w-full rounded-md border-gray-300 shadow-sm focus:border-indigo-500 focus:ring-indigo-500 text-xs sm:text-sm bg-gray-50" />
                 </div>
                 <div>
-                    <label htmlFor="receiverName" className="block text-xs sm:text-sm font-medium text-slate-700">ชื่อผู้รับมอบ</label>
+                    <label htmlFor="receiverName" className="block text-xs sm:text-sm font-medium text-slate-700 dark:text-slate-200">ชื่อผู้รับมอบ</label>
                     <input type="text" id="receiverName" value={data.receiverName} onChange={(e) => handleDataChange('receiverName', e.target.value)} placeholder="เว้นว่างไว้เพื่อลงนาม" className="mt-1 block w-full rounded-md border-gray-300 shadow-sm focus:border-indigo-500 focus:ring-indigo-500 text-xs sm:text-sm bg-gray-50" />
                 </div>
             </div>

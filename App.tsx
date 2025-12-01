@@ -1007,7 +1007,7 @@ const AppContent: React.FC = () => {
     };
 
     return (
-        <div className="bg-slate-100 min-h-screen text-slate-800">
+        <div className="bg-slate-100 dark:bg-slate-900 min-h-screen text-slate-800 dark:text-slate-100 transition-colors duration-300">
             {notification.show && (
                 <div className={`fixed top-5 right-2 sm:right-5 ${notificationColors[notification.type]} text-white py-2 px-3 sm:px-4 rounded-lg shadow-lg z-50 animate-fade-in-down text-sm sm:text-base max-w-[calc(100vw-1rem)] sm:max-w-none`}>
                     {notification.message}
@@ -1019,7 +1019,7 @@ const AppContent: React.FC = () => {
                 <div className="mb-4 sm:mb-6 flex justify-center">
                     <div className="relative w-full sm:w-auto">
                         {/* Fade indicator ด้านซ้าย (mobile) */}
-                        <div className="absolute left-0 top-0 bottom-0 w-4 bg-gradient-to-r from-slate-100 to-transparent z-10 pointer-events-none sm:hidden"></div>
+                        <div className="absolute left-0 top-0 bottom-0 w-4 bg-gradient-to-r from-slate-100 dark:from-slate-900 to-transparent z-10 pointer-events-none sm:hidden"></div>
                         
                         <div className="overflow-x-auto -mx-3 px-3 sm:mx-0 sm:px-0 scrollbar-hide">
                             <div className="inline-flex rounded-md shadow-sm min-w-max" role="group">
@@ -1039,7 +1039,7 @@ const AppContent: React.FC = () => {
                                             } ${
                                                 isActive
                                                     ? 'bg-indigo-600 text-white border-indigo-600'
-                                                    : 'bg-white text-gray-700 border-gray-300 hover:bg-gray-50'
+                                                    : 'bg-white dark:bg-slate-800 text-gray-700 dark:text-gray-200 border-gray-300 dark:border-slate-600 hover:bg-gray-50 dark:hover:bg-slate-700'
                                             }`}
                                         >
                                             {TabIcon && <TabIcon className="w-4 h-4" />}
@@ -1052,13 +1052,13 @@ const AppContent: React.FC = () => {
                         </div>
                         
                         {/* Fade indicator ด้านขวา (mobile) */}
-                        <div className="absolute right-0 top-0 bottom-0 w-4 bg-gradient-to-l from-slate-100 to-transparent z-10 pointer-events-none sm:hidden"></div>
+                        <div className="absolute right-0 top-0 bottom-0 w-4 bg-gradient-to-l from-slate-100 dark:from-slate-900 to-transparent z-10 pointer-events-none sm:hidden"></div>
                     </div>
                 </div>
 
                 {viewMode === 'dashboard' ? (
                     // Dashboard View
-                    <div className="bg-white p-3 sm:p-4 md:p-6 rounded-lg shadow-lg">
+                    <div className="bg-white dark:bg-slate-800 p-3 sm:p-4 md:p-6 rounded-lg shadow-lg transition-colors">
                         <Dashboard 
                             onNavigateToDocType={(docType) => {
                                 setActiveTab(docType);
@@ -1073,17 +1073,17 @@ const AppContent: React.FC = () => {
                 ) : viewMode === 'form' ? (
                     <div className="grid grid-cols-1 lg:grid-cols-2 lg:gap-6 xl:gap-8">
                         {/* Form Section */}
-                        <div className="bg-white p-3 sm:p-4 md:p-6 rounded-lg shadow-lg mb-6 lg:mb-0">
+                        <div className="bg-white dark:bg-slate-800 p-3 sm:p-4 md:p-6 rounded-lg shadow-lg mb-6 lg:mb-0 transition-colors">
                             {/* Edit Mode Indicator */}
                             {editingDocumentId && (
-                                <div className="mb-3 sm:mb-4 p-2 sm:p-3 bg-amber-50 border border-amber-200 rounded-lg flex flex-col sm:flex-row sm:items-center sm:justify-between gap-2">
+                                <div className="mb-3 sm:mb-4 p-2 sm:p-3 bg-amber-50 dark:bg-amber-900/30 border border-amber-200 dark:border-amber-700 rounded-lg flex flex-col sm:flex-row sm:items-center sm:justify-between gap-2">
                                     <div className="flex flex-col sm:flex-row sm:items-center min-w-0">
-                                        <span className="text-amber-700 font-medium text-sm">✏️ โหมดแก้ไข</span>
-                                        <span className="ml-0 sm:ml-2 text-xs sm:text-sm text-amber-600 truncate">กำลังแก้ไขเอกสาร: {editingDocumentId}</span>
+                                        <span className="text-amber-700 dark:text-amber-400 font-medium text-sm">✏️ โหมดแก้ไข</span>
+                                        <span className="ml-0 sm:ml-2 text-xs sm:text-sm text-amber-600 dark:text-amber-300 truncate">กำลังแก้ไขเอกสาร: {editingDocumentId}</span>
                                     </div>
                                     <button
                                         onClick={handleCreateNewForm}
-                                        className="text-xs sm:text-sm px-2 sm:px-3 py-1 bg-white border border-amber-300 rounded hover:bg-amber-50 text-amber-700 whitespace-nowrap"
+                                        className="text-xs sm:text-sm px-2 sm:px-3 py-1 bg-white dark:bg-slate-700 border border-amber-300 dark:border-amber-600 rounded hover:bg-amber-50 dark:hover:bg-amber-900/50 text-amber-700 dark:text-amber-400 whitespace-nowrap"
                                     >
                                         🆕 สร้างเอกสารใหม่
                                     </button>
@@ -1091,9 +1091,9 @@ const AppContent: React.FC = () => {
                             )}
                             
 {/* Tab Menu Container พร้อม Fade Indicator */}
-                                            <div className="relative border-b border-gray-200">
+                                            <div className="relative border-b border-gray-200 dark:border-slate-600">
                                                 {/* Fade indicator ด้านซ้าย */}
-                                                <div className="absolute left-0 top-0 bottom-0 w-6 bg-gradient-to-r from-white to-transparent z-10 pointer-events-none sm:hidden"></div>
+                                                <div className="absolute left-0 top-0 bottom-0 w-6 bg-gradient-to-r from-white dark:from-slate-800 to-transparent z-10 pointer-events-none sm:hidden"></div>
                                                 
                                                 {/* Tab Menu */}
                                                 <div className="overflow-x-auto -mx-4 sm:mx-0 px-4 sm:px-0 tab-menu-scroll overscroll-x-contain touch-pan-x">
@@ -1105,7 +1105,7 @@ const AppContent: React.FC = () => {
                                                                 <button
                                                                     key={menu.id}
                                                                     onClick={() => setActiveTab(menu.id as DocType)}
-                                                                    className={`${activeTab === menu.id ? 'border-indigo-500 text-indigo-600 bg-indigo-50' : 'border-transparent text-gray-500 hover:text-gray-700 hover:border-gray-300'} whitespace-nowrap py-2.5 sm:py-3 px-3 sm:px-4 border-b-2 font-medium text-xs sm:text-sm transition-all flex-shrink-0 rounded-t-lg flex items-center gap-1.5`}
+                                                                    className={`${activeTab === menu.id ? 'border-indigo-500 text-indigo-600 dark:text-indigo-400 bg-indigo-50 dark:bg-indigo-900/30' : 'border-transparent text-gray-500 dark:text-gray-400 hover:text-gray-700 dark:hover:text-gray-200 hover:border-gray-300'} whitespace-nowrap py-2.5 sm:py-3 px-3 sm:px-4 border-b-2 font-medium text-xs sm:text-sm transition-all flex-shrink-0 rounded-t-lg flex items-center gap-1.5`}
                                                                 >
                                                                     {IconComponent && <IconComponent className="w-4 h-4" />}
                                                                     <span className="hidden sm:inline">{menu.label}</span>
@@ -1385,11 +1385,11 @@ const AppContent: React.FC = () => {
                     </div>
                 ) : viewMode === 'history' ? (
                     // History View
-                    <div className="bg-white p-3 sm:p-4 md:p-6 rounded-lg shadow-lg">
+                    <div className="bg-white dark:bg-slate-800 p-3 sm:p-4 md:p-6 rounded-lg shadow-lg transition-colors">
                         {/* Tab Menu สำหรับเลือกประเภทเอกสารใน History View */}
-                        <div className="relative border-b border-gray-200 mb-4">
+                        <div className="relative border-b border-gray-200 dark:border-slate-600 mb-4">
                             {/* Fade indicator ด้านซ้าย */}
-                            <div className="absolute left-0 top-0 bottom-0 w-6 bg-gradient-to-r from-white to-transparent z-10 pointer-events-none sm:hidden"></div>
+                            <div className="absolute left-0 top-0 bottom-0 w-6 bg-gradient-to-r from-white dark:from-slate-800 to-transparent z-10 pointer-events-none sm:hidden"></div>
                             
                             {/* Tab Menu */}
                             <div className="overflow-x-auto -mx-3 sm:mx-0 px-3 sm:px-0 tab-menu-scroll overscroll-x-contain touch-pan-x">
@@ -1401,7 +1401,7 @@ const AppContent: React.FC = () => {
                                             <button
                                                 key={menu.id}
                                                 onClick={() => setActiveTab(menu.id as DocType)}
-                                                className={`${activeTab === menu.id ? 'border-indigo-500 text-indigo-600 bg-indigo-50' : 'border-transparent text-gray-500 hover:text-gray-700 hover:border-gray-300'} whitespace-nowrap py-2 sm:py-2.5 px-2.5 sm:px-3 border-b-2 font-medium text-xs sm:text-sm transition-all flex-shrink-0 rounded-t-lg flex items-center gap-1.5`}
+                                                className={`${activeTab === menu.id ? 'border-indigo-500 text-indigo-600 dark:text-indigo-400 bg-indigo-50 dark:bg-indigo-900/30' : 'border-transparent text-gray-500 dark:text-gray-400 hover:text-gray-700 dark:hover:text-gray-200 hover:border-gray-300'} whitespace-nowrap py-2 sm:py-2.5 px-2.5 sm:px-3 border-b-2 font-medium text-xs sm:text-sm transition-all flex-shrink-0 rounded-t-lg flex items-center gap-1.5`}
                                             >
                                                 {IconComponent && <IconComponent className="w-3.5 h-3.5 sm:w-4 sm:h-4" />}
                                                 <span className="hidden sm:inline">{menu.label}</span>
@@ -1413,7 +1413,7 @@ const AppContent: React.FC = () => {
                             </div>
                             
                             {/* Fade indicator ด้านขวา */}
-                            <div className="absolute right-0 top-0 bottom-0 w-8 bg-gradient-to-l from-white to-transparent z-10 pointer-events-none sm:hidden"></div>
+                            <div className="absolute right-0 top-0 bottom-0 w-8 bg-gradient-to-l from-white dark:from-slate-800 to-transparent z-10 pointer-events-none sm:hidden"></div>
                         </div>
                         
                         <HistoryList 
@@ -1423,17 +1423,17 @@ const AppContent: React.FC = () => {
                     </div>
                 ) : viewMode === 'crm' ? (
                     // CRM View
-                    <div className="bg-white p-3 sm:p-4 md:p-6 rounded-lg shadow-lg">
+                    <div className="bg-white dark:bg-slate-800 p-3 sm:p-4 md:p-6 rounded-lg shadow-lg transition-colors">
                         <CRMPage />
                     </div>
                 ) : viewMode === 'reports' ? (
                     // Reports View
-                    <div className="bg-white p-3 sm:p-4 md:p-6 rounded-lg shadow-lg">
+                    <div className="bg-white dark:bg-slate-800 p-3 sm:p-4 md:p-6 rounded-lg shadow-lg transition-colors">
                         <ReportsPage />
                     </div>
                 ) : viewMode === 'calendar' ? (
                     // Calendar View
-                    <div className="bg-white p-3 sm:p-4 md:p-6 rounded-lg shadow-lg">
+                    <div className="bg-white dark:bg-slate-800 p-3 sm:p-4 md:p-6 rounded-lg shadow-lg transition-colors">
                         <CalendarPage />
                     </div>
                 ) : null}

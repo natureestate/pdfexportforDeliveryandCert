@@ -204,7 +204,7 @@ const ReportsPage: React.FC = () => {
         
         const isPositive = change > 0;
         const isNegative = change < 0;
-        const color = isPositive ? 'text-green-600' : isNegative ? 'text-red-600' : 'text-gray-500';
+        const color = isPositive ? 'text-green-600 dark:text-green-400' : isNegative ? 'text-red-600 dark:text-red-400' : 'text-gray-500 dark:text-gray-400';
         const Icon = isPositive ? ArrowUpRight : isNegative ? ArrowDownRight : Minus;
 
         return (
@@ -249,8 +249,8 @@ const ReportsPage: React.FC = () => {
     if (loading) {
         return (
             <div className="flex flex-col items-center justify-center h-64 space-y-4">
-                <div className="animate-spin rounded-full h-12 w-12 border-b-2 border-indigo-600"></div>
-                <p className="text-gray-500">กำลังโหลดข้อมูลรายงาน...</p>
+                <div className="animate-spin rounded-full h-12 w-12 border-b-2 border-indigo-600 dark:border-indigo-400"></div>
+                <p className="text-gray-500 dark:text-gray-400">กำลังโหลดข้อมูลรายงาน...</p>
             </div>
         );
     }
@@ -260,13 +260,13 @@ const ReportsPage: React.FC = () => {
             {/* Header */}
             <div className="flex flex-col sm:flex-row justify-between items-start sm:items-center gap-4">
                 <div>
-                    <h2 className="text-2xl font-bold text-gray-900">รายงานสรุป</h2>
-                    <p className="text-sm text-gray-500 mt-1">รายงานสรุปรายเดือน/ไตรมาส/ปี</p>
+                    <h2 className="text-2xl font-bold text-gray-900 dark:text-gray-100">รายงานสรุป</h2>
+                    <p className="text-sm text-gray-500 dark:text-gray-400 mt-1">รายงานสรุปรายเดือน/ไตรมาส/ปี</p>
                 </div>
                 <div className="flex items-center gap-2">
                     <button
                         onClick={loadData}
-                        className="flex items-center gap-2 px-3 py-2 text-gray-600 bg-gray-100 rounded-lg hover:bg-gray-200 transition-colors"
+                        className="flex items-center gap-2 px-3 py-2 text-gray-600 dark:text-gray-300 bg-gray-100 dark:bg-slate-700 rounded-lg hover:bg-gray-200 dark:hover:bg-slate-600 transition-colors"
                     >
                         <RefreshCw className="w-4 h-4" />
                         รีเฟรช
@@ -284,30 +284,30 @@ const ReportsPage: React.FC = () => {
 
             {/* Error */}
             {error && (
-                <div className="flex items-center gap-2 p-4 bg-red-50 border border-red-200 rounded-lg text-red-700">
+                <div className="flex items-center gap-2 p-4 bg-red-50 dark:bg-red-900/30 border border-red-200 dark:border-red-800 rounded-lg text-red-700 dark:text-red-300">
                     <AlertCircle className="w-5 h-5" />
                     {error}
                 </div>
             )}
 
             {/* Period Selector */}
-            <div className="bg-white border border-gray-200 rounded-lg p-4">
+            <div className="bg-white dark:bg-slate-800 border border-gray-200 dark:border-slate-700 rounded-lg p-4">
                 <div className="flex flex-col sm:flex-row items-start sm:items-center gap-4">
                     <div className="flex items-center gap-2">
-                        <Filter className="w-5 h-5 text-gray-500" />
-                        <span className="text-sm font-medium text-gray-700">ช่วงเวลา:</span>
+                        <Filter className="w-5 h-5 text-gray-500 dark:text-gray-400" />
+                        <span className="text-sm font-medium text-gray-700 dark:text-gray-200">ช่วงเวลา:</span>
                     </div>
                     
                     {/* Period Type Tabs */}
-                    <div className="flex bg-gray-100 rounded-lg p-1">
+                    <div className="flex bg-gray-100 dark:bg-slate-700 rounded-lg p-1">
                         {(['month', 'quarter', 'year'] as PeriodType[]).map((type) => (
                             <button
                                 key={type}
                                 onClick={() => { setPeriodType(type); setSelectedPeriod(''); }}
                                 className={`px-4 py-1.5 text-sm font-medium rounded-md transition-colors ${
                                     periodType === type
-                                        ? 'bg-white text-indigo-600 shadow-sm'
-                                        : 'text-gray-600 hover:text-gray-900'
+                                        ? 'bg-white dark:bg-slate-600 text-indigo-600 dark:text-indigo-400 shadow-sm'
+                                        : 'text-gray-600 dark:text-gray-300 hover:text-gray-900 dark:hover:text-gray-100'
                                 }`}
                             >
                                 {type === 'month' ? 'รายเดือน' : type === 'quarter' ? 'รายไตรมาส' : 'รายปี'}
@@ -319,7 +319,7 @@ const ReportsPage: React.FC = () => {
                     <select
                         value={selectedPeriod}
                         onChange={(e) => setSelectedPeriod(e.target.value)}
-                        className="px-4 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-indigo-500 focus:border-transparent"
+                        className="px-4 py-2 border border-gray-300 dark:border-slate-600 rounded-lg focus:ring-2 focus:ring-indigo-500 focus:border-transparent bg-white dark:bg-slate-700 text-gray-800 dark:text-gray-100"
                     >
                         {periodOptions.map((option) => (
                             <option key={option.value} value={option.value}>
@@ -335,40 +335,40 @@ const ReportsPage: React.FC = () => {
                     {/* Summary Cards */}
                     <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-4">
                         {/* Documents */}
-                        <div className="bg-white border border-gray-200 rounded-lg p-4">
+                        <div className="bg-white dark:bg-slate-800 border border-gray-200 dark:border-slate-700 rounded-lg p-4">
                             <div className="flex items-center justify-between mb-2">
-                                <span className="text-sm text-gray-500">เอกสารทั้งหมด</span>
-                                <FileText className="w-5 h-5 text-indigo-500" />
+                                <span className="text-sm text-gray-500 dark:text-gray-400">เอกสารทั้งหมด</span>
+                                <FileText className="w-5 h-5 text-indigo-500 dark:text-indigo-400" />
                             </div>
-                            <p className="text-2xl font-bold text-gray-900">{periodData.totalDocuments}</p>
+                            <p className="text-2xl font-bold text-gray-900 dark:text-gray-100">{periodData.totalDocuments}</p>
                             <div className="flex items-center justify-between mt-2">
-                                <span className="text-xs text-gray-400">เทียบกับช่วงก่อน</span>
+                                <span className="text-xs text-gray-400 dark:text-gray-500">เทียบกับช่วงก่อน</span>
                                 {renderChange(comparison?.documents)}
                             </div>
                         </div>
 
                         {/* Revenue */}
-                        <div className="bg-white border border-gray-200 rounded-lg p-4">
+                        <div className="bg-white dark:bg-slate-800 border border-gray-200 dark:border-slate-700 rounded-lg p-4">
                             <div className="flex items-center justify-between mb-2">
-                                <span className="text-sm text-gray-500">รายรับ</span>
-                                <DollarSign className="w-5 h-5 text-green-500" />
+                                <span className="text-sm text-gray-500 dark:text-gray-400">รายรับ</span>
+                                <DollarSign className="w-5 h-5 text-green-500 dark:text-green-400" />
                             </div>
-                            <p className="text-2xl font-bold text-gray-900">฿{formatCurrency(periodData.totalRevenue)}</p>
+                            <p className="text-2xl font-bold text-gray-900 dark:text-gray-100">฿{formatCurrency(periodData.totalRevenue)}</p>
                             <div className="flex items-center justify-between mt-2">
-                                <span className="text-xs text-gray-400">เทียบกับช่วงก่อน</span>
+                                <span className="text-xs text-gray-400 dark:text-gray-500">เทียบกับช่วงก่อน</span>
                                 {renderChange(comparison?.revenue)}
                             </div>
                         </div>
 
                         {/* Expense */}
-                        <div className="bg-white border border-gray-200 rounded-lg p-4">
+                        <div className="bg-white dark:bg-slate-800 border border-gray-200 dark:border-slate-700 rounded-lg p-4">
                             <div className="flex items-center justify-between mb-2">
-                                <span className="text-sm text-gray-500">รายจ่าย</span>
-                                <ShoppingCart className="w-5 h-5 text-red-500" />
+                                <span className="text-sm text-gray-500 dark:text-gray-400">รายจ่าย</span>
+                                <ShoppingCart className="w-5 h-5 text-red-500 dark:text-red-400" />
                             </div>
-                            <p className="text-2xl font-bold text-gray-900">฿{formatCurrency(periodData.totalExpense)}</p>
+                            <p className="text-2xl font-bold text-gray-900 dark:text-gray-100">฿{formatCurrency(periodData.totalExpense)}</p>
                             <div className="flex items-center justify-between mt-2">
-                                <span className="text-xs text-gray-400">เทียบกับช่วงก่อน</span>
+                                <span className="text-xs text-gray-400 dark:text-gray-500">เทียบกับช่วงก่อน</span>
                                 {renderChange(comparison?.expense)}
                             </div>
                         </div>
@@ -376,31 +376,31 @@ const ReportsPage: React.FC = () => {
                         {/* Profit */}
                         <div className={`border rounded-lg p-4 ${
                             periodData.profit >= 0 
-                                ? 'bg-green-50 border-green-200' 
-                                : 'bg-red-50 border-red-200'
+                                ? 'bg-green-50 dark:bg-green-900/30 border-green-200 dark:border-green-800' 
+                                : 'bg-red-50 dark:bg-red-900/30 border-red-200 dark:border-red-800'
                         }`}>
                             <div className="flex items-center justify-between mb-2">
-                                <span className="text-sm text-gray-500">กำไร/ขาดทุน</span>
+                                <span className="text-sm text-gray-500 dark:text-gray-400">กำไร/ขาดทุน</span>
                                 {periodData.profit >= 0 ? (
-                                    <TrendingUp className="w-5 h-5 text-green-500" />
+                                    <TrendingUp className="w-5 h-5 text-green-500 dark:text-green-400" />
                                 ) : (
-                                    <TrendingDown className="w-5 h-5 text-red-500" />
+                                    <TrendingDown className="w-5 h-5 text-red-500 dark:text-red-400" />
                                 )}
                             </div>
                             <p className={`text-2xl font-bold ${
-                                periodData.profit >= 0 ? 'text-green-700' : 'text-red-700'
+                                periodData.profit >= 0 ? 'text-green-700 dark:text-green-300' : 'text-red-700 dark:text-red-300'
                             }`}>
                                 ฿{formatCurrency(Math.abs(periodData.profit))}
                             </p>
-                            <p className="text-xs text-gray-500 mt-2">
+                            <p className="text-xs text-gray-500 dark:text-gray-400 mt-2">
                                 {periodData.profit >= 0 ? 'กำไร' : 'ขาดทุน'}
                             </p>
                         </div>
                     </div>
 
                     {/* Document Types Breakdown */}
-                    <div className="bg-white border border-gray-200 rounded-lg p-6">
-                        <h3 className="text-lg font-semibold text-gray-900 mb-4">จำนวนเอกสารตามประเภท</h3>
+                    <div className="bg-white dark:bg-slate-800 border border-gray-200 dark:border-slate-700 rounded-lg p-6">
+                        <h3 className="text-lg font-semibold text-gray-900 dark:text-gray-100 mb-4">จำนวนเอกสารตามประเภท</h3>
                         <div className="space-y-3">
                             {Object.entries(periodData.byDocType)
                                 .filter(([_, count]) => count > 0)
@@ -412,12 +412,12 @@ const ReportsPage: React.FC = () => {
                                     return (
                                         <div key={docType}>
                                             <div className="flex items-center justify-between mb-1">
-                                                <span className="text-sm text-gray-700">
+                                                <span className="text-sm text-gray-700 dark:text-gray-300">
                                                     {DOC_TYPE_NAMES[docType as DocType] || docType}
                                                 </span>
-                                                <span className="text-sm font-medium text-gray-900">{count}</span>
+                                                <span className="text-sm font-medium text-gray-900 dark:text-gray-100">{count}</span>
                                             </div>
-                                            <div className="w-full bg-gray-100 rounded-full h-2">
+                                            <div className="w-full bg-gray-100 dark:bg-slate-700 rounded-full h-2">
                                                 <div
                                                     className="bg-indigo-500 h-2 rounded-full transition-all duration-300"
                                                     style={{ width: `${percentage}%` }}
@@ -429,14 +429,14 @@ const ReportsPage: React.FC = () => {
                         </div>
                         
                         {Object.values(periodData.byDocType).every(count => count === 0) && (
-                            <p className="text-center text-gray-500 py-8">ไม่มีข้อมูลในช่วงเวลานี้</p>
+                            <p className="text-center text-gray-500 dark:text-gray-400 py-8">ไม่มีข้อมูลในช่วงเวลานี้</p>
                         )}
                     </div>
 
                     {/* Monthly Trend Chart (Simple CSS) */}
                     {periodData.trends.length > 0 && (
-                        <div className="bg-white border border-gray-200 rounded-lg p-6">
-                            <h3 className="text-lg font-semibold text-gray-900 mb-4">แนวโน้มรายเดือน</h3>
+                        <div className="bg-white dark:bg-slate-800 border border-gray-200 dark:border-slate-700 rounded-lg p-6">
+                            <h3 className="text-lg font-semibold text-gray-900 dark:text-gray-100 mb-4">แนวโน้มรายเดือน</h3>
                             <div className="h-64 flex items-end gap-2">
                                 {periodData.trends.map((trend, index) => {
                                     const maxDocs = Math.max(...periodData.trends.map(t => t.totalDocuments));
@@ -451,7 +451,7 @@ const ReportsPage: React.FC = () => {
                                                     title={`${trend.totalDocuments} เอกสาร`}
                                                 />
                                             </div>
-                                            <span className="text-xs text-gray-500 mt-2 transform -rotate-45 origin-top-left whitespace-nowrap">
+                                            <span className="text-xs text-gray-500 dark:text-gray-400 mt-2 transform -rotate-45 origin-top-left whitespace-nowrap">
                                                 {new Intl.DateTimeFormat('th-TH', { month: 'short' }).format(new Date(trend.year, trend.month - 1))}
                                             </span>
                                         </div>
@@ -464,7 +464,7 @@ const ReportsPage: React.FC = () => {
             )}
 
             {!periodData && !loading && (
-                <div className="text-center py-12 text-gray-500">
+                <div className="text-center py-12 text-gray-500 dark:text-gray-400">
                     <BarChart2 className="w-16 h-16 mx-auto mb-4 opacity-30" />
                     <p>ไม่มีข้อมูลในช่วงเวลาที่เลือก</p>
                 </div>

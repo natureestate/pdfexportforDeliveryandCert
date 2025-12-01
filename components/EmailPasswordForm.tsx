@@ -159,14 +159,14 @@ export const EmailPasswordForm: React.FC<EmailPasswordFormProps> = ({ onSuccess 
     return (
         <div className="w-full max-w-md mx-auto">
             {/* Tab สลับโหมด */}
-            <div className="flex mb-6 border-b border-gray-200">
+            <div className="flex mb-6 border-b border-gray-200 dark:border-slate-600">
                 <button
                     type="button"
                     onClick={() => setMode('login')}
                     className={`flex-1 py-3 text-center font-medium transition-colors ${
                         mode === 'login'
-                            ? 'text-blue-600 border-b-2 border-blue-600'
-                            : 'text-gray-500 hover:text-gray-700'
+                            ? 'text-blue-600 dark:text-blue-400 border-b-2 border-blue-600 dark:border-blue-400'
+                            : 'text-gray-500 dark:text-slate-400 hover:text-gray-700 dark:hover:text-slate-200'
                     }`}
                 >
                     เข้าสู่ระบบ
@@ -176,8 +176,8 @@ export const EmailPasswordForm: React.FC<EmailPasswordFormProps> = ({ onSuccess 
                     onClick={() => setMode('signup')}
                     className={`flex-1 py-3 text-center font-medium transition-colors ${
                         mode === 'signup'
-                            ? 'text-blue-600 border-b-2 border-blue-600'
-                            : 'text-gray-500 hover:text-gray-700'
+                            ? 'text-blue-600 dark:text-blue-400 border-b-2 border-blue-600 dark:border-blue-400'
+                            : 'text-gray-500 dark:text-slate-400 hover:text-gray-700 dark:hover:text-slate-200'
                     }`}
                 >
                     สมัครสมาชิก
@@ -188,7 +188,7 @@ export const EmailPasswordForm: React.FC<EmailPasswordFormProps> = ({ onSuccess 
             <form onSubmit={mode === 'login' ? handleLogin : handleSignUp} className="space-y-4">
                 {/* Email Input */}
                 <div>
-                    <label htmlFor="email" className="block text-sm font-medium text-gray-700 mb-1">
+                    <label htmlFor="email" className="block text-sm font-medium text-gray-700 dark:text-slate-200 mb-1">
                         อีเมล
                     </label>
                     <input
@@ -197,7 +197,7 @@ export const EmailPasswordForm: React.FC<EmailPasswordFormProps> = ({ onSuccess 
                         value={email}
                         onChange={(e) => setEmail(e.target.value)}
                         placeholder="example@email.com"
-                        className="w-full px-4 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent"
+                        className="w-full px-4 py-2 border border-gray-300 dark:border-slate-600 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent bg-white dark:bg-slate-700 text-gray-900 dark:text-slate-100"
                         disabled={loading}
                         required
                     />
@@ -205,7 +205,7 @@ export const EmailPasswordForm: React.FC<EmailPasswordFormProps> = ({ onSuccess 
 
                 {/* Password Input */}
                 <div>
-                    <label htmlFor="password" className="block text-sm font-medium text-gray-700 mb-1">
+                    <label htmlFor="password" className="block text-sm font-medium text-gray-700 dark:text-slate-200 mb-1">
                         รหัสผ่าน
                     </label>
                     <input
@@ -214,7 +214,7 @@ export const EmailPasswordForm: React.FC<EmailPasswordFormProps> = ({ onSuccess 
                         value={password}
                         onChange={(e) => setPassword(e.target.value)}
                         placeholder="อย่างน้อย 6 ตัวอักษร"
-                        className="w-full px-4 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent"
+                        className="w-full px-4 py-2 border border-gray-300 dark:border-slate-600 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent bg-white dark:bg-slate-700 text-gray-900 dark:text-slate-100"
                         disabled={loading}
                         required
                         minLength={6}
@@ -224,7 +224,7 @@ export const EmailPasswordForm: React.FC<EmailPasswordFormProps> = ({ onSuccess 
                 {/* Confirm Password Input (สำหรับ Sign Up) */}
                 {mode === 'signup' && (
                     <div>
-                        <label htmlFor="confirmPassword" className="block text-sm font-medium text-gray-700 mb-1">
+                        <label htmlFor="confirmPassword" className="block text-sm font-medium text-gray-700 dark:text-slate-200 mb-1">
                             ยืนยันรหัสผ่าน
                         </label>
                         <input
@@ -233,7 +233,7 @@ export const EmailPasswordForm: React.FC<EmailPasswordFormProps> = ({ onSuccess 
                             value={confirmPassword}
                             onChange={(e) => setConfirmPassword(e.target.value)}
                             placeholder="กรอกรหัสผ่านอีกครั้ง"
-                            className="w-full px-4 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent"
+                            className="w-full px-4 py-2 border border-gray-300 dark:border-slate-600 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent bg-white dark:bg-slate-700 text-gray-900 dark:text-slate-100"
                             disabled={loading}
                             required
                             minLength={6}
@@ -243,15 +243,15 @@ export const EmailPasswordForm: React.FC<EmailPasswordFormProps> = ({ onSuccess 
 
                 {/* Error Message */}
                 {error && (
-                    <div className="p-3 bg-red-50 border border-red-200 rounded-lg">
-                        <p className="text-sm text-red-600">{error}</p>
+                    <div className="p-3 bg-red-50 dark:bg-red-900/30 border border-red-200 dark:border-red-800 rounded-lg">
+                        <p className="text-sm text-red-600 dark:text-red-300">{error}</p>
                     </div>
                 )}
 
                 {/* Success Message */}
                 {success && (
-                    <div className="p-3 bg-green-50 border border-green-200 rounded-lg">
-                        <p className="text-sm text-green-600">{success}</p>
+                    <div className="p-3 bg-green-50 dark:bg-green-900/30 border border-green-200 dark:border-green-800 rounded-lg">
+                        <p className="text-sm text-green-600 dark:text-green-300">{success}</p>
                     </div>
                 )}
 
@@ -264,7 +264,7 @@ export const EmailPasswordForm: React.FC<EmailPasswordFormProps> = ({ onSuccess 
                                 setResetEmail(email);
                                 setShowForgotPassword(true);
                             }}
-                            className="text-sm text-blue-600 hover:text-blue-800 underline"
+                            className="text-sm text-blue-600 dark:text-blue-400 hover:text-blue-800 dark:hover:text-blue-300 underline"
                         >
                             <Link2 className="w-4 h-4 inline mr-1" />ลืมรหัสผ่าน?
                         </button>
@@ -277,8 +277,8 @@ export const EmailPasswordForm: React.FC<EmailPasswordFormProps> = ({ onSuccess 
                     disabled={loading}
                     className={`w-full py-3 px-4 rounded-lg font-medium text-white transition-colors ${
                         loading
-                            ? 'bg-gray-400 cursor-not-allowed'
-                            : 'bg-blue-600 hover:bg-blue-700 active:bg-blue-800'
+                            ? 'bg-gray-400 dark:bg-slate-600 cursor-not-allowed'
+                            : 'bg-blue-600 dark:bg-blue-700 hover:bg-blue-700 dark:hover:bg-blue-800 active:bg-blue-800'
                     }`}
                 >
                     {loading ? (
@@ -313,14 +313,14 @@ export const EmailPasswordForm: React.FC<EmailPasswordFormProps> = ({ onSuccess 
                 </button>
 
                 {/* Toggle Mode Link */}
-                <div className="text-center text-sm text-gray-600">
+                <div className="text-center text-sm text-gray-600 dark:text-slate-400">
                     {mode === 'login' ? (
                         <p>
                             ยังไม่มีบัญชี?{' '}
                             <button
                                 type="button"
                                 onClick={toggleMode}
-                                className="text-blue-600 hover:text-blue-700 font-medium"
+                                className="text-blue-600 dark:text-blue-400 hover:text-blue-700 dark:hover:text-blue-300 font-medium"
                             >
                                 สมัครสมาชิก
                             </button>
@@ -331,7 +331,7 @@ export const EmailPasswordForm: React.FC<EmailPasswordFormProps> = ({ onSuccess 
                             <button
                                 type="button"
                                 onClick={toggleMode}
-                                className="text-blue-600 hover:text-blue-700 font-medium"
+                                className="text-blue-600 dark:text-blue-400 hover:text-blue-700 dark:hover:text-blue-300 font-medium"
                             >
                                 เข้าสู่ระบบ
                             </button>
@@ -354,11 +354,11 @@ export const EmailPasswordForm: React.FC<EmailPasswordFormProps> = ({ onSuccess 
 
             {/* Forgot Password Modal */}
             {showForgotPassword && (
-                <div className="fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center z-50 p-4">
-                    <div className="bg-white rounded-2xl shadow-2xl max-w-md w-full p-6">
+                <div className="fixed inset-0 bg-black bg-opacity-50 dark:bg-opacity-70 flex items-center justify-center z-50 p-4">
+                    <div className="bg-white dark:bg-slate-800 rounded-2xl shadow-2xl dark:shadow-slate-900/50 max-w-md w-full p-6">
                         {/* Header */}
                         <div className="flex items-center justify-between mb-4">
-                            <h3 className="text-xl font-bold text-gray-800">
+                            <h3 className="text-xl font-bold text-gray-800 dark:text-slate-100">
                                 <Key className="w-5 h-5 inline mr-1" />ลืมรหัสผ่าน
                             </h3>
                             <button
@@ -366,7 +366,7 @@ export const EmailPasswordForm: React.FC<EmailPasswordFormProps> = ({ onSuccess 
                                     setShowForgotPassword(false);
                                     setResetEmail('');
                                 }}
-                                className="text-gray-400 hover:text-gray-600 transition-colors"
+                                className="text-gray-400 dark:text-slate-500 hover:text-gray-600 dark:hover:text-slate-300 transition-colors"
                             >
                                 <svg className="w-6 h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                                     <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M6 18L18 6M6 6l12 12" />
@@ -377,15 +377,15 @@ export const EmailPasswordForm: React.FC<EmailPasswordFormProps> = ({ onSuccess 
                         {/* Content */}
                         <div className="space-y-4">
                             {/* ข้อความแจ้งเตือน */}
-                            <div className="bg-blue-50 border border-blue-200 rounded-lg p-4">
-                                <p className="text-sm text-blue-800">
+                            <div className="bg-blue-50 dark:bg-blue-900/30 border border-blue-200 dark:border-blue-800 rounded-lg p-4">
+                                <p className="text-sm text-blue-800 dark:text-blue-300">
                                     กรอกอีเมลของคุณ เราจะส่งลิงก์รีเซ็ตรหัสผ่านให้คุณ
                                 </p>
                             </div>
 
                             {/* Email Input */}
                             <div>
-                                <label className="block text-sm font-medium text-gray-700 mb-1">
+                                <label className="block text-sm font-medium text-gray-700 dark:text-slate-200 mb-1">
                                     อีเมล
                                 </label>
                                 <input
@@ -393,7 +393,7 @@ export const EmailPasswordForm: React.FC<EmailPasswordFormProps> = ({ onSuccess 
                                     value={resetEmail}
                                     onChange={(e) => setResetEmail(e.target.value)}
                                     placeholder="example@email.com"
-                                    className="w-full px-4 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent"
+                                    className="w-full px-4 py-2 border border-gray-300 dark:border-slate-600 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent bg-white dark:bg-slate-700 text-gray-900 dark:text-slate-100"
                                     required
                                 />
                             </div>
@@ -403,13 +403,13 @@ export const EmailPasswordForm: React.FC<EmailPasswordFormProps> = ({ onSuccess 
                                 onClick={handleForgotPassword}
                                 className="w-full py-3 px-4 bg-gradient-to-r from-blue-500 to-blue-600 text-white rounded-lg font-medium hover:from-blue-600 hover:to-blue-700 transition-all"
                             >
-                                📧 ส่งอีเมลรีเซ็ตรหัสผ่าน
+                                ส่งอีเมลรีเซ็ตรหัสผ่าน
                             </button>
 
                             {/* ข้อมูลเพิ่มเติม */}
-                            <div className="bg-gray-50 rounded-lg p-3">
-                                <p className="text-xs text-gray-600">
-                                    💡 <strong>หมายเหตุ</strong>
+                            <div className="bg-gray-50 dark:bg-slate-700 rounded-lg p-3">
+                                <p className="text-xs text-gray-600 dark:text-slate-400">
+                                    <strong>หมายเหตุ</strong>
                                     <br />
                                     หลังจากได้รับอีเมล ให้คลิกลิงก์เพื่อตั้งรหัสผ่านใหม่
                                 </p>

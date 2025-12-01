@@ -221,7 +221,7 @@ const PhoneAuthForm: React.FC<PhoneAuthFormProps> = ({ onSuccess, onError }) => 
                 // ขั้นตอนที่ 1: กรอกเบอร์โทรศัพท์
                 <>
                     <div>
-                        <label htmlFor="phone" className="block text-sm font-medium text-gray-700 mb-2">
+                        <label htmlFor="phone" className="block text-sm font-medium text-gray-700 dark:text-slate-200 mb-2">
                             เบอร์โทรศัพท์
                         </label>
                         <input
@@ -232,9 +232,9 @@ const PhoneAuthForm: React.FC<PhoneAuthFormProps> = ({ onSuccess, onError }) => 
                             onKeyPress={(e) => handleKeyPress(e, handleSendOTP)}
                             placeholder="+66812345678"
                             disabled={isLoading}
-                            className="w-full px-4 py-3 border border-gray-300 rounded-lg focus:ring-2 focus:ring-indigo-500 focus:border-transparent disabled:bg-gray-100 disabled:cursor-not-allowed"
+                            className="w-full px-4 py-3 border border-gray-300 dark:border-slate-600 rounded-lg focus:ring-2 focus:ring-indigo-500 focus:border-transparent disabled:bg-gray-100 dark:disabled:bg-slate-700 disabled:cursor-not-allowed bg-white dark:bg-slate-700 text-gray-900 dark:text-slate-100"
                         />
-                        <p className="mt-1 text-xs text-gray-500">
+                        <p className="mt-1 text-xs text-gray-500 dark:text-slate-400">
                             รูปแบบ: +66XXXXXXXXX (เบอร์ไทย)
                         </p>
                     </div>
@@ -242,7 +242,7 @@ const PhoneAuthForm: React.FC<PhoneAuthFormProps> = ({ onSuccess, onError }) => 
                     <button
                         onClick={handleSendOTP}
                         disabled={isLoading || !phoneNumber}
-                        className="w-full bg-indigo-600 text-white rounded-lg px-6 py-3 font-medium hover:bg-indigo-700 transition-colors disabled:opacity-50 disabled:cursor-not-allowed flex items-center justify-center gap-2"
+                        className="w-full bg-indigo-600 dark:bg-indigo-700 text-white rounded-lg px-6 py-3 font-medium hover:bg-indigo-700 dark:hover:bg-indigo-800 transition-colors disabled:opacity-50 disabled:cursor-not-allowed flex items-center justify-center gap-2"
                     >
                         {isLoading ? (
                             <>
@@ -266,16 +266,16 @@ const PhoneAuthForm: React.FC<PhoneAuthFormProps> = ({ onSuccess, onError }) => 
                 // ขั้นตอนที่ 2: กรอก OTP
                 <>
                     <div className="text-center mb-4">
-                        <p className="text-sm text-gray-600">
+                        <p className="text-sm text-gray-600 dark:text-slate-400">
                             เราได้ส่งรหัส OTP ไปยัง
                         </p>
-                        <p className="text-lg font-semibold text-gray-800 mt-1">
+                        <p className="text-lg font-semibold text-gray-800 dark:text-slate-100 mt-1">
                             {phoneNumber}
                         </p>
                     </div>
 
                     <div>
-                        <label htmlFor="otp" className="block text-sm font-medium text-gray-700 mb-2">
+                        <label htmlFor="otp" className="block text-sm font-medium text-gray-700 dark:text-slate-200 mb-2">
                             รหัส OTP
                         </label>
                         <input
@@ -291,9 +291,9 @@ const PhoneAuthForm: React.FC<PhoneAuthFormProps> = ({ onSuccess, onError }) => 
                             placeholder="123456"
                             maxLength={6}
                             disabled={isLoading}
-                            className="w-full px-4 py-3 border border-gray-300 rounded-lg text-center text-2xl tracking-widest focus:ring-2 focus:ring-indigo-500 focus:border-transparent disabled:bg-gray-100 disabled:cursor-not-allowed"
+                            className="w-full px-4 py-3 border border-gray-300 dark:border-slate-600 rounded-lg text-center text-2xl tracking-widest focus:ring-2 focus:ring-indigo-500 focus:border-transparent disabled:bg-gray-100 dark:disabled:bg-slate-700 disabled:cursor-not-allowed bg-white dark:bg-slate-700 text-gray-900 dark:text-slate-100"
                         />
-                        <p className="mt-1 text-xs text-gray-500 text-center">
+                        <p className="mt-1 text-xs text-gray-500 dark:text-slate-400 text-center">
                             กรอกรหัส OTP 6 หลัก
                         </p>
                     </div>
@@ -301,7 +301,7 @@ const PhoneAuthForm: React.FC<PhoneAuthFormProps> = ({ onSuccess, onError }) => 
                     <button
                         onClick={handleVerifyOTP}
                         disabled={isLoading || otp.length !== 6}
-                        className="w-full bg-indigo-600 text-white rounded-lg px-6 py-3 font-medium hover:bg-indigo-700 transition-colors disabled:opacity-50 disabled:cursor-not-allowed flex items-center justify-center gap-2"
+                        className="w-full bg-indigo-600 dark:bg-indigo-700 text-white rounded-lg px-6 py-3 font-medium hover:bg-indigo-700 dark:hover:bg-indigo-800 transition-colors disabled:opacity-50 disabled:cursor-not-allowed flex items-center justify-center gap-2"
                     >
                         {isLoading ? (
                             <>
@@ -324,14 +324,14 @@ const PhoneAuthForm: React.FC<PhoneAuthFormProps> = ({ onSuccess, onError }) => 
                     {/* ปุ่มขอ OTP ใหม่ */}
                     <div className="text-center">
                         {countdown > 0 ? (
-                            <p className="text-sm text-gray-500">
+                            <p className="text-sm text-gray-500 dark:text-slate-400">
                                 ขอรหัสใหม่ได้ใน {countdown} วินาที
                             </p>
                         ) : (
                             <button
                                 onClick={handleSendOTP}
                                 disabled={isLoading}
-                                className="text-sm text-indigo-600 hover:text-indigo-700 font-medium disabled:opacity-50 disabled:cursor-not-allowed"
+                                className="text-sm text-indigo-600 dark:text-indigo-400 hover:text-indigo-700 dark:hover:text-indigo-300 font-medium disabled:opacity-50 disabled:cursor-not-allowed"
                             >
                                 ขอรหัส OTP ใหม่
                             </button>
@@ -342,7 +342,7 @@ const PhoneAuthForm: React.FC<PhoneAuthFormProps> = ({ onSuccess, onError }) => 
                     <button
                         onClick={handleBackToPhone}
                         disabled={isLoading}
-                        className="w-full text-gray-600 hover:text-gray-800 text-sm font-medium disabled:opacity-50 disabled:cursor-not-allowed"
+                        className="w-full text-gray-600 dark:text-slate-400 hover:text-gray-800 dark:hover:text-slate-200 text-sm font-medium disabled:opacity-50 disabled:cursor-not-allowed"
                     >
                         ← เปลี่ยนเบอร์โทรศัพท์
                     </button>
@@ -351,11 +351,11 @@ const PhoneAuthForm: React.FC<PhoneAuthFormProps> = ({ onSuccess, onError }) => 
 
             {/* Error Message */}
             {error && (
-                <div className="bg-red-50 border border-red-200 rounded-lg p-3 flex items-start gap-2">
-                    <svg className="w-5 h-5 text-red-500 flex-shrink-0 mt-0.5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                <div className="bg-red-50 dark:bg-red-900/30 border border-red-200 dark:border-red-800 rounded-lg p-3 flex items-start gap-2">
+                    <svg className="w-5 h-5 text-red-500 dark:text-red-400 flex-shrink-0 mt-0.5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                         <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M12 8v4m0 4h.01M21 12a9 9 0 11-18 0 9 9 0 0118 0z" />
                     </svg>
-                    <p className="text-sm text-red-700">{error}</p>
+                    <p className="text-sm text-red-700 dark:text-red-300">{error}</p>
                 </div>
             )}
         </div>

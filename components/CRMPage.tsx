@@ -360,8 +360,8 @@ const CRMPage: React.FC = () => {
     if (loading && !currentData.length) {
         return (
             <div className="flex flex-col items-center justify-center h-64 space-y-4">
-                <div className="animate-spin rounded-full h-12 w-12 border-b-2 border-indigo-600"></div>
-                <p className="text-gray-500">กำลังโหลดข้อมูล...</p>
+                <div className="animate-spin rounded-full h-12 w-12 border-b-2 border-indigo-600 dark:border-indigo-400"></div>
+                <p className="text-gray-500 dark:text-gray-400">กำลังโหลดข้อมูล...</p>
             </div>
         );
     }
@@ -371,8 +371,8 @@ const CRMPage: React.FC = () => {
             {/* Header */}
             <div className="flex flex-col sm:flex-row justify-between items-start sm:items-center gap-4">
                 <div>
-                    <h2 className="text-2xl font-bold text-gray-900">จัดการข้อมูล CRM</h2>
-                    <p className="text-sm text-gray-500 mt-1">จัดการข้อมูลลูกค้าและช่าง</p>
+                    <h2 className="text-2xl font-bold text-gray-900 dark:text-gray-100">จัดการข้อมูล CRM</h2>
+                    <p className="text-sm text-gray-500 dark:text-gray-400 mt-1">จัดการข้อมูลลูกค้าและช่าง</p>
                 </div>
                 <button
                     onClick={() => openModal()}
@@ -384,13 +384,13 @@ const CRMPage: React.FC = () => {
             </div>
 
             {/* Tabs */}
-            <div className="flex border-b border-gray-200">
+            <div className="flex border-b border-gray-200 dark:border-slate-700">
                 <button
                     onClick={() => { setActiveTab('customers'); setSearchTerm(''); }}
                     className={`flex items-center gap-2 px-6 py-3 font-medium text-sm border-b-2 transition-colors ${
                         activeTab === 'customers'
-                            ? 'border-indigo-500 text-indigo-600'
-                            : 'border-transparent text-gray-500 hover:text-gray-700'
+                            ? 'border-indigo-500 text-indigo-600 dark:text-indigo-400'
+                            : 'border-transparent text-gray-500 dark:text-gray-400 hover:text-gray-700 dark:hover:text-gray-300'
                     }`}
                 >
                     <Users className="w-5 h-5" />
@@ -400,8 +400,8 @@ const CRMPage: React.FC = () => {
                     onClick={() => { setActiveTab('contractors'); setSearchTerm(''); }}
                     className={`flex items-center gap-2 px-6 py-3 font-medium text-sm border-b-2 transition-colors ${
                         activeTab === 'contractors'
-                            ? 'border-indigo-500 text-indigo-600'
-                            : 'border-transparent text-gray-500 hover:text-gray-700'
+                            ? 'border-indigo-500 text-indigo-600 dark:text-indigo-400'
+                            : 'border-transparent text-gray-500 dark:text-gray-400 hover:text-gray-700 dark:hover:text-gray-300'
                     }`}
                 >
                     <HardHat className="w-5 h-5" />
@@ -411,19 +411,19 @@ const CRMPage: React.FC = () => {
 
             {/* Search */}
             <div className="relative">
-                <Search className="absolute left-3 top-1/2 transform -translate-y-1/2 w-5 h-5 text-gray-400" />
+                <Search className="absolute left-3 top-1/2 transform -translate-y-1/2 w-5 h-5 text-gray-400 dark:text-gray-500" />
                 <input
                     type="text"
                     placeholder={`ค้นหา${activeTab === 'customers' ? 'ลูกค้า' : 'ช่าง'}...`}
                     value={searchTerm}
                     onChange={(e) => setSearchTerm(e.target.value)}
-                    className="w-full pl-10 pr-4 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-indigo-500 focus:border-transparent"
+                    className="w-full pl-10 pr-4 py-2 border border-gray-300 dark:border-slate-600 rounded-lg focus:ring-2 focus:ring-indigo-500 focus:border-transparent bg-white dark:bg-slate-700 text-gray-800 dark:text-gray-100"
                 />
             </div>
 
             {/* Error */}
             {error && (
-                <div className="flex items-center gap-2 p-4 bg-red-50 border border-red-200 rounded-lg text-red-700">
+                <div className="flex items-center gap-2 p-4 bg-red-50 dark:bg-red-900/30 border border-red-200 dark:border-red-800 rounded-lg text-red-700 dark:text-red-300">
                     <AlertCircle className="w-5 h-5" />
                     {error}
                 </div>
@@ -432,12 +432,12 @@ const CRMPage: React.FC = () => {
             {/* List */}
             <div className="space-y-3">
                 {currentData.length === 0 ? (
-                    <div className="text-center py-12 text-gray-500">
+                    <div className="text-center py-12 text-gray-500 dark:text-gray-400">
                         <Users className="w-16 h-16 mx-auto mb-4 opacity-30" />
                         <p>ยังไม่มีข้อมูล{activeTab === 'customers' ? 'ลูกค้า' : 'ช่าง'}</p>
                         <button
                             onClick={() => openModal()}
-                            className="mt-4 text-indigo-600 hover:text-indigo-700"
+                            className="mt-4 text-indigo-600 dark:text-indigo-400 hover:text-indigo-700 dark:hover:text-indigo-300"
                         >
                             + เพิ่มรายการแรก
                         </button>
@@ -455,28 +455,28 @@ const CRMPage: React.FC = () => {
                         return (
                             <div
                                 key={item.id}
-                                className="bg-white border border-gray-200 rounded-lg p-4 hover:shadow-md transition-shadow"
+                                className="bg-white dark:bg-slate-800 border border-gray-200 dark:border-slate-700 rounded-lg p-4 hover:shadow-md transition-shadow"
                             >
                                 <div className="flex items-start justify-between gap-4">
                                     <div className="flex-1 min-w-0">
                                         <div className="flex items-center gap-2 mb-1">
-                                            <h3 className="font-semibold text-gray-900 truncate">{name}</h3>
+                                            <h3 className="font-semibold text-gray-900 dark:text-gray-100 truncate">{name}</h3>
                                             <span className={`px-2 py-0.5 text-xs rounded-full ${
                                                 type === 'company' 
-                                                    ? 'bg-blue-100 text-blue-700' 
-                                                    : 'bg-gray-100 text-gray-700'
+                                                    ? 'bg-blue-100 dark:bg-blue-900/30 text-blue-700 dark:text-blue-300' 
+                                                    : 'bg-gray-100 dark:bg-slate-700 text-gray-700 dark:text-gray-300'
                                             }`}>
                                                 {type === 'company' ? 'นิติบุคคล' : 'บุคคล'}
                                             </span>
                                             {usageCount > 0 && (
-                                                <span className="flex items-center gap-1 text-xs text-amber-600">
+                                                <span className="flex items-center gap-1 text-xs text-amber-600 dark:text-amber-400">
                                                     <Star className="w-3 h-3" />
                                                     ใช้ {usageCount} ครั้ง
                                                 </span>
                                             )}
                                         </div>
                                         
-                                        <div className="flex flex-wrap items-center gap-3 text-sm text-gray-500">
+                                        <div className="flex flex-wrap items-center gap-3 text-sm text-gray-500 dark:text-gray-400">
                                             <span className="flex items-center gap-1">
                                                 <Phone className="w-4 h-4" />
                                                 {item.phone}
@@ -500,7 +500,7 @@ const CRMPage: React.FC = () => {
                                         </div>
 
                                         {item.address && (
-                                            <p className="flex items-start gap-1 text-sm text-gray-500 mt-1">
+                                            <p className="flex items-start gap-1 text-sm text-gray-500 dark:text-gray-400 mt-1">
                                                 <MapPin className="w-4 h-4 mt-0.5 flex-shrink-0" />
                                                 <span className="truncate">{item.address}</span>
                                             </p>
@@ -512,7 +512,7 @@ const CRMPage: React.FC = () => {
                                                 {tags.map((tag, idx) => (
                                                     <span 
                                                         key={idx}
-                                                        className="px-2 py-0.5 bg-indigo-50 text-indigo-700 text-xs rounded-full"
+                                                        className="px-2 py-0.5 bg-indigo-50 dark:bg-indigo-900/30 text-indigo-700 dark:text-indigo-300 text-xs rounded-full"
                                                     >
                                                         {tag}
                                                     </span>
@@ -526,7 +526,7 @@ const CRMPage: React.FC = () => {
                                                 {specialties.map((spec, idx) => (
                                                     <span 
                                                         key={idx}
-                                                        className="px-2 py-0.5 bg-amber-50 text-amber-700 text-xs rounded-full"
+                                                        className="px-2 py-0.5 bg-amber-50 dark:bg-amber-900/30 text-amber-700 dark:text-amber-300 text-xs rounded-full"
                                                     >
                                                         {spec}
                                                     </span>
@@ -538,14 +538,14 @@ const CRMPage: React.FC = () => {
                                     <div className="flex items-center gap-2">
                                         <button
                                             onClick={() => openModal(item)}
-                                            className="p-2 text-gray-500 hover:text-indigo-600 hover:bg-indigo-50 rounded-lg transition-colors"
+                                            className="p-2 text-gray-500 dark:text-gray-400 hover:text-indigo-600 dark:hover:text-indigo-400 hover:bg-indigo-50 dark:hover:bg-indigo-900/30 rounded-lg transition-colors"
                                             title="แก้ไข"
                                         >
                                             <Edit2 className="w-5 h-5" />
                                         </button>
                                         <button
                                             onClick={() => setDeleteConfirm(item.id || null)}
-                                            className="p-2 text-gray-500 hover:text-red-600 hover:bg-red-50 rounded-lg transition-colors"
+                                            className="p-2 text-gray-500 dark:text-gray-400 hover:text-red-600 dark:hover:text-red-400 hover:bg-red-50 dark:hover:bg-red-900/30 rounded-lg transition-colors"
                                             title="ลบ"
                                         >
                                             <Trash2 className="w-5 h-5" />
@@ -555,8 +555,8 @@ const CRMPage: React.FC = () => {
 
                                 {/* Delete confirmation */}
                                 {deleteConfirm === item.id && (
-                                    <div className="mt-3 p-3 bg-red-50 border border-red-200 rounded-lg">
-                                        <p className="text-sm text-red-700 mb-2">ยืนยันการลบ "{name}"?</p>
+                                    <div className="mt-3 p-3 bg-red-50 dark:bg-red-900/30 border border-red-200 dark:border-red-800 rounded-lg">
+                                        <p className="text-sm text-red-700 dark:text-red-300 mb-2">ยืนยันการลบ "{name}"?</p>
                                         <div className="flex gap-2">
                                             <button
                                                 onClick={() => handleDelete(item.id!)}
@@ -567,7 +567,7 @@ const CRMPage: React.FC = () => {
                                             </button>
                                             <button
                                                 onClick={() => setDeleteConfirm(null)}
-                                                className="px-3 py-1 bg-gray-200 text-gray-700 text-sm rounded hover:bg-gray-300"
+                                                className="px-3 py-1 bg-gray-200 dark:bg-slate-700 text-gray-700 dark:text-gray-200 text-sm rounded hover:bg-gray-300 dark:hover:bg-slate-600"
                                             >
                                                 ยกเลิก
                                             </button>
@@ -583,15 +583,15 @@ const CRMPage: React.FC = () => {
             {/* Modal */}
             {showModal && (
                 <div className="fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center z-50 p-4">
-                    <div className="bg-white rounded-xl shadow-2xl max-w-2xl w-full max-h-[90vh] overflow-y-auto">
+                    <div className="bg-white dark:bg-slate-800 rounded-xl shadow-2xl max-w-2xl w-full max-h-[90vh] overflow-y-auto">
                         {/* Modal Header */}
-                        <div className="flex items-center justify-between p-4 border-b border-gray-200 sticky top-0 bg-white z-10">
-                            <h3 className="text-lg font-semibold text-gray-900">
+                        <div className="flex items-center justify-between p-4 border-b border-gray-200 dark:border-slate-700 sticky top-0 bg-white dark:bg-slate-800 z-10">
+                            <h3 className="text-lg font-semibold text-gray-900 dark:text-gray-100">
                                 {editingId ? 'แก้ไข' : 'เพิ่ม'}{activeTab === 'customers' ? 'ลูกค้า' : 'ช่าง'}
                             </h3>
                             <button
                                 onClick={() => setShowModal(false)}
-                                className="p-2 hover:bg-gray-100 rounded-lg transition-colors"
+                                className="p-2 hover:bg-gray-100 dark:hover:bg-slate-700 rounded-lg transition-colors text-gray-600 dark:text-gray-300"
                             >
                                 <X className="w-5 h-5" />
                             </button>
@@ -601,7 +601,7 @@ const CRMPage: React.FC = () => {
                         <div className="p-4 space-y-4">
                             {/* Type */}
                             <div>
-                                <label className="block text-sm font-medium text-gray-700 mb-1">ประเภท</label>
+                                <label className="block text-sm font-medium text-gray-700 dark:text-gray-200 mb-1">ประเภท</label>
                                 <div className="flex gap-4">
                                     <label className="flex items-center gap-2 cursor-pointer">
                                         <input
@@ -632,14 +632,14 @@ const CRMPage: React.FC = () => {
 
                             {/* Name */}
                             <div>
-                                <label className="block text-sm font-medium text-gray-700 mb-1">
+                                <label className="block text-sm font-medium text-gray-700 dark:text-gray-200 mb-1">
                                     ชื่อ{activeTab === 'customers' ? 'ลูกค้า' : 'ช่าง'} *
                                 </label>
                                 <input
                                     type="text"
                                     value={formData.name}
                                     onChange={(e) => setFormData({ ...formData, name: e.target.value })}
-                                    className="w-full px-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-indigo-500 focus:border-transparent"
+                                    className="w-full px-3 py-2 border border-gray-300 dark:border-slate-600 rounded-lg focus:ring-2 focus:ring-indigo-500 focus:border-transparent bg-white dark:bg-slate-700 text-gray-800 dark:text-gray-100"
                                     placeholder={`ชื่อ${activeTab === 'customers' ? 'ลูกค้า' : 'ช่าง'}/บริษัท`}
                                 />
                             </div>
@@ -647,22 +647,22 @@ const CRMPage: React.FC = () => {
                             {/* Phone */}
                             <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
                                 <div>
-                                    <label className="block text-sm font-medium text-gray-700 mb-1">เบอร์โทรศัพท์ *</label>
+                                    <label className="block text-sm font-medium text-gray-700 dark:text-gray-200 mb-1">เบอร์โทรศัพท์ *</label>
                                     <input
                                         type="tel"
                                         value={formData.phone}
                                         onChange={(e) => setFormData({ ...formData, phone: e.target.value })}
-                                        className="w-full px-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-indigo-500 focus:border-transparent"
+                                        className="w-full px-3 py-2 border border-gray-300 dark:border-slate-600 rounded-lg focus:ring-2 focus:ring-indigo-500 focus:border-transparent bg-white dark:bg-slate-700 text-gray-800 dark:text-gray-100"
                                         placeholder="0XX-XXX-XXXX"
                                     />
                                 </div>
                                 <div>
-                                    <label className="block text-sm font-medium text-gray-700 mb-1">เบอร์สำรอง</label>
+                                    <label className="block text-sm font-medium text-gray-700 dark:text-gray-200 mb-1">เบอร์สำรอง</label>
                                     <input
                                         type="tel"
                                         value={formData.alternatePhone}
                                         onChange={(e) => setFormData({ ...formData, alternatePhone: e.target.value })}
-                                        className="w-full px-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-indigo-500 focus:border-transparent"
+                                        className="w-full px-3 py-2 border border-gray-300 dark:border-slate-600 rounded-lg focus:ring-2 focus:ring-indigo-500 focus:border-transparent bg-white dark:bg-slate-700 text-gray-800 dark:text-gray-100"
                                         placeholder="0XX-XXX-XXXX"
                                     />
                                 </div>
@@ -671,22 +671,22 @@ const CRMPage: React.FC = () => {
                             {/* Email & Line ID */}
                             <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
                                 <div>
-                                    <label className="block text-sm font-medium text-gray-700 mb-1">อีเมล</label>
+                                    <label className="block text-sm font-medium text-gray-700 dark:text-gray-200 mb-1">อีเมล</label>
                                     <input
                                         type="email"
                                         value={formData.email}
                                         onChange={(e) => setFormData({ ...formData, email: e.target.value })}
-                                        className="w-full px-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-indigo-500 focus:border-transparent"
+                                        className="w-full px-3 py-2 border border-gray-300 dark:border-slate-600 rounded-lg focus:ring-2 focus:ring-indigo-500 focus:border-transparent bg-white dark:bg-slate-700 text-gray-800 dark:text-gray-100"
                                         placeholder="email@example.com"
                                     />
                                 </div>
                                 <div>
-                                    <label className="block text-sm font-medium text-gray-700 mb-1">Line ID</label>
+                                    <label className="block text-sm font-medium text-gray-700 dark:text-gray-200 mb-1">Line ID</label>
                                     <input
                                         type="text"
                                         value={formData.lineId}
                                         onChange={(e) => setFormData({ ...formData, lineId: e.target.value })}
-                                        className="w-full px-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-indigo-500 focus:border-transparent"
+                                        className="w-full px-3 py-2 border border-gray-300 dark:border-slate-600 rounded-lg focus:ring-2 focus:ring-indigo-500 focus:border-transparent bg-white dark:bg-slate-700 text-gray-800 dark:text-gray-100"
                                         placeholder="Line ID"
                                     />
                                 </div>
@@ -695,12 +695,12 @@ const CRMPage: React.FC = () => {
                             {/* ID Card (contractors only) */}
                             {activeTab === 'contractors' && (
                                 <div>
-                                    <label className="block text-sm font-medium text-gray-700 mb-1">เลขบัตรประชาชน</label>
+                                    <label className="block text-sm font-medium text-gray-700 dark:text-gray-200 mb-1">เลขบัตรประชาชน</label>
                                     <input
                                         type="text"
                                         value={formData.idCard}
                                         onChange={(e) => setFormData({ ...formData, idCard: e.target.value })}
-                                        className="w-full px-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-indigo-500 focus:border-transparent"
+                                        className="w-full px-3 py-2 border border-gray-300 dark:border-slate-600 rounded-lg focus:ring-2 focus:ring-indigo-500 focus:border-transparent bg-white dark:bg-slate-700 text-gray-800 dark:text-gray-100"
                                         placeholder="X-XXXX-XXXXX-XX-X"
                                         maxLength={17}
                                     />
@@ -710,12 +710,12 @@ const CRMPage: React.FC = () => {
                             {/* Tax ID */}
                             {formData.type === 'company' && (
                                 <div>
-                                    <label className="block text-sm font-medium text-gray-700 mb-1">เลขประจำตัวผู้เสียภาษี</label>
+                                    <label className="block text-sm font-medium text-gray-700 dark:text-gray-200 mb-1">เลขประจำตัวผู้เสียภาษี</label>
                                     <input
                                         type="text"
                                         value={formData.taxId}
                                         onChange={(e) => setFormData({ ...formData, taxId: e.target.value })}
-                                        className="w-full px-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-indigo-500 focus:border-transparent"
+                                        className="w-full px-3 py-2 border border-gray-300 dark:border-slate-600 rounded-lg focus:ring-2 focus:ring-indigo-500 focus:border-transparent bg-white dark:bg-slate-700 text-gray-800 dark:text-gray-100"
                                         placeholder="เลขประจำตัวผู้เสียภาษี 13 หลัก"
                                     />
                                 </div>
@@ -723,11 +723,11 @@ const CRMPage: React.FC = () => {
 
                             {/* Address */}
                             <div>
-                                <label className="block text-sm font-medium text-gray-700 mb-1">ที่อยู่</label>
+                                <label className="block text-sm font-medium text-gray-700 dark:text-gray-200 mb-1">ที่อยู่</label>
                                 <textarea
                                     value={formData.address}
                                     onChange={(e) => setFormData({ ...formData, address: e.target.value })}
-                                    className="w-full px-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-indigo-500 focus:border-transparent"
+                                    className="w-full px-3 py-2 border border-gray-300 dark:border-slate-600 rounded-lg focus:ring-2 focus:ring-indigo-500 focus:border-transparent bg-white dark:bg-slate-700 text-gray-800 dark:text-gray-100"
                                     rows={2}
                                     placeholder="ที่อยู่"
                                 />
@@ -736,39 +736,39 @@ const CRMPage: React.FC = () => {
                             {/* District, Amphoe, Province, Postal */}
                             <div className="grid grid-cols-2 sm:grid-cols-4 gap-4">
                                 <div>
-                                    <label className="block text-sm font-medium text-gray-700 mb-1">ตำบล/แขวง</label>
+                                    <label className="block text-sm font-medium text-gray-700 dark:text-gray-200 mb-1">ตำบล/แขวง</label>
                                     <input
                                         type="text"
                                         value={formData.district}
                                         onChange={(e) => setFormData({ ...formData, district: e.target.value })}
-                                        className="w-full px-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-indigo-500 focus:border-transparent"
+                                        className="w-full px-3 py-2 border border-gray-300 dark:border-slate-600 rounded-lg focus:ring-2 focus:ring-indigo-500 focus:border-transparent bg-white dark:bg-slate-700 text-gray-800 dark:text-gray-100"
                                     />
                                 </div>
                                 <div>
-                                    <label className="block text-sm font-medium text-gray-700 mb-1">อำเภอ/เขต</label>
+                                    <label className="block text-sm font-medium text-gray-700 dark:text-gray-200 mb-1">อำเภอ/เขต</label>
                                     <input
                                         type="text"
                                         value={formData.amphoe}
                                         onChange={(e) => setFormData({ ...formData, amphoe: e.target.value })}
-                                        className="w-full px-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-indigo-500 focus:border-transparent"
+                                        className="w-full px-3 py-2 border border-gray-300 dark:border-slate-600 rounded-lg focus:ring-2 focus:ring-indigo-500 focus:border-transparent bg-white dark:bg-slate-700 text-gray-800 dark:text-gray-100"
                                     />
                                 </div>
                                 <div>
-                                    <label className="block text-sm font-medium text-gray-700 mb-1">จังหวัด</label>
+                                    <label className="block text-sm font-medium text-gray-700 dark:text-gray-200 mb-1">จังหวัด</label>
                                     <input
                                         type="text"
                                         value={formData.province}
                                         onChange={(e) => setFormData({ ...formData, province: e.target.value })}
-                                        className="w-full px-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-indigo-500 focus:border-transparent"
+                                        className="w-full px-3 py-2 border border-gray-300 dark:border-slate-600 rounded-lg focus:ring-2 focus:ring-indigo-500 focus:border-transparent bg-white dark:bg-slate-700 text-gray-800 dark:text-gray-100"
                                     />
                                 </div>
                                 <div>
-                                    <label className="block text-sm font-medium text-gray-700 mb-1">รหัสไปรษณีย์</label>
+                                    <label className="block text-sm font-medium text-gray-700 dark:text-gray-200 mb-1">รหัสไปรษณีย์</label>
                                     <input
                                         type="text"
                                         value={formData.postalCode}
                                         onChange={(e) => setFormData({ ...formData, postalCode: e.target.value })}
-                                        className="w-full px-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-indigo-500 focus:border-transparent"
+                                        className="w-full px-3 py-2 border border-gray-300 dark:border-slate-600 rounded-lg focus:ring-2 focus:ring-indigo-500 focus:border-transparent bg-white dark:bg-slate-700 text-gray-800 dark:text-gray-100"
                                         maxLength={5}
                                     />
                                 </div>
@@ -778,22 +778,22 @@ const CRMPage: React.FC = () => {
                             {activeTab === 'customers' && (
                                 <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
                                     <div>
-                                        <label className="block text-sm font-medium text-gray-700 mb-1">ชื่อโครงการ</label>
+                                        <label className="block text-sm font-medium text-gray-700 dark:text-gray-200 mb-1">ชื่อโครงการ</label>
                                         <input
                                             type="text"
                                             value={formData.projectName}
                                             onChange={(e) => setFormData({ ...formData, projectName: e.target.value })}
-                                            className="w-full px-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-indigo-500 focus:border-transparent"
+                                            className="w-full px-3 py-2 border border-gray-300 dark:border-slate-600 rounded-lg focus:ring-2 focus:ring-indigo-500 focus:border-transparent bg-white dark:bg-slate-700 text-gray-800 dark:text-gray-100"
                                             placeholder="ชื่อโครงการ/หมู่บ้าน"
                                         />
                                     </div>
                                     <div>
-                                        <label className="block text-sm font-medium text-gray-700 mb-1">บ้านเลขที่</label>
+                                        <label className="block text-sm font-medium text-gray-700 dark:text-gray-200 mb-1">บ้านเลขที่</label>
                                         <input
                                             type="text"
                                             value={formData.houseNumber}
                                             onChange={(e) => setFormData({ ...formData, houseNumber: e.target.value })}
-                                            className="w-full px-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-indigo-500 focus:border-transparent"
+                                            className="w-full px-3 py-2 border border-gray-300 dark:border-slate-600 rounded-lg focus:ring-2 focus:ring-indigo-500 focus:border-transparent bg-white dark:bg-slate-700 text-gray-800 dark:text-gray-100"
                                             placeholder="บ้านเลขที่/ห้องเลขที่"
                                         />
                                     </div>
@@ -803,7 +803,7 @@ const CRMPage: React.FC = () => {
                             {/* Specialties (contractors only) */}
                             {activeTab === 'contractors' && (
                                 <div>
-                                    <label className="block text-sm font-medium text-gray-700 mb-1">ความเชี่ยวชาญ</label>
+                                    <label className="block text-sm font-medium text-gray-700 dark:text-gray-200 mb-1">ความเชี่ยวชาญ</label>
                                     <div className="flex gap-2 mb-2">
                                         <input
                                             type="text"
@@ -836,7 +836,7 @@ const CRMPage: React.FC = () => {
 
                             {/* Tags */}
                             <div>
-                                <label className="block text-sm font-medium text-gray-700 mb-1">Tags</label>
+                                <label className="block text-sm font-medium text-gray-700 dark:text-gray-200 mb-1">Tags</label>
                                 <div className="flex gap-2 mb-2">
                                     <input
                                         type="text"
@@ -849,14 +849,14 @@ const CRMPage: React.FC = () => {
                                     <button
                                         type="button"
                                         onClick={addTag}
-                                        className="px-3 py-2 bg-indigo-100 text-indigo-700 rounded-lg hover:bg-indigo-200"
+                                        className="px-3 py-2 bg-indigo-100 dark:bg-indigo-900/30 text-indigo-700 dark:text-indigo-300 rounded-lg hover:bg-indigo-200 dark:hover:bg-indigo-900/50"
                                     >
                                         <Plus className="w-5 h-5" />
                                     </button>
                                 </div>
                                 <div className="flex flex-wrap gap-2">
                                     {formData.tags.map((tag, idx) => (
-                                        <span key={idx} className="flex items-center gap-1 px-2 py-1 bg-indigo-50 text-indigo-700 text-sm rounded-full">
+                                        <span key={idx} className="flex items-center gap-1 px-2 py-1 bg-indigo-50 dark:bg-indigo-900/30 text-indigo-700 dark:text-indigo-300 text-sm rounded-full">
                                             {tag}
                                             <button type="button" onClick={() => removeTag(tag)}>
                                                 <X className="w-3 h-3" />
@@ -868,11 +868,11 @@ const CRMPage: React.FC = () => {
 
                             {/* Notes */}
                             <div>
-                                <label className="block text-sm font-medium text-gray-700 mb-1">หมายเหตุ</label>
+                                <label className="block text-sm font-medium text-gray-700 dark:text-gray-200 mb-1">หมายเหตุ</label>
                                 <textarea
                                     value={formData.notes}
                                     onChange={(e) => setFormData({ ...formData, notes: e.target.value })}
-                                    className="w-full px-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-indigo-500 focus:border-transparent"
+                                    className="w-full px-3 py-2 border border-gray-300 dark:border-slate-600 rounded-lg focus:ring-2 focus:ring-indigo-500 focus:border-transparent bg-white dark:bg-slate-700 text-gray-800 dark:text-gray-100"
                                     rows={3}
                                     placeholder="หมายเหตุเพิ่มเติม"
                                 />
@@ -880,10 +880,10 @@ const CRMPage: React.FC = () => {
                         </div>
 
                         {/* Modal Footer */}
-                        <div className="flex justify-end gap-3 p-4 border-t border-gray-200 sticky bottom-0 bg-white">
+                        <div className="flex justify-end gap-3 p-4 border-t border-gray-200 dark:border-slate-700 sticky bottom-0 bg-white dark:bg-slate-800">
                             <button
                                 onClick={() => setShowModal(false)}
-                                className="px-4 py-2 text-gray-700 bg-gray-100 rounded-lg hover:bg-gray-200 transition-colors"
+                                className="px-4 py-2 text-gray-700 dark:text-gray-200 bg-gray-100 dark:bg-slate-700 rounded-lg hover:bg-gray-200 dark:hover:bg-slate-600 transition-colors"
                             >
                                 ยกเลิก
                             </button>

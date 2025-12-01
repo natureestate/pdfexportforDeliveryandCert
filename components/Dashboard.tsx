@@ -197,8 +197,8 @@ const Dashboard: React.FC<DashboardProps> = ({ onNavigateToDocType, onQuickActio
     if (loading) {
         return (
             <div className="flex flex-col items-center justify-center h-64 space-y-4">
-                <div className="animate-spin rounded-full h-12 w-12 border-b-2 border-indigo-600"></div>
-                <p className="text-gray-500">กำลังโหลดข้อมูลสถิติ...</p>
+                <div className="animate-spin rounded-full h-12 w-12 border-b-2 border-indigo-600 dark:border-indigo-400"></div>
+                <p className="text-gray-500 dark:text-gray-400">กำลังโหลดข้อมูลสถิติ...</p>
             </div>
         );
     }
@@ -206,9 +206,9 @@ const Dashboard: React.FC<DashboardProps> = ({ onNavigateToDocType, onQuickActio
     // แสดง Error
     if (error) {
         return (
-            <div className="bg-red-50 border border-red-200 rounded-lg p-6 text-center">
-                <AlertCircle className="w-12 h-12 text-red-400 mx-auto mb-3" />
-                <p className="text-red-600 mb-4">{error}</p>
+            <div className="bg-red-50 dark:bg-red-900/30 border border-red-200 dark:border-red-800 rounded-lg p-6 text-center">
+                <AlertCircle className="w-12 h-12 text-red-400 dark:text-red-300 mx-auto mb-3" />
+                <p className="text-red-600 dark:text-red-300 mb-4">{error}</p>
                 <button 
                     onClick={() => loadStats()}
                     className="px-4 py-2 bg-red-600 text-white rounded-lg hover:bg-red-700 transition-colors"
@@ -228,17 +228,17 @@ const Dashboard: React.FC<DashboardProps> = ({ onNavigateToDocType, onQuickActio
             {/* Header */}
             <div className="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-4">
                 <div>
-                    <h2 className="text-2xl font-bold text-gray-800 flex items-center gap-2">
-                        <BarChart3 className="w-7 h-7 text-indigo-600" /> Dashboard
+                    <h2 className="text-2xl font-bold text-gray-800 dark:text-gray-100 flex items-center gap-2">
+                        <BarChart3 className="w-7 h-7 text-indigo-600 dark:text-indigo-400" /> Dashboard
                     </h2>
-                    <p className="text-gray-500 text-sm mt-1">
+                    <p className="text-gray-500 dark:text-gray-400 text-sm mt-1">
                         ภาพรวมเอกสารของ {currentCompany?.name || 'บริษัท'}
                     </p>
                 </div>
                 <button
                     onClick={() => loadStats(true)}
                     disabled={refreshing}
-                    className="inline-flex items-center gap-2 px-4 py-2 bg-white border border-gray-300 rounded-lg text-gray-700 hover:bg-gray-50 transition-colors disabled:opacity-50"
+                    className="inline-flex items-center gap-2 px-4 py-2 bg-white dark:bg-slate-700 border border-gray-300 dark:border-slate-600 rounded-lg text-gray-700 dark:text-gray-200 hover:bg-gray-50 dark:hover:bg-slate-600 transition-colors disabled:opacity-50"
                 >
                     <RefreshCw className={`w-4 h-4 ${refreshing ? 'animate-spin' : ''}`} />
                     {refreshing ? 'กำลังรีเฟรช...' : 'รีเฟรช'}
@@ -327,15 +327,15 @@ const Dashboard: React.FC<DashboardProps> = ({ onNavigateToDocType, onQuickActio
 
             {/* เอกสารที่ยกเลิก */}
             {stats.totalCancelled > 0 && (
-                <div className="bg-red-50 border border-red-200 rounded-lg p-4 flex items-center gap-3">
-                    <div className="bg-red-100 rounded-full p-2">
-                        <Ban className="w-5 h-5 text-red-600" />
+                <div className="bg-red-50 dark:bg-red-900/30 border border-red-200 dark:border-red-800 rounded-lg p-4 flex items-center gap-3">
+                    <div className="bg-red-100 dark:bg-red-800 rounded-full p-2">
+                        <Ban className="w-5 h-5 text-red-600 dark:text-red-300" />
                     </div>
                     <div>
-                        <p className="font-medium text-red-800">
+                        <p className="font-medium text-red-800 dark:text-red-200">
                             เอกสารที่ยกเลิก: {stats.totalCancelled} ฉบับ
                         </p>
-                        <p className="text-sm text-red-600">
+                        <p className="text-sm text-red-600 dark:text-red-300">
                             มีเอกสารที่ถูกยกเลิกในระบบ
                         </p>
                     </div>
@@ -345,10 +345,10 @@ const Dashboard: React.FC<DashboardProps> = ({ onNavigateToDocType, onQuickActio
             {/* Main Content Grid */}
             <div className="grid grid-cols-1 lg:grid-cols-3 gap-6">
                 {/* สถิติตามประเภทเอกสาร */}
-                <div className="lg:col-span-2 bg-white rounded-xl shadow-sm border border-gray-200 p-5">
+                <div className="lg:col-span-2 bg-white dark:bg-slate-700 rounded-xl shadow-sm border border-gray-200 dark:border-slate-600 p-5">
                     <div className="flex items-center gap-2 mb-4">
-                        <PieChart className="w-5 h-5 text-indigo-600" />
-                        <h3 className="text-lg font-semibold text-gray-800">สถิติตามประเภทเอกสาร</h3>
+                        <PieChart className="w-5 h-5 text-indigo-600 dark:text-indigo-400" />
+                        <h3 className="text-lg font-semibold text-gray-800 dark:text-gray-100">สถิติตามประเภทเอกสาร</h3>
                     </div>
                     
                     <div className="grid grid-cols-2 sm:grid-cols-3 md:grid-cols-4 lg:grid-cols-5 gap-3">
@@ -391,8 +391,8 @@ const Dashboard: React.FC<DashboardProps> = ({ onNavigateToDocType, onQuickActio
 
                     {/* แสดงถ้าไม่มีเอกสาร */}
                     {stats.byDocType.every(stat => stat.total === 0) && (
-                        <div className="text-center py-8 text-gray-500">
-                            <FileText className="w-12 h-12 mx-auto mb-3 text-gray-300" />
+                        <div className="text-center py-8 text-gray-500 dark:text-gray-400">
+                            <FileText className="w-12 h-12 mx-auto mb-3 text-gray-300 dark:text-gray-500" />
                             <p>ยังไม่มีเอกสารในระบบ</p>
                             <p className="text-sm">เริ่มสร้างเอกสารใหม่ได้เลย!</p>
                         </div>
@@ -400,10 +400,10 @@ const Dashboard: React.FC<DashboardProps> = ({ onNavigateToDocType, onQuickActio
                 </div>
 
                 {/* กิจกรรมล่าสุด */}
-                <div className="bg-white rounded-xl shadow-sm border border-gray-200 p-5">
+                <div className="bg-white dark:bg-slate-700 rounded-xl shadow-sm border border-gray-200 dark:border-slate-600 p-5">
                     <div className="flex items-center gap-2 mb-4">
-                        <Activity className="w-5 h-5 text-indigo-600" />
-                        <h3 className="text-lg font-semibold text-gray-800">กิจกรรมล่าสุด</h3>
+                        <Activity className="w-5 h-5 text-indigo-600 dark:text-indigo-400" />
+                        <h3 className="text-lg font-semibold text-gray-800 dark:text-gray-100">กิจกรรมล่าสุด</h3>
                     </div>
 
                     <div className="space-y-3 max-h-80 overflow-y-auto">
@@ -413,8 +413,8 @@ const Dashboard: React.FC<DashboardProps> = ({ onNavigateToDocType, onQuickActio
                                     key={`${activity.docType}-${activity.id}`}
                                     className={`flex items-start gap-3 p-3 rounded-lg ${
                                         activity.status === 'cancelled' 
-                                            ? 'bg-red-50 border border-red-100' 
-                                            : 'bg-gray-50'
+                                            ? 'bg-red-50 dark:bg-red-900/30 border border-red-100 dark:border-red-800' 
+                                            : 'bg-gray-50 dark:bg-slate-600'
                                     }`}
                                 >
                                     <div className={`${DOC_TYPE_COLORS[activity.docType]} rounded-full p-1.5 flex-shrink-0`}>
@@ -422,21 +422,21 @@ const Dashboard: React.FC<DashboardProps> = ({ onNavigateToDocType, onQuickActio
                                     </div>
                                     <div className="flex-1 min-w-0">
                                         <div className="flex items-center gap-2">
-                                            <span className="text-sm font-medium text-gray-800 truncate">
+                                            <span className="text-sm font-medium text-gray-800 dark:text-gray-100 truncate">
                                                 {activity.docNumber}
                                             </span>
                                             {activity.status === 'cancelled' && (
-                                                <span className="text-xs bg-red-100 text-red-600 px-1.5 py-0.5 rounded">
+                                                <span className="text-xs bg-red-100 dark:bg-red-800 text-red-600 dark:text-red-200 px-1.5 py-0.5 rounded">
                                                     ยกเลิก
                                                 </span>
                                             )}
                                         </div>
-                                        <p className="text-xs text-gray-500 truncate">
+                                        <p className="text-xs text-gray-500 dark:text-gray-400 truncate">
                                             {activity.docTypeName}
                                             {activity.customerName && ` • ${activity.customerName}`}
                                         </p>
                                         {activity.total && (
-                                            <p className="text-xs font-medium text-green-600">
+                                            <p className="text-xs font-medium text-green-600 dark:text-green-400">
                                                 ฿{formatCurrency(activity.total)}
                                             </p>
                                         )}
@@ -447,8 +447,8 @@ const Dashboard: React.FC<DashboardProps> = ({ onNavigateToDocType, onQuickActio
                                 </div>
                             ))
                         ) : (
-                            <div className="text-center py-8 text-gray-500">
-                                <Activity className="w-10 h-10 mx-auto mb-2 text-gray-300" />
+                            <div className="text-center py-8 text-gray-500 dark:text-gray-400">
+                                <Activity className="w-10 h-10 mx-auto mb-2 text-gray-300 dark:text-gray-500" />
                                 <p className="text-sm">ยังไม่มีกิจกรรม</p>
                             </div>
                         )}
@@ -457,10 +457,10 @@ const Dashboard: React.FC<DashboardProps> = ({ onNavigateToDocType, onQuickActio
             </div>
 
             {/* แนวโน้มรายเดือน */}
-            <div className="bg-white rounded-xl shadow-sm border border-gray-200 p-5">
+            <div className="bg-white dark:bg-slate-700 rounded-xl shadow-sm border border-gray-200 dark:border-slate-600 p-5">
                 <div className="flex items-center gap-2 mb-4">
-                    <BarChart3 className="w-5 h-5 text-indigo-600" />
-                    <h3 className="text-lg font-semibold text-gray-800">แนวโน้ม 6 เดือนย้อนหลัง</h3>
+                    <BarChart3 className="w-5 h-5 text-indigo-600 dark:text-indigo-400" />
+                    <h3 className="text-lg font-semibold text-gray-800 dark:text-gray-100">แนวโน้ม 6 เดือนย้อนหลัง</h3>
                 </div>
 
                 {/* Simple Bar Chart */}
@@ -474,12 +474,12 @@ const Dashboard: React.FC<DashboardProps> = ({ onNavigateToDocType, onQuickActio
                                 <div className="w-full flex flex-col items-center justify-end h-36">
                                     {/* ยอดเงิน */}
                                     {trend.revenue > 0 && (
-                                        <div className="text-xs text-green-600 font-medium mb-1 truncate w-full text-center">
+                                        <div className="text-xs text-green-600 dark:text-green-400 font-medium mb-1 truncate w-full text-center">
                                             ฿{formatCurrency(trend.revenue)}
                                         </div>
                                     )}
                                     {/* จำนวนเอกสาร */}
-                                    <div className="text-sm font-bold text-gray-700 mb-1">
+                                    <div className="text-sm font-bold text-gray-700 dark:text-gray-200 mb-1">
                                         {trend.count}
                                     </div>
                                     {/* Bar */}
@@ -487,7 +487,7 @@ const Dashboard: React.FC<DashboardProps> = ({ onNavigateToDocType, onQuickActio
                                         className={`w-full max-w-12 rounded-t-lg transition-all duration-500 ${
                                             index === stats.monthlyTrend.length - 1 
                                                 ? 'bg-indigo-500' 
-                                                : 'bg-indigo-200'
+                                                : 'bg-indigo-200 dark:bg-indigo-700'
                                         }`}
                                         style={{ 
                                             height: `${Math.max(heightPercent, 5)}%`,
@@ -496,7 +496,7 @@ const Dashboard: React.FC<DashboardProps> = ({ onNavigateToDocType, onQuickActio
                                     />
                                 </div>
                                 {/* เดือน */}
-                                <div className="text-xs text-gray-500 mt-2 text-center">
+                                <div className="text-xs text-gray-500 dark:text-gray-400 mt-2 text-center">
                                     {trend.month}
                                 </div>
                             </div>
@@ -505,14 +505,14 @@ const Dashboard: React.FC<DashboardProps> = ({ onNavigateToDocType, onQuickActio
                 </div>
 
                 {/* Legend */}
-                <div className="flex items-center justify-center gap-6 mt-4 pt-4 border-t border-gray-100">
+                <div className="flex items-center justify-center gap-6 mt-4 pt-4 border-t border-gray-100 dark:border-slate-600">
                     <div className="flex items-center gap-2">
                         <div className="w-3 h-3 rounded bg-indigo-500"></div>
-                        <span className="text-sm text-gray-600">เดือนปัจจุบัน</span>
+                        <span className="text-sm text-gray-600 dark:text-gray-300">เดือนปัจจุบัน</span>
                     </div>
                     <div className="flex items-center gap-2">
-                        <div className="w-3 h-3 rounded bg-indigo-200"></div>
-                        <span className="text-sm text-gray-600">เดือนก่อนหน้า</span>
+                        <div className="w-3 h-3 rounded bg-indigo-200 dark:bg-indigo-700"></div>
+                        <span className="text-sm text-gray-600 dark:text-gray-300">เดือนก่อนหน้า</span>
                     </div>
                 </div>
             </div>
@@ -520,10 +520,10 @@ const Dashboard: React.FC<DashboardProps> = ({ onNavigateToDocType, onQuickActio
             {/* New Features Grid */}
             <div className="grid grid-cols-1 lg:grid-cols-2 gap-6">
                 {/* Top 5 ลูกค้า */}
-                <div className="bg-white rounded-xl shadow-sm border border-gray-200 p-5">
+                <div className="bg-white dark:bg-slate-700 rounded-xl shadow-sm border border-gray-200 dark:border-slate-600 p-5">
                     <div className="flex items-center gap-2 mb-4">
                         <Star className="w-5 h-5 text-amber-500" />
-                        <h3 className="text-lg font-semibold text-gray-800">Top 5 ลูกค้า</h3>
+                        <h3 className="text-lg font-semibold text-gray-800 dark:text-gray-100">Top 5 ลูกค้า</h3>
                     </div>
                     
                     {stats.topCustomers && stats.topCustomers.length > 0 ? (
@@ -538,8 +538,8 @@ const Dashboard: React.FC<DashboardProps> = ({ onNavigateToDocType, onQuickActio
                                         {index + 1}
                                     </div>
                                     <div className="flex-1 min-w-0">
-                                        <p className="font-medium text-gray-800 truncate">{customer.customerName}</p>
-                                        <p className="text-xs text-gray-500">
+                                        <p className="font-medium text-gray-800 dark:text-gray-100 truncate">{customer.customerName}</p>
+                                        <p className="text-xs text-gray-500 dark:text-gray-400">
                                             {customer.documentCount} เอกสาร • ฿{formatCurrency(customer.totalAmount)}
                                         </p>
                                     </div>
@@ -547,18 +547,18 @@ const Dashboard: React.FC<DashboardProps> = ({ onNavigateToDocType, onQuickActio
                             ))}
                         </div>
                     ) : (
-                        <div className="text-center py-6 text-gray-500">
-                            <Users className="w-10 h-10 mx-auto mb-2 text-gray-300" />
+                        <div className="text-center py-6 text-gray-500 dark:text-gray-400">
+                            <Users className="w-10 h-10 mx-auto mb-2 text-gray-300 dark:text-gray-500" />
                             <p className="text-sm">ยังไม่มีข้อมูลลูกค้า</p>
                         </div>
                     )}
                 </div>
 
                 {/* เอกสารใกล้หมดอายุ */}
-                <div className="bg-white rounded-xl shadow-sm border border-gray-200 p-5">
+                <div className="bg-white dark:bg-slate-700 rounded-xl shadow-sm border border-gray-200 dark:border-slate-600 p-5">
                     <div className="flex items-center gap-2 mb-4">
                         <AlertTriangle className="w-5 h-5 text-amber-500" />
-                        <h3 className="text-lg font-semibold text-gray-800">เอกสารใกล้หมดอายุ</h3>
+                        <h3 className="text-lg font-semibold text-gray-800 dark:text-gray-100">เอกสารใกล้หมดอายุ</h3>
                     </div>
                     
                     {stats.expiringDocuments && stats.expiringDocuments.length > 0 ? (
@@ -568,8 +568,8 @@ const Dashboard: React.FC<DashboardProps> = ({ onNavigateToDocType, onQuickActio
                                     key={doc.id}
                                     className={`p-3 rounded-lg border ${
                                         doc.daysUntilExpiry <= 7 
-                                            ? 'bg-red-50 border-red-200' 
-                                            : 'bg-amber-50 border-amber-200'
+                                            ? 'bg-red-50 dark:bg-red-900/30 border-red-200 dark:border-red-800' 
+                                            : 'bg-amber-50 dark:bg-amber-900/30 border-amber-200 dark:border-amber-800'
                                     }`}
                                 >
                                     <div className="flex items-center justify-between">
@@ -579,24 +579,24 @@ const Dashboard: React.FC<DashboardProps> = ({ onNavigateToDocType, onQuickActio
                                             ) : (
                                                 <FileText className="w-4 h-4 text-amber-500" />
                                             )}
-                                            <span className="font-medium text-sm">{doc.docNumber}</span>
+                                            <span className="font-medium text-sm dark:text-gray-100">{doc.docNumber}</span>
                                         </div>
                                         <span className={`text-xs font-medium px-2 py-0.5 rounded-full ${
                                             doc.daysUntilExpiry <= 7 
-                                                ? 'bg-red-100 text-red-700' 
-                                                : 'bg-amber-100 text-amber-700'
+                                                ? 'bg-red-100 dark:bg-red-800 text-red-700 dark:text-red-200' 
+                                                : 'bg-amber-100 dark:bg-amber-800 text-amber-700 dark:text-amber-200'
                                         }`}>
                                             {doc.daysUntilExpiry} วัน
                                         </span>
                                     </div>
                                     {doc.customerName && (
-                                        <p className="text-xs text-gray-500 mt-1 truncate">{doc.customerName}</p>
+                                        <p className="text-xs text-gray-500 dark:text-gray-400 mt-1 truncate">{doc.customerName}</p>
                                     )}
                                 </div>
                             ))}
                         </div>
                     ) : (
-                        <div className="text-center py-6 text-gray-500">
+                        <div className="text-center py-6 text-gray-500 dark:text-gray-400">
                             <Check className="w-10 h-10 mx-auto mb-2 text-green-400" />
                             <p className="text-sm">ไม่มีเอกสารใกล้หมดอายุ</p>
                         </div>
@@ -604,10 +604,10 @@ const Dashboard: React.FC<DashboardProps> = ({ onNavigateToDocType, onQuickActio
                 </div>
 
                 {/* สถานะการชำระเงิน */}
-                <div className="bg-white rounded-xl shadow-sm border border-gray-200 p-5">
+                <div className="bg-white dark:bg-slate-700 rounded-xl shadow-sm border border-gray-200 dark:border-slate-600 p-5">
                     <div className="flex items-center gap-2 mb-4">
                         <Clock className="w-5 h-5 text-red-500" />
-                        <h3 className="text-lg font-semibold text-gray-800">ใบแจ้งหนี้ค้างชำระ</h3>
+                        <h3 className="text-lg font-semibold text-gray-800 dark:text-gray-100">ใบแจ้งหนี้ค้างชำระ</h3>
                     </div>
                     
                     {stats.pendingPayments && stats.pendingPayments.length > 0 ? (
@@ -617,37 +617,37 @@ const Dashboard: React.FC<DashboardProps> = ({ onNavigateToDocType, onQuickActio
                                     key={payment.id}
                                     className={`p-3 rounded-lg border ${
                                         payment.status === 'overdue' 
-                                            ? 'bg-red-50 border-red-200' 
-                                            : 'bg-yellow-50 border-yellow-200'
+                                            ? 'bg-red-50 dark:bg-red-900/30 border-red-200 dark:border-red-800' 
+                                            : 'bg-yellow-50 dark:bg-yellow-900/30 border-yellow-200 dark:border-yellow-800'
                                     }`}
                                 >
                                     <div className="flex items-center justify-between">
                                         <div>
-                                            <span className="font-medium text-sm">{payment.docNumber}</span>
+                                            <span className="font-medium text-sm dark:text-gray-100">{payment.docNumber}</span>
                                             {payment.customerName && (
-                                                <p className="text-xs text-gray-500 truncate">{payment.customerName}</p>
+                                                <p className="text-xs text-gray-500 dark:text-gray-400 truncate">{payment.customerName}</p>
                                             )}
                                         </div>
                                         <div className="text-right">
-                                            <p className="font-bold text-sm text-gray-800">฿{formatCurrency(payment.amount)}</p>
+                                            <p className="font-bold text-sm text-gray-800 dark:text-gray-100">฿{formatCurrency(payment.amount)}</p>
                                             {payment.status === 'overdue' && (
-                                                <span className="text-xs text-red-600">เกินกำหนด {payment.daysOverdue} วัน</span>
+                                                <span className="text-xs text-red-600 dark:text-red-400">เกินกำหนด {payment.daysOverdue} วัน</span>
                                             )}
                                         </div>
                                     </div>
                                 </div>
                             ))}
-                            <div className="pt-2 border-t border-gray-100 mt-2">
+                            <div className="pt-2 border-t border-gray-100 dark:border-slate-600 mt-2">
                                 <div className="flex justify-between items-center">
-                                    <span className="text-sm text-gray-600">รวมค้างชำระ</span>
-                                    <span className="font-bold text-red-600">
+                                    <span className="text-sm text-gray-600 dark:text-gray-300">รวมค้างชำระ</span>
+                                    <span className="font-bold text-red-600 dark:text-red-400">
                                         ฿{formatCurrency(stats.pendingPayments.reduce((sum, p) => sum + p.amount, 0))}
                                     </span>
                                 </div>
                             </div>
                         </div>
                     ) : (
-                        <div className="text-center py-6 text-gray-500">
+                        <div className="text-center py-6 text-gray-500 dark:text-gray-400">
                             <Check className="w-10 h-10 mx-auto mb-2 text-green-400" />
                             <p className="text-sm">ไม่มีใบแจ้งหนี้ค้างชำระ</p>
                         </div>
@@ -655,20 +655,20 @@ const Dashboard: React.FC<DashboardProps> = ({ onNavigateToDocType, onQuickActio
                 </div>
 
                 {/* Quick Actions */}
-                <div className="bg-white rounded-xl shadow-sm border border-gray-200 p-5">
+                <div className="bg-white dark:bg-slate-700 rounded-xl shadow-sm border border-gray-200 dark:border-slate-600 p-5">
                     <div className="flex items-center gap-2 mb-4">
                         <Zap className="w-5 h-5 text-indigo-500" />
-                        <h3 className="text-lg font-semibold text-gray-800">Quick Actions</h3>
+                        <h3 className="text-lg font-semibold text-gray-800 dark:text-gray-100">Quick Actions</h3>
                     </div>
                     
                     <div className="grid grid-cols-2 gap-3">
                         {[
-                            { docType: 'quotation' as DocType, icon: DollarSign, label: 'ใบเสนอราคา', color: 'bg-amber-50 hover:bg-amber-100 text-amber-700 border-amber-200' },
-                            { docType: 'invoice' as DocType, icon: FileText, label: 'ใบแจ้งหนี้', color: 'bg-green-50 hover:bg-green-100 text-green-700 border-green-200' },
-                            { docType: 'receipt' as DocType, icon: Receipt, label: 'ใบเสร็จ', color: 'bg-emerald-50 hover:bg-emerald-100 text-emerald-700 border-emerald-200' },
-                            { docType: 'delivery' as DocType, icon: Package, label: 'ใบส่งมอบ', color: 'bg-blue-50 hover:bg-blue-100 text-blue-700 border-blue-200' },
-                            { docType: 'warranty' as DocType, icon: Shield, label: 'ใบรับประกัน', color: 'bg-purple-50 hover:bg-purple-100 text-purple-700 border-purple-200' },
-                            { docType: 'tax-invoice' as DocType, icon: FileCheck, label: 'ใบกำกับภาษี', color: 'bg-teal-50 hover:bg-teal-100 text-teal-700 border-teal-200' },
+                            { docType: 'quotation' as DocType, icon: DollarSign, label: 'ใบเสนอราคา', color: 'bg-amber-50 dark:bg-amber-900/30 hover:bg-amber-100 dark:hover:bg-amber-900/50 text-amber-700 dark:text-amber-300 border-amber-200 dark:border-amber-800' },
+                            { docType: 'invoice' as DocType, icon: FileText, label: 'ใบแจ้งหนี้', color: 'bg-green-50 dark:bg-green-900/30 hover:bg-green-100 dark:hover:bg-green-900/50 text-green-700 dark:text-green-300 border-green-200 dark:border-green-800' },
+                            { docType: 'receipt' as DocType, icon: Receipt, label: 'ใบเสร็จ', color: 'bg-emerald-50 dark:bg-emerald-900/30 hover:bg-emerald-100 dark:hover:bg-emerald-900/50 text-emerald-700 dark:text-emerald-300 border-emerald-200 dark:border-emerald-800' },
+                            { docType: 'delivery' as DocType, icon: Package, label: 'ใบส่งมอบ', color: 'bg-blue-50 dark:bg-blue-900/30 hover:bg-blue-100 dark:hover:bg-blue-900/50 text-blue-700 dark:text-blue-300 border-blue-200 dark:border-blue-800' },
+                            { docType: 'warranty' as DocType, icon: Shield, label: 'ใบรับประกัน', color: 'bg-purple-50 dark:bg-purple-900/30 hover:bg-purple-100 dark:hover:bg-purple-900/50 text-purple-700 dark:text-purple-300 border-purple-200 dark:border-purple-800' },
+                            { docType: 'tax-invoice' as DocType, icon: FileCheck, label: 'ใบกำกับภาษี', color: 'bg-teal-50 dark:bg-teal-900/30 hover:bg-teal-100 dark:hover:bg-teal-900/50 text-teal-700 dark:text-teal-300 border-teal-200 dark:border-teal-800' },
                         ].map(({ docType, icon: Icon, label, color }) => (
                             <button
                                 key={docType}
@@ -685,11 +685,11 @@ const Dashboard: React.FC<DashboardProps> = ({ onNavigateToDocType, onQuickActio
             </div>
 
             {/* เป้าหมายรายเดือน */}
-            <div className="bg-gradient-to-r from-indigo-50 to-purple-50 rounded-xl p-5 border border-indigo-200">
+            <div className="bg-gradient-to-r from-indigo-50 to-purple-50 dark:from-indigo-900/30 dark:to-purple-900/30 rounded-xl p-5 border border-indigo-200 dark:border-indigo-700">
                 <div className="flex items-center justify-between mb-4">
                     <div className="flex items-center gap-2">
-                        <Target className="w-5 h-5 text-indigo-600" />
-                        <h3 className="text-lg font-semibold text-gray-800">เป้าหมายเดือนนี้</h3>
+                        <Target className="w-5 h-5 text-indigo-600 dark:text-indigo-400" />
+                        <h3 className="text-lg font-semibold text-gray-800 dark:text-gray-100">เป้าหมายเดือนนี้</h3>
                     </div>
                     <button
                         onClick={() => {
@@ -711,12 +711,12 @@ const Dashboard: React.FC<DashboardProps> = ({ onNavigateToDocType, onQuickActio
                         {/* เป้าหมายเอกสาร */}
                         <div>
                             <div className="flex items-center justify-between mb-2">
-                                <span className="text-sm font-medium text-gray-700">จำนวนเอกสาร</span>
-                                <span className="text-sm text-gray-500">
+                                <span className="text-sm font-medium text-gray-700 dark:text-gray-200">จำนวนเอกสาร</span>
+                                <span className="text-sm text-gray-500 dark:text-gray-400">
                                     {goalProgress.documentProgress}/{goalProgress.documentGoal}
                                 </span>
                             </div>
-                            <div className="w-full bg-gray-200 rounded-full h-4 overflow-hidden">
+                            <div className="w-full bg-gray-200 dark:bg-slate-600 rounded-full h-4 overflow-hidden">
                                 <div 
                                     className={`h-full rounded-full transition-all duration-500 ${
                                         goalProgress.isDocumentGoalMet ? 'bg-green-500' : 'bg-indigo-500'
@@ -741,12 +741,12 @@ const Dashboard: React.FC<DashboardProps> = ({ onNavigateToDocType, onQuickActio
                         {/* เป้าหมายรายได้ */}
                         <div>
                             <div className="flex items-center justify-between mb-2">
-                                <span className="text-sm font-medium text-gray-700">รายได้</span>
-                                <span className="text-sm text-gray-500">
+                                <span className="text-sm font-medium text-gray-700 dark:text-gray-200">รายได้</span>
+                                <span className="text-sm text-gray-500 dark:text-gray-400">
                                     ฿{formatCurrency(goalProgress.revenueProgress || 0)}/฿{formatCurrency(goalProgress.revenueGoal)}
                                 </span>
                             </div>
-                            <div className="w-full bg-gray-200 rounded-full h-4 overflow-hidden">
+                            <div className="w-full bg-gray-200 dark:bg-slate-600 rounded-full h-4 overflow-hidden">
                                 <div 
                                     className={`h-full rounded-full transition-all duration-500 ${
                                         goalProgress.isRevenueGoalMet ? 'bg-green-500' : 'bg-purple-500'
@@ -770,40 +770,40 @@ const Dashboard: React.FC<DashboardProps> = ({ onNavigateToDocType, onQuickActio
                     </div>
                 ) : (
                     <div className="text-center py-6">
-                        <Target className="w-12 h-12 mx-auto mb-3 text-indigo-300" />
-                        <p className="text-gray-600 mb-2">ยังไม่ได้ตั้งเป้าหมาย</p>
-                        <p className="text-sm text-gray-500">คลิก "ตั้งเป้า" เพื่อกำหนดเป้าหมายรายเดือน</p>
+                        <Target className="w-12 h-12 mx-auto mb-3 text-indigo-300 dark:text-indigo-500" />
+                        <p className="text-gray-600 dark:text-gray-300 mb-2">ยังไม่ได้ตั้งเป้าหมาย</p>
+                        <p className="text-sm text-gray-500 dark:text-gray-400">คลิก "ตั้งเป้า" เพื่อกำหนดเป้าหมายรายเดือน</p>
                     </div>
                 )}
             </div>
 
             {/* Quick Stats Summary */}
-            <div className="bg-gradient-to-r from-gray-50 to-gray-100 rounded-xl p-5 border border-gray-200">
-                <h3 className="text-lg font-semibold text-gray-800 mb-4 flex items-center gap-2">
-                    <TrendingUp className="w-5 h-5 text-blue-600" /> สรุปภาพรวม
+            <div className="bg-gradient-to-r from-gray-50 to-gray-100 dark:from-slate-700 dark:to-slate-600 rounded-xl p-5 border border-gray-200 dark:border-slate-600">
+                <h3 className="text-lg font-semibold text-gray-800 dark:text-gray-100 mb-4 flex items-center gap-2">
+                    <TrendingUp className="w-5 h-5 text-blue-600 dark:text-blue-400" /> สรุปภาพรวม
                 </h3>
                 <div className="grid grid-cols-2 md:grid-cols-4 gap-4 text-center">
                     <div>
-                        <p className="text-2xl font-bold text-indigo-600">{stats.totalThisMonth}</p>
-                        <p className="text-sm text-gray-500">เอกสารเดือนนี้</p>
+                        <p className="text-2xl font-bold text-indigo-600 dark:text-indigo-400">{stats.totalThisMonth}</p>
+                        <p className="text-sm text-gray-500 dark:text-gray-400">เอกสารเดือนนี้</p>
                     </div>
                     <div>
-                        <p className="text-2xl font-bold text-green-600">
+                        <p className="text-2xl font-bold text-green-600 dark:text-green-400">
                             {stats.byDocType.filter(s => s.thisMonth > 0).length}
                         </p>
-                        <p className="text-sm text-gray-500">ประเภทที่ใช้งาน</p>
+                        <p className="text-sm text-gray-500 dark:text-gray-400">ประเภทที่ใช้งาน</p>
                     </div>
                     <div>
-                        <p className="text-2xl font-bold text-amber-600">
+                        <p className="text-2xl font-bold text-amber-600 dark:text-amber-400">
                             {Math.round(stats.totalDocuments / Math.max(stats.byDocType.filter(s => s.total > 0).length, 1))}
                         </p>
-                        <p className="text-sm text-gray-500">เฉลี่ยต่อประเภท</p>
+                        <p className="text-sm text-gray-500 dark:text-gray-400">เฉลี่ยต่อประเภท</p>
                     </div>
                     <div>
-                        <p className="text-2xl font-bold text-purple-600">
+                        <p className="text-2xl font-bold text-purple-600 dark:text-purple-400">
                             ฿{formatCurrency(stats.totalRevenue - stats.totalExpense)}
                         </p>
-                        <p className="text-sm text-gray-500">กำไร/ขาดทุนเดือนนี้</p>
+                        <p className="text-sm text-gray-500 dark:text-gray-400">กำไร/ขาดทุนเดือนนี้</p>
                     </div>
                 </div>
             </div>
@@ -811,32 +811,32 @@ const Dashboard: React.FC<DashboardProps> = ({ onNavigateToDocType, onQuickActio
             {/* Goal Modal */}
             {showGoalModal && (
                 <div className="fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center z-50 p-4">
-                    <div className="bg-white rounded-xl shadow-2xl max-w-md w-full p-6">
-                        <h3 className="text-lg font-semibold text-gray-800 mb-4">ตั้งเป้าหมายรายเดือน</h3>
+                    <div className="bg-white dark:bg-slate-800 rounded-xl shadow-2xl max-w-md w-full p-6">
+                        <h3 className="text-lg font-semibold text-gray-800 dark:text-gray-100 mb-4">ตั้งเป้าหมายรายเดือน</h3>
                         
                         <div className="space-y-4">
                             <div>
-                                <label className="block text-sm font-medium text-gray-700 mb-1">
+                                <label className="block text-sm font-medium text-gray-700 dark:text-gray-200 mb-1">
                                     จำนวนเอกสาร (ฉบับ)
                                 </label>
                                 <input
                                     type="number"
                                     value={goalForm.documentGoal}
                                     onChange={(e) => setGoalForm({ ...goalForm, documentGoal: parseInt(e.target.value) || 0 })}
-                                    className="w-full px-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-indigo-500 focus:border-transparent"
+                                    className="w-full px-3 py-2 border border-gray-300 dark:border-slate-600 rounded-lg focus:ring-2 focus:ring-indigo-500 focus:border-transparent bg-white dark:bg-slate-700 text-gray-800 dark:text-gray-100"
                                     min={0}
                                 />
                             </div>
                             
                             <div>
-                                <label className="block text-sm font-medium text-gray-700 mb-1">
+                                <label className="block text-sm font-medium text-gray-700 dark:text-gray-200 mb-1">
                                     เป้าหมายรายได้ (บาท)
                                 </label>
                                 <input
                                     type="number"
                                     value={goalForm.revenueGoal}
                                     onChange={(e) => setGoalForm({ ...goalForm, revenueGoal: parseInt(e.target.value) || 0 })}
-                                    className="w-full px-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-indigo-500 focus:border-transparent"
+                                    className="w-full px-3 py-2 border border-gray-300 dark:border-slate-600 rounded-lg focus:ring-2 focus:ring-indigo-500 focus:border-transparent bg-white dark:bg-slate-700 text-gray-800 dark:text-gray-100"
                                     min={0}
                                     step={1000}
                                 />
@@ -846,7 +846,7 @@ const Dashboard: React.FC<DashboardProps> = ({ onNavigateToDocType, onQuickActio
                         <div className="flex justify-end gap-3 mt-6">
                             <button
                                 onClick={() => setShowGoalModal(false)}
-                                className="px-4 py-2 text-gray-700 bg-gray-100 rounded-lg hover:bg-gray-200 transition-colors"
+                                className="px-4 py-2 text-gray-700 dark:text-gray-200 bg-gray-100 dark:bg-slate-700 rounded-lg hover:bg-gray-200 dark:hover:bg-slate-600 transition-colors"
                             >
                                 ยกเลิก
                             </button>

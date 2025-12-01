@@ -233,8 +233,8 @@ const CalendarPage: React.FC = () => {
     if (loading) {
         return (
             <div className="flex flex-col items-center justify-center h-64 space-y-4">
-                <div className="animate-spin rounded-full h-12 w-12 border-b-2 border-indigo-600"></div>
-                <p className="text-gray-500">กำลังโหลดข้อมูลปฏิทิน...</p>
+                <div className="animate-spin rounded-full h-12 w-12 border-b-2 border-indigo-600 dark:border-indigo-400"></div>
+                <p className="text-gray-500 dark:text-gray-400">กำลังโหลดข้อมูลปฏิทิน...</p>
             </div>
         );
     }
@@ -246,13 +246,13 @@ const CalendarPage: React.FC = () => {
             {/* Header */}
             <div className="flex flex-col sm:flex-row justify-between items-start sm:items-center gap-4">
                 <div>
-                    <h2 className="text-2xl font-bold text-gray-900">ปฏิทินเอกสาร</h2>
-                    <p className="text-sm text-gray-500 mt-1">แสดงเอกสารตามวันที่และกำหนดการ</p>
+                    <h2 className="text-2xl font-bold text-gray-900 dark:text-gray-100">ปฏิทินเอกสาร</h2>
+                    <p className="text-sm text-gray-500 dark:text-gray-400 mt-1">แสดงเอกสารตามวันที่และกำหนดการ</p>
                 </div>
                 <div className="flex items-center gap-2">
                     <button
                         onClick={loadData}
-                        className="flex items-center gap-2 px-3 py-2 text-gray-600 bg-gray-100 rounded-lg hover:bg-gray-200 transition-colors"
+                        className="flex items-center gap-2 px-3 py-2 text-gray-600 dark:text-gray-300 bg-gray-100 dark:bg-slate-700 rounded-lg hover:bg-gray-200 dark:hover:bg-slate-600 transition-colors"
                     >
                         <RefreshCw className="w-4 h-4" />
                         รีเฟรช
@@ -268,7 +268,7 @@ const CalendarPage: React.FC = () => {
 
             {/* Error */}
             {error && (
-                <div className="flex items-center gap-2 p-4 bg-red-50 border border-red-200 rounded-lg text-red-700">
+                <div className="flex items-center gap-2 p-4 bg-red-50 dark:bg-red-900/30 border border-red-200 dark:border-red-800 rounded-lg text-red-700 dark:text-red-300">
                     <AlertCircle className="w-5 h-5" />
                     {error}
                 </div>
@@ -278,39 +278,39 @@ const CalendarPage: React.FC = () => {
             <div className="flex flex-wrap gap-4 text-sm">
                 <div className="flex items-center gap-2">
                     <div className="w-3 h-3 rounded-full bg-blue-500"></div>
-                    <span className="text-gray-600">สร้างเอกสาร</span>
+                    <span className="text-gray-600 dark:text-gray-400">สร้างเอกสาร</span>
                 </div>
                 <div className="flex items-center gap-2">
                     <div className="w-3 h-3 rounded-full bg-red-500"></div>
-                    <span className="text-gray-600">ครบกำหนดชำระ</span>
+                    <span className="text-gray-600 dark:text-gray-400">ครบกำหนดชำระ</span>
                 </div>
                 <div className="flex items-center gap-2">
                     <div className="w-3 h-3 rounded-full bg-amber-500"></div>
-                    <span className="text-gray-600">ใกล้หมดอายุ</span>
+                    <span className="text-gray-600 dark:text-gray-400">ใกล้หมดอายุ</span>
                 </div>
                 <div className="flex items-center gap-2">
                     <div className="w-3 h-3 rounded-full bg-purple-500"></div>
-                    <span className="text-gray-600">รับประกันหมดอายุ</span>
+                    <span className="text-gray-600 dark:text-gray-400">รับประกันหมดอายุ</span>
                 </div>
             </div>
 
             <div className="grid grid-cols-1 lg:grid-cols-3 gap-6">
                 {/* Calendar */}
-                <div className="lg:col-span-2 bg-white border border-gray-200 rounded-lg p-4">
+                <div className="lg:col-span-2 bg-white dark:bg-slate-800 border border-gray-200 dark:border-slate-700 rounded-lg p-4">
                     {/* Month Navigation */}
                     <div className="flex items-center justify-between mb-4">
                         <button
                             onClick={goToPreviousMonth}
-                            className="p-2 hover:bg-gray-100 rounded-lg transition-colors"
+                            className="p-2 hover:bg-gray-100 dark:hover:bg-slate-700 rounded-lg transition-colors text-gray-700 dark:text-gray-200"
                         >
                             <ChevronLeft className="w-5 h-5" />
                         </button>
-                        <h3 className="text-lg font-semibold text-gray-900">
+                        <h3 className="text-lg font-semibold text-gray-900 dark:text-gray-100">
                             {new Intl.DateTimeFormat('th-TH', { month: 'long', year: 'numeric' }).format(currentDate)}
                         </h3>
                         <button
                             onClick={goToNextMonth}
-                            className="p-2 hover:bg-gray-100 rounded-lg transition-colors"
+                            className="p-2 hover:bg-gray-100 dark:hover:bg-slate-700 rounded-lg transition-colors text-gray-700 dark:text-gray-200"
                         >
                             <ChevronRight className="w-5 h-5" />
                         </button>
@@ -322,7 +322,7 @@ const CalendarPage: React.FC = () => {
                             <div
                                 key={day}
                                 className={`text-center text-sm font-medium py-2 ${
-                                    index === 0 ? 'text-red-500' : index === 6 ? 'text-blue-500' : 'text-gray-500'
+                                    index === 0 ? 'text-red-500 dark:text-red-400' : index === 6 ? 'text-blue-500 dark:text-blue-400' : 'text-gray-500 dark:text-gray-400'
                                 }`}
                             >
                                 {day}
@@ -347,20 +347,20 @@ const CalendarPage: React.FC = () => {
                                     onClick={() => setSelectedDate(date)}
                                     className={`h-24 sm:h-28 p-1 sm:p-2 border rounded-lg transition-all text-left ${
                                         isSelected(date)
-                                            ? 'border-indigo-500 bg-indigo-50 ring-2 ring-indigo-200'
+                                            ? 'border-indigo-500 bg-indigo-50 dark:bg-indigo-900/30 ring-2 ring-indigo-200 dark:ring-indigo-700'
                                             : isToday(date)
-                                            ? 'border-indigo-300 bg-indigo-50'
-                                            : 'border-gray-200 hover:border-gray-300 hover:bg-gray-50'
+                                            ? 'border-indigo-300 dark:border-indigo-600 bg-indigo-50 dark:bg-indigo-900/20'
+                                            : 'border-gray-200 dark:border-slate-700 hover:border-gray-300 dark:hover:border-slate-600 hover:bg-gray-50 dark:hover:bg-slate-700'
                                     }`}
                                 >
                                     <div className={`text-sm font-medium mb-1 ${
                                         isToday(date)
-                                            ? 'text-indigo-600'
+                                            ? 'text-indigo-600 dark:text-indigo-400'
                                             : dayOfWeek === 0
-                                            ? 'text-red-500'
+                                            ? 'text-red-500 dark:text-red-400'
                                             : dayOfWeek === 6
-                                            ? 'text-blue-500'
-                                            : 'text-gray-700'
+                                            ? 'text-blue-500 dark:text-blue-400'
+                                            : 'text-gray-700 dark:text-gray-200'
                                     }`}>
                                         {date.getDate()}
                                     </div>
@@ -399,9 +399,9 @@ const CalendarPage: React.FC = () => {
                 </div>
 
                 {/* Selected Date Events */}
-                <div className="bg-white border border-gray-200 rounded-lg p-4">
-                    <h3 className="text-lg font-semibold text-gray-900 mb-4 flex items-center gap-2">
-                        <CalendarIcon className="w-5 h-5 text-indigo-500" />
+                <div className="bg-white dark:bg-slate-800 border border-gray-200 dark:border-slate-700 rounded-lg p-4">
+                    <h3 className="text-lg font-semibold text-gray-900 dark:text-gray-100 mb-4 flex items-center gap-2">
+                        <CalendarIcon className="w-5 h-5 text-indigo-500 dark:text-indigo-400" />
                         {selectedDate ? formatDate(selectedDate) : 'เลือกวันที่'}
                     </h3>
 
@@ -446,13 +446,13 @@ const CalendarPage: React.FC = () => {
                                 ))}
                             </div>
                         ) : (
-                            <div className="text-center py-8 text-gray-500">
+                            <div className="text-center py-8 text-gray-500 dark:text-gray-400">
                                 <CalendarIcon className="w-12 h-12 mx-auto mb-2 opacity-30" />
                                 <p>ไม่มีกิจกรรมในวันนี้</p>
                             </div>
                         )
                     ) : (
-                        <div className="text-center py-8 text-gray-500">
+                        <div className="text-center py-8 text-gray-500 dark:text-gray-400">
                             <CalendarIcon className="w-12 h-12 mx-auto mb-2 opacity-30" />
                             <p>คลิกที่วันที่เพื่อดูรายละเอียด</p>
                         </div>
@@ -463,39 +463,39 @@ const CalendarPage: React.FC = () => {
             {/* Upcoming Events Summary */}
             <div className="grid grid-cols-1 sm:grid-cols-3 gap-4">
                 {/* Expiring Soon */}
-                <div className="bg-amber-50 border border-amber-200 rounded-lg p-4">
+                <div className="bg-amber-50 dark:bg-amber-900/30 border border-amber-200 dark:border-amber-800 rounded-lg p-4">
                     <div className="flex items-center gap-2 mb-3">
-                        <AlertTriangle className="w-5 h-5 text-amber-600" />
-                        <h4 className="font-semibold text-amber-800">ใกล้หมดอายุ</h4>
+                        <AlertTriangle className="w-5 h-5 text-amber-600 dark:text-amber-400" />
+                        <h4 className="font-semibold text-amber-800 dark:text-amber-200">ใกล้หมดอายุ</h4>
                     </div>
-                    <p className="text-2xl font-bold text-amber-900">
+                    <p className="text-2xl font-bold text-amber-900 dark:text-amber-100">
                         {stats?.expiringDocuments.filter(d => d.docType !== 'warranty').length || 0}
                     </p>
-                    <p className="text-sm text-amber-700">เอกสารใน 30 วัน</p>
+                    <p className="text-sm text-amber-700 dark:text-amber-300">เอกสารใน 30 วัน</p>
                 </div>
 
                 {/* Warranty Expiring */}
-                <div className="bg-purple-50 border border-purple-200 rounded-lg p-4">
+                <div className="bg-purple-50 dark:bg-purple-900/30 border border-purple-200 dark:border-purple-800 rounded-lg p-4">
                     <div className="flex items-center gap-2 mb-3">
-                        <Shield className="w-5 h-5 text-purple-600" />
-                        <h4 className="font-semibold text-purple-800">รับประกันหมดอายุ</h4>
+                        <Shield className="w-5 h-5 text-purple-600 dark:text-purple-400" />
+                        <h4 className="font-semibold text-purple-800 dark:text-purple-200">รับประกันหมดอายุ</h4>
                     </div>
-                    <p className="text-2xl font-bold text-purple-900">
+                    <p className="text-2xl font-bold text-purple-900 dark:text-purple-100">
                         {stats?.expiringDocuments.filter(d => d.docType === 'warranty').length || 0}
                     </p>
-                    <p className="text-sm text-purple-700">ใบรับประกันใน 30 วัน</p>
+                    <p className="text-sm text-purple-700 dark:text-purple-300">ใบรับประกันใน 30 วัน</p>
                 </div>
 
                 {/* Pending Payments */}
-                <div className="bg-red-50 border border-red-200 rounded-lg p-4">
+                <div className="bg-red-50 dark:bg-red-900/30 border border-red-200 dark:border-red-800 rounded-lg p-4">
                     <div className="flex items-center gap-2 mb-3">
-                        <Clock className="w-5 h-5 text-red-600" />
-                        <h4 className="font-semibold text-red-800">ค้างชำระ</h4>
+                        <Clock className="w-5 h-5 text-red-600 dark:text-red-400" />
+                        <h4 className="font-semibold text-red-800 dark:text-red-200">ค้างชำระ</h4>
                     </div>
-                    <p className="text-2xl font-bold text-red-900">
+                    <p className="text-2xl font-bold text-red-900 dark:text-red-100">
                         {stats?.pendingPayments.length || 0}
                     </p>
-                    <p className="text-sm text-red-700">ใบแจ้งหนี้รอชำระ</p>
+                    <p className="text-sm text-red-700 dark:text-red-300">ใบแจ้งหนี้รอชำระ</p>
                 </div>
             </div>
         </div>
