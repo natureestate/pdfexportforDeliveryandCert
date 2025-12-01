@@ -1,6 +1,6 @@
 import React, { useState, useRef, useCallback, useEffect } from 'react';
 import { Routes, Route, Navigate } from 'react-router-dom';
-import { Package, Shield, FileText, Receipt, FileCheck, DollarSign, ShoppingCart, StickyNote, PlusCircle, FilePlus, History, Save, HardHat, Settings } from 'lucide-react';
+import { Package, Shield, FileText, Receipt, FileCheck, DollarSign, ShoppingCart, StickyNote, PlusCircle, FilePlus, History, Save, HardHat, Settings, LayoutDashboard } from 'lucide-react';
 import { DeliveryNoteData, WarrantyData, InvoiceData, ReceiptData, TaxInvoiceData, QuotationData, PurchaseOrderData, MemoData, VariationOrderData, SubcontractData, LogoType, MenuItemConfig } from './types';
 import { AuthProvider } from './contexts/AuthContext';
 import { CompanyProvider, useCompany } from './contexts/CompanyContext';
@@ -36,6 +36,7 @@ import VerificationPage from './components/VerificationPage';
 import UserMenuSettingsModal from './components/UserMenuSettingsModal';
 import PricingPage from './components/PricingPage';
 import SubscriptionManager from './components/SubscriptionManager';
+import Dashboard from './components/Dashboard';
 import { generatePdf } from './services/pdfGenerator';
 import { saveDeliveryNote, saveWarrantyCard, saveInvoice, saveReceipt, saveTaxInvoice, saveQuotation, savePurchaseOrder } from './services/firestore';
 import type { DeliveryNoteDocument, WarrantyDocument, InvoiceDocument, ReceiptDocument, TaxInvoiceDocument, QuotationDocument, PurchaseOrderDocument, MemoDocument, VariationOrderDocument, SubcontractDocument } from './services/firestore';
@@ -429,7 +430,7 @@ const initialSubcontractData: SubcontractData = {
     issuedBy: '',
 };
 
-type ViewMode = 'form' | 'history';
+type ViewMode = 'form' | 'history' | 'dashboard';
 type Notification = { show: boolean; message: string; type: 'success' | 'info' | 'error' };
 
 // Icon mapping สำหรับ dynamic menu rendering
@@ -1001,14 +1002,25 @@ const AppContent: React.FC = () => {
                 <div className="mb-4 sm:mb-6 flex justify-center">
                     <div className="inline-flex rounded-md shadow-sm w-full sm:w-auto" role="group">
                         <button
+                            onClick={() => setViewMode('dashboard')}
+                            className={`flex-1 sm:flex-none px-4 sm:px-6 py-2 text-xs sm:text-sm font-medium rounded-l-lg border flex items-center justify-center gap-1.5 ${
+                                viewMode === 'dashboard'
+                                    ? 'bg-indigo-600 text-white border-indigo-600'
+                                    : 'bg-white text-gray-700 border-gray-300 hover:bg-gray-50'
+                            }`}
+                        >
+                            <LayoutDashboard className="w-4 h-4" />
+                            Dashboard
+                        </button>
+                        <button
                             onClick={() => setViewMode('form')}
-                            className={`flex-1 sm:flex-none px-4 sm:px-6 py-2 text-xs sm:text-sm font-medium rounded-l-lg border ${
+                            className={`flex-1 sm:flex-none px-4 sm:px-6 py-2 text-xs sm:text-sm font-medium border-t border-b flex items-center justify-center gap-1.5 ${
                                 viewMode === 'form'
                                     ? 'bg-indigo-600 text-white border-indigo-600'
                                     : 'bg-white text-gray-700 border-gray-300 hover:bg-gray-50'
                             }`}
                         >
-                            <FilePlus className="w-4 h-4 inline-block mr-1.5" />
+                            <FilePlus className="w-4 h-4" />
                             สร้างเอกสาร
                         </button>
                         <button
@@ -1025,7 +1037,17 @@ const AppContent: React.FC = () => {
                     </div>
                 </div>
 
-                {viewMode === 'form' ? (
+                {viewMode === 'dashboard' ? (
+                    // Dashboard View
+                    <div className="bg-white p-3 sm:p-4 md:p-6 rounded-lg shadow-lg">
+                        <Dashboard 
+                            onNavigateToDocType={(docType) => {
+                                setActiveTab(docType);
+                                setViewMode('history');
+                            }}
+                        />
+                    </div>
+                ) : viewMode === 'form' ? (
                     <div className="grid grid-cols-1 lg:grid-cols-2 lg:gap-6 xl:gap-8">
                         {/* Form Section */}
                         <div className="bg-white p-3 sm:p-4 md:p-6 rounded-lg shadow-lg mb-6 lg:mb-0">
