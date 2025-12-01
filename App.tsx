@@ -1,5 +1,6 @@
 import React, { useState, useRef, useCallback, useEffect } from 'react';
 import { Routes, Route, Navigate } from 'react-router-dom';
+import { useTranslation } from 'react-i18next';
 import { Package, Shield, FileText, Receipt, FileCheck, DollarSign, ShoppingCart, StickyNote, PlusCircle, FilePlus, History, Save, HardHat, Settings, LayoutDashboard, Users, BarChart2, Calendar } from 'lucide-react';
 import { DeliveryNoteData, WarrantyData, InvoiceData, ReceiptData, TaxInvoiceData, QuotationData, PurchaseOrderData, MemoData, VariationOrderData, SubcontractData, LogoType, MenuItemConfig } from './types';
 import { AuthProvider } from './contexts/AuthContext';
@@ -465,6 +466,7 @@ const tabIconMap: Record<string, React.ComponentType<{ className?: string }>> = 
 };
 
 const AppContent: React.FC = () => {
+    const { t } = useTranslation(); // ใช้ i18n translations
     const { currentCompany } = useCompany(); // ใช้ CompanyContext
     const { visibleMenus, isAdmin: isMenuAdmin, refreshMenus } = useMenu(); // ใช้ MenuContext
     const { visibleTabs, isAdmin, canAccess, refreshTabs } = useTab(); // ใช้ TabContext
@@ -736,7 +738,7 @@ const AppContent: React.FC = () => {
         setIsSaving(true);
         
         const isEditMode = !!editingDocumentId;
-        showToast(isEditMode ? 'กำลังอัปเดตเอกสาร...' : 'กำลังบันทึกเอกสารใหม่...', 'info');
+        showToast(isEditMode ? t('notifications.updatingDocument') : t('notifications.savingDocument'), 'info');
 
         try {
             const companyId = currentCompany?.id;
@@ -797,11 +799,11 @@ const AppContent: React.FC = () => {
             }
         } catch (error) {
             console.error('Failed to save to Firestore:', error);
-            showToast('ไม่สามารถบันทึกข้อมูลได้', 'error');
+            showToast(t('notifications.saveError'), 'error');
         } finally {
             setIsSaving(false);
         }
-    }, [activeTab, getCurrentData, currentCompany, editingDocumentId]);
+    }, [activeTab, getCurrentData, currentCompany, editingDocumentId, t]);
 
     /**
      * สร้างชื่อไฟล์ PDF ตามรูปแบบ: prefix + ลูกค้า + Create date (YYMMDD) + UUID
@@ -824,7 +826,7 @@ const AppContent: React.FC = () => {
                 
                 // ตรวจสอบว่า Free plan สามารถ export PDF ได้หรือไม่
                 if (!quota.features.exportPDF) {
-                    showToast('❌ Free plan ไม่สามารถ Export PDF ได้ กรุณาอัพเกรดแผน', 'error');
+                    showToast(`❌ ${t('notifications.freePlanNoPdf')}`, 'error');
                     return;
                 }
             } catch (error) {
@@ -834,7 +836,7 @@ const AppContent: React.FC = () => {
         }
         
         setIsLoading(true);
-        showToast('กำลังสร้าง PDF...', 'info');
+        showToast(t('notifications.creatingPdf'), 'info');
 
         // สร้างชื่อไฟล์ตามรูปแบบใหม่: prefix + ลูกค้า + Create date (YYMMDD) + UUID
         // Refactored: ใช้ Document Registry และ helper function
@@ -843,14 +845,14 @@ const AppContent: React.FC = () => {
 
         try {
             await generatePdf(printableAreaRef.current, filename);
-            showToast('สร้างไฟล์ PDF เรียบร้อยแล้ว', 'success');
+            showToast(t('notifications.pdfCreated'), 'success');
         } catch (error) {
             console.error('Failed to generate PDF:', error);
-            showToast('ไม่สามารถสร้างไฟล์ PDF ได้', 'error');
+            showToast(t('notifications.pdfError'), 'error');
         } finally {
             setIsLoading(false);
         }
-    }, [activeTab, getCurrentData, currentCompany, generatePdfFilename]);
+    }, [activeTab, getCurrentData, currentCompany, generatePdfFilename, t]);
 
     // ฟังก์ชันโหลดเอกสารจาก History (สำหรับ Edit)
     const handleLoadDocument = useCallback((doc: DeliveryNoteDocument | WarrantyDocument | InvoiceDocument | ReceiptDocument | TaxInvoiceDocument | QuotationDocument | PurchaseOrderDocument | MemoDocument | VariationOrderDocument | SubcontractDocument) => {
@@ -945,8 +947,8 @@ const AppContent: React.FC = () => {
             setActiveTab('subcontract');
         }
         setViewMode('form');
-        showToast('โหลดเอกสารสำเร็จ - โหมดแก้ไข', 'info');
-    }, []);
+        showToast(t('history.documentLoaded'), 'info');
+    }, [t]);
 
     // ฟังก์ชันสร้างฟอร์มใหม่
     // Refactored: ลด code duplication โดยใช้ helper function
@@ -997,8 +999,8 @@ const AppContent: React.FC = () => {
                 setSubcontractData(withLogo(initialSubcontractData));
                 break;
         }
-        showToast('สร้างฟอร์มใหม่สำเร็จ', 'success');
-    }, [activeTab, sharedLogo, sharedLogoUrl, sharedLogoType]);
+        showToast(t('notifications.newFormCreated'), 'success');
+    }, [activeTab, sharedLogo, sharedLogoUrl, sharedLogoType, t]);
     
     const notificationColors = {
         info: 'bg-blue-500',
@@ -1078,14 +1080,14 @@ const AppContent: React.FC = () => {
                             {editingDocumentId && (
                                 <div className="mb-3 sm:mb-4 p-2 sm:p-3 bg-amber-50 dark:bg-amber-900/30 border border-amber-200 dark:border-amber-700 rounded-lg flex flex-col sm:flex-row sm:items-center sm:justify-between gap-2">
                                     <div className="flex flex-col sm:flex-row sm:items-center min-w-0">
-                                        <span className="text-amber-700 dark:text-amber-400 font-medium text-sm">✏️ โหมดแก้ไข</span>
-                                        <span className="ml-0 sm:ml-2 text-xs sm:text-sm text-amber-600 dark:text-amber-300 truncate">กำลังแก้ไขเอกสาร: {editingDocumentId}</span>
+                                        <span className="text-amber-700 dark:text-amber-400 font-medium text-sm">✏️ {t('form.editMode')}</span>
+                                        <span className="ml-0 sm:ml-2 text-xs sm:text-sm text-amber-600 dark:text-amber-300 truncate">{t('form.editingDocument')}: {editingDocumentId}</span>
                                     </div>
                                     <button
                                         onClick={handleCreateNewForm}
                                         className="text-xs sm:text-sm px-2 sm:px-3 py-1 bg-white dark:bg-slate-700 border border-amber-300 dark:border-amber-600 rounded hover:bg-amber-50 dark:hover:bg-amber-900/50 text-amber-700 dark:text-amber-400 whitespace-nowrap"
                                     >
-                                        🆕 สร้างเอกสารใหม่
+                                        🆕 {t('form.createNewDocument')}
                                     </button>
                                 </div>
                             )}
@@ -1307,7 +1309,7 @@ const AppContent: React.FC = () => {
                         <div>
                             <div className="sticky top-4 lg:top-8">
                                 <div className="flex flex-col sm:flex-row sm:justify-between sm:items-center mb-3 sm:mb-4 gap-2 sm:gap-2">
-                                    <h2 className="text-lg sm:text-xl font-semibold text-slate-700">ตัวอย่างเอกสาร</h2>
+                                    <h2 className="text-lg sm:text-xl font-semibold text-slate-700">{t('form.documentPreview')}</h2>
                                     <div className="flex flex-col sm:flex-row gap-2 flex-wrap">
                                         <button
                                             type="button"
@@ -1317,7 +1319,7 @@ const AppContent: React.FC = () => {
                                             <svg xmlns="http://www.w3.org/2000/svg" className="h-4 w-4 mr-1 sm:mr-2" viewBox="0 0 20 20" fill="currentColor">
                                                 <path fillRule="evenodd" d="M10 3a1 1 0 011 1v5h5a1 1 0 110 2h-5v5a1 1 0 11-2 0v-5H4a1 1 0 110-2h5V4a1 1 0 011-1z" clipRule="evenodd" />
                                             </svg>
-                                            ฟอร์มใหม่
+                                            {t('form.newForm')}
                                         </button>
                                         <button
                                             type="button"
@@ -1335,7 +1337,7 @@ const AppContent: React.FC = () => {
                                                     <path d="M7.707 10.293a1 1 0 10-1.414 1.414l3 3a1 1 0 001.414 0l3-3a1 1 0 00-1.414-1.414L11 11.586V6h5a2 2 0 012 2v7a2 2 0 01-2 2H4a2 2 0 01-2-2V8a2 2 0 012-2h5v5.586l-1.293-1.293zM9 4a1 1 0 012 0v2H9V4z" />
                                                 </svg>
                                             )}
-                                            {isSaving ? 'กำลังบันทึก...' : (editingDocumentId ? <><Save className="w-4 h-4 inline mr-1" />อัปเดต</> : <><Save className="w-4 h-4 inline mr-1" />บันทึก</>)}
+                                            {isSaving ? t('form.saving') : (editingDocumentId ? <><Save className="w-4 h-4 inline mr-1" />{t('app.update')}</> : <><Save className="w-4 h-4 inline mr-1" />{t('app.save')}</>)}
                                         </button>
                                         <button
                                             type="button"
@@ -1353,7 +1355,7 @@ const AppContent: React.FC = () => {
                                                     <path fillRule="evenodd" d="M3 17a1 1 0 011-1h12a1 1 0 110 2H4a1 1 0 01-1-1zm3.293-7.707a1 1 0 011.414 0L9 10.586V3a1 1 0 112 0v7.586l1.293-1.293a1 1 0 111.414 1.414l-3 3a1 1 0 01-1.414 0l-3-3a1 1 0 010-1.414z" clipRule="evenodd" />
                                                 </svg>
                                             )}
-                                            {isLoading ? 'กำลังสร้าง...' : 'PDF'}
+                                            {isLoading ? t('form.creatingPdf') : t('form.pdf')}
                                         </button>
                                     </div>
                                 </div>

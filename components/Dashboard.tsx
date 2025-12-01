@@ -4,6 +4,7 @@
  */
 
 import React, { useEffect, useState, useCallback } from 'react';
+import { useTranslation } from 'react-i18next';
 import { 
     TrendingUp, 
     TrendingDown, 
@@ -93,6 +94,7 @@ interface DashboardProps {
 }
 
 const Dashboard: React.FC<DashboardProps> = ({ onNavigateToDocType, onQuickAction }) => {
+    const { t } = useTranslation();
     const { currentCompany } = useCompany();
     const [stats, setStats] = useState<DashboardStats | null>(null);
     const [loading, setLoading] = useState(true);
@@ -213,7 +215,7 @@ const Dashboard: React.FC<DashboardProps> = ({ onNavigateToDocType, onQuickActio
                     onClick={() => loadStats()}
                     className="px-4 py-2 bg-red-600 text-white rounded-lg hover:bg-red-700 transition-colors"
                 >
-                    ลองใหม่
+                    {t('dashboard.tryAgain')}
                 </button>
             </div>
         );
@@ -229,10 +231,10 @@ const Dashboard: React.FC<DashboardProps> = ({ onNavigateToDocType, onQuickActio
             <div className="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-4">
                 <div>
                     <h2 className="text-2xl font-bold text-gray-800 dark:text-gray-100 flex items-center gap-2">
-                        <BarChart3 className="w-7 h-7 text-indigo-600 dark:text-indigo-400" /> Dashboard
+                        <BarChart3 className="w-7 h-7 text-indigo-600 dark:text-indigo-400" /> {t('dashboard.title')}
                     </h2>
                     <p className="text-gray-500 dark:text-gray-400 text-sm mt-1">
-                        ภาพรวมเอกสารของ {currentCompany?.name || 'บริษัท'}
+                        {t('dashboard.overview')} {currentCompany?.name || t('company.companyName')}
                     </p>
                 </div>
                 <button
@@ -241,7 +243,7 @@ const Dashboard: React.FC<DashboardProps> = ({ onNavigateToDocType, onQuickActio
                     className="inline-flex items-center gap-2 px-4 py-2 bg-white dark:bg-slate-700 border border-gray-300 dark:border-slate-600 rounded-lg text-gray-700 dark:text-gray-200 hover:bg-gray-50 dark:hover:bg-slate-600 transition-colors disabled:opacity-50"
                 >
                     <RefreshCw className={`w-4 h-4 ${refreshing ? 'animate-spin' : ''}`} />
-                    {refreshing ? 'กำลังรีเฟรช...' : 'รีเฟรช'}
+                    {refreshing ? t('app.refreshing') : t('app.refresh')}
                 </button>
             </div>
 
@@ -251,7 +253,7 @@ const Dashboard: React.FC<DashboardProps> = ({ onNavigateToDocType, onQuickActio
                 <div className="bg-gradient-to-br from-indigo-500 to-indigo-600 rounded-xl p-5 text-white shadow-lg">
                     <div className="flex items-center justify-between">
                         <div>
-                            <p className="text-indigo-100 text-sm font-medium">เอกสารทั้งหมด</p>
+                            <p className="text-indigo-100 text-sm font-medium">{t('dashboard.totalDocuments')}</p>
                             <p className="text-3xl font-bold mt-1">{formatCurrency(stats.totalDocuments)}</p>
                         </div>
                         <div className="bg-white/20 rounded-full p-3">
@@ -260,7 +262,7 @@ const Dashboard: React.FC<DashboardProps> = ({ onNavigateToDocType, onQuickActio
                     </div>
                     <div className="mt-3 flex items-center gap-1 text-sm">
                         <Calendar className="w-4 h-4" />
-                        <span>เดือนนี้: {stats.totalThisMonth} ฉบับ</span>
+                        <span>{t('dashboard.thisMonth')}: {stats.totalThisMonth} {t('dashboard.documents')}</span>
                     </div>
                 </div>
 
@@ -268,7 +270,7 @@ const Dashboard: React.FC<DashboardProps> = ({ onNavigateToDocType, onQuickActio
                 <div className={`bg-gradient-to-br ${stats.growthPercent >= 0 ? 'from-emerald-500 to-emerald-600' : 'from-red-500 to-red-600'} rounded-xl p-5 text-white shadow-lg`}>
                     <div className="flex items-center justify-between">
                         <div>
-                            <p className={`${stats.growthPercent >= 0 ? 'text-emerald-100' : 'text-red-100'} text-sm font-medium`}>การเติบโต</p>
+                            <p className={`${stats.growthPercent >= 0 ? 'text-emerald-100' : 'text-red-100'} text-sm font-medium`}>{t('dashboard.growth')}</p>
                             <p className="text-3xl font-bold mt-1">
                                 {stats.growthPercent >= 0 ? '+' : ''}{stats.growthPercent}%
                             </p>

@@ -4,17 +4,20 @@
  */
 
 import React, { useState, useEffect } from 'react';
+import { useTranslation } from 'react-i18next';
 import { signInWithGoogle } from '../services/auth';
 import { executeAndVerifyRecaptcha, isRecaptchaScoreValid, getRecaptchaErrorMessage } from '../services/recaptcha';
 import PhoneAuthForm from './PhoneAuthForm';
 import { EmailPasswordForm } from './EmailPasswordForm';
 import { EmailLinkForm } from './EmailLinkForm';
 import PolicyModal from './PolicyModal';
+import LanguageSwitcher from './LanguageSwitcher';
 import { Rocket } from 'lucide-react';
 
 type LoginMethod = 'google' | 'phone' | 'email' | 'emailLink';
 
 const LoginPage: React.FC = () => {
+    const { t } = useTranslation();
     const [isLoading, setIsLoading] = useState(false);
     const [error, setError] = useState<string | null>(null);
     const [loginMethod, setLoginMethod] = useState<LoginMethod>('google');
@@ -196,7 +199,12 @@ const LoginPage: React.FC = () => {
 
     return (
         <div className="min-h-screen bg-gradient-to-br from-indigo-500 via-purple-500 to-pink-500 dark:from-slate-900 dark:via-slate-800 dark:to-slate-900 flex items-center justify-center p-4">
-            <div className="bg-white dark:bg-slate-800 rounded-2xl shadow-2xl dark:shadow-slate-900/50 p-8 md:p-12 max-w-md w-full">
+            <div className="bg-white dark:bg-slate-800 rounded-2xl shadow-2xl dark:shadow-slate-900/50 p-8 md:p-12 max-w-md w-full relative">
+                {/* Language Switcher */}
+                <div className="absolute top-4 right-4">
+                    <LanguageSwitcher compact />
+                </div>
+
                 {/* โลโก้แอป */}
                 <div className="text-center mb-8">
                     <div className="inline-flex items-center justify-center w-20 h-20 bg-indigo-100 dark:bg-indigo-900/30 rounded-full mb-4">
@@ -205,20 +213,20 @@ const LoginPage: React.FC = () => {
                         </svg>
                     </div>
                     <h1 className="text-3xl font-bold text-gray-800 dark:text-slate-100 mb-2">
-                        เครื่องมือสร้างเอกสาร
+                        {t('app.title')}
                     </h1>
                     <p className="text-gray-600 dark:text-slate-400">
-                        ระบบจัดการใบส่งมอบงานและใบรับประกัน
+                        {t('app.subtitle')}
                     </p>
                 </div>
 
                 {/* ข้อความต้อนรับ */}
                 <div className="mb-8 text-center">
                     <h2 className="text-xl font-semibold text-gray-800 dark:text-slate-100 mb-2">
-                        ยินดีต้อนรับ
+                        {t('auth.welcome')}
                     </h2>
                     <p className="text-gray-600 dark:text-slate-400 text-sm">
-                        กรุณา Login เพื่อเข้าใช้งานระบบ
+                        {t('auth.pleaseLogin')}
                     </p>
                 </div>
 
@@ -240,7 +248,7 @@ const LoginPage: React.FC = () => {
                                         <circle className="opacity-25" cx="12" cy="12" r="10" stroke="currentColor" strokeWidth="4"></circle>
                                         <path className="opacity-75" fill="currentColor" d="M4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4zm2 5.291A7.962 7.962 0 014 12H0c0 3.042 1.135 5.824 3 7.938l3-2.647z"></path>
                                     </svg>
-                                    <span className="text-base font-semibold">กำลัง Login...</span>
+                                    <span className="text-base font-semibold">{t('auth.loggingIn')}</span>
                                 </>
                             ) : (
                                 <>
@@ -250,7 +258,7 @@ const LoginPage: React.FC = () => {
                                         <path fill="#fff" d="M5.84 14.09c-.22-.66-.35-1.36-.35-2.09s.13-1.43.35-2.09V7.07H2.18C1.43 8.55 1 10.22 1 12s.43 3.45 1.18 4.93l2.85-2.22.81-.62z"/>
                                         <path fill="#fff" d="M12 5.38c1.62 0 3.06.56 4.21 1.64l3.15-3.15C17.45 2.09 14.97 1 12 1 7.7 1 3.99 3.47 2.18 7.07l3.66 2.84c.87-2.6 3.3-4.53 6.16-4.53z"/>
                                     </svg>
-                                    <span className="text-base font-semibold flex items-center gap-1.5"><Rocket className="w-5 h-5" /> เข้าสู่ระบบด้วย Google</span>
+                                    <span className="text-base font-semibold flex items-center gap-1.5"><Rocket className="w-5 h-5" /> {t('auth.loginWithGoogle')}</span>
                                 </>
                             )}
                         </div>
@@ -272,7 +280,7 @@ const LoginPage: React.FC = () => {
                             <svg className="w-8 h-8 flex-shrink-0" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                                 <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M12 18h.01M8 21h8a2 2 0 002-2V5a2 2 0 00-2-2H8a2 2 0 00-2 2v14a2 2 0 002 2z" />
                             </svg>
-                            <span className="text-base font-semibold">เข้าสู่ระบบด้วยเบอร์โทรศัพท์</span>
+                            <span className="text-base font-semibold">{t('auth.loginWithPhone')}</span>
                         </div>
                     </button>
 
@@ -292,7 +300,7 @@ const LoginPage: React.FC = () => {
                             <svg className="w-8 h-8 flex-shrink-0" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                                 <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M16 12a4 4 0 10-8 0 4 4 0 008 0zm0 0v1.5a2.5 2.5 0 005 0V12a9 9 0 10-9 9m4.5-1.206a8.959 8.959 0 01-4.5 1.207" />
                             </svg>
-                            <span className="text-base font-semibold">เข้าสู่ระบบด้วย Email/Password</span>
+                            <span className="text-base font-semibold">{t('auth.loginWithEmail')}</span>
                         </div>
                     </button>
 
@@ -312,7 +320,7 @@ const LoginPage: React.FC = () => {
                             <svg className="w-8 h-8 flex-shrink-0" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                                 <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M3 19v-8.93a2 2 0 01.89-1.664l7-4.666a2 2 0 012.22 0l7 4.666A2 2 0 0121 10.07V19M3 19a2 2 0 002 2h14a2 2 0 002-2M3 19l6.75-4.5M21 19l-6.75-4.5M3 10l6.75 4.5M21 10l-6.75 4.5m0 0l-1.14.76a2 2 0 01-2.22 0l-1.14-.76" />
                             </svg>
-                            <span className="text-base font-semibold">เข้าสู่ระบบด้วย Email Link</span>
+                            <span className="text-base font-semibold">{t('auth.loginWithEmailLink')}</span>
                         </div>
                     </button>
                 </div>
@@ -361,7 +369,7 @@ const LoginPage: React.FC = () => {
                 {/* ข้อความด้านล่าง */}
                 <div className="mt-8 text-center space-y-3">
                     <p className="text-xs text-gray-500 dark:text-slate-400">
-                        การ Login หมายถึงคุณยอมรับ
+                        {t('auth.termsAccept')}
                         <br />
                         <button 
                             onClick={(e) => {
@@ -370,9 +378,9 @@ const LoginPage: React.FC = () => {
                             }}
                             className="text-indigo-600 dark:text-indigo-400 hover:text-indigo-700 dark:hover:text-indigo-300 underline"
                         >
-                            เงื่อนไขการใช้งาน
+                            {t('auth.termsOfService')}
                         </button>
-                        {' และ '}
+                        {` ${t('common.and')} `}
                         <button 
                             onClick={(e) => {
                                 e.preventDefault();
@@ -380,18 +388,18 @@ const LoginPage: React.FC = () => {
                             }}
                             className="text-indigo-600 dark:text-indigo-400 hover:text-indigo-700 dark:hover:text-indigo-300 underline"
                         >
-                            นโยบายความเป็นส่วนตัว
+                            {t('auth.privacyPolicy')}
                         </button>
                     </p>
                     <p 
                         className="text-xs text-gray-400 dark:text-slate-500 flex items-center justify-center gap-1 cursor-pointer hover:text-gray-600 dark:hover:text-slate-300 transition-colors"
                         onClick={handleShowRecaptchaBadge}
-                        title="คลิกเพื่อดู reCAPTCHA badge"
+                        title="Click to view reCAPTCHA badge"
                     >
                         <svg className="w-3 h-3" fill="currentColor" viewBox="0 0 24 24">
                             <path d="M12 2C6.48 2 2 6.48 2 12s4.48 10 10 10 10-4.48 10-10S17.52 2 12 2zm1 15h-2v-2h2v2zm0-4h-2V7h2v6z"/>
                         </svg>
-                        ระบบป้องกันด้วย reCAPTCHA v3
+                        {t('auth.recaptchaProtected')}
                     </p>
                 </div>
 

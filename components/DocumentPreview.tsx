@@ -1,4 +1,5 @@
 import React, { forwardRef } from 'react';
+import { useTranslation } from 'react-i18next';
 import { DeliveryNoteData } from '../types';
 import { getDefaultLogoUrl } from '../services/logoStorage';
 import QRCodeFooter from './QRCodeFooter';
@@ -8,9 +9,14 @@ interface DocumentPreviewProps {
 }
 
 const DocumentPreview = forwardRef<HTMLDivElement, DocumentPreviewProps>(({ data }, ref) => {
+    const { t, i18n } = useTranslation();
+    const currentLang = i18n.language;
+    
     const formatDate = (date: Date | null) => {
         if (!date) return '...........................';
-        return new Intl.DateTimeFormat('th-TH', {
+        // ใช้ภาษาตามการตั้งค่าปัจจุบัน
+        const locale = currentLang === 'en' ? 'en-US' : 'th-TH';
+        return new Intl.DateTimeFormat(locale, {
             year: 'numeric',
             month: 'long',
             day: 'numeric',
@@ -37,35 +43,35 @@ const DocumentPreview = forwardRef<HTMLDivElement, DocumentPreviewProps>(({ data
                     </div>
                 </div>
                 <div className="w-3/5 text-right">
-                    <h1 className="text-2xl font-bold text-gray-800">ใบส่งมอบงาน</h1>
-                    <h2 className="text-lg text-gray-500">DELIVERY NOTE</h2>
+                    <h1 className="text-2xl font-bold text-gray-800">{currentLang === 'en' ? 'DELIVERY NOTE' : 'ใบส่งมอบงาน'}</h1>
+                    <h2 className="text-lg text-gray-500">{currentLang === 'en' ? '' : 'DELIVERY NOTE'}</h2>
                     <div className="mt-4 text-xs">
-                        <p><span className="font-semibold text-gray-600">เลขที่เอกสาร:</span> {data.docNumber || '________________'}</p>
-                        <p><span className="font-semibold text-gray-600">วันที่:</span> {formatDate(data.date)}</p>
+                        <p><span className="font-semibold text-gray-600">{t('pdf.documentNumber')}:</span> {data.docNumber || '________________'}</p>
+                        <p><span className="font-semibold text-gray-600">{t('pdf.date')}:</span> {formatDate(data.date)}</p>
                     </div>
                 </div>
             </header>
 
             <section className="grid grid-cols-2 gap-6 my-6">
                 <div className="bg-slate-50 p-3 rounded-md">
-                    <p className="font-semibold text-slate-600 text-base mb-1">จาก:</p>
+                    <p className="font-semibold text-slate-600 text-base mb-1">{t('delivery.sender')}:</p>
                     <p className="font-bold text-slate-800">{data.fromCompany || 'N/A'}</p>
                     <p className="text-slate-600 whitespace-pre-wrap text-xs">{data.fromAddress || 'N/A'}</p>
-                    {data.fromPhone && <p className="text-slate-600 text-xs mt-1">โทร: {data.fromPhone}</p>}
-                    {data.fromEmail && <p className="text-slate-600 text-xs">อีเมล: {data.fromEmail}</p>}
-                    {data.fromWebsite && <p className="text-slate-600 text-xs">เว็บไซต์: {data.fromWebsite}</p>}
+                    {data.fromPhone && <p className="text-slate-600 text-xs mt-1">{t('company.phone')}: {data.fromPhone}</p>}
+                    {data.fromEmail && <p className="text-slate-600 text-xs">{t('company.email')}: {data.fromEmail}</p>}
+                    {data.fromWebsite && <p className="text-slate-600 text-xs">{t('company.website')}: {data.fromWebsite}</p>}
                 </div>
                 <div className="bg-slate-50 p-3 rounded-md">
-                    <p className="font-semibold text-slate-600 text-base mb-1">ถึง:</p>
+                    <p className="font-semibold text-slate-600 text-base mb-1">{t('delivery.receiver')}:</p>
                     <p className="font-bold text-slate-800">{data.toCompany || 'N/A'}</p>
                     <p className="text-slate-600 whitespace-pre-wrap">{data.toAddress || 'N/A'}</p>
-                    {data.toEmail && <p className="text-slate-600 text-xs mt-1">อีเมล: {data.toEmail}</p>}
+                    {data.toEmail && <p className="text-slate-600 text-xs mt-1">{t('company.email')}: {data.toEmail}</p>}
                 </div>
             </section>
             
             {data.project && (
                 <section className="mb-6">
-                    <p><span className="font-semibold text-slate-600">โครงการ/เรื่อง:</span> {data.project}</p>
+                    <p><span className="font-semibold text-slate-600">{t('form.project')}:</span> {data.project}</p>
                 </section>
             )}
 
@@ -74,10 +80,10 @@ const DocumentPreview = forwardRef<HTMLDivElement, DocumentPreviewProps>(({ data
                     <thead className="border-b-2 border-slate-300">
                         <tr>
                             <th className="p-2 text-center font-semibold text-slate-600 w-12">#</th>
-                            <th className="p-2 font-semibold text-slate-600">รายการ</th>
-                            <th className="p-2 text-center font-semibold text-slate-600 w-20">จำนวน</th>
-                            <th className="p-2 text-center font-semibold text-slate-600 w-24">หน่วย</th>
-                            <th className="p-2 font-semibold text-slate-600 w-1/4">หมายเหตุ</th>
+                            <th className="p-2 font-semibold text-slate-600">{t('items.description')}</th>
+                            <th className="p-2 text-center font-semibold text-slate-600 w-20">{t('items.quantity')}</th>
+                            <th className="p-2 text-center font-semibold text-slate-600 w-24">{t('items.unit')}</th>
+                            <th className="p-2 font-semibold text-slate-600 w-1/4">{t('items.notes')}</th>
                         </tr>
                     </thead>
                     <tbody className="text-slate-700">
@@ -99,14 +105,14 @@ const DocumentPreview = forwardRef<HTMLDivElement, DocumentPreviewProps>(({ data
                     <div>
                         <div className="border-b border-dotted border-slate-400 w-3/4 mx-auto pb-1 mb-2"></div>
                         <p>({data.senderName || '...........................'})</p>
-                        <p className="font-semibold mt-1">ผู้ส่งมอบ</p>
-                        <p className="mt-4">วันที่: ......./......./...........</p>
+                        <p className="font-semibold mt-1">{t('delivery.sender')}</p>
+                        <p className="mt-4">{t('pdf.date')}: ......./......./...........</p>
                     </div>
                     <div>
                         <div className="border-b border-dotted border-slate-400 w-3/4 mx-auto pb-1 mb-2"></div>
                         <p>({data.receiverName || '...........................'})</p>
-                        <p className="font-semibold mt-1">ผู้รับมอบ</p>
-                        <p className="mt-4">วันที่: ......./......./...........</p>
+                        <p className="font-semibold mt-1">{t('delivery.receiver')}</p>
+                        <p className="mt-4">{t('pdf.date')}: ......./......./...........</p>
                     </div>
                 </div>
                 {/* QR Code สำหรับตรวจสอบเอกสาร */}

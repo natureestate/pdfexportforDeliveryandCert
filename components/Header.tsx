@@ -1,5 +1,6 @@
 import React, { useState, useEffect } from 'react';
 import { useNavigate } from 'react-router-dom';
+import { useTranslation } from 'react-i18next';
 import { useAuth } from '../contexts/AuthContext';
 import { useCompany } from '../contexts/CompanyContext';
 import { useMenu } from '../contexts/MenuContext';
@@ -14,6 +15,7 @@ import MenuSettingsModal from './MenuSettingsModal';
 import UserMenuSettingsModal from './UserMenuSettingsModal';
 import TabSettingsModal from './TabSettingsModal';
 import ThemeToggle from './ThemeToggle';
+import LanguageSwitcher from './LanguageSwitcher';
 import { checkIsAdmin } from '../services/companyMembers';
 import { getQuota } from '../services/quota';
 import { updateCompany } from '../services/companies';
@@ -21,6 +23,7 @@ import { CompanyQuota, LogoType } from '../types';
 import { Link2, Key, Building2, Palette, BarChart3, Users, HardDrive, Crown, User, CreditCard, Sparkles, Settings, ChevronRight, LayoutDashboard, Mail, Phone, UserCircle, TrendingUp, FileText, Check, X, RefreshCw, Pause, Lightbulb, Zap } from 'lucide-react';
 
 const Header: React.FC = () => {
+    const { t } = useTranslation();
     const navigate = useNavigate();
     const { user } = useAuth();
     const { currentCompany, refreshCompanies } = useCompany();
@@ -400,10 +403,10 @@ const Header: React.FC = () => {
                         </svg>
                             <div className="min-w-0 flex-1">
                                 <h1 className="text-lg md:text-2xl font-bold text-slate-800 dark:text-slate-100 truncate">
-                                เครื่องมือสร้างเอกสาร
+                                {t('app.title')}
                             </h1>
                                 <p className="text-slate-500 dark:text-slate-400 text-xs md:text-sm mt-0.5 hidden sm:block truncate">
-                                เลือกประเภทเอกสารและกรอกข้อมูลเพื่อสร้างและดาวน์โหลดไฟล์ PDF
+                                {t('app.subtitle')}
                             </p>
                         </div>
                     </div>
@@ -413,6 +416,7 @@ const Header: React.FC = () => {
                             <>
                                 {/* Desktop Menu */}
                                 <div className="hidden md:flex items-center gap-4">
+                                    <LanguageSwitcher compact />
                                     <CompanySelector />
                                     
                                     {/* Desktop User Menu */}
@@ -437,7 +441,7 @@ const Header: React.FC = () => {
 
                                             <div className="text-left">
                                     <p className="text-sm font-semibold text-gray-800 dark:text-gray-100">
-                                        {user.displayName || 'ผู้ใช้'}
+                                        {user.displayName || t('auth.user')}
                                     </p>
                                                 <p className="text-xs text-gray-500 dark:text-gray-400 truncate max-w-[150px]">
                                         {user.email}
@@ -460,7 +464,7 @@ const Header: React.FC = () => {
                                                 {/* ข้อมูล Profile */}
                                                 <div className="px-4 py-3 border-b border-gray-200 dark:border-slate-600 bg-gradient-to-r from-indigo-50 to-purple-50 dark:from-indigo-900/30 dark:to-purple-900/30">
                                                     <p className="text-xs text-gray-500 dark:text-gray-400 font-medium mb-2 flex items-center gap-1">
-                                                        <UserCircle className="w-3.5 h-3.5" /> โปรไฟล์
+                                                        <UserCircle className="w-3.5 h-3.5" /> {t('auth.profile')}
                                                     </p>
                                                     <div className="space-y-1">
                                                         {user?.displayName && (
@@ -494,13 +498,13 @@ const Header: React.FC = () => {
                                                 {currentCompany && (
                                                     <div className="px-4 py-3 border-b border-gray-200 dark:border-slate-600">
                                                         <div className="flex items-center justify-between mb-2">
-                                                            <p className="text-xs text-gray-500 dark:text-gray-400 font-medium">องค์กรปัจจุบัน</p>
+                                                            <p className="text-xs text-gray-500 dark:text-gray-400 font-medium">{t('header.currentOrganization')}</p>
                                                             <div className={`px-2 py-1 rounded text-xs font-medium ${
                                                                 isAdmin 
                                                                     ? 'bg-amber-100 text-amber-800 border border-amber-200' 
                                                                     : 'bg-blue-100 text-blue-800 border border-blue-200'
                                                             }`}>
-                                                                {isAdmin ? <><Crown className="w-3 h-3 inline mr-0.5" /> Admin</> : <><User className="w-3 h-3 inline mr-0.5" /> Member</>}
+                                                                {isAdmin ? <><Crown className="w-3 h-3 inline mr-0.5" /> {t('header.admin')}</> : <><User className="w-3 h-3 inline mr-0.5" /> {t('header.member')}</>}
                                                             </div>
                                                         </div>
                                                         <p className="text-sm font-semibold text-gray-800 dark:text-gray-100 truncate">
@@ -519,7 +523,7 @@ const Header: React.FC = () => {
                                                 >
                                                     <div className="flex items-center gap-3">
                                                         <Link2 className="w-5 h-5" />
-                                                        <span className="font-medium">Account Linking</span>
+                                                        <span className="font-medium">{t('auth.accountLinking')}</span>
                                                     </div>
                                                     <span className="text-xs px-2 py-0.5 bg-cyan-100 text-cyan-700 rounded-full">
                                                         {[linkedProviders.hasGoogle, linkedProviders.hasEmail, linkedProviders.hasPhone].filter(Boolean).length}/3
@@ -536,7 +540,7 @@ const Header: React.FC = () => {
                                                         className="w-full px-4 py-3 text-left text-sm text-blue-600 dark:text-blue-400 hover:bg-blue-50 dark:hover:bg-blue-900/30 transition-colors duration-200 flex items-center gap-3 border-b border-gray-200 dark:border-slate-600"
                                                     >
                                                         <Link2 className="w-5 h-5" />
-                                                        <span className="font-medium">เพิ่มรหัสผ่าน</span>
+                                                        <span className="font-medium">{t('auth.addPassword')}</span>
                                                     </button>
                                                 ) : (
                                                     <button
@@ -547,7 +551,7 @@ const Header: React.FC = () => {
                                                         className="w-full px-4 py-3 text-left text-sm text-amber-600 dark:text-amber-400 hover:bg-amber-50 dark:hover:bg-amber-900/30 transition-colors duration-200 flex items-center gap-3 border-b border-gray-200 dark:border-slate-600"
                                                     >
                                                         <Key className="w-5 h-5" />
-                                                        <span className="font-medium">เปลี่ยนรหัสผ่าน</span>
+                                                        <span className="font-medium">{t('auth.changePassword')}</span>
                                                     </button>
                                                 )}
 
@@ -560,7 +564,7 @@ const Header: React.FC = () => {
                                                         >
                                                             <div className="flex items-center gap-3">
                                                                 <Settings className="w-5 h-5" />
-                                                                <span className="font-medium">ตั้งค่า</span>
+                                                                <span className="font-medium">{t('header.settings')}</span>
                                                             </div>
                                                             <ChevronRight className={`w-4 h-4 transition-transform ${showSettingsSubmenu ? 'rotate-90' : ''}`} />
                                                         </button>
@@ -577,7 +581,7 @@ const Header: React.FC = () => {
                                                                     className="w-full px-6 py-2.5 text-left text-sm text-green-600 dark:text-green-400 hover:bg-green-50 dark:hover:bg-green-900/30 transition-colors duration-200 flex items-center gap-3"
                                                                 >
                                                                     <Building2 className="w-4 h-4" />
-                                                                    <span>ข้อมูลบริษัท</span>
+                                                                    <span>{t('header.companyInfo')}</span>
                                                                 </button>
                                                                 
                                                                 {/* จัดการโลโก้ */}
@@ -589,7 +593,7 @@ const Header: React.FC = () => {
                                                                     className="w-full px-6 py-2.5 text-left text-sm text-pink-600 dark:text-pink-400 hover:bg-pink-50 dark:hover:bg-pink-900/30 transition-colors duration-200 flex items-center gap-3"
                                                                 >
                                                                     <Palette className="w-4 h-4" />
-                                                                    <span>จัดการโลโก้</span>
+                                                                    <span>{t('header.logoManagement')}</span>
                                                                 </button>
                                                                 
                                                                 {/* ตั้งค่าเมนู */}
@@ -602,7 +606,7 @@ const Header: React.FC = () => {
                                                                     className="w-full px-6 py-2.5 text-left text-sm text-indigo-600 dark:text-indigo-400 hover:bg-indigo-50 dark:hover:bg-indigo-900/30 transition-colors duration-200 flex items-center gap-3"
                                                                 >
                                                                     <Settings className="w-4 h-4" />
-                                                                    <span>ตั้งค่าเมนูเอกสาร</span>
+                                                                    <span>{t('header.menuSettings')}</span>
                                                                 </button>
                                                                 
                                                                 {/* ตั้งค่า Tab Menu */}
@@ -615,7 +619,7 @@ const Header: React.FC = () => {
                                                                     className="w-full px-6 py-2.5 text-left text-sm text-cyan-600 dark:text-cyan-400 hover:bg-cyan-50 dark:hover:bg-cyan-900/30 transition-colors duration-200 flex items-center gap-3"
                                                                 >
                                                                     <LayoutDashboard className="w-4 h-4" />
-                                                                    <span>ตั้งค่า Tab Menu</span>
+                                                                    <span>{t('header.tabSettings')}</span>
                                                                 </button>
                                                                 
                                                                 {/* ธีม Dark/Light */}
@@ -634,7 +638,7 @@ const Header: React.FC = () => {
                                                         className="w-full px-4 py-3 text-left text-sm text-purple-600 dark:text-purple-400 hover:bg-purple-50 dark:hover:bg-purple-900/30 transition-colors duration-200 flex items-center gap-3 border-b border-gray-200 dark:border-slate-600"
                                                     >
                                                         <BarChart3 className="w-5 h-5" />
-                                                        <span className="font-medium">ดูโควตา</span>
+                                                        <span className="font-medium">{t('header.viewQuota')}</span>
                                                     </button>
                                                 )}
 
@@ -648,7 +652,7 @@ const Header: React.FC = () => {
                                                         className="w-full px-4 py-3 text-left text-sm text-amber-600 dark:text-amber-400 hover:bg-amber-50 dark:hover:bg-amber-900/30 transition-colors duration-200 flex items-center gap-3 border-b border-gray-200 dark:border-slate-600"
                                                     >
                                                         <Sparkles className="w-5 h-5" />
-                                                        <span className="font-medium">แพ็กเกจ/อัปเกรด</span>
+                                                        <span className="font-medium">{t('header.packages')}</span>
                                                     </button>
                                                 )}
 
@@ -661,7 +665,7 @@ const Header: React.FC = () => {
                                                         className="w-full px-4 py-3 text-left text-sm text-indigo-600 dark:text-indigo-400 hover:bg-indigo-50 dark:hover:bg-indigo-900/30 transition-colors duration-200 flex items-center gap-3 border-b border-gray-200 dark:border-slate-600"
                                                     >
                                                         <Users className="w-5 h-5" />
-                                                        <span className="font-medium">จัดการสมาชิก</span>
+                                                        <span className="font-medium">{t('header.manageMembers')}</span>
                                                     </button>
                                                 )}
 
@@ -676,14 +680,14 @@ const Header: React.FC = () => {
                                                                 <circle className="opacity-25" cx="12" cy="12" r="10" stroke="currentColor" strokeWidth="4"></circle>
                                                                 <path className="opacity-75" fill="currentColor" d="M4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4zm2 5.291A7.962 7.962 0 014 12H0c0 3.042 1.135 5.824 3 7.938l3-2.647z"></path>
                                                             </svg>
-                                                            <span className="font-medium">กำลัง Logout...</span>
+                                                            <span className="font-medium">{t('auth.loggingOut')}</span>
                                                         </>
                                                     ) : (
                                                         <>
                                                             <svg className="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                                                                 <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M17 16l4-4m0 0l-4-4m4 4H7m6 4v1a3 3 0 01-3 3H6a3 3 0 01-3-3V7a3 3 0 013-3h4a3 3 0 013 3v1" />
                                                             </svg>
-                                                            <span className="font-medium">Logout</span>
+                                                            <span className="font-medium">{t('auth.logout')}</span>
                                                         </>
                                                     )}
                                                 </button>
@@ -746,7 +750,7 @@ const Header: React.FC = () => {
                     <div className="flex flex-col h-full">
                         {/* Header ของ Sidebar */}
                         <div className="flex items-center justify-between px-5 py-4 border-b border-gray-200 dark:border-slate-600 bg-gradient-to-r from-indigo-50 to-purple-50 dark:from-indigo-900/30 dark:to-purple-900/30">
-                            <h2 className="text-lg font-bold text-gray-800 dark:text-gray-100">เมนู</h2>
+                            <h2 className="text-lg font-bold text-gray-800 dark:text-gray-100">{t('header.menu')}</h2>
                             <button
                                 onClick={() => setShowMobileMenu(false)}
                                 className="p-2 rounded-full hover:bg-white/80 dark:hover:bg-slate-700 transition-colors duration-200"
@@ -778,7 +782,7 @@ const Header: React.FC = () => {
                                     )}
                                     <div className="flex-1 min-w-0">
                                         <p className="text-base font-bold text-gray-800 dark:text-gray-100 truncate">
-                                            {user?.displayName || 'ผู้ใช้'}
+                                            {user?.displayName || t('auth.user')}
                                         </p>
                                         <p className="text-xs text-gray-600 dark:text-gray-300 truncate mt-0.5">
                                             {user?.email}
@@ -808,13 +812,13 @@ const Header: React.FC = () => {
                             {currentCompany && (
                                 <div className="px-5 py-4 border-b border-gray-200 dark:border-slate-600 bg-gray-50 dark:bg-slate-700/50">
                                     <div className="flex items-center justify-between mb-2">
-                                        <p className="text-xs text-gray-500 dark:text-gray-400 font-medium uppercase tracking-wide">องค์กรปัจจุบัน</p>
+                                        <p className="text-xs text-gray-500 dark:text-gray-400 font-medium uppercase tracking-wide">{t('header.currentOrganization')}</p>
                                         <div className={`px-2.5 py-1 rounded-full text-xs font-bold shadow-sm ${
                                             isAdmin 
                                                 ? 'bg-gradient-to-r from-amber-400 to-orange-500 text-white' 
                                                 : 'bg-gradient-to-r from-blue-400 to-indigo-500 text-white'
                                         }`}>
-                                            {isAdmin ? <><Crown className="w-3 h-3 inline mr-0.5" /> Admin</> : <><User className="w-3 h-3 inline mr-0.5" /> Member</>}
+                                            {isAdmin ? <><Crown className="w-3 h-3 inline mr-0.5" /> {t('header.admin')}</> : <><User className="w-3 h-3 inline mr-0.5" /> {t('header.member')}</>}
                                         </div>
                                     </div>
                                     <p className="text-sm font-bold text-gray-800 dark:text-gray-100 break-words">
@@ -825,7 +829,7 @@ const Header: React.FC = () => {
 
                             {/* Company Selector สำหรับ Mobile */}
                             <div className="px-5 py-4 border-b border-gray-200 dark:border-slate-600">
-                                <p className="text-xs text-gray-500 dark:text-gray-400 font-medium uppercase tracking-wide mb-3">เปลี่ยนองค์กร</p>
+                                <p className="text-xs text-gray-500 dark:text-gray-400 font-medium uppercase tracking-wide mb-3">{t('header.changeOrganization')}</p>
                                 <CompanySelector />
                             </div>
 
@@ -843,7 +847,7 @@ const Header: React.FC = () => {
                                         <div className="w-9 h-9 rounded-lg bg-cyan-200 dark:bg-cyan-800 flex items-center justify-center">
                                             <Link2 className="w-5 h-5 text-cyan-700 dark:text-cyan-300" />
                                         </div>
-                                        <span>Account Linking</span>
+                                        <span>{t('auth.accountLinking')}</span>
                                     </div>
                                     <span className="text-xs px-2 py-0.5 bg-cyan-200 dark:bg-cyan-800 text-cyan-700 dark:text-cyan-300 rounded-full">
                                         {[linkedProviders.hasGoogle, linkedProviders.hasEmail, linkedProviders.hasPhone].filter(Boolean).length}/3
@@ -862,7 +866,7 @@ const Header: React.FC = () => {
                                         <div className="w-9 h-9 rounded-lg bg-blue-200 dark:bg-blue-800 flex items-center justify-center">
                                             <Link2 className="w-5 h-5 text-blue-700 dark:text-blue-300" />
                                         </div>
-                                        <span>เพิ่มรหัสผ่าน</span>
+                                        <span>{t('auth.addPassword')}</span>
                                     </button>
                                 ) : (
                                     <button
@@ -875,7 +879,7 @@ const Header: React.FC = () => {
                                         <div className="w-9 h-9 rounded-lg bg-amber-200 dark:bg-amber-800 flex items-center justify-center">
                                             <Key className="w-5 h-5 text-amber-700 dark:text-amber-300" />
                                         </div>
-                                        <span>เปลี่ยนรหัสผ่าน</span>
+                                        <span>{t('auth.changePassword')}</span>
                                     </button>
                                 )}
 
@@ -890,7 +894,7 @@ const Header: React.FC = () => {
                                                 <div className="w-9 h-9 rounded-lg bg-gray-200 dark:bg-slate-600 flex items-center justify-center">
                                                     <Settings className="w-5 h-5 text-gray-700 dark:text-gray-200" />
                                                 </div>
-                                                <span>ตั้งค่า</span>
+                                                <span>{t('header.settings')}</span>
                                             </div>
                                             <ChevronRight className={`w-5 h-5 transition-transform ${showSettingsSubmenu ? 'rotate-90' : ''}`} />
                                         </button>
@@ -908,7 +912,7 @@ const Header: React.FC = () => {
                                                     className="w-full px-4 py-2.5 text-left text-sm font-medium text-green-700 dark:text-green-300 bg-green-50 dark:bg-green-900/30 hover:bg-green-100 dark:hover:bg-green-900/50 rounded-lg transition-all duration-200 flex items-center gap-3"
                                                 >
                                                     <Building2 className="w-4 h-4" />
-                                                    <span>ข้อมูลบริษัท</span>
+                                                    <span>{t('header.companyInfo')}</span>
                                                 </button>
                                                 
                                                 {/* จัดการโลโก้ */}
@@ -921,7 +925,7 @@ const Header: React.FC = () => {
                                                     className="w-full px-4 py-2.5 text-left text-sm font-medium text-pink-700 dark:text-pink-300 bg-pink-50 dark:bg-pink-900/30 hover:bg-pink-100 dark:hover:bg-pink-900/50 rounded-lg transition-all duration-200 flex items-center gap-3"
                                                 >
                                                     <Palette className="w-4 h-4" />
-                                                    <span>จัดการโลโก้</span>
+                                                    <span>{t('header.logoManagement')}</span>
                                                 </button>
                                                 
                                                 {/* ตั้งค่าเมนู */}
@@ -934,7 +938,7 @@ const Header: React.FC = () => {
                                                     className="w-full px-4 py-2.5 text-left text-sm font-medium text-indigo-700 dark:text-indigo-300 bg-indigo-50 dark:bg-indigo-900/30 hover:bg-indigo-100 dark:hover:bg-indigo-900/50 rounded-lg transition-all duration-200 flex items-center gap-3"
                                                 >
                                                     <Settings className="w-4 h-4" />
-                                                    <span>ตั้งค่าเมนูเอกสาร</span>
+                                                    <span>{t('header.menuSettings')}</span>
                                                 </button>
                                                 
                                                 {/* ตั้งค่า Tab Menu */}
@@ -947,7 +951,7 @@ const Header: React.FC = () => {
                                                     className="w-full px-4 py-2.5 text-left text-sm font-medium text-cyan-700 dark:text-cyan-300 bg-cyan-50 dark:bg-cyan-900/30 hover:bg-cyan-100 dark:hover:bg-cyan-900/50 rounded-lg transition-all duration-200 flex items-center gap-3"
                                                 >
                                                     <LayoutDashboard className="w-4 h-4" />
-                                                    <span>ตั้งค่า Tab Menu</span>
+                                                    <span>{t('header.tabSettings')}</span>
                                                 </button>
                                                 
                                                 {/* ธีม Dark/Light */}
@@ -968,7 +972,7 @@ const Header: React.FC = () => {
                                         <div className="w-9 h-9 rounded-lg bg-purple-200 dark:bg-purple-800 flex items-center justify-center">
                                             <BarChart3 className="w-5 h-5 text-purple-700 dark:text-purple-300" />
                                         </div>
-                                        <span>ดูโควตา</span>
+                                        <span>{t('header.viewQuota')}</span>
                                     </button>
                                 )}
 
@@ -984,7 +988,7 @@ const Header: React.FC = () => {
                                         <div className="w-9 h-9 rounded-lg bg-gradient-to-br from-amber-400 to-orange-500 flex items-center justify-center">
                                             <Sparkles className="w-5 h-5 text-white" />
                                         </div>
-                                        <span>แพ็กเกจ/อัปเกรด</span>
+                                        <span>{t('header.packages')}</span>
                                     </button>
                                 )}
 
@@ -1000,7 +1004,7 @@ const Header: React.FC = () => {
                                         <div className="w-9 h-9 rounded-lg bg-indigo-200 dark:bg-indigo-800 flex items-center justify-center">
                                             <Users className="w-5 h-5 text-indigo-700 dark:text-indigo-300" />
                                         </div>
-                                        <span>จัดการสมาชิก</span>
+                                        <span>{t('header.manageMembers')}</span>
                                     </button>
                                 )}
                             </div>
@@ -1022,14 +1026,14 @@ const Header: React.FC = () => {
                                                     <circle className="opacity-25" cx="12" cy="12" r="10" stroke="currentColor" strokeWidth="4"></circle>
                                                     <path className="opacity-75" fill="currentColor" d="M4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4zm2 5.291A7.962 7.962 0 014 12H0c0 3.042 1.135 5.824 3 7.938l3-2.647z"></path>
                                                 </svg>
-                                                <span>กำลัง Logout...</span>
+                                                <span>{t('auth.loggingOut')}</span>
                                             </>
                                         ) : (
                                             <>
                                         <svg className="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                                                     <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M17 16l4-4m0 0l-4-4m4 4H7m6 4v1a3 3 0 01-3 3H6a3 3 0 01-3-3V7a3 3 0 013-3h4a3 3 0 013 3v1" />
                                                 </svg>
-                                                <span>Logout</span>
+                                                <span>{t('auth.logout')}</span>
                                             </>
                                         )}
                                     </button>

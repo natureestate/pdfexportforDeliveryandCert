@@ -1,4 +1,5 @@
 import React, { useRef, useState, useEffect } from 'react';
+import { useTranslation } from 'react-i18next';
 import { DeliveryNoteData, WorkItem, LogoType } from '../types';
 import { formatDateForInput } from '../utils/dateUtils';
 import CustomerSelector from './CustomerSelector';
@@ -36,6 +37,7 @@ const DeliveryForm: React.FC<DeliveryFormProps> = ({
     onLogoChange,
     onSetDefaultLogo
 }) => {
+    const { t } = useTranslation();
     const fileInputRef = useRef<HTMLInputElement>(null);
     const [isConfirmModalOpen, setIsConfirmModalOpen] = useState(false);
     const [itemToRemove, setItemToRemove] = useState<number | null>(null);
@@ -98,7 +100,7 @@ const DeliveryForm: React.FC<DeliveryFormProps> = ({
             handleDataChange('docNumber', newDocNumber);
         } catch (error) {
             console.error('Error generating document number:', error);
-            alert('ไม่สามารถสร้างเลขที่เอกสารได้ กรุณาลองใหม่อีกครั้ง');
+            alert(t('form.cannotGenerateDocNumber'));
         }
     };
 
@@ -128,10 +130,10 @@ const DeliveryForm: React.FC<DeliveryFormProps> = ({
                                     <path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M12 9v2m0 4h.01m-6.938 4h13.856c1.54 0 2.502-1.667 1.732-3L13.732 4c-.77-1.333-2.694-1.333-3.464 0L3.34 16c-.77 1.333.192 3 1.732 3z" />
                                 </svg>
                             </div>
-                            <h3 className="text-lg leading-6 font-medium text-gray-900 dark:text-gray-100 mt-2">ยืนยันการลบ</h3>
+                            <h3 className="text-lg leading-6 font-medium text-gray-900 dark:text-gray-100 mt-2">{t('form.confirmDelete')}</h3>
                             <div className="mt-2 px-7 py-3">
                                 <p className="text-sm text-gray-500 dark:text-gray-400">
-                                    คุณแน่ใจหรือไม่ว่าต้องการลบรายการนี้?
+                                    {t('form.confirmDeleteMessage')}
                                 </p>
                             </div>
                             <div className="items-center px-4 py-3 space-x-2">
@@ -139,13 +141,13 @@ const DeliveryForm: React.FC<DeliveryFormProps> = ({
                                     onClick={() => removeItem(itemToRemove)}
                                     className="px-4 py-2 bg-red-500 text-white text-base font-medium rounded-md w-auto shadow-sm hover:bg-red-700 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-red-500"
                                 >
-                                    ลบ
+                                    {t('app.delete')}
                                 </button>
                                 <button
                                     onClick={() => setIsConfirmModalOpen(false)}
                                     className="px-4 py-2 bg-gray-200 dark:bg-slate-700 text-gray-800 dark:text-gray-200 text-base font-medium rounded-md w-auto shadow-sm hover:bg-gray-300 dark:hover:bg-slate-600 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-gray-500"
                                 >
-                                    ยกเลิก
+                                    {t('app.cancel')}
                                 </button>
                             </div>
                         </div>
@@ -157,15 +159,15 @@ const DeliveryForm: React.FC<DeliveryFormProps> = ({
             <div className="space-y-6">
                 {/* เลขที่เอกสาร - แสดงด้านบนสุด */}
                 <div className="text-xs sm:text-sm text-gray-600">
-                    <span className="font-medium">เลขที่เอกสาร:</span> <span className="font-mono">{data.docNumber || 'กำลังสร้าง...'}</span>
+                    <span className="font-medium">{t('form.documentNumber')}:</span> <span className="font-mono">{data.docNumber || t('app.loading')}</span>
                 </div>
                 
                 {/* ส่วนที่ 1: ข้อมูลผู้รับมอบ */}
-                <FormDivider title="ส่วนที่ 1: ข้อมูลผู้รับมอบ/ลูกค้า" />
+                <FormDivider title={t('customer.customerInfo')} />
                 <div className="space-y-4">
                     {/* CustomerSelector - ระบบจัดการลูกค้าแบบครบวงจร */}
                     <CustomerSelector
-                        label="เลือกข้อมูลผู้รับ/ลูกค้า"
+                        label={t('customer.customerName')}
                         onSelect={(customer) => {
                             handleDataChange('toCompany', customer.customerName);
                             handleDataChange('toAddress', customer.address);
