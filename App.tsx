@@ -5,6 +5,8 @@ import { DeliveryNoteData, WarrantyData, InvoiceData, ReceiptData, TaxInvoiceDat
 import { AuthProvider } from './contexts/AuthContext';
 import { CompanyProvider, useCompany } from './contexts/CompanyContext';
 import { MenuProvider, useMenu } from './contexts/MenuContext';
+import { TabProvider, useTab } from './contexts/TabContext';
+import { TabConfig, TabType } from './types';
 import ProtectedRoute from './components/ProtectedRoute';
 import Header from './components/Header';
 import DeliveryForm from './components/DeliveryForm';
@@ -451,9 +453,20 @@ const iconMap: Record<string, React.ComponentType<{ className?: string }>> = {
 };
 
 // Main Content Component ที่ใช้ useCompany hook
+// Icon map สำหรับ Tab Menu - แมป icon name กับ component
+const tabIconMap: Record<string, React.ComponentType<{ className?: string }>> = {
+    LayoutDashboard,
+    FilePlus,
+    History,
+    Users,
+    BarChart2,
+    Calendar,
+};
+
 const AppContent: React.FC = () => {
     const { currentCompany } = useCompany(); // ใช้ CompanyContext
-    const { visibleMenus, isAdmin, refreshMenus } = useMenu(); // ใช้ MenuContext
+    const { visibleMenus, isAdmin: isMenuAdmin, refreshMenus } = useMenu(); // ใช้ MenuContext
+    const { visibleTabs, isAdmin, canAccess, refreshTabs } = useTab(); // ใช้ TabContext
     const [deliveryData, setDeliveryData] = useState<DeliveryNoteData>(initialDeliveryData);
     const [warrantyData, setWarrantyData] = useState<WarrantyData>(initialWarrantyData);
     const [invoiceData, setInvoiceData] = useState<InvoiceData>(initialInvoiceData);
@@ -1001,7 +1014,7 @@ const AppContent: React.FC = () => {
             )}
             <Header />
             <main className="p-3 sm:p-4 md:p-8 max-w-7xl mx-auto">
-                {/* View Mode Selector */}
+                {/* View Mode Selector - Dynamic Tab Rendering ตามสิทธิ์ */}
                 <div className="mb-4 sm:mb-6 flex justify-center">
                     <div className="relative w-full sm:w-auto">
                         {/* Fade indicator ด้านซ้าย (mobile) */}
@@ -1009,78 +1022,31 @@ const AppContent: React.FC = () => {
                         
                         <div className="overflow-x-auto -mx-3 px-3 sm:mx-0 sm:px-0 scrollbar-hide">
                             <div className="inline-flex rounded-md shadow-sm min-w-max" role="group">
-                                <button
-                                    onClick={() => setViewMode('dashboard')}
-                                    className={`px-3 sm:px-4 py-2 text-xs sm:text-sm font-medium rounded-l-lg border flex items-center justify-center gap-1.5 ${
-                                        viewMode === 'dashboard'
-                                            ? 'bg-indigo-600 text-white border-indigo-600'
-                                            : 'bg-white text-gray-700 border-gray-300 hover:bg-gray-50'
-                                    }`}
-                                >
-                                    <LayoutDashboard className="w-4 h-4" />
-                                    <span className="hidden sm:inline">Dashboard</span>
-                                    <span className="sm:hidden">แดช</span>
-                                </button>
-                                <button
-                                    onClick={() => setViewMode('form')}
-                                    className={`px-3 sm:px-4 py-2 text-xs sm:text-sm font-medium border-t border-b flex items-center justify-center gap-1.5 ${
-                                        viewMode === 'form'
-                                            ? 'bg-indigo-600 text-white border-indigo-600'
-                                            : 'bg-white text-gray-700 border-gray-300 hover:bg-gray-50'
-                                    }`}
-                                >
-                                    <FilePlus className="w-4 h-4" />
-                                    <span className="hidden sm:inline">สร้างเอกสาร</span>
-                                    <span className="sm:hidden">สร้าง</span>
-                                </button>
-                                <button
-                                    onClick={() => setViewMode('history')}
-                                    className={`px-3 sm:px-4 py-2 text-xs sm:text-sm font-medium border-t border-b flex items-center justify-center gap-1.5 ${
-                                        viewMode === 'history'
-                                            ? 'bg-indigo-600 text-white border-indigo-600'
-                                            : 'bg-white text-gray-700 border-gray-300 hover:bg-gray-50'
-                                    }`}
-                                >
-                                    <History className="w-4 h-4" />
-                                    <span className="hidden sm:inline">ประวัติ</span>
-                                    <span className="sm:hidden">ประวัติ</span>
-                                </button>
-                                <button
-                                    onClick={() => setViewMode('crm')}
-                                    className={`px-3 sm:px-4 py-2 text-xs sm:text-sm font-medium border-t border-b flex items-center justify-center gap-1.5 ${
-                                        viewMode === 'crm'
-                                            ? 'bg-indigo-600 text-white border-indigo-600'
-                                            : 'bg-white text-gray-700 border-gray-300 hover:bg-gray-50'
-                                    }`}
-                                >
-                                    <Users className="w-4 h-4" />
-                                    <span className="hidden sm:inline">CRM</span>
-                                    <span className="sm:hidden">CRM</span>
-                                </button>
-                                <button
-                                    onClick={() => setViewMode('reports')}
-                                    className={`px-3 sm:px-4 py-2 text-xs sm:text-sm font-medium border-t border-b flex items-center justify-center gap-1.5 ${
-                                        viewMode === 'reports'
-                                            ? 'bg-indigo-600 text-white border-indigo-600'
-                                            : 'bg-white text-gray-700 border-gray-300 hover:bg-gray-50'
-                                    }`}
-                                >
-                                    <BarChart2 className="w-4 h-4" />
-                                    <span className="hidden sm:inline">รายงาน</span>
-                                    <span className="sm:hidden">รายงาน</span>
-                                </button>
-                                <button
-                                    onClick={() => setViewMode('calendar')}
-                                    className={`px-3 sm:px-4 py-2 text-xs sm:text-sm font-medium rounded-r-lg border flex items-center justify-center gap-1.5 ${
-                                        viewMode === 'calendar'
-                                            ? 'bg-indigo-600 text-white border-indigo-600'
-                                            : 'bg-white text-gray-700 border-gray-300 hover:bg-gray-50'
-                                    }`}
-                                >
-                                    <Calendar className="w-4 h-4" />
-                                    <span className="hidden sm:inline">ปฏิทิน</span>
-                                    <span className="sm:hidden">ปฏิทิน</span>
-                                </button>
+                                {/* Dynamic Tab Rendering - แสดง tabs ตามสิทธิ์ของ user */}
+                                {visibleTabs.map((tab, index) => {
+                                    const TabIcon = tabIconMap[tab.icon];
+                                    const isFirst = index === 0;
+                                    const isLast = index === visibleTabs.length - 1;
+                                    const isActive = viewMode === tab.id;
+                                    
+                                    return (
+                                        <button
+                                            key={tab.id}
+                                            onClick={() => setViewMode(tab.id as ViewMode)}
+                                            className={`px-3 sm:px-4 py-2 text-xs sm:text-sm font-medium flex items-center justify-center gap-1.5 ${
+                                                isFirst ? 'rounded-l-lg border' : isLast ? 'rounded-r-lg border' : 'border-t border-b'
+                                            } ${
+                                                isActive
+                                                    ? 'bg-indigo-600 text-white border-indigo-600'
+                                                    : 'bg-white text-gray-700 border-gray-300 hover:bg-gray-50'
+                                            }`}
+                                        >
+                                            {TabIcon && <TabIcon className="w-4 h-4" />}
+                                            <span className="hidden sm:inline">{tab.label}</span>
+                                            <span className="sm:hidden">{tab.shortLabel}</span>
+                                        </button>
+                                    );
+                                })}
                             </div>
                         </div>
                         
@@ -1546,15 +1512,17 @@ const App: React.FC = () => {
                     }
                 />
                 
-                {/* หน้าหลัก - ต้อง login และมี CompanyProvider + MenuProvider */}
+                {/* หน้าหลัก - ต้อง login และมี CompanyProvider + MenuProvider + TabProvider */}
                 <Route
                     path="*"
                     element={
                         <CompanyProvider>
                             <MenuProvider>
-                                <ProtectedRoute>
-                                    <AppContent />
-                                </ProtectedRoute>
+                                <TabProvider>
+                                    <ProtectedRoute>
+                                        <AppContent />
+                                    </ProtectedRoute>
+                                </TabProvider>
                             </MenuProvider>
                         </CompanyProvider>
                     }

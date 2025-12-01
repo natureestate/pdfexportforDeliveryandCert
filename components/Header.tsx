@@ -3,6 +3,7 @@ import { useNavigate } from 'react-router-dom';
 import { useAuth } from '../contexts/AuthContext';
 import { useCompany } from '../contexts/CompanyContext';
 import { useMenu } from '../contexts/MenuContext';
+import { useTab } from '../contexts/TabContext';
 import { signOut, getLinkedProviders, linkWithEmailPassword, changePassword, sendPasswordReset, checkLinkedProviders } from '../services/auth';
 import CompanySelector from './CompanySelector';
 import UserManagement from './UserManagement';
@@ -11,17 +12,19 @@ import CompanyInfoModal from './CompanyInfoModal';
 import AccountLinkingModal from './AccountLinkingModal';
 import MenuSettingsModal from './MenuSettingsModal';
 import UserMenuSettingsModal from './UserMenuSettingsModal';
+import TabSettingsModal from './TabSettingsModal';
 import { checkIsAdmin } from '../services/companyMembers';
 import { getQuota } from '../services/quota';
 import { updateCompany } from '../services/companies';
 import { CompanyQuota, LogoType } from '../types';
-import { Link2, Key, Building2, Palette, BarChart3, Users, HardDrive, Crown, User, CreditCard, Sparkles, Settings, ChevronRight } from 'lucide-react';
+import { Link2, Key, Building2, Palette, BarChart3, Users, HardDrive, Crown, User, CreditCard, Sparkles, Settings, ChevronRight, LayoutDashboard } from 'lucide-react';
 
 const Header: React.FC = () => {
     const navigate = useNavigate();
     const { user } = useAuth();
     const { currentCompany, refreshCompanies } = useCompany();
     const { refreshMenus } = useMenu();
+    const { refreshTabs } = useTab();
     const [showDropdown, setShowDropdown] = useState(false);
     const [showMobileMenu, setShowMobileMenu] = useState(false);
     const [isLoggingOut, setIsLoggingOut] = useState(false);
@@ -32,6 +35,7 @@ const Header: React.FC = () => {
     const [showSettingsSubmenu, setShowSettingsSubmenu] = useState(false);
     const [showMenuSettings, setShowMenuSettings] = useState(false);
     const [showUserMenuSettings, setShowUserMenuSettings] = useState(false);
+    const [showTabSettings, setShowTabSettings] = useState(false);
     
     // Account Linking
     const [showPasswordModal, setShowPasswordModal] = useState(false);
@@ -603,6 +607,19 @@ const Header: React.FC = () => {
                                                                     <Settings className="w-4 h-4" />
                                                                     <span>ตั้งค่าเมนูเอกสาร</span>
                                                                 </button>
+                                                                
+                                                                {/* ตั้งค่า Tab Menu */}
+                                                                <button
+                                                                    onClick={() => {
+                                                                        setShowTabSettings(true);
+                                                                        setShowDropdown(false);
+                                                                        setShowSettingsSubmenu(false);
+                                                                    }}
+                                                                    className="w-full px-6 py-2.5 text-left text-sm text-cyan-600 hover:bg-cyan-50 transition-colors duration-200 flex items-center gap-3"
+                                                                >
+                                                                    <LayoutDashboard className="w-4 h-4" />
+                                                                    <span>ตั้งค่า Tab Menu</span>
+                                                                </button>
                                                             </div>
                                                         )}
                                                     </div>
@@ -926,6 +943,19 @@ const Header: React.FC = () => {
                                                 >
                                                     <Settings className="w-4 h-4" />
                                                     <span>ตั้งค่าเมนูเอกสาร</span>
+                                                </button>
+                                                
+                                                {/* ตั้งค่า Tab Menu */}
+                                                <button
+                                                    onClick={() => {
+                                                        setShowTabSettings(true);
+                                                        setShowMobileMenu(false);
+                                                        setShowSettingsSubmenu(false);
+                                                    }}
+                                                    className="w-full px-4 py-2.5 text-left text-sm font-medium text-cyan-700 bg-cyan-50 hover:bg-cyan-100 rounded-lg transition-all duration-200 flex items-center gap-3"
+                                                >
+                                                    <LayoutDashboard className="w-4 h-4" />
+                                                    <span>ตั้งค่า Tab Menu</span>
                                                 </button>
                                             </div>
                                         )}
@@ -1513,6 +1543,19 @@ const Header: React.FC = () => {
                     refreshMenus();
                 }}
             />
+
+            {/* Tab Settings Modal */}
+            {currentCompany && (
+                <TabSettingsModal
+                    isOpen={showTabSettings}
+                    onClose={() => setShowTabSettings(false)}
+                    companyId={currentCompany.id!}
+                    onSaved={() => {
+                        // รีเฟรช tabs หลังบันทึก
+                        refreshTabs();
+                    }}
+                />
+            )}
         </>
     );
 };

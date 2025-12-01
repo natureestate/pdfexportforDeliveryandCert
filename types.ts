@@ -874,6 +874,62 @@ export const DEFAULT_MENU_CONFIG: MenuItemConfig[] = [
 ];
 
 // ============================================================
+// การตั้งค่า Tab Menu (ViewMode Tabs)
+// ============================================================
+
+// ประเภท Tab ที่มีในระบบ
+export type TabType = 'dashboard' | 'form' | 'history' | 'crm' | 'reports' | 'calendar';
+
+// ข้อมูล Tab แต่ละรายการ
+export interface TabConfig {
+    id: TabType;            // ID ของ Tab
+    label: string;          // ชื่อ Tab ที่แสดง
+    shortLabel: string;     // ชื่อย่อ (สำหรับ mobile)
+    icon: string;           // ชื่อ icon (lucide-react)
+    visible: boolean;       // แสดง Tab นี้หรือไม่
+    order: number;          // ลำดับการแสดง
+    adminOnly?: boolean;    // เฉพาะ Admin เท่านั้น
+}
+
+// Default Tab Configuration - Tab ทั้งหมดที่มีในระบบ
+export const DEFAULT_TAB_CONFIG: TabConfig[] = [
+    { id: 'dashboard', label: 'Dashboard', shortLabel: 'แดช', icon: 'LayoutDashboard', visible: true, order: 0, adminOnly: false },
+    { id: 'form', label: 'สร้างเอกสาร', shortLabel: 'สร้าง', icon: 'FilePlus', visible: true, order: 1, adminOnly: false },
+    { id: 'history', label: 'ประวัติเอกสาร', shortLabel: 'ประวัติ', icon: 'History', visible: true, order: 2, adminOnly: false },
+    { id: 'crm', label: 'CRM', shortLabel: 'CRM', icon: 'Users', visible: true, order: 3, adminOnly: false },
+    { id: 'reports', label: 'รายงาน', shortLabel: 'รายงาน', icon: 'BarChart2', visible: true, order: 4, adminOnly: true },
+    { id: 'calendar', label: 'ปฏิทิน', shortLabel: 'ปฏิทิน', icon: 'Calendar', visible: true, order: 5, adminOnly: false },
+];
+
+// การตั้งค่า Tab ตาม Role
+export interface RoleTabSettings {
+    role: UserRole;                     // บทบาท (admin หรือ member)
+    tabs: TabConfig[];                  // รายการ Tab พร้อมการตั้งค่า
+}
+
+// การตั้งค่า Tab ของบริษัท
+export interface CompanyTabSettings {
+    id?: string;                        // Document ID
+    companyId: string;                  // ID ของบริษัท
+    settings: RoleTabSettings[];        // การตั้งค่าแยกตาม role
+    createdAt?: Date;
+    updatedAt?: Date;
+    updatedBy?: string;                 // User ID ของผู้อัปเดตล่าสุด
+}
+
+// การตั้งค่า Tab สำหรับ user แต่ละคน
+export interface UserTabSettings {
+    id?: string;                        // Document ID (format: {companyId}_{userId}_tabs)
+    companyId: string;                  // ID ของบริษัท
+    userId: string;                     // User ID
+    useCustomSettings: boolean;         // ใช้การตั้งค่าเฉพาะ user หรือใช้ค่าจาก role
+    tabs: TabConfig[];                  // รายการ Tab พร้อมการตั้งค่า
+    createdAt?: Date;
+    updatedAt?: Date;
+    updatedBy?: string;                 // User ID ของ Admin ที่อัปเดต
+}
+
+// ============================================================
 // การตั้งค่าเมนูรายบุคคล (Per-User Menu Settings)
 // ============================================================
 
