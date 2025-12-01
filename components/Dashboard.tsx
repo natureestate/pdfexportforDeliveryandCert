@@ -19,7 +19,19 @@ import {
     Ban,
     Activity,
     BarChart3,
-    PieChart
+    PieChart,
+    Star,
+    AlertTriangle,
+    Clock,
+    Zap,
+    Target,
+    Plus,
+    Check,
+    Edit2,
+    Shield,
+    Package,
+    Receipt,
+    FileCheck
 } from 'lucide-react';
 import { useCompany } from '../contexts/CompanyContext';
 import { 
@@ -30,6 +42,7 @@ import {
     MonthlyTrend,
     DOC_TYPE_NAMES 
 } from '../services/dashboardStats';
+import { getCurrentMonthGoal, saveGoal, GoalWithProgress, calculateGoalProgress, MonthlyGoal } from '../services/goals';
 import type { DocType } from '../utils/documentRegistry';
 
 // สีสำหรับแต่ละประเภทเอกสาร
@@ -76,14 +89,22 @@ const DOC_TYPE_TEXT_COLORS: Record<DocType, string> = {
 
 interface DashboardProps {
     onNavigateToDocType?: (docType: DocType) => void;
+    onQuickAction?: (docType: DocType) => void;
 }
 
-const Dashboard: React.FC<DashboardProps> = ({ onNavigateToDocType }) => {
+const Dashboard: React.FC<DashboardProps> = ({ onNavigateToDocType, onQuickAction }) => {
     const { currentCompany } = useCompany();
     const [stats, setStats] = useState<DashboardStats | null>(null);
     const [loading, setLoading] = useState(true);
     const [error, setError] = useState<string | null>(null);
     const [refreshing, setRefreshing] = useState(false);
+    
+    // Goals state
+    const [goal, setGoal] = useState<MonthlyGoal | null>(null);
+    const [goalProgress, setGoalProgress] = useState<GoalWithProgress | null>(null);
+    const [showGoalModal, setShowGoalModal] = useState(false);
+    const [goalForm, setGoalForm] = useState({ documentGoal: 0, revenueGoal: 0 });
+    const [savingGoal, setSavingGoal] = useState(false);
 
     // โหลดข้อมูลสถิติ
     const loadStats = useCallback(async (showRefreshing = false) => {
@@ -95,8 +116,18 @@ const Dashboard: React.FC<DashboardProps> = ({ onNavigateToDocType }) => {
             }
             setError(null);
 
-            const data = await getDashboardStats(currentCompany?.id);
+            const [data, goalData] = await Promise.all([
+                getDashboardStats(currentCompany?.id),
+                currentCompany?.id ? getCurrentMonthGoal(currentCompany.id) : Promise.resolve(null),
+            ]);
             setStats(data);
+            setGoal(goalData);
+            
+            // คำนวณความคืบหน้าของเป้าหมาย
+            if (goalData && data) {
+                const progress = calculateGoalProgress(goalData, data.totalThisMonth, data.totalRevenue);
+                setGoalProgress(progress);
+            }
         } catch (err) {
             console.error('Error loading dashboard stats:', err);
             setError(err instanceof Error ? err.message : 'เกิดข้อผิดพลาดในการโหลดข้อมูล');
@@ -105,6 +136,30 @@ const Dashboard: React.FC<DashboardProps> = ({ onNavigateToDocType }) => {
             setRefreshing(false);
         }
     }, [currentCompany?.id]);
+    
+    // บันทึกเป้าหมาย
+    const handleSaveGoal = async () => {
+        if (!currentCompany?.id) return;
+        
+        setSavingGoal(true);
+        try {
+            const now = new Date();
+            await saveGoal(
+                currentCompany.id,
+                now.getFullYear(),
+                now.getMonth() + 1,
+                goalForm.documentGoal,
+                goalForm.revenueGoal
+            );
+            setShowGoalModal(false);
+            loadStats(true);
+        } catch (err) {
+            console.error('Error saving goal:', err);
+            alert('ไม่สามารถบันทึกเป้าหมายได้');
+        } finally {
+            setSavingGoal(false);
+        }
+    };
 
     // โหลดข้อมูลเมื่อ component mount หรือเปลี่ยนบริษัท
     useEffect(() => {
@@ -460,6 +515,266 @@ const Dashboard: React.FC<DashboardProps> = ({ onNavigateToDocType }) => {
                 </div>
             </div>
 
+            {/* New Features Grid */}
+            <div className="grid grid-cols-1 lg:grid-cols-2 gap-6">
+                {/* Top 5 ลูกค้า */}
+                <div className="bg-white rounded-xl shadow-sm border border-gray-200 p-5">
+                    <div className="flex items-center gap-2 mb-4">
+                        <Star className="w-5 h-5 text-amber-500" />
+                        <h3 className="text-lg font-semibold text-gray-800">Top 5 ลูกค้า</h3>
+                    </div>
+                    
+                    {stats.topCustomers && stats.topCustomers.length > 0 ? (
+                        <div className="space-y-3">
+                            {stats.topCustomers.map((customer, index) => (
+                                <div key={customer.customerName} className="flex items-center gap-3">
+                                    <div className={`w-8 h-8 rounded-full flex items-center justify-center text-white font-bold ${
+                                        index === 0 ? 'bg-amber-500' : 
+                                        index === 1 ? 'bg-gray-400' : 
+                                        index === 2 ? 'bg-amber-700' : 'bg-gray-300'
+                                    }`}>
+                                        {index + 1}
+                                    </div>
+                                    <div className="flex-1 min-w-0">
+                                        <p className="font-medium text-gray-800 truncate">{customer.customerName}</p>
+                                        <p className="text-xs text-gray-500">
+                                            {customer.documentCount} เอกสาร • ฿{formatCurrency(customer.totalAmount)}
+                                        </p>
+                                    </div>
+                                </div>
+                            ))}
+                        </div>
+                    ) : (
+                        <div className="text-center py-6 text-gray-500">
+                            <Users className="w-10 h-10 mx-auto mb-2 text-gray-300" />
+                            <p className="text-sm">ยังไม่มีข้อมูลลูกค้า</p>
+                        </div>
+                    )}
+                </div>
+
+                {/* เอกสารใกล้หมดอายุ */}
+                <div className="bg-white rounded-xl shadow-sm border border-gray-200 p-5">
+                    <div className="flex items-center gap-2 mb-4">
+                        <AlertTriangle className="w-5 h-5 text-amber-500" />
+                        <h3 className="text-lg font-semibold text-gray-800">เอกสารใกล้หมดอายุ</h3>
+                    </div>
+                    
+                    {stats.expiringDocuments && stats.expiringDocuments.length > 0 ? (
+                        <div className="space-y-2 max-h-64 overflow-y-auto">
+                            {stats.expiringDocuments.map((doc) => (
+                                <div 
+                                    key={doc.id}
+                                    className={`p-3 rounded-lg border ${
+                                        doc.daysUntilExpiry <= 7 
+                                            ? 'bg-red-50 border-red-200' 
+                                            : 'bg-amber-50 border-amber-200'
+                                    }`}
+                                >
+                                    <div className="flex items-center justify-between">
+                                        <div className="flex items-center gap-2">
+                                            {doc.docType === 'warranty' ? (
+                                                <Shield className="w-4 h-4 text-purple-500" />
+                                            ) : (
+                                                <FileText className="w-4 h-4 text-amber-500" />
+                                            )}
+                                            <span className="font-medium text-sm">{doc.docNumber}</span>
+                                        </div>
+                                        <span className={`text-xs font-medium px-2 py-0.5 rounded-full ${
+                                            doc.daysUntilExpiry <= 7 
+                                                ? 'bg-red-100 text-red-700' 
+                                                : 'bg-amber-100 text-amber-700'
+                                        }`}>
+                                            {doc.daysUntilExpiry} วัน
+                                        </span>
+                                    </div>
+                                    {doc.customerName && (
+                                        <p className="text-xs text-gray-500 mt-1 truncate">{doc.customerName}</p>
+                                    )}
+                                </div>
+                            ))}
+                        </div>
+                    ) : (
+                        <div className="text-center py-6 text-gray-500">
+                            <Check className="w-10 h-10 mx-auto mb-2 text-green-400" />
+                            <p className="text-sm">ไม่มีเอกสารใกล้หมดอายุ</p>
+                        </div>
+                    )}
+                </div>
+
+                {/* สถานะการชำระเงิน */}
+                <div className="bg-white rounded-xl shadow-sm border border-gray-200 p-5">
+                    <div className="flex items-center gap-2 mb-4">
+                        <Clock className="w-5 h-5 text-red-500" />
+                        <h3 className="text-lg font-semibold text-gray-800">ใบแจ้งหนี้ค้างชำระ</h3>
+                    </div>
+                    
+                    {stats.pendingPayments && stats.pendingPayments.length > 0 ? (
+                        <div className="space-y-2 max-h-64 overflow-y-auto">
+                            {stats.pendingPayments.map((payment) => (
+                                <div 
+                                    key={payment.id}
+                                    className={`p-3 rounded-lg border ${
+                                        payment.status === 'overdue' 
+                                            ? 'bg-red-50 border-red-200' 
+                                            : 'bg-yellow-50 border-yellow-200'
+                                    }`}
+                                >
+                                    <div className="flex items-center justify-between">
+                                        <div>
+                                            <span className="font-medium text-sm">{payment.docNumber}</span>
+                                            {payment.customerName && (
+                                                <p className="text-xs text-gray-500 truncate">{payment.customerName}</p>
+                                            )}
+                                        </div>
+                                        <div className="text-right">
+                                            <p className="font-bold text-sm text-gray-800">฿{formatCurrency(payment.amount)}</p>
+                                            {payment.status === 'overdue' && (
+                                                <span className="text-xs text-red-600">เกินกำหนด {payment.daysOverdue} วัน</span>
+                                            )}
+                                        </div>
+                                    </div>
+                                </div>
+                            ))}
+                            <div className="pt-2 border-t border-gray-100 mt-2">
+                                <div className="flex justify-between items-center">
+                                    <span className="text-sm text-gray-600">รวมค้างชำระ</span>
+                                    <span className="font-bold text-red-600">
+                                        ฿{formatCurrency(stats.pendingPayments.reduce((sum, p) => sum + p.amount, 0))}
+                                    </span>
+                                </div>
+                            </div>
+                        </div>
+                    ) : (
+                        <div className="text-center py-6 text-gray-500">
+                            <Check className="w-10 h-10 mx-auto mb-2 text-green-400" />
+                            <p className="text-sm">ไม่มีใบแจ้งหนี้ค้างชำระ</p>
+                        </div>
+                    )}
+                </div>
+
+                {/* Quick Actions */}
+                <div className="bg-white rounded-xl shadow-sm border border-gray-200 p-5">
+                    <div className="flex items-center gap-2 mb-4">
+                        <Zap className="w-5 h-5 text-indigo-500" />
+                        <h3 className="text-lg font-semibold text-gray-800">Quick Actions</h3>
+                    </div>
+                    
+                    <div className="grid grid-cols-2 gap-3">
+                        {[
+                            { docType: 'quotation' as DocType, icon: DollarSign, label: 'ใบเสนอราคา', color: 'bg-amber-50 hover:bg-amber-100 text-amber-700 border-amber-200' },
+                            { docType: 'invoice' as DocType, icon: FileText, label: 'ใบแจ้งหนี้', color: 'bg-green-50 hover:bg-green-100 text-green-700 border-green-200' },
+                            { docType: 'receipt' as DocType, icon: Receipt, label: 'ใบเสร็จ', color: 'bg-emerald-50 hover:bg-emerald-100 text-emerald-700 border-emerald-200' },
+                            { docType: 'delivery' as DocType, icon: Package, label: 'ใบส่งมอบ', color: 'bg-blue-50 hover:bg-blue-100 text-blue-700 border-blue-200' },
+                            { docType: 'warranty' as DocType, icon: Shield, label: 'ใบรับประกัน', color: 'bg-purple-50 hover:bg-purple-100 text-purple-700 border-purple-200' },
+                            { docType: 'tax-invoice' as DocType, icon: FileCheck, label: 'ใบกำกับภาษี', color: 'bg-teal-50 hover:bg-teal-100 text-teal-700 border-teal-200' },
+                        ].map(({ docType, icon: Icon, label, color }) => (
+                            <button
+                                key={docType}
+                                onClick={() => onQuickAction?.(docType)}
+                                className={`flex items-center gap-2 p-3 rounded-lg border transition-all ${color}`}
+                            >
+                                <Icon className="w-5 h-5" />
+                                <span className="text-sm font-medium">{label}</span>
+                                <Plus className="w-4 h-4 ml-auto opacity-50" />
+                            </button>
+                        ))}
+                    </div>
+                </div>
+            </div>
+
+            {/* เป้าหมายรายเดือน */}
+            <div className="bg-gradient-to-r from-indigo-50 to-purple-50 rounded-xl p-5 border border-indigo-200">
+                <div className="flex items-center justify-between mb-4">
+                    <div className="flex items-center gap-2">
+                        <Target className="w-5 h-5 text-indigo-600" />
+                        <h3 className="text-lg font-semibold text-gray-800">เป้าหมายเดือนนี้</h3>
+                    </div>
+                    <button
+                        onClick={() => {
+                            setGoalForm({
+                                documentGoal: goal?.documentGoal || 10,
+                                revenueGoal: goal?.revenueGoal || 100000,
+                            });
+                            setShowGoalModal(true);
+                        }}
+                        className="flex items-center gap-1 px-3 py-1.5 text-sm bg-indigo-600 text-white rounded-lg hover:bg-indigo-700 transition-colors"
+                    >
+                        <Edit2 className="w-4 h-4" />
+                        {goal ? 'แก้ไข' : 'ตั้งเป้า'}
+                    </button>
+                </div>
+                
+                {goalProgress ? (
+                    <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
+                        {/* เป้าหมายเอกสาร */}
+                        <div>
+                            <div className="flex items-center justify-between mb-2">
+                                <span className="text-sm font-medium text-gray-700">จำนวนเอกสาร</span>
+                                <span className="text-sm text-gray-500">
+                                    {goalProgress.documentProgress}/{goalProgress.documentGoal}
+                                </span>
+                            </div>
+                            <div className="w-full bg-gray-200 rounded-full h-4 overflow-hidden">
+                                <div 
+                                    className={`h-full rounded-full transition-all duration-500 ${
+                                        goalProgress.isDocumentGoalMet ? 'bg-green-500' : 'bg-indigo-500'
+                                    }`}
+                                    style={{ width: `${goalProgress.documentPercent}%` }}
+                                />
+                            </div>
+                            <div className="flex items-center justify-between mt-1">
+                                <span className={`text-xs font-medium ${
+                                    goalProgress.isDocumentGoalMet ? 'text-green-600' : 'text-indigo-600'
+                                }`}>
+                                    {goalProgress.documentPercent}%
+                                </span>
+                                {goalProgress.isDocumentGoalMet && (
+                                    <span className="text-xs text-green-600 flex items-center gap-1">
+                                        <Check className="w-3 h-3" /> บรรลุเป้าหมาย!
+                                    </span>
+                                )}
+                            </div>
+                        </div>
+
+                        {/* เป้าหมายรายได้ */}
+                        <div>
+                            <div className="flex items-center justify-between mb-2">
+                                <span className="text-sm font-medium text-gray-700">รายได้</span>
+                                <span className="text-sm text-gray-500">
+                                    ฿{formatCurrency(goalProgress.revenueProgress || 0)}/฿{formatCurrency(goalProgress.revenueGoal)}
+                                </span>
+                            </div>
+                            <div className="w-full bg-gray-200 rounded-full h-4 overflow-hidden">
+                                <div 
+                                    className={`h-full rounded-full transition-all duration-500 ${
+                                        goalProgress.isRevenueGoalMet ? 'bg-green-500' : 'bg-purple-500'
+                                    }`}
+                                    style={{ width: `${goalProgress.revenuePercent}%` }}
+                                />
+                            </div>
+                            <div className="flex items-center justify-between mt-1">
+                                <span className={`text-xs font-medium ${
+                                    goalProgress.isRevenueGoalMet ? 'text-green-600' : 'text-purple-600'
+                                }`}>
+                                    {goalProgress.revenuePercent}%
+                                </span>
+                                {goalProgress.isRevenueGoalMet && (
+                                    <span className="text-xs text-green-600 flex items-center gap-1">
+                                        <Check className="w-3 h-3" /> บรรลุเป้าหมาย!
+                                    </span>
+                                )}
+                            </div>
+                        </div>
+                    </div>
+                ) : (
+                    <div className="text-center py-6">
+                        <Target className="w-12 h-12 mx-auto mb-3 text-indigo-300" />
+                        <p className="text-gray-600 mb-2">ยังไม่ได้ตั้งเป้าหมาย</p>
+                        <p className="text-sm text-gray-500">คลิก "ตั้งเป้า" เพื่อกำหนดเป้าหมายรายเดือน</p>
+                    </div>
+                )}
+            </div>
+
             {/* Quick Stats Summary */}
             <div className="bg-gradient-to-r from-gray-50 to-gray-100 rounded-xl p-5 border border-gray-200">
                 <h3 className="text-lg font-semibold text-gray-800 mb-4">📈 สรุปภาพรวม</h3>
@@ -488,6 +803,60 @@ const Dashboard: React.FC<DashboardProps> = ({ onNavigateToDocType }) => {
                     </div>
                 </div>
             </div>
+
+            {/* Goal Modal */}
+            {showGoalModal && (
+                <div className="fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center z-50 p-4">
+                    <div className="bg-white rounded-xl shadow-2xl max-w-md w-full p-6">
+                        <h3 className="text-lg font-semibold text-gray-800 mb-4">ตั้งเป้าหมายรายเดือน</h3>
+                        
+                        <div className="space-y-4">
+                            <div>
+                                <label className="block text-sm font-medium text-gray-700 mb-1">
+                                    จำนวนเอกสาร (ฉบับ)
+                                </label>
+                                <input
+                                    type="number"
+                                    value={goalForm.documentGoal}
+                                    onChange={(e) => setGoalForm({ ...goalForm, documentGoal: parseInt(e.target.value) || 0 })}
+                                    className="w-full px-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-indigo-500 focus:border-transparent"
+                                    min={0}
+                                />
+                            </div>
+                            
+                            <div>
+                                <label className="block text-sm font-medium text-gray-700 mb-1">
+                                    เป้าหมายรายได้ (บาท)
+                                </label>
+                                <input
+                                    type="number"
+                                    value={goalForm.revenueGoal}
+                                    onChange={(e) => setGoalForm({ ...goalForm, revenueGoal: parseInt(e.target.value) || 0 })}
+                                    className="w-full px-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-indigo-500 focus:border-transparent"
+                                    min={0}
+                                    step={1000}
+                                />
+                            </div>
+                        </div>
+                        
+                        <div className="flex justify-end gap-3 mt-6">
+                            <button
+                                onClick={() => setShowGoalModal(false)}
+                                className="px-4 py-2 text-gray-700 bg-gray-100 rounded-lg hover:bg-gray-200 transition-colors"
+                            >
+                                ยกเลิก
+                            </button>
+                            <button
+                                onClick={handleSaveGoal}
+                                disabled={savingGoal}
+                                className="px-4 py-2 bg-indigo-600 text-white rounded-lg hover:bg-indigo-700 disabled:opacity-50 transition-colors"
+                            >
+                                {savingGoal ? 'กำลังบันทึก...' : 'บันทึก'}
+                            </button>
+                        </div>
+                    </div>
+                </div>
+            )}
         </div>
     );
 };

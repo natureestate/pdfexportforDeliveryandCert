@@ -62,10 +62,16 @@ export interface DashboardStats {
     totalCancelled: number;           // จำนวนเอกสารที่ยกเลิก
     growthPercent: number;            // เปอร์เซ็นต์การเติบโต
     byDocType: DocumentTypeStats[];   // สถิติแยกตามประเภทเอกสาร
-    recentActivity: RecentActivity[]; // กิจกรรมล่าสุด
-    monthlyTrend: MonthlyTrend[];     // แนวโน้มรายเดือน (6 เดือนย้อนหลัง)
+    recentActivity: RecentActivity[]; // กิจกรรมล่าสุด (deprecated - use recentActivities)
+    recentActivities: RecentActivity[]; // กิจกรรมล่าสุด
+    monthlyTrend: MonthlyTrend[];     // แนวโน้มรายเดือน (deprecated - use monthlyTrends)
+    monthlyTrends: ExtendedMonthlyTrend[];  // แนวโน้มรายเดือนแบบละเอียด
     totalRevenue: number;             // ยอดรวมรายได้ (จาก invoice, receipt, quotation)
     totalExpense: number;             // ยอดรวมรายจ่าย (จาก purchase-order, subcontract)
+    // New features
+    topCustomers: TopCustomer[];      // Top 5 ลูกค้าที่ออกเอกสารบ่อย
+    expiringDocuments: ExpiringDocument[]; // เอกสารที่ใกล้หมดอายุ
+    pendingPayments: PendingPayment[]; // ใบแจ้งหนี้ค้างชำระ
 }
 
 // Interface สำหรับกิจกรรมล่าสุด
@@ -76,6 +82,7 @@ export interface RecentActivity {
     docNumber: string;
     customerName?: string;
     total?: number;
+    amount?: number;         // alias for total
     createdAt: Date;
     status: 'active' | 'cancelled';
 }
@@ -86,6 +93,48 @@ export interface MonthlyTrend {
     monthKey: string;        // เช่น "2025-01"
     count: number;           // จำนวนเอกสาร
     revenue: number;         // รายได้
+}
+
+// Extended Monthly Trend สำหรับ Reports
+export interface ExtendedMonthlyTrend {
+    month: number;           // 1-12
+    year: number;            // เช่น 2025
+    monthKey: string;        // เช่น "2025-01"
+    monthName: string;       // เช่น "ม.ค. 68"
+    totalDocuments: number;
+    totalRevenue: number;
+    totalExpense: number;
+    byDocType: Record<DocType, number>;
+}
+
+// Interface สำหรับ Top Customer
+export interface TopCustomer {
+    customerName: string;
+    documentCount: number;
+    totalAmount: number;
+    lastDocumentDate: Date;
+}
+
+// Interface สำหรับเอกสารที่ใกล้หมดอายุ
+export interface ExpiringDocument {
+    id: string;
+    docType: DocType;
+    docNumber: string;
+    customerName?: string;
+    expiryDate: Date;
+    daysUntilExpiry: number;
+}
+
+// Interface สำหรับใบแจ้งหนี้ค้างชำระ
+export interface PendingPayment {
+    id: string;
+    docType: DocType;
+    docNumber: string;
+    customerName?: string;
+    amount: number;
+    dueDate: Date;
+    daysOverdue: number;
+    status: 'pending' | 'overdue';
 }
 
 /**
@@ -457,6 +506,266 @@ const getFinancialSummary = async (companyId?: string): Promise<{ revenue: numbe
 };
 
 /**
+ * ดึง Top Customers
+ */
+const getTopCustomers = async (companyId?: string): Promise<TopCustomer[]> => {
+    const currentUser = auth.currentUser;
+    if (!currentUser) return [];
+
+    const customerMap = new Map<string, TopCustomer>();
+    const revenueCollections: DocType[] = ['invoice', 'receipt', 'quotation'];
+
+    for (const docType of revenueCollections) {
+        const collectionName = COLLECTIONS[docType];
+        try {
+            const constraints = [
+                where("userId", "==", currentUser.uid),
+                where("isDeleted", "==", false),
+            ];
+            if (companyId) constraints.push(where("companyId", "==", companyId));
+
+            const q = query(collection(db, collectionName), ...constraints);
+            const snapshot = await getDocs(q);
+
+            snapshot.docs.forEach(doc => {
+                const data = doc.data();
+                const customerName = data.customerName || data.toCompany || 'ไม่ระบุ';
+                if (!customerName || customerName === 'ไม่ระบุ') return;
+
+                const existing = customerMap.get(customerName);
+                const createdAt = data.createdAt?.toDate() || new Date();
+                const amount = data.total || 0;
+
+                if (existing) {
+                    existing.documentCount++;
+                    existing.totalAmount += amount;
+                    if (createdAt > existing.lastDocumentDate) {
+                        existing.lastDocumentDate = createdAt;
+                    }
+                } else {
+                    customerMap.set(customerName, {
+                        customerName,
+                        documentCount: 1,
+                        totalAmount: amount,
+                        lastDocumentDate: createdAt,
+                    });
+                }
+            });
+        } catch (error) {
+            console.error(`Error getting top customers from ${docType}:`, error);
+        }
+    }
+
+    return Array.from(customerMap.values())
+        .sort((a, b) => b.documentCount - a.documentCount)
+        .slice(0, 5);
+};
+
+/**
+ * ดึงเอกสารที่ใกล้หมดอายุ
+ */
+const getExpiringDocuments = async (companyId?: string): Promise<ExpiringDocument[]> => {
+    const currentUser = auth.currentUser;
+    if (!currentUser) return [];
+
+    const expiringDocs: ExpiringDocument[] = [];
+    const now = new Date();
+    const thirtyDaysLater = new Date(now.getTime() + 30 * 24 * 60 * 60 * 1000);
+
+    // ตรวจสอบ Quotation (validUntilDate)
+    try {
+        const constraints = [
+            where("userId", "==", currentUser.uid),
+            where("isDeleted", "==", false),
+        ];
+        if (companyId) constraints.push(where("companyId", "==", companyId));
+
+        const q = query(collection(db, 'quotations'), ...constraints);
+        const snapshot = await getDocs(q);
+
+        snapshot.docs.forEach(doc => {
+            const data = doc.data();
+            if (data.documentStatus === 'cancelled') return;
+            
+            const validUntil = data.validUntilDate?.toDate();
+            if (validUntil && validUntil >= now && validUntil <= thirtyDaysLater) {
+                const daysUntil = Math.ceil((validUntil.getTime() - now.getTime()) / (24 * 60 * 60 * 1000));
+                expiringDocs.push({
+                    id: doc.id,
+                    docType: 'quotation',
+                    docNumber: data.quotationNumber || '',
+                    customerName: data.customerName,
+                    expiryDate: validUntil,
+                    daysUntilExpiry: daysUntil,
+                });
+            }
+        });
+    } catch (error) {
+        console.error('Error getting expiring quotations:', error);
+    }
+
+    // ตรวจสอบ Warranty (warrantyEndDate)
+    try {
+        const constraints = [
+            where("userId", "==", currentUser.uid),
+            where("isDeleted", "==", false),
+        ];
+        if (companyId) constraints.push(where("companyId", "==", companyId));
+
+        const q = query(collection(db, 'warrantyCards'), ...constraints);
+        const snapshot = await getDocs(q);
+
+        snapshot.docs.forEach(doc => {
+            const data = doc.data();
+            if (data.documentStatus === 'cancelled') return;
+            
+            const warrantyEnd = data.warrantyEndDate?.toDate();
+            if (warrantyEnd && warrantyEnd >= now && warrantyEnd <= thirtyDaysLater) {
+                const daysUntil = Math.ceil((warrantyEnd.getTime() - now.getTime()) / (24 * 60 * 60 * 1000));
+                expiringDocs.push({
+                    id: doc.id,
+                    docType: 'warranty',
+                    docNumber: data.warrantyNumber || '',
+                    customerName: data.customerName,
+                    expiryDate: warrantyEnd,
+                    daysUntilExpiry: daysUntil,
+                });
+            }
+        });
+    } catch (error) {
+        console.error('Error getting expiring warranties:', error);
+    }
+
+    return expiringDocs.sort((a, b) => a.daysUntilExpiry - b.daysUntilExpiry);
+};
+
+/**
+ * ดึงใบแจ้งหนี้ค้างชำระ
+ */
+const getPendingPayments = async (companyId?: string): Promise<PendingPayment[]> => {
+    const currentUser = auth.currentUser;
+    if (!currentUser) return [];
+
+    const pendingPayments: PendingPayment[] = [];
+    const now = new Date();
+
+    try {
+        const constraints = [
+            where("userId", "==", currentUser.uid),
+            where("isDeleted", "==", false),
+        ];
+        if (companyId) constraints.push(where("companyId", "==", companyId));
+
+        const q = query(collection(db, 'invoices'), ...constraints);
+        const snapshot = await getDocs(q);
+
+        snapshot.docs.forEach(doc => {
+            const data = doc.data();
+            if (data.documentStatus === 'cancelled' || data.paymentStatus === 'paid') return;
+            
+            const dueDate = data.dueDate?.toDate();
+            if (!dueDate) return;
+
+            const daysOverdue = Math.ceil((now.getTime() - dueDate.getTime()) / (24 * 60 * 60 * 1000));
+            
+            pendingPayments.push({
+                id: doc.id,
+                docType: 'invoice',
+                docNumber: data.invoiceNumber || '',
+                customerName: data.customerName,
+                amount: data.total || 0,
+                dueDate,
+                daysOverdue: Math.max(0, daysOverdue),
+                status: daysOverdue > 0 ? 'overdue' : 'pending',
+            });
+        });
+    } catch (error) {
+        console.error('Error getting pending payments:', error);
+    }
+
+    return pendingPayments.sort((a, b) => b.daysOverdue - a.daysOverdue);
+};
+
+/**
+ * ดึงแนวโน้มรายเดือนแบบละเอียด (12 เดือน)
+ */
+const getExtendedMonthlyTrends = async (companyId?: string): Promise<ExtendedMonthlyTrend[]> => {
+    const currentUser = auth.currentUser;
+    if (!currentUser) return [];
+
+    const trends: ExtendedMonthlyTrend[] = [];
+    const now = new Date();
+
+    // สร้างข้อมูล 12 เดือนย้อนหลัง
+    for (let i = 11; i >= 0; i--) {
+        const monthDate = new Date(now.getFullYear(), now.getMonth() - i, 1);
+        const monthKey = `${monthDate.getFullYear()}-${String(monthDate.getMonth() + 1).padStart(2, '0')}`;
+        const thaiMonths = ['ม.ค.', 'ก.พ.', 'มี.ค.', 'เม.ย.', 'พ.ค.', 'มิ.ย.', 'ก.ค.', 'ส.ค.', 'ก.ย.', 'ต.ค.', 'พ.ย.', 'ธ.ค.'];
+        const thaiYear = (monthDate.getFullYear() + 543) % 100;
+
+        const byDocType: Record<DocType, number> = {} as Record<DocType, number>;
+        (Object.keys(COLLECTIONS) as DocType[]).forEach(dt => { byDocType[dt] = 0; });
+
+        trends.push({
+            month: monthDate.getMonth() + 1,
+            year: monthDate.getFullYear(),
+            monthKey,
+            monthName: `${thaiMonths[monthDate.getMonth()]} ${thaiYear}`,
+            totalDocuments: 0,
+            totalRevenue: 0,
+            totalExpense: 0,
+            byDocType,
+        });
+    }
+
+    const revenueCollections: DocType[] = ['invoice', 'receipt', 'quotation'];
+    const expenseCollections: DocType[] = ['purchase-order', 'subcontract'];
+    const allDocTypes: DocType[] = Object.keys(COLLECTIONS) as DocType[];
+    const twelveMonthsAgo = new Date(now.getFullYear(), now.getMonth() - 11, 1);
+
+    for (const docType of allDocTypes) {
+        const collectionName = COLLECTIONS[docType];
+        try {
+            const constraints = [
+                where("userId", "==", currentUser.uid),
+                where("isDeleted", "==", false),
+                where("createdAt", ">=", Timestamp.fromDate(twelveMonthsAgo)),
+            ];
+            if (companyId) constraints.push(where("companyId", "==", companyId));
+
+            const q = query(collection(db, collectionName), ...constraints);
+            const snapshot = await getDocs(q);
+
+            snapshot.docs.forEach(doc => {
+                const data = doc.data();
+                if (data.documentStatus === 'cancelled') return;
+                
+                const createdAt = data.createdAt?.toDate();
+                if (!createdAt) return;
+
+                const monthKey = `${createdAt.getFullYear()}-${String(createdAt.getMonth() + 1).padStart(2, '0')}`;
+                const trend = trends.find(t => t.monthKey === monthKey);
+                if (!trend) return;
+
+                trend.totalDocuments++;
+                trend.byDocType[docType]++;
+
+                const amount = data.total || data.totalContractAmount || 0;
+                if (revenueCollections.includes(docType)) {
+                    trend.totalRevenue += amount;
+                } else if (expenseCollections.includes(docType)) {
+                    trend.totalExpense += amount;
+                }
+            });
+        } catch (error) {
+            console.error(`Error getting extended trends for ${docType}:`, error);
+        }
+    }
+
+    return trends;
+};
+
+/**
  * ดึงสถิติ Dashboard ทั้งหมด
  */
 export const getDashboardStats = async (companyId?: string): Promise<DashboardStats> => {
@@ -469,11 +778,15 @@ export const getDashboardStats = async (companyId?: string): Promise<DashboardSt
     const docTypes: DocType[] = Object.keys(COLLECTIONS) as DocType[];
     const statsPromises = docTypes.map(docType => getDocTypeStats(docType, companyId));
     
-    const [byDocType, recentActivity, monthlyTrend, financialSummary] = await Promise.all([
+    const [byDocType, recentActivity, monthlyTrend, financialSummary, topCustomers, expiringDocuments, pendingPayments, monthlyTrends] = await Promise.all([
         Promise.all(statsPromises),
         getRecentActivity(companyId),
         getMonthlyTrend(companyId),
         getFinancialSummary(companyId),
+        getTopCustomers(companyId),
+        getExpiringDocuments(companyId),
+        getPendingPayments(companyId),
+        getExtendedMonthlyTrends(companyId),
     ]);
 
     // คำนวณสถิติรวม
@@ -483,6 +796,9 @@ export const getDashboardStats = async (companyId?: string): Promise<DashboardSt
     const totalCancelled = byDocType.reduce((sum, stat) => sum + stat.cancelled, 0);
     const growthPercent = calculateGrowthPercent(totalThisMonth, totalLastMonth);
 
+    // Add amount alias to recent activities
+    const recentActivities = recentActivity.map(a => ({ ...a, amount: a.total }));
+
     return {
         totalDocuments,
         totalThisMonth,
@@ -491,9 +807,14 @@ export const getDashboardStats = async (companyId?: string): Promise<DashboardSt
         growthPercent,
         byDocType,
         recentActivity,
+        recentActivities,
         monthlyTrend,
+        monthlyTrends,
         totalRevenue: financialSummary.revenue,
         totalExpense: financialSummary.expense,
+        topCustomers,
+        expiringDocuments,
+        pendingPayments,
     };
 };
 

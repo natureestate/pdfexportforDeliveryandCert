@@ -1,6 +1,6 @@
 import React, { useState, useRef, useCallback, useEffect } from 'react';
 import { Routes, Route, Navigate } from 'react-router-dom';
-import { Package, Shield, FileText, Receipt, FileCheck, DollarSign, ShoppingCart, StickyNote, PlusCircle, FilePlus, History, Save, HardHat, Settings, LayoutDashboard } from 'lucide-react';
+import { Package, Shield, FileText, Receipt, FileCheck, DollarSign, ShoppingCart, StickyNote, PlusCircle, FilePlus, History, Save, HardHat, Settings, LayoutDashboard, Users, BarChart2, Calendar } from 'lucide-react';
 import { DeliveryNoteData, WarrantyData, InvoiceData, ReceiptData, TaxInvoiceData, QuotationData, PurchaseOrderData, MemoData, VariationOrderData, SubcontractData, LogoType, MenuItemConfig } from './types';
 import { AuthProvider } from './contexts/AuthContext';
 import { CompanyProvider, useCompany } from './contexts/CompanyContext';
@@ -37,6 +37,9 @@ import UserMenuSettingsModal from './components/UserMenuSettingsModal';
 import PricingPage from './components/PricingPage';
 import SubscriptionManager from './components/SubscriptionManager';
 import Dashboard from './components/Dashboard';
+import CRMPage from './components/CRMPage';
+import ReportsPage from './components/ReportsPage';
+import CalendarPage from './components/CalendarPage';
 import { generatePdf } from './services/pdfGenerator';
 import { saveDeliveryNote, saveWarrantyCard, saveInvoice, saveReceipt, saveTaxInvoice, saveQuotation, savePurchaseOrder } from './services/firestore';
 import type { DeliveryNoteDocument, WarrantyDocument, InvoiceDocument, ReceiptDocument, TaxInvoiceDocument, QuotationDocument, PurchaseOrderDocument, MemoDocument, VariationOrderDocument, SubcontractDocument } from './services/firestore';
@@ -430,7 +433,7 @@ const initialSubcontractData: SubcontractData = {
     issuedBy: '',
 };
 
-type ViewMode = 'form' | 'history' | 'dashboard';
+type ViewMode = 'form' | 'history' | 'dashboard' | 'crm' | 'reports' | 'calendar';
 type Notification = { show: boolean; message: string; type: 'success' | 'info' | 'error' };
 
 // Icon mapping สำหรับ dynamic menu rendering
@@ -1000,40 +1003,89 @@ const AppContent: React.FC = () => {
             <main className="p-3 sm:p-4 md:p-8 max-w-7xl mx-auto">
                 {/* View Mode Selector */}
                 <div className="mb-4 sm:mb-6 flex justify-center">
-                    <div className="inline-flex rounded-md shadow-sm w-full sm:w-auto" role="group">
-                        <button
-                            onClick={() => setViewMode('dashboard')}
-                            className={`flex-1 sm:flex-none px-4 sm:px-6 py-2 text-xs sm:text-sm font-medium rounded-l-lg border flex items-center justify-center gap-1.5 ${
-                                viewMode === 'dashboard'
-                                    ? 'bg-indigo-600 text-white border-indigo-600'
-                                    : 'bg-white text-gray-700 border-gray-300 hover:bg-gray-50'
-                            }`}
-                        >
-                            <LayoutDashboard className="w-4 h-4" />
-                            Dashboard
-                        </button>
-                        <button
-                            onClick={() => setViewMode('form')}
-                            className={`flex-1 sm:flex-none px-4 sm:px-6 py-2 text-xs sm:text-sm font-medium border-t border-b flex items-center justify-center gap-1.5 ${
-                                viewMode === 'form'
-                                    ? 'bg-indigo-600 text-white border-indigo-600'
-                                    : 'bg-white text-gray-700 border-gray-300 hover:bg-gray-50'
-                            }`}
-                        >
-                            <FilePlus className="w-4 h-4" />
-                            สร้างเอกสาร
-                        </button>
-                        <button
-                            onClick={() => setViewMode('history')}
-                            className={`flex-1 sm:flex-none px-4 sm:px-6 py-2 text-xs sm:text-sm font-medium rounded-r-lg border-t border-r border-b flex items-center justify-center gap-1.5 ${
-                                viewMode === 'history'
-                                    ? 'bg-indigo-600 text-white border-indigo-600'
-                                    : 'bg-white text-gray-700 border-gray-300 hover:bg-gray-50'
-                            }`}
-                        >
-                            <History className="w-4 h-4" />
-                            ประวัติเอกสาร
-                        </button>
+                    <div className="relative w-full sm:w-auto">
+                        {/* Fade indicator ด้านซ้าย (mobile) */}
+                        <div className="absolute left-0 top-0 bottom-0 w-4 bg-gradient-to-r from-slate-100 to-transparent z-10 pointer-events-none sm:hidden"></div>
+                        
+                        <div className="overflow-x-auto -mx-3 px-3 sm:mx-0 sm:px-0 scrollbar-hide">
+                            <div className="inline-flex rounded-md shadow-sm min-w-max" role="group">
+                                <button
+                                    onClick={() => setViewMode('dashboard')}
+                                    className={`px-3 sm:px-4 py-2 text-xs sm:text-sm font-medium rounded-l-lg border flex items-center justify-center gap-1.5 ${
+                                        viewMode === 'dashboard'
+                                            ? 'bg-indigo-600 text-white border-indigo-600'
+                                            : 'bg-white text-gray-700 border-gray-300 hover:bg-gray-50'
+                                    }`}
+                                >
+                                    <LayoutDashboard className="w-4 h-4" />
+                                    <span className="hidden sm:inline">Dashboard</span>
+                                    <span className="sm:hidden">แดช</span>
+                                </button>
+                                <button
+                                    onClick={() => setViewMode('form')}
+                                    className={`px-3 sm:px-4 py-2 text-xs sm:text-sm font-medium border-t border-b flex items-center justify-center gap-1.5 ${
+                                        viewMode === 'form'
+                                            ? 'bg-indigo-600 text-white border-indigo-600'
+                                            : 'bg-white text-gray-700 border-gray-300 hover:bg-gray-50'
+                                    }`}
+                                >
+                                    <FilePlus className="w-4 h-4" />
+                                    <span className="hidden sm:inline">สร้างเอกสาร</span>
+                                    <span className="sm:hidden">สร้าง</span>
+                                </button>
+                                <button
+                                    onClick={() => setViewMode('history')}
+                                    className={`px-3 sm:px-4 py-2 text-xs sm:text-sm font-medium border-t border-b flex items-center justify-center gap-1.5 ${
+                                        viewMode === 'history'
+                                            ? 'bg-indigo-600 text-white border-indigo-600'
+                                            : 'bg-white text-gray-700 border-gray-300 hover:bg-gray-50'
+                                    }`}
+                                >
+                                    <History className="w-4 h-4" />
+                                    <span className="hidden sm:inline">ประวัติ</span>
+                                    <span className="sm:hidden">ประวัติ</span>
+                                </button>
+                                <button
+                                    onClick={() => setViewMode('crm')}
+                                    className={`px-3 sm:px-4 py-2 text-xs sm:text-sm font-medium border-t border-b flex items-center justify-center gap-1.5 ${
+                                        viewMode === 'crm'
+                                            ? 'bg-indigo-600 text-white border-indigo-600'
+                                            : 'bg-white text-gray-700 border-gray-300 hover:bg-gray-50'
+                                    }`}
+                                >
+                                    <Users className="w-4 h-4" />
+                                    <span className="hidden sm:inline">CRM</span>
+                                    <span className="sm:hidden">CRM</span>
+                                </button>
+                                <button
+                                    onClick={() => setViewMode('reports')}
+                                    className={`px-3 sm:px-4 py-2 text-xs sm:text-sm font-medium border-t border-b flex items-center justify-center gap-1.5 ${
+                                        viewMode === 'reports'
+                                            ? 'bg-indigo-600 text-white border-indigo-600'
+                                            : 'bg-white text-gray-700 border-gray-300 hover:bg-gray-50'
+                                    }`}
+                                >
+                                    <BarChart2 className="w-4 h-4" />
+                                    <span className="hidden sm:inline">รายงาน</span>
+                                    <span className="sm:hidden">รายงาน</span>
+                                </button>
+                                <button
+                                    onClick={() => setViewMode('calendar')}
+                                    className={`px-3 sm:px-4 py-2 text-xs sm:text-sm font-medium rounded-r-lg border flex items-center justify-center gap-1.5 ${
+                                        viewMode === 'calendar'
+                                            ? 'bg-indigo-600 text-white border-indigo-600'
+                                            : 'bg-white text-gray-700 border-gray-300 hover:bg-gray-50'
+                                    }`}
+                                >
+                                    <Calendar className="w-4 h-4" />
+                                    <span className="hidden sm:inline">ปฏิทิน</span>
+                                    <span className="sm:hidden">ปฏิทิน</span>
+                                </button>
+                            </div>
+                        </div>
+                        
+                        {/* Fade indicator ด้านขวา (mobile) */}
+                        <div className="absolute right-0 top-0 bottom-0 w-4 bg-gradient-to-l from-slate-100 to-transparent z-10 pointer-events-none sm:hidden"></div>
                     </div>
                 </div>
 
@@ -1044,6 +1096,10 @@ const AppContent: React.FC = () => {
                             onNavigateToDocType={(docType) => {
                                 setActiveTab(docType);
                                 setViewMode('history');
+                            }}
+                            onQuickAction={(docType) => {
+                                setActiveTab(docType);
+                                setViewMode('form');
                             }}
                         />
                     </div>
@@ -1398,7 +1454,22 @@ const AppContent: React.FC = () => {
                             onLoadDocument={handleLoadDocument}
                         />
                     </div>
-                )}
+                ) : viewMode === 'crm' ? (
+                    // CRM View
+                    <div className="bg-white p-3 sm:p-4 md:p-6 rounded-lg shadow-lg">
+                        <CRMPage />
+                    </div>
+                ) : viewMode === 'reports' ? (
+                    // Reports View
+                    <div className="bg-white p-3 sm:p-4 md:p-6 rounded-lg shadow-lg">
+                        <ReportsPage />
+                    </div>
+                ) : viewMode === 'calendar' ? (
+                    // Calendar View
+                    <div className="bg-white p-3 sm:p-4 md:p-6 rounded-lg shadow-lg">
+                        <CalendarPage />
+                    </div>
+                ) : null}
             </main>
         </div>
     );
