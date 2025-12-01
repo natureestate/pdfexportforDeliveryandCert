@@ -6,6 +6,7 @@ import { AuthProvider } from './contexts/AuthContext';
 import { CompanyProvider, useCompany } from './contexts/CompanyContext';
 import { MenuProvider, useMenu } from './contexts/MenuContext';
 import { TabProvider, useTab } from './contexts/TabContext';
+import { ThemeProvider } from './contexts/ThemeContext';
 import { TabConfig, TabType } from './types';
 import ProtectedRoute from './components/ProtectedRoute';
 import Header from './components/Header';
@@ -1462,16 +1463,17 @@ const App: React.FC = () => {
     };
 
     return (
-        <AuthProvider>
-            {/* Cookie Consent Modal */}
-            {!cookieConsent && (
-                <CookieConsentModal 
-                    onAccept={handleCookieAccept}
-                    onDecline={handleCookieDecline}
-                />
-            )}
-            
-            <Routes>
+        <ThemeProvider>
+            <AuthProvider>
+                {/* Cookie Consent Modal */}
+                {!cookieConsent && (
+                    <CookieConsentModal 
+                        onAccept={handleCookieAccept}
+                        onDecline={handleCookieDecline}
+                    />
+                )}
+                
+                <Routes>
                 {/* หน้ายอมรับคำเชิญ - ไม่ต้อง login ก่อน */}
                 <Route path="/accept-invitation" element={<AcceptInvitationPage />} />
                 
@@ -1535,8 +1537,9 @@ const App: React.FC = () => {
                         </CompanyProvider>
                     }
                 />
-            </Routes>
-        </AuthProvider>
+                </Routes>
+            </AuthProvider>
+        </ThemeProvider>
     );
 };
 

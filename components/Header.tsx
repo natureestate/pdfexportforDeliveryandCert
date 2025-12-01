@@ -13,6 +13,7 @@ import AccountLinkingModal from './AccountLinkingModal';
 import MenuSettingsModal from './MenuSettingsModal';
 import UserMenuSettingsModal from './UserMenuSettingsModal';
 import TabSettingsModal from './TabSettingsModal';
+import ThemeToggle from './ThemeToggle';
 import { checkIsAdmin } from '../services/companyMembers';
 import { getQuota } from '../services/quota';
 import { updateCompany } from '../services/companies';
@@ -616,6 +617,11 @@ const Header: React.FC = () => {
                                                                     <LayoutDashboard className="w-4 h-4" />
                                                                     <span>ตั้งค่า Tab Menu</span>
                                                                 </button>
+                                                                
+                                                                {/* ธีม Dark/Light */}
+                                                                <div className="px-6 py-2.5 border-t border-gray-200">
+                                                                    <ThemeToggle showLabel />
+                                                                </div>
                                                             </div>
                                                         )}
                                                     </div>
@@ -943,6 +949,11 @@ const Header: React.FC = () => {
                                                     <LayoutDashboard className="w-4 h-4" />
                                                     <span>ตั้งค่า Tab Menu</span>
                                                 </button>
+                                                
+                                                {/* ธีม Dark/Light */}
+                                                <div className="mt-2 pt-2 border-t border-gray-200">
+                                                    <ThemeToggle showLabel />
+                                                </div>
                                             </div>
                                         )}
                                     </div>
