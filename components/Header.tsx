@@ -17,7 +17,7 @@ import { checkIsAdmin } from '../services/companyMembers';
 import { getQuota } from '../services/quota';
 import { updateCompany } from '../services/companies';
 import { CompanyQuota, LogoType } from '../types';
-import { Link2, Key, Building2, Palette, BarChart3, Users, HardDrive, Crown, User, CreditCard, Sparkles, Settings, ChevronRight, LayoutDashboard } from 'lucide-react';
+import { Link2, Key, Building2, Palette, BarChart3, Users, HardDrive, Crown, User, CreditCard, Sparkles, Settings, ChevronRight, LayoutDashboard, Mail, Phone, UserCircle } from 'lucide-react';
 
 const Header: React.FC = () => {
     const navigate = useNavigate();
@@ -458,19 +458,21 @@ const Header: React.FC = () => {
                                             <div className="absolute right-0 mt-2 w-72 bg-white rounded-lg shadow-xl border border-gray-200 py-2 z-50">
                                                 {/* ข้อมูล Profile */}
                                                 <div className="px-4 py-3 border-b border-gray-200 bg-gradient-to-r from-indigo-50 to-purple-50">
-                                                    <p className="text-xs text-gray-500 font-medium mb-2">👤 โปรไฟล์</p>
+                                                    <p className="text-xs text-gray-500 font-medium mb-2 flex items-center gap-1">
+                                                        <UserCircle className="w-3.5 h-3.5" /> โปรไฟล์
+                                                    </p>
                                                     <div className="space-y-1">
                                                         {user?.displayName && (
                                                             <p className="text-sm font-semibold text-gray-800">{user.displayName}</p>
                                                         )}
                                                         {user?.email && (
                                                             <p className="text-xs text-gray-600 flex items-center gap-1">
-                                                                <span>📧</span> {user.email}
+                                                                <Mail className="w-3 h-3" /> {user.email}
                                                             </p>
                                                         )}
                                                         {user?.phoneNumber && (
                                                             <p className="text-xs text-gray-600 flex items-center gap-1">
-                                                                <span>📱</span> {user.phoneNumber}
+                                                                <Phone className="w-3 h-3" /> {user.phoneNumber}
                                                             </p>
                                                         )}
                                                     </div>
@@ -515,10 +517,8 @@ const Header: React.FC = () => {
                                                     className="w-full px-4 py-3 text-left text-sm text-cyan-600 hover:bg-cyan-50 transition-colors duration-200 flex items-center justify-between border-b border-gray-200"
                                                 >
                                                     <div className="flex items-center gap-3">
-                                                        <svg className="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                                                            <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M13.828 10.172a4 4 0 00-5.656 0l-4 4a4 4 0 105.656 5.656l1.102-1.101m-.758-4.899a4 4 0 005.656 0l4-4a4 4 0 00-5.656-5.656l-1.1 1.1" />
-                                                        </svg>
-                                                        <span className="font-medium"><Link2 className="w-4 h-4 inline mr-1" />Account Linking</span>
+                                                        <Link2 className="w-5 h-5" />
+                                                        <span className="font-medium">Account Linking</span>
                                                     </div>
                                                     <span className="text-xs px-2 py-0.5 bg-cyan-100 text-cyan-700 rounded-full">
                                                         {[linkedProviders.hasGoogle, linkedProviders.hasEmail, linkedProviders.hasPhone].filter(Boolean).length}/3
@@ -534,10 +534,8 @@ const Header: React.FC = () => {
                                                         }}
                                                         className="w-full px-4 py-3 text-left text-sm text-blue-600 hover:bg-blue-50 transition-colors duration-200 flex items-center gap-3 border-b border-gray-200"
                                                     >
-                                                        <svg className="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                                                            <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M12 15v2m-6 4h12a2 2 0 002-2v-6a2 2 0 00-2-2H6a2 2 0 00-2 2v6a2 2 0 002 2zm10-10V7a4 4 0 00-8 0v4h8z" />
-                                                        </svg>
-                                                        <span className="font-medium"><Link2 className="w-4 h-4 inline mr-1" />เพิ่มรหัสผ่าน</span>
+                                                        <Link2 className="w-5 h-5" />
+                                                        <span className="font-medium">เพิ่มรหัสผ่าน</span>
                                                     </button>
                                                 ) : (
                                                     <button
@@ -547,10 +545,8 @@ const Header: React.FC = () => {
                                                         }}
                                                         className="w-full px-4 py-3 text-left text-sm text-amber-600 hover:bg-amber-50 transition-colors duration-200 flex items-center gap-3 border-b border-gray-200"
                                                     >
-                                                        <svg className="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                                                            <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M15 7a2 2 0 012 2m4 0a6 6 0 01-7.743 5.743L11 17H9v2H7v2H4a1 1 0 01-1-1v-2.586a1 1 0 01.293-.707l5.964-5.964A6 6 0 1121 9z" />
-                                                        </svg>
-                                                        <span className="font-medium"><Key className="w-4 h-4 inline mr-1" />เปลี่ยนรหัสผ่าน</span>
+                                                        <Key className="w-5 h-5" />
+                                                        <span className="font-medium">เปลี่ยนรหัสผ่าน</span>
                                                     </button>
                                                 )}
 
@@ -631,10 +627,8 @@ const Header: React.FC = () => {
                                                         onClick={handleShowQuota}
                                                         className="w-full px-4 py-3 text-left text-sm text-purple-600 hover:bg-purple-50 transition-colors duration-200 flex items-center gap-3 border-b border-gray-200"
                                                     >
-                                                        <svg className="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                                                            <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M9 19v-6a2 2 0 00-2-2H5a2 2 0 00-2 2v6a2 2 0 002 2h2a2 2 0 002-2zm0 0V9a2 2 0 012-2h2a2 2 0 012 2v10m-6 0a2 2 0 002 2h2a2 2 0 002-2m0 0V5a2 2 0 012-2h2a2 2 0 012 2v14a2 2 0 01-2 2h-2a2 2 0 01-2-2z" />
-                                                        </svg>
-                                                        <span className="font-medium"><BarChart3 className="w-4 h-4 inline mr-1" />ดูโควตา</span>
+                                                        <BarChart3 className="w-5 h-5" />
+                                                        <span className="font-medium">ดูโควตา</span>
                                                     </button>
                                                 )}
 
@@ -648,7 +642,7 @@ const Header: React.FC = () => {
                                                         className="w-full px-4 py-3 text-left text-sm text-amber-600 hover:bg-amber-50 transition-colors duration-200 flex items-center gap-3 border-b border-gray-200"
                                                     >
                                                         <Sparkles className="w-5 h-5" />
-                                                        <span className="font-medium"><CreditCard className="w-4 h-4 inline mr-1" />แพ็กเกจ/อัปเกรด</span>
+                                                        <span className="font-medium">แพ็กเกจ/อัปเกรด</span>
                                                     </button>
                                                 )}
 
@@ -660,9 +654,7 @@ const Header: React.FC = () => {
                                                         }}
                                                         className="w-full px-4 py-3 text-left text-sm text-indigo-600 hover:bg-indigo-50 transition-colors duration-200 flex items-center gap-3 border-b border-gray-200"
                                                     >
-                                                        <svg className="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                                                            <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M12 4.354a4 4 0 110 5.292M15 21H3v-1a6 6 0 0112 0v1zm0 0h6v-1a6 6 0 00-9-5.197M13 7a4 4 0 11-8 0 4 4 0 018 0z" />
-                                                        </svg>
+                                                        <Users className="w-5 h-5" />
                                                         <span className="font-medium">จัดการสมาชิก</span>
                                                     </button>
                                                 )}
@@ -786,8 +778,8 @@ const Header: React.FC = () => {
                                             {user?.email}
                                         </p>
                                         {user?.phoneNumber && (
-                                            <p className="text-xs text-gray-600 truncate mt-0.5">
-                                                📱 {user.phoneNumber}
+                                            <p className="text-xs text-gray-600 truncate mt-0.5 flex items-center gap-1">
+                                                <Phone className="w-3 h-3" /> {user.phoneNumber}
                                             </p>
                                         )}
                                     </div>
@@ -843,11 +835,9 @@ const Header: React.FC = () => {
                                 >
                                     <div className="flex items-center gap-3">
                                         <div className="w-9 h-9 rounded-lg bg-cyan-200 flex items-center justify-center">
-                                            <svg className="w-5 h-5 text-cyan-700" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                                                <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M13.828 10.172a4 4 0 00-5.656 0l-4 4a4 4 0 105.656 5.656l1.102-1.101m-.758-4.899a4 4 0 005.656 0l4-4a4 4 0 00-5.656-5.656l-1.1 1.1" />
-                                            </svg>
+                                            <Link2 className="w-5 h-5 text-cyan-700" />
                                         </div>
-                                        <span><Link2 className="w-4 h-4 inline mr-1" />Account Linking</span>
+                                        <span>Account Linking</span>
                                     </div>
                                     <span className="text-xs px-2 py-0.5 bg-cyan-200 text-cyan-700 rounded-full">
                                         {[linkedProviders.hasGoogle, linkedProviders.hasEmail, linkedProviders.hasPhone].filter(Boolean).length}/3
@@ -864,11 +854,9 @@ const Header: React.FC = () => {
                                         className="w-full px-4 py-3.5 text-left text-sm font-medium text-blue-700 bg-blue-50 hover:bg-blue-100 rounded-lg transition-all duration-200 flex items-center gap-3 mb-2 shadow-sm hover:shadow"
                                     >
                                         <div className="w-9 h-9 rounded-lg bg-blue-200 flex items-center justify-center">
-                                            <svg className="w-5 h-5 text-blue-700" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                                                <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M12 15v2m-6 4h12a2 2 0 002-2v-6a2 2 0 00-2-2H6a2 2 0 00-2 2v6a2 2 0 002 2zm10-10V7a4 4 0 00-8 0v4h8z" />
-                                            </svg>
+                                            <Link2 className="w-5 h-5 text-blue-700" />
                                         </div>
-                                        <span><Link2 className="w-4 h-4 inline mr-1" />เพิ่มรหัสผ่าน</span>
+                                        <span>เพิ่มรหัสผ่าน</span>
                                     </button>
                                 ) : (
                                     <button
@@ -879,11 +867,9 @@ const Header: React.FC = () => {
                                         className="w-full px-4 py-3.5 text-left text-sm font-medium text-amber-700 bg-amber-50 hover:bg-amber-100 rounded-lg transition-all duration-200 flex items-center gap-3 mb-2 shadow-sm hover:shadow"
                                     >
                                         <div className="w-9 h-9 rounded-lg bg-amber-200 flex items-center justify-center">
-                                            <svg className="w-5 h-5 text-amber-700" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                                                <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M15 7a2 2 0 012 2m4 0a6 6 0 01-7.743 5.743L11 17H9v2H7v2H4a1 1 0 01-1-1v-2.586a1 1 0 01.293-.707l5.964-5.964A6 6 0 1121 9z" />
-                                            </svg>
+                                            <Key className="w-5 h-5 text-amber-700" />
                                         </div>
-                                        <span><Key className="w-4 h-4 inline mr-1" />เปลี่ยนรหัสผ่าน</span>
+                                        <span>เปลี่ยนรหัสผ่าน</span>
                                     </button>
                                 )}
 
@@ -969,11 +955,9 @@ const Header: React.FC = () => {
                                         className="w-full px-4 py-3.5 text-left text-sm font-medium text-purple-700 bg-purple-50 hover:bg-purple-100 rounded-lg transition-all duration-200 flex items-center gap-3 mb-2 shadow-sm hover:shadow"
                                     >
                                         <div className="w-9 h-9 rounded-lg bg-purple-200 flex items-center justify-center">
-                                            <svg className="w-5 h-5 text-purple-700" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                                                <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M9 19v-6a2 2 0 00-2-2H5a2 2 0 00-2 2v6a2 2 0 002 2h2a2 2 0 002-2zm0 0V9a2 2 0 012-2h2a2 2 0 012 2v10m-6 0a2 2 0 002 2h2a2 2 0 002-2m0 0V5a2 2 0 012-2h2a2 2 0 012 2v14a2 2 0 01-2 2h-2a2 2 0 01-2-2z" />
-                                            </svg>
+                                            <BarChart3 className="w-5 h-5 text-purple-700" />
                                         </div>
-                                        <span><BarChart3 className="w-4 h-4 inline mr-1" />ดูโควตา</span>
+                                        <span>ดูโควตา</span>
                                     </button>
                                 )}
 
@@ -989,7 +973,7 @@ const Header: React.FC = () => {
                                         <div className="w-9 h-9 rounded-lg bg-gradient-to-br from-amber-400 to-orange-500 flex items-center justify-center">
                                             <Sparkles className="w-5 h-5 text-white" />
                                         </div>
-                                        <span><CreditCard className="w-4 h-4 inline mr-1" />แพ็กเกจ/อัปเกรด</span>
+                                        <span>แพ็กเกจ/อัปเกรด</span>
                                     </button>
                                 )}
 
@@ -1003,9 +987,7 @@ const Header: React.FC = () => {
                                         className="w-full px-4 py-3.5 text-left text-sm font-medium text-indigo-700 bg-indigo-50 hover:bg-indigo-100 rounded-lg transition-all duration-200 flex items-center gap-3 mb-2 shadow-sm hover:shadow"
                                     >
                                         <div className="w-9 h-9 rounded-lg bg-indigo-200 flex items-center justify-center">
-                                            <svg className="w-5 h-5 text-indigo-700" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                                                <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M12 4.354a4 4 0 110 5.292M15 21H3v-1a6 6 0 0112 0v1zm0 0h6v-1a6 6 0 00-9-5.197M13 7a4 4 0 11-8 0 4 4 0 018 0z" />
-                                            </svg>
+                                            <Users className="w-5 h-5 text-indigo-700" />
                                         </div>
                                         <span>จัดการสมาชิก</span>
                                     </button>
