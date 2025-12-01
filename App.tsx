@@ -1493,9 +1493,13 @@ const App: React.FC = () => {
                     path="/pricing"
                     element={
                         <CompanyProvider>
-                            <ProtectedRoute>
-                                <PricingPage />
-                            </ProtectedRoute>
+                            <MenuProvider>
+                                <TabProvider>
+                                    <ProtectedRoute>
+                                        <PricingPage />
+                                    </ProtectedRoute>
+                                </TabProvider>
+                            </MenuProvider>
                         </CompanyProvider>
                     }
                 />
@@ -1505,9 +1509,13 @@ const App: React.FC = () => {
                     path="/subscription"
                     element={
                         <CompanyProvider>
-                            <ProtectedRoute>
-                                <SubscriptionManager />
-                            </ProtectedRoute>
+                            <MenuProvider>
+                                <TabProvider>
+                                    <ProtectedRoute>
+                                        <SubscriptionManager />
+                                    </ProtectedRoute>
+                                </TabProvider>
+                            </MenuProvider>
                         </CompanyProvider>
                     }
                 />
