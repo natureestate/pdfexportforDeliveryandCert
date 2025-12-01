@@ -228,7 +228,9 @@ const Dashboard: React.FC<DashboardProps> = ({ onNavigateToDocType, onQuickActio
             {/* Header */}
             <div className="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-4">
                 <div>
-                    <h2 className="text-2xl font-bold text-gray-800">📊 Dashboard</h2>
+                    <h2 className="text-2xl font-bold text-gray-800 flex items-center gap-2">
+                        <BarChart3 className="w-7 h-7 text-indigo-600" /> Dashboard
+                    </h2>
                     <p className="text-gray-500 text-sm mt-1">
                         ภาพรวมเอกสารของ {currentCompany?.name || 'บริษัท'}
                     </p>
@@ -777,7 +779,9 @@ const Dashboard: React.FC<DashboardProps> = ({ onNavigateToDocType, onQuickActio
 
             {/* Quick Stats Summary */}
             <div className="bg-gradient-to-r from-gray-50 to-gray-100 rounded-xl p-5 border border-gray-200">
-                <h3 className="text-lg font-semibold text-gray-800 mb-4">📈 สรุปภาพรวม</h3>
+                <h3 className="text-lg font-semibold text-gray-800 mb-4 flex items-center gap-2">
+                    <TrendingUp className="w-5 h-5 text-blue-600" /> สรุปภาพรวม
+                </h3>
                 <div className="grid grid-cols-2 md:grid-cols-4 gap-4 text-center">
                     <div>
                         <p className="text-2xl font-bold text-indigo-600">{stats.totalThisMonth}</p>

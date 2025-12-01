@@ -17,7 +17,7 @@ import { checkIsAdmin } from '../services/companyMembers';
 import { getQuota } from '../services/quota';
 import { updateCompany } from '../services/companies';
 import { CompanyQuota, LogoType } from '../types';
-import { Link2, Key, Building2, Palette, BarChart3, Users, HardDrive, Crown, User, CreditCard, Sparkles, Settings, ChevronRight, LayoutDashboard, Mail, Phone, UserCircle } from 'lucide-react';
+import { Link2, Key, Building2, Palette, BarChart3, Users, HardDrive, Crown, User, CreditCard, Sparkles, Settings, ChevronRight, LayoutDashboard, Mail, Phone, UserCircle, TrendingUp, FileText, Check, X, RefreshCw, Pause, Lightbulb, Zap } from 'lucide-react';
 
 const Header: React.FC = () => {
     const navigate = useNavigate();
@@ -1125,14 +1125,14 @@ const Header: React.FC = () => {
                                     disabled={linkLoading}
                                     className="w-full py-3 px-4 bg-gradient-to-r from-blue-500 to-blue-600 text-white rounded-lg font-medium hover:from-blue-600 hover:to-blue-700 transition-all disabled:opacity-50"
                                 >
-                                    {linkLoading ? 'กำลังเพิ่มรหัสผ่าน...' : '✅ เพิ่มรหัสผ่าน'}
+                                    {linkLoading ? 'กำลังเพิ่มรหัสผ่าน...' : 'เพิ่มรหัสผ่าน'}
                                 </button>
                             </form>
 
                             {/* ข้อมูลเพิ่มเติม */}
                             <div className="bg-gray-50 rounded-lg p-3">
                                 <p className="text-xs text-gray-600">
-                                    💡 <strong>หลังจากเพิ่มรหัสผ่านแล้ว</strong>
+                                    <Lightbulb className="w-4 h-4 inline text-amber-500" /> <strong>หลังจากเพิ่มรหัสผ่านแล้ว</strong>
                                     <br />
                                     คุณสามารถ Login ได้ทั้ง Google และ Email/Password
                                 </p>
@@ -1255,14 +1255,14 @@ const Header: React.FC = () => {
                                     disabled={changePasswordLoading}
                                     className="w-full py-3 px-4 bg-gradient-to-r from-amber-500 to-amber-600 text-white rounded-lg font-medium hover:from-amber-600 hover:to-amber-700 transition-all disabled:opacity-50"
                                 >
-                                    {changePasswordLoading ? 'กำลังเปลี่ยนรหัสผ่าน...' : '✅ เปลี่ยนรหัสผ่าน'}
+                                    {changePasswordLoading ? 'กำลังเปลี่ยนรหัสผ่าน...' : 'เปลี่ยนรหัสผ่าน'}
                                 </button>
                             </form>
 
                             {/* ข้อมูลเพิ่มเติม */}
                             <div className="bg-gray-50 rounded-lg p-3">
                                 <p className="text-xs text-gray-600">
-                                    💡 <strong>หมายเหตุ</strong>
+                                    <Lightbulb className="w-4 h-4 inline text-amber-500" /> <strong>หมายเหตุ</strong>
                                     <br />
                                     หลังเปลี่ยนรหัสผ่านแล้ว ให้ใช้รหัสผ่านใหม่ในการ Login ครั้งต่อไป
                                 </p>
@@ -1315,23 +1315,25 @@ const Header: React.FC = () => {
                                             <p className="text-sm text-amber-600 font-medium mb-1">แผนปัจจุบัน</p>
                                             <p className="text-2xl font-bold text-gray-800 capitalize">{quota.plan}</p>
                                         </div>
-                                        <div className={`px-4 py-2 rounded-full text-sm font-bold ${
+                                        <div className={`px-4 py-2 rounded-full text-sm font-bold flex items-center gap-1.5 ${
                                             quota.status === 'active' ? 'bg-green-100 text-green-700' :
                                             quota.status === 'trial' ? 'bg-blue-100 text-blue-700' :
                                             quota.status === 'expired' ? 'bg-red-100 text-red-700' :
                                             'bg-gray-100 text-gray-700'
                                         }`}>
-                                            {quota.status === 'active' ? '✅ Active' :
-                                             quota.status === 'trial' ? '🔄 Trial' :
-                                             quota.status === 'expired' ? '❌ Expired' :
-                                             '⏸️ Suspended'}
+                                            {quota.status === 'active' ? <><Check className="w-4 h-4" /> Active</> :
+                                             quota.status === 'trial' ? <><RefreshCw className="w-4 h-4" /> Trial</> :
+                                             quota.status === 'expired' ? <><X className="w-4 h-4" /> Expired</> :
+                                             <><Pause className="w-4 h-4" /> Suspended</>}
                                         </div>
                                     </div>
                                 </div>
 
                                 {/* โควตาการใช้งาน */}
                                 <div className="space-y-4">
-                                    <h4 className="text-lg font-bold text-gray-800">📈 การใช้งาน</h4>
+                                    <h4 className="text-lg font-bold text-gray-800 flex items-center gap-2">
+                                        <TrendingUp className="w-5 h-5 text-blue-600" /> การใช้งาน
+                                    </h4>
 
                                     {/* ผู้ใช้ */}
                                     <div className="bg-white border border-gray-200 rounded-lg p-4">
@@ -1352,7 +1354,7 @@ const Header: React.FC = () => {
                                     {/* เอกสาร/เดือน */}
                                     <div className="bg-white border border-gray-200 rounded-lg p-4">
                                         <div className="flex items-center justify-between mb-2">
-                                            <span className="text-sm font-medium text-gray-600">📄 เอกสาร/เดือน</span>
+                                            <span className="text-sm font-medium text-gray-600 flex items-center gap-1"><FileText className="w-4 h-4" /> เอกสาร/เดือน</span>
                                             <span className={`text-sm font-bold ${quota.currentDocuments >= quota.maxDocuments && quota.maxDocuments !== -1 ? 'text-red-600' : 'text-gray-800'}`}>
                                                 {quota.currentDocuments} / {quota.maxDocuments === -1 ? '∞' : quota.maxDocuments}
                                             </span>
@@ -1400,46 +1402,48 @@ const Header: React.FC = () => {
 
                                 {/* Features */}
                                 <div className="space-y-3">
-                                    <h4 className="text-lg font-bold text-gray-800">✨ ฟีเจอร์</h4>
+                                    <h4 className="text-lg font-bold text-gray-800 flex items-center gap-2">
+                                        <Zap className="w-5 h-5 text-amber-500" /> ฟีเจอร์
+                                    </h4>
                                     <div className="grid grid-cols-2 gap-3">
                                         {quota.features.multipleProfiles && (
                                             <div className="flex items-center gap-2 text-sm text-gray-700">
-                                                <span className="text-green-500">✅</span> Multiple Profiles
+                                                <Check className="w-4 h-4 text-green-500" /> Multiple Profiles
                                             </div>
                                         )}
                                         {quota.features.apiAccess && (
                                             <div className="flex items-center gap-2 text-sm text-gray-700">
-                                                <span className="text-green-500">✅</span> API Access
+                                                <Check className="w-4 h-4 text-green-500" /> API Access
                                             </div>
                                         )}
                                         {quota.features.customDomain && (
                                             <div className="flex items-center gap-2 text-sm text-gray-700">
-                                                <span className="text-green-500">✅</span> Custom Domain
+                                                <Check className="w-4 h-4 text-green-500" /> Custom Domain
                                             </div>
                                         )}
                                         {quota.features.prioritySupport && (
                                             <div className="flex items-center gap-2 text-sm text-gray-700">
-                                                <span className="text-green-500">✅</span> Priority Support
+                                                <Check className="w-4 h-4 text-green-500" /> Priority Support
                                             </div>
                                         )}
                                         {quota.features.exportPDF && (
                                             <div className="flex items-center gap-2 text-sm text-gray-700">
-                                                <span className="text-green-500">✅</span> Export PDF
+                                                <Check className="w-4 h-4 text-green-500" /> Export PDF
                                             </div>
                                         )}
                                         {quota.features.exportExcel && (
                                             <div className="flex items-center gap-2 text-sm text-gray-700">
-                                                <span className="text-green-500">✅</span> Export Excel
+                                                <Check className="w-4 h-4 text-green-500" /> Export Excel
                                             </div>
                                         )}
                                         {quota.features.advancedReports && (
                                             <div className="flex items-center gap-2 text-sm text-gray-700">
-                                                <span className="text-green-500">✅</span> Advanced Reports
+                                                <Check className="w-4 h-4 text-green-500" /> Advanced Reports
                                             </div>
                                         )}
                                         {quota.features.customTemplates && (
                                             <div className="flex items-center gap-2 text-sm text-gray-700">
-                                                <span className="text-green-500">✅</span> Custom Templates
+                                                <Check className="w-4 h-4 text-green-500" /> Custom Templates
                                             </div>
                                         )}
                                     </div>
