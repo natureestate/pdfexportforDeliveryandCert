@@ -1416,7 +1416,7 @@ const AppContent: React.FC = () => {
                             </div>
                         </div>
                     </div>
-                ) : (
+                ) : viewMode === 'history' ? (
                     // History View
                     <div className="bg-white p-3 sm:p-4 md:p-6 rounded-lg shadow-lg">
                         {/* Tab Menu สำหรับเลือกประเภทเอกสารใน History View */}
