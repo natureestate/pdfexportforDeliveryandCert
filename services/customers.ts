@@ -188,6 +188,22 @@ export const searchCustomers = async (companyId: string, searchText: string): Pr
 };
 
 /**
+ * ลบฟิลด์ที่มีค่า undefined ออกจาก object
+ * Firebase ไม่ยอมรับค่า undefined ใน updateDoc()
+ * @param obj - object ที่ต้องการลบฟิลด์ undefined
+ * @returns object ที่ไม่มีฟิลด์ undefined
+ */
+const removeUndefinedFields = <T extends Record<string, unknown>>(obj: T): Partial<T> => {
+    const result: Partial<T> = {};
+    for (const key in obj) {
+        if (obj[key] !== undefined) {
+            result[key] = obj[key];
+        }
+    }
+    return result;
+};
+
+/**
  * อัปเดตข้อมูลลูกค้า
  */
 export const updateCustomer = async (
@@ -196,8 +212,12 @@ export const updateCustomer = async (
 ): Promise<void> => {
     try {
         const docRef = doc(db, CUSTOMERS_COLLECTION, id);
+        
+        // ลบฟิลด์ที่มีค่า undefined ออก เพราะ Firebase ไม่ยอมรับค่า undefined
+        const cleanedUpdates = removeUndefinedFields(updates as Record<string, unknown>);
+        
         await updateDoc(docRef, {
-            ...updates,
+            ...cleanedUpdates,
             updatedAt: Timestamp.now(),
         });
         
@@ -226,22 +246,19 @@ export const deleteCustomer = async (id: string): Promise<void> => {
 /**
  * อัปเดตการใช้งานลูกค้า (เรียกทุกครั้งที่เลือกใช้ลูกค้า)
  * เพื่อเก็บสถิติและแสดง suggestion ที่แม่นยำ
+ * ใช้ Firestore increment() เพื่อเพิ่ม usageCount โดยไม่ต้องดึงข้อมูลก่อน
  */
 export const updateCustomerUsage = async (id: string): Promise<void> => {
     try {
         const docRef = doc(db, CUSTOMERS_COLLECTION, id);
         
-        // ดึงข้อมูลปัจจุบัน
-        const customers = await getCustomers(''); // ต้องแก้ไขให้รับ companyId
-        const customer = customers.find(c => c.id === id);
-        
-        if (!customer) {
-            throw new Error('ไม่พบข้อมูลลูกค้า');
-        }
+        // ใช้ Firestore FieldValue.increment() เพื่อเพิ่ม usageCount โดยไม่ต้องดึงข้อมูลก่อน
+        // วิธีนี้มีประสิทธิภาพกว่าและไม่ต้องรู้ companyId
+        const { increment } = await import('firebase/firestore');
         
         await updateDoc(docRef, {
             lastUsedAt: Timestamp.now(),
-            usageCount: (customer.usageCount || 0) + 1,
+            usageCount: increment(1),
             updatedAt: Timestamp.now(),
         });
         
