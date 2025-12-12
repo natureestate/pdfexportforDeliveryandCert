@@ -1,12 +1,14 @@
 /**
  * LanguageSwitcher Component
  * Component สำหรับเปลี่ยนภาษาของแอปพลิเคชัน
+ * ใช้ FlagIcon แบบวงกลมสวยงามแทน emoji
  */
 
 import React, { useState, useRef, useEffect } from 'react';
 import { useTranslation } from 'react-i18next';
 import { Globe, Check, ChevronDown } from 'lucide-react';
 import { supportedLanguages } from '../i18n';
+import FlagIcon from './FlagIcon';
 
 interface LanguageSwitcherProps {
     className?: string;
@@ -46,31 +48,31 @@ const LanguageSwitcher: React.FC<LanguageSwitcherProps> = ({
     };
 
     if (compact) {
-        // Compact mode - แสดงเฉพาะ flag
+        // Compact mode - แสดงเฉพาะ flag แบบวงกลมสวยงาม
         return (
             <div ref={dropdownRef} className={`relative ${className}`}>
                 <button
                     onClick={() => setIsOpen(!isOpen)}
-                    className="flex items-center justify-center p-2 rounded-lg hover:bg-gray-100 dark:hover:bg-slate-700 transition-colors"
+                    className="flex items-center justify-center p-2 rounded-full hover:bg-gray-100 dark:hover:bg-slate-700 transition-all duration-200 hover:scale-110"
                     title={t('language.selectLanguage')}
                 >
-                    <span className="text-lg">{currentLanguage.flag}</span>
+                    <FlagIcon country={currentLanguage.code as 'th' | 'en'} size={28} />
                 </button>
                 
                 {isOpen && (
-                    <div className="absolute right-0 mt-2 w-40 bg-white dark:bg-slate-800 rounded-lg shadow-lg border border-gray-200 dark:border-slate-600 py-1 z-50">
+                    <div className="absolute right-0 mt-2 w-44 bg-white dark:bg-slate-800 rounded-xl shadow-xl border border-gray-200 dark:border-slate-600 py-2 z-50 animate-fadeIn">
                         {supportedLanguages.map((lang) => (
                             <button
                                 key={lang.code}
                                 onClick={() => handleLanguageChange(lang.code)}
-                                className={`w-full px-4 py-2 text-left flex items-center gap-2 hover:bg-gray-100 dark:hover:bg-slate-700 transition-colors ${
+                                className={`w-full px-4 py-2.5 text-left flex items-center gap-3 hover:bg-gray-100 dark:hover:bg-slate-700 transition-all duration-200 ${
                                     i18n.language === lang.code 
                                         ? 'bg-indigo-50 dark:bg-indigo-900/30 text-indigo-600 dark:text-indigo-400' 
                                         : 'text-gray-700 dark:text-gray-300'
                                 }`}
                             >
-                                <span className="text-lg">{lang.flag}</span>
-                                <span className="text-sm">{lang.nativeName}</span>
+                                <FlagIcon country={lang.code as 'th' | 'en'} size={24} />
+                                <span className="text-sm font-medium">{lang.nativeName}</span>
                                 {i18n.language === lang.code && (
                                     <Check className="w-4 h-4 ml-auto text-indigo-600 dark:text-indigo-400" />
                                 )}
@@ -82,27 +84,26 @@ const LanguageSwitcher: React.FC<LanguageSwitcherProps> = ({
         );
     }
 
-    // Full mode - แสดง label และ dropdown
+    // Full mode - แสดง label และ dropdown พร้อม flag แบบวงกลม
     return (
         <div ref={dropdownRef} className={`relative ${className}`}>
             <button
                 onClick={() => setIsOpen(!isOpen)}
-                className="flex items-center gap-2 px-3 py-2 rounded-lg border border-gray-200 dark:border-slate-600 bg-white dark:bg-slate-800 hover:bg-gray-50 dark:hover:bg-slate-700 transition-colors"
+                className="flex items-center gap-2.5 px-3 py-2 rounded-xl border border-gray-200 dark:border-slate-600 bg-white dark:bg-slate-800 hover:bg-gray-50 dark:hover:bg-slate-700 transition-all duration-200 hover:shadow-md"
             >
-                <Globe className="w-4 h-4 text-gray-500 dark:text-gray-400" />
-                <span className="text-lg">{currentLanguage.flag}</span>
+                <FlagIcon country={currentLanguage.code as 'th' | 'en'} size={24} />
                 {showLabel && (
-                    <span className="text-sm text-gray-700 dark:text-gray-300">
+                    <span className="text-sm font-medium text-gray-700 dark:text-gray-300">
                         {currentLanguage.nativeName}
                     </span>
                 )}
-                <ChevronDown className={`w-4 h-4 text-gray-400 transition-transform ${isOpen ? 'rotate-180' : ''}`} />
+                <ChevronDown className={`w-4 h-4 text-gray-400 transition-transform duration-200 ${isOpen ? 'rotate-180' : ''}`} />
             </button>
             
             {isOpen && (
-                <div className="absolute right-0 mt-2 w-48 bg-white dark:bg-slate-800 rounded-lg shadow-lg border border-gray-200 dark:border-slate-600 py-1 z-50">
-                    <div className="px-3 py-2 border-b border-gray-100 dark:border-slate-700">
-                        <span className="text-xs font-medium text-gray-500 dark:text-gray-400 uppercase">
+                <div className="absolute right-0 mt-2 w-52 bg-white dark:bg-slate-800 rounded-xl shadow-xl border border-gray-200 dark:border-slate-600 py-2 z-50 animate-fadeIn overflow-hidden">
+                    <div className="px-4 py-2 border-b border-gray-100 dark:border-slate-700">
+                        <span className="text-xs font-semibold text-gray-500 dark:text-gray-400 uppercase tracking-wide">
                             {t('language.selectLanguage')}
                         </span>
                     </div>
@@ -110,15 +111,15 @@ const LanguageSwitcher: React.FC<LanguageSwitcherProps> = ({
                         <button
                             key={lang.code}
                             onClick={() => handleLanguageChange(lang.code)}
-                            className={`w-full px-4 py-2.5 text-left flex items-center gap-3 hover:bg-gray-100 dark:hover:bg-slate-700 transition-colors ${
+                            className={`w-full px-4 py-3 text-left flex items-center gap-3 hover:bg-gray-100 dark:hover:bg-slate-700 transition-all duration-200 ${
                                 i18n.language === lang.code 
                                     ? 'bg-indigo-50 dark:bg-indigo-900/30' 
                                     : ''
                             }`}
                         >
-                            <span className="text-xl">{lang.flag}</span>
+                            <FlagIcon country={lang.code as 'th' | 'en'} size={28} />
                             <div className="flex-1">
-                                <div className={`text-sm font-medium ${
+                                <div className={`text-sm font-semibold ${
                                     i18n.language === lang.code 
                                         ? 'text-indigo-600 dark:text-indigo-400' 
                                         : 'text-gray-700 dark:text-gray-300'
