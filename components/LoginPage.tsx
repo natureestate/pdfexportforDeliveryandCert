@@ -12,7 +12,8 @@ import { EmailPasswordForm } from './EmailPasswordForm';
 import { EmailLinkForm } from './EmailLinkForm';
 import PolicyModal from './PolicyModal';
 import LanguageSwitcher from './LanguageSwitcher';
-import { Rocket } from 'lucide-react';
+import FeatureShowcaseModal from './FeatureShowcaseModal';
+import { Rocket, Sparkles } from 'lucide-react';
 
 type LoginMethod = 'google' | 'phone' | 'email' | 'emailLink';
 
@@ -24,6 +25,7 @@ const LoginPage: React.FC = () => {
     const [showPolicyModal, setShowPolicyModal] = useState(false);
     const [policyType, setPolicyType] = useState<'terms' | 'privacy'>('terms');
     const [showRecaptchaBadge, setShowRecaptchaBadge] = useState(false);
+    const [showFeatureModal, setShowFeatureModal] = useState(false);
 
     const handleOpenPolicy = (type: 'terms' | 'privacy') => {
         setPolicyType(type);
@@ -366,8 +368,19 @@ const LoginPage: React.FC = () => {
                     </div>
                 )}
 
+                {/* ปุ่มดู Features */}
+                <div className="mt-6">
+                    <button
+                        onClick={() => setShowFeatureModal(true)}
+                        className="w-full py-3 px-4 bg-gradient-to-r from-amber-400 to-orange-500 text-white rounded-xl font-medium hover:from-amber-500 hover:to-orange-600 transition-all shadow-md hover:shadow-lg flex items-center justify-center gap-2"
+                    >
+                        <Sparkles className="w-5 h-5" />
+                        <span>ดูฟีเจอร์ทั้งหมด</span>
+                    </button>
+                </div>
+
                 {/* ข้อความด้านล่าง */}
-                <div className="mt-8 text-center space-y-3">
+                <div className="mt-6 text-center space-y-3">
                     <p className="text-xs text-gray-500 dark:text-slate-400">
                         {t('auth.termsAccept')}
                         <br />
@@ -412,6 +425,12 @@ const LoginPage: React.FC = () => {
                 isOpen={showPolicyModal}
                 onClose={handleClosePolicy}
                 type={policyType}
+            />
+
+            {/* Feature Showcase Modal */}
+            <FeatureShowcaseModal
+                isOpen={showFeatureModal}
+                onClose={() => setShowFeatureModal(false)}
             />
 
             {/* Background Decoration */}

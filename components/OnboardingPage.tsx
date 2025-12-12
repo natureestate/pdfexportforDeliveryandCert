@@ -13,6 +13,7 @@ import { useNavigate } from 'react-router-dom';
 import { useAuth } from '../contexts/AuthContext';
 import { useCompany } from '../contexts/CompanyContext';
 import JoinByCodeForm from './JoinByCodeForm';
+import FeatureShowcaseModal from './FeatureShowcaseModal';
 import {
     Clock,
     KeyRound,
@@ -24,6 +25,7 @@ import {
     Construction,
     CheckCircle2,
     Send,
+    Star,
 } from 'lucide-react';
 
 type OnboardingStep = 'select' | 'join-code' | 'wait-invite' | 'waitlist-confirmed';
@@ -34,6 +36,7 @@ const OnboardingPage: React.FC = () => {
     const { refreshCompanies } = useCompany();
     
     const [currentStep, setCurrentStep] = useState<OnboardingStep>('select');
+    const [showFeatureModal, setShowFeatureModal] = useState(false);
 
     /**
      * จัดการเมื่อ join สำเร็จ
@@ -153,7 +156,7 @@ const OnboardingPage: React.FC = () => {
                                 <div className="w-14 h-14 bg-white/20 rounded-xl flex items-center justify-center flex-shrink-0">
                                     <Construction className="w-7 h-7" />
                                 </div>
-                                <div>
+                                <div className="flex-1">
                                     <h2 className="text-xl font-bold mb-2">
                                         🚧 ระบบอยู่ระหว่างการพัฒนา
                                     </h2>
@@ -161,15 +164,24 @@ const OnboardingPage: React.FC = () => {
                                         ขอบคุณที่สนใจใช้งาน! ขณะนี้ระบบยังไม่เปิดให้ใช้งานทั่วไป 
                                         แต่คุณสามารถเข้าร่วมองค์กรที่มีอยู่ได้ หากมี Join Code
                                     </p>
-                                    <div className="flex items-center gap-2 text-sm">
-                                        <Mail className="w-4 h-4" />
-                                        <span>ติดต่อ Admin: </span>
-                                        <a 
-                                            href="mailto:info@natureestate.co.th" 
-                                            className="font-medium underline hover:no-underline"
+                                    <div className="flex flex-wrap items-center gap-3">
+                                        <div className="flex items-center gap-2 text-sm">
+                                            <Mail className="w-4 h-4" />
+                                            <span>ติดต่อ: </span>
+                                            <a 
+                                                href="mailto:info@natureestate.co.th" 
+                                                className="font-medium underline hover:no-underline"
+                                            >
+                                                info@natureestate.co.th
+                                            </a>
+                                        </div>
+                                        <button
+                                            onClick={() => setShowFeatureModal(true)}
+                                            className="flex items-center gap-1.5 px-3 py-1.5 bg-white/20 hover:bg-white/30 rounded-lg text-sm font-medium transition-colors"
                                         >
-                                            info@natureestate.co.th
-                                        </a>
+                                            <Star className="w-4 h-4" />
+                                            <span>ดูฟีเจอร์ทั้งหมด</span>
+                                        </button>
                                     </div>
                                 </div>
                             </div>
@@ -405,7 +417,7 @@ const OnboardingPage: React.FC = () => {
 
             {/* Footer */}
             <footer className="max-w-4xl mx-auto px-4 py-8 text-center text-sm text-gray-500 dark:text-gray-400">
-                <p>
+                <p className="mb-3">
                     มีคำถาม? ติดต่อเราได้ที่{' '}
                     <a 
                         href="mailto:info@natureestate.co.th" 
@@ -414,7 +426,20 @@ const OnboardingPage: React.FC = () => {
                         info@natureestate.co.th
                     </a>
                 </p>
+                <button
+                    onClick={() => setShowFeatureModal(true)}
+                    className="inline-flex items-center gap-2 px-4 py-2 bg-gradient-to-r from-amber-400 to-orange-500 text-white rounded-lg font-medium hover:from-amber-500 hover:to-orange-600 transition-all shadow-md hover:shadow-lg"
+                >
+                    <Sparkles className="w-4 h-4" />
+                    <span>ดูฟีเจอร์ทั้งหมด</span>
+                </button>
             </footer>
+
+            {/* Feature Showcase Modal */}
+            <FeatureShowcaseModal
+                isOpen={showFeatureModal}
+                onClose={() => setShowFeatureModal(false)}
+            />
         </div>
     );
 };
