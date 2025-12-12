@@ -29,7 +29,7 @@ const WarrantyPreview = forwardRef<HTMLDivElement, WarrantyPreviewProps>(({ data
     const displayLogo = data.logo || data.logoUrl || getDefaultLogoUrl();
 
     return (
-        <div ref={ref} className="bg-white shadow-xl w-full aspect-[210/297] overflow-auto flex flex-col" id="printable-area">
+        <div ref={ref} className="bg-white shadow-xl p-8 md:p-12 w-full aspect-[210/297] overflow-auto flex flex-col" id="printable-area">
             <div className="p-3 border-2 border-indigo-700 m-1.5 flex-grow flex flex-col">
                 {/* Header Section */}
                 <header className="mb-2 pb-1.5 border-b border-indigo-300">
