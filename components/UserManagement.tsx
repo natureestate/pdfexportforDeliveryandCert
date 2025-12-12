@@ -395,49 +395,59 @@ const UserManagement: React.FC<UserManagementProps> = ({ companyId, companyName,
             {/* รายการสมาชิก */}
             {activeTab === 'members' && (
                 <div className="members-list-section">
-                    <h3>รายการสมาชิก ({members.length} คน)</h3>
+                    <h3 className="text-gray-800 dark:text-gray-100 mb-4 text-lg font-semibold">รายการสมาชิก ({members.length} คน)</h3>
                 
                 {members.length === 0 ? (
-                    <div className="no-members">ยังไม่มีสมาชิกในองค์กร</div>
+                    <div className="no-members text-center py-10 bg-gray-50 dark:bg-slate-700 rounded text-gray-500 dark:text-gray-400">ยังไม่มีสมาชิกในองค์กร</div>
                 ) : (
-                    <div className="members-table">
-                        <table>
+                    <div className="members-table overflow-x-auto">
+                        <table className="w-full border-collapse bg-white dark:bg-slate-800 shadow rounded-lg overflow-hidden">
                             <thead>
-                                <tr>
-                                    <th>อีเมล</th>
-                                    <th>ชื่อ</th>
-                                    <th>เบอร์โทร</th>
-                                    <th>บทบาท</th>
-                                    <th>สถานะ</th>
-                                    <th>วันที่เข้าร่วม</th>
-                                    {isAdmin && <th>จัดการ</th>}
+                                <tr className="bg-gray-100 dark:bg-slate-700">
+                                    <th className="px-4 py-3 text-left text-gray-700 dark:text-gray-200 font-semibold">อีเมล</th>
+                                    <th className="px-4 py-3 text-left text-gray-700 dark:text-gray-200 font-semibold">ชื่อ</th>
+                                    <th className="px-4 py-3 text-left text-gray-700 dark:text-gray-200 font-semibold">เบอร์โทร</th>
+                                    <th className="px-4 py-3 text-left text-gray-700 dark:text-gray-200 font-semibold">บทบาท</th>
+                                    <th className="px-4 py-3 text-left text-gray-700 dark:text-gray-200 font-semibold">สถานะ</th>
+                                    <th className="px-4 py-3 text-left text-gray-700 dark:text-gray-200 font-semibold">วันที่เข้าร่วม</th>
+                                    {isAdmin && <th className="px-4 py-3 text-left text-gray-700 dark:text-gray-200 font-semibold">จัดการ</th>}
                                 </tr>
                             </thead>
                             <tbody>
                                 {members.map((member) => (
-                                    <tr key={member.id}>
-                                        <td>{member.email}</td>
-                                        <td>{member.displayName || '-'}</td>
-                                        <td>{member.phoneNumber || '-'}</td>
-                                        <td>
-                                            <span className={`role-badge ${member.role}`}>
-                                                {member.role === 'admin' ? <><Crown className="w-3 h-3 inline mr-0.5" /> Admin</> : <><User className="w-3 h-3 inline mr-0.5" /> Member</>}
+                                    <tr key={member.id} className="border-t border-gray-200 dark:border-slate-600 hover:bg-gray-50 dark:hover:bg-slate-700">
+                                        <td className="px-4 py-3 text-gray-800 dark:text-gray-200">{member.email}</td>
+                                        <td className="px-4 py-3 text-gray-800 dark:text-gray-200">{member.displayName || '-'}</td>
+                                        <td className="px-4 py-3 text-gray-800 dark:text-gray-200">{member.phoneNumber || '-'}</td>
+                                        <td className="px-4 py-3">
+                                            <span className={`inline-flex items-center px-3 py-1 rounded-full text-xs font-medium ${
+                                                member.role === 'admin' 
+                                                    ? 'bg-amber-100 text-amber-700 dark:bg-amber-900/30 dark:text-amber-400' 
+                                                    : 'bg-blue-100 text-blue-700 dark:bg-blue-900/30 dark:text-blue-400'
+                                            }`}>
+                                                {member.role === 'admin' ? <><Crown className="w-3 h-3 inline mr-1" /> Admin</> : <><User className="w-3 h-3 inline mr-1" /> Member</>}
                                             </span>
                                         </td>
-                                        <td>
-                                            <span className={`status-badge ${member.status}`}>
-                                                {member.status === 'active' ? <><CheckCircle className="w-3 h-3 inline mr-0.5" /> Active</> : 
-                                                 member.status === 'pending' ? <><Clock className="w-3 h-3 inline mr-0.5" /> Pending</> : 
-                                                 <><XCircle className="w-3 h-3 inline mr-0.5" /> Inactive</>}
+                                        <td className="px-4 py-3">
+                                            <span className={`inline-flex items-center px-3 py-1 rounded-full text-xs font-medium ${
+                                                member.status === 'active' 
+                                                    ? 'bg-green-100 text-green-700 dark:bg-green-900/30 dark:text-green-400' 
+                                                    : member.status === 'pending'
+                                                    ? 'bg-amber-100 text-amber-700 dark:bg-amber-900/30 dark:text-amber-400'
+                                                    : 'bg-red-100 text-red-700 dark:bg-red-900/30 dark:text-red-400'
+                                            }`}>
+                                                {member.status === 'active' ? <><CheckCircle className="w-3 h-3 inline mr-1" /> Active</> : 
+                                                 member.status === 'pending' ? <><Clock className="w-3 h-3 inline mr-1" /> Pending</> : 
+                                                 <><XCircle className="w-3 h-3 inline mr-1" /> Inactive</>}
                                             </span>
                                         </td>
-                                        <td>
+                                        <td className="px-4 py-3 text-gray-800 dark:text-gray-200">
                                             {member.joinedAt 
                                                 ? member.joinedAt.toLocaleDateString('th-TH')
                                                 : '-'}
                                         </td>
                                         {isAdmin && (
-                                            <td className="actions-cell">
+                                            <td className="actions-cell px-4 py-3">
                                                 {member.userId !== user?.uid && (
                                                     <>
                                                         <button
@@ -489,55 +499,67 @@ const UserManagement: React.FC<UserManagementProps> = ({ companyId, companyName,
             {/* รายการคำเชิญ (เฉพาะ Admin) */}
             {activeTab === 'invitations' && isAdmin && (
                 <div className="invitations-list-section">
-                    <h3>รายการคำเชิญ ({invitations.length} คำเชิญ)</h3>
+                    <h3 className="text-gray-800 dark:text-gray-100 mb-4 text-lg font-semibold">รายการคำเชิญ ({invitations.length} คำเชิญ)</h3>
                     
                     {invitations.length === 0 ? (
-                        <div className="no-invitations">ยังไม่มีคำเชิญ</div>
+                        <div className="no-invitations text-center py-10 bg-gray-50 dark:bg-slate-700 rounded text-gray-500 dark:text-gray-400">ยังไม่มีคำเชิญ</div>
                     ) : (
-                        <div className="invitations-table">
-                            <table>
+                        <div className="invitations-table overflow-x-auto">
+                            <table className="w-full border-collapse bg-white dark:bg-slate-800 shadow rounded-lg overflow-hidden">
                                 <thead>
-                                    <tr>
-                                        <th>อีเมล</th>
-                                        <th>บทบาท</th>
-                                        <th>สถานะ</th>
-                                        <th>เชิญโดย</th>
-                                        <th>วันที่สร้าง</th>
-                                        <th>หมดอายุ</th>
-                                        <th>จัดการ</th>
+                                    <tr className="bg-gray-100 dark:bg-slate-700">
+                                        <th className="px-4 py-3 text-left text-gray-700 dark:text-gray-200 font-semibold">อีเมล</th>
+                                        <th className="px-4 py-3 text-left text-gray-700 dark:text-gray-200 font-semibold">บทบาท</th>
+                                        <th className="px-4 py-3 text-left text-gray-700 dark:text-gray-200 font-semibold">สถานะ</th>
+                                        <th className="px-4 py-3 text-left text-gray-700 dark:text-gray-200 font-semibold">เชิญโดย</th>
+                                        <th className="px-4 py-3 text-left text-gray-700 dark:text-gray-200 font-semibold">วันที่สร้าง</th>
+                                        <th className="px-4 py-3 text-left text-gray-700 dark:text-gray-200 font-semibold">หมดอายุ</th>
+                                        <th className="px-4 py-3 text-left text-gray-700 dark:text-gray-200 font-semibold">จัดการ</th>
                                     </tr>
                                 </thead>
                                 <tbody>
                                     {invitations.map((invitation) => (
-                                        <tr key={invitation.id}>
-                                            <td>{invitation.email}</td>
-                                            <td>
-                                                <span className={`role-badge ${invitation.role}`}>
-                                                    {invitation.role === 'admin' ? <><Crown className="w-3 h-3 inline mr-0.5" /> Admin</> : <><User className="w-3 h-3 inline mr-0.5" /> Member</>}
+                                        <tr key={invitation.id} className="border-t border-gray-200 dark:border-slate-600 hover:bg-gray-50 dark:hover:bg-slate-700">
+                                            <td className="px-4 py-3 text-gray-800 dark:text-gray-200">{invitation.email}</td>
+                                            <td className="px-4 py-3">
+                                                <span className={`inline-flex items-center px-3 py-1 rounded-full text-xs font-medium ${
+                                                    invitation.role === 'admin' 
+                                                        ? 'bg-amber-100 text-amber-700 dark:bg-amber-900/30 dark:text-amber-400' 
+                                                        : 'bg-blue-100 text-blue-700 dark:bg-blue-900/30 dark:text-blue-400'
+                                                }`}>
+                                                    {invitation.role === 'admin' ? <><Crown className="w-3 h-3 inline mr-1" /> Admin</> : <><User className="w-3 h-3 inline mr-1" /> Member</>}
                                                 </span>
                                             </td>
-                                            <td>
-                                                <span className={`status-badge invitation-${invitation.status}`}>
-                                                    {invitation.status === 'pending' ? <><Clock className="w-3 h-3 inline mr-0.5" /> รอการยอมรับ</> :
-                                                     invitation.status === 'accepted' ? <><CheckCircle className="w-3 h-3 inline mr-0.5" /> ยอมรับแล้ว</> :
-                                                     invitation.status === 'rejected' ? <><XCircle className="w-3 h-3 inline mr-0.5" /> ปฏิเสธ</> :
-                                                     <><Timer className="w-3 h-3 inline mr-0.5" /> หมดอายุ</>}
+                                            <td className="px-4 py-3">
+                                                <span className={`inline-flex items-center px-3 py-1 rounded-full text-xs font-medium ${
+                                                    invitation.status === 'pending' 
+                                                        ? 'bg-amber-100 text-amber-700 dark:bg-amber-900/30 dark:text-amber-400' 
+                                                        : invitation.status === 'accepted'
+                                                        ? 'bg-green-100 text-green-700 dark:bg-green-900/30 dark:text-green-400'
+                                                        : invitation.status === 'rejected'
+                                                        ? 'bg-red-100 text-red-700 dark:bg-red-900/30 dark:text-red-400'
+                                                        : 'bg-gray-100 text-gray-700 dark:bg-gray-700 dark:text-gray-300'
+                                                }`}>
+                                                    {invitation.status === 'pending' ? <><Clock className="w-3 h-3 inline mr-1" /> รอการยอมรับ</> :
+                                                     invitation.status === 'accepted' ? <><CheckCircle className="w-3 h-3 inline mr-1" /> ยอมรับแล้ว</> :
+                                                     invitation.status === 'rejected' ? <><XCircle className="w-3 h-3 inline mr-1" /> ปฏิเสธ</> :
+                                                     <><Timer className="w-3 h-3 inline mr-1" /> หมดอายุ</>}
                                                 </span>
                                             </td>
-                                            <td>
+                                            <td className="px-4 py-3 text-gray-800 dark:text-gray-200">
                                                 {invitation.invitedByName || '-'}
                                             </td>
-                                            <td>
+                                            <td className="px-4 py-3 text-gray-800 dark:text-gray-200">
                                                 {invitation.createdAt
                                                     ? invitation.createdAt.toLocaleDateString('th-TH')
                                                     : '-'}
                                             </td>
-                                            <td>
+                                            <td className="px-4 py-3 text-gray-800 dark:text-gray-200">
                                                 {invitation.expiresAt
                                                     ? invitation.expiresAt.toLocaleDateString('th-TH')
                                                     : '-'}
                                             </td>
-                                            <td className="actions-cell">
+                                            <td className="actions-cell px-4 py-3">
                                                 {invitation.status === 'pending' && (
                                                     <>
                                                         <button
