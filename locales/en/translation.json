@@ -57,6 +57,8 @@
     "settings": "Settings",
     "companyInfo": "Company Info",
     "logoManagement": "Logo Management",
+    "documentLogoManagement": "Document Logo",
+    "organizationLogoManagement": "Organization Logo",
     "menuSettings": "Document Menu Settings",
     "tabSettings": "Tab Menu Settings",
     "viewQuota": "View Quota",
@@ -468,6 +470,23 @@
     "and": "and",
     "or": "or",
     "of": "of"
+  },
+  "organizationLogo": {
+    "title": "Organization Logo",
+    "subtitle": "Logo displayed in header",
+    "infoTitle": "About Organization Logo",
+    "infoDescription": "This logo will be displayed in the header of your application. It is separate from the document logo which appears on PDF exports.",
+    "currentLogo": "Current Logo",
+    "noLogo": "No organization logo set",
+    "uploadNew": "Upload New Logo",
+    "uploading": "Uploading...",
+    "fileRequirements": "PNG, JPG, SVG, WebP (max 2MB)",
+    "uploadSuccess": "Organization logo uploaded successfully!",
+    "uploadError": "Failed to upload logo. Please try again.",
+    "removeSuccess": "Organization logo removed successfully!",
+    "removeError": "Failed to remove logo. Please try again.",
+    "invalidFileType": "Invalid file type. Please use PNG, JPG, SVG, or WebP.",
+    "fileTooLarge": "File is too large. Maximum size is 2MB."
   }
 }
 

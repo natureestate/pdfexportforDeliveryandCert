@@ -57,6 +57,8 @@
     "settings": "ตั้งค่า",
     "companyInfo": "ข้อมูลบริษัท",
     "logoManagement": "จัดการโลโก้",
+    "documentLogoManagement": "โลโก้เอกสาร",
+    "organizationLogoManagement": "โลโก้องค์กร",
     "menuSettings": "ตั้งค่าเมนูเอกสาร",
     "tabSettings": "ตั้งค่า Tab Menu",
     "viewQuota": "ดูโควตา",
@@ -468,6 +470,23 @@
     "and": "และ",
     "or": "หรือ",
     "of": "ของ"
+  },
+  "organizationLogo": {
+    "title": "โลโก้องค์กร",
+    "subtitle": "โลโก้ที่แสดงใน Header",
+    "infoTitle": "เกี่ยวกับโลโก้องค์กร",
+    "infoDescription": "โลโก้นี้จะแสดงใน Header ของแอปพลิเคชัน แยกจากโลโก้เอกสารที่ใช้พิมพ์ใน PDF",
+    "currentLogo": "โลโก้ปัจจุบัน",
+    "noLogo": "ยังไม่ได้ตั้งค่าโลโก้องค์กร",
+    "uploadNew": "อัปโหลดโลโก้ใหม่",
+    "uploading": "กำลังอัปโหลด...",
+    "fileRequirements": "PNG, JPG, SVG, WebP (สูงสุด 2MB)",
+    "uploadSuccess": "อัปโหลดโลโก้องค์กรสำเร็จ!",
+    "uploadError": "อัปโหลดโลโก้ไม่สำเร็จ กรุณาลองใหม่",
+    "removeSuccess": "ลบโลโก้องค์กรสำเร็จ!",
+    "removeError": "ลบโลโก้ไม่สำเร็จ กรุณาลองใหม่",
+    "invalidFileType": "ประเภทไฟล์ไม่ถูกต้อง กรุณาใช้ PNG, JPG, SVG หรือ WebP",
+    "fileTooLarge": "ไฟล์มีขนาดใหญ่เกินไป ขนาดสูงสุดคือ 2MB"
   }
 }
 

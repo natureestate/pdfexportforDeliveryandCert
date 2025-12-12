@@ -363,9 +363,10 @@ export interface Company {
     website?: string;         // เว็บไซต์บริษัท (optional)
     taxId?: string;            // เลขประจำตัวผู้เสียภาษี (optional)
     userId: string;            // Admin คนแรก (คนที่สร้างบริษัท)
-    logoUrl?: string | null;   // โลโก้บริษัทปัจจุบัน (URL จาก Storage)
-    logoType?: LogoType;       // ประเภทโลโก้
+    logoUrl?: string | null;   // โลโก้เอกสาร (สำหรับพิมพ์ใน PDF)
+    logoType?: LogoType;       // ประเภทโลโก้เอกสาร
     defaultLogoUrl?: string | null;  // โลโก้ default ของแต่ละองค์กร (URL จาก Storage)
+    organizationLogoUrl?: string | null;  // โลโก้องค์กร (แสดงใน Header)
     memberCount?: number;      // จำนวนสมาชิกในองค์กร
     
     // Quota และ Subscription

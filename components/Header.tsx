@@ -14,13 +14,15 @@ import AccountLinkingModal from './AccountLinkingModal';
 import MenuSettingsModal from './MenuSettingsModal';
 import UserMenuSettingsModal from './UserMenuSettingsModal';
 import TabSettingsModal from './TabSettingsModal';
+import OrganizationLogoManager from './OrganizationLogoManager';
 import ThemeToggle from './ThemeToggle';
 import LanguageSwitcher from './LanguageSwitcher';
 import { checkIsAdmin } from '../services/companyMembers';
 import { getQuota } from '../services/quota';
 import { updateCompany } from '../services/companies';
+import { convertStorageUrlToBase64 } from '../services/logoStorage';
 import { CompanyQuota, LogoType } from '../types';
-import { Link2, Key, Building2, Palette, BarChart3, Users, HardDrive, Crown, User, CreditCard, Sparkles, Settings, ChevronRight, LayoutDashboard, Mail, Phone, UserCircle, TrendingUp, FileText, Check, X, RefreshCw, Pause, Lightbulb, Zap } from 'lucide-react';
+import { Link2, Key, Building2, Palette, BarChart3, Users, HardDrive, Crown, User, CreditCard, Sparkles, Settings, ChevronRight, LayoutDashboard, Mail, Phone, UserCircle, TrendingUp, FileText, Check, X, RefreshCw, Pause, Lightbulb, Zap, ImageIcon } from 'lucide-react';
 
 const Header: React.FC = () => {
     const { t } = useTranslation();
@@ -73,6 +75,10 @@ const Header: React.FC = () => {
 
     // Company Info Modal
     const [showCompanyInfoModal, setShowCompanyInfoModal] = useState(false);
+
+    // Organization Logo Modal
+    const [showOrganizationLogoModal, setShowOrganizationLogoModal] = useState(false);
+    const [organizationLogo, setOrganizationLogo] = useState<string | null>(null);
 
     // Account Linking Modal
     const [showAccountLinkingModal, setShowAccountLinkingModal] = useState(false);
@@ -151,6 +157,24 @@ const Header: React.FC = () => {
             setCompanyLogoType('default');
         }
     }, [currentCompany]);
+
+    // โหลด Organization Logo จาก currentCompany
+    useEffect(() => {
+        const loadOrganizationLogo = async () => {
+            if (currentCompany?.organizationLogoUrl) {
+                try {
+                    const base64 = await convertStorageUrlToBase64(currentCompany.organizationLogoUrl);
+                    setOrganizationLogo(base64);
+                } catch (error) {
+                    console.error('Error loading organization logo:', error);
+                    setOrganizationLogo(currentCompany.organizationLogoUrl);
+                }
+            } else {
+                setOrganizationLogo(null);
+            }
+        };
+        loadOrganizationLogo();
+    }, [currentCompany?.organizationLogoUrl]);
 
     const handleLogout = async () => {
         setIsLoggingOut(true);
@@ -391,16 +415,34 @@ const Header: React.FC = () => {
         setShowMobileMenu(false);
     };
 
+    /**
+     * เปิด Organization Logo Modal
+     */
+    const handleShowOrganizationLogo = () => {
+        setShowOrganizationLogoModal(true);
+        setShowDropdown(false);
+        setShowMobileMenu(false);
+    };
+
     return (
         <>
             <header className="bg-white dark:bg-slate-800 shadow-md sticky top-0 z-30 transition-colors">
                 <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-3 md:py-4">
                 <div className="flex items-center justify-between">
-                    {/* ส่วนซ้าย - โลโก้และชื่อแอป */}
+                    {/* ส่วนซ้าย - โลโก้องค์กรและชื่อแอป */}
                         <div className="flex items-center space-x-2 md:space-x-3 flex-1 min-w-0">
-                            <svg className="h-7 w-7 md:h-8 md:w-8 text-indigo-600 dark:text-indigo-400 flex-shrink-0" xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke="currentColor" aria-hidden="true">
-                          <path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M9 12h6m-6 4h6m2 5H7a2 2 0 01-2-2V5a2 2 0 012-2h5.586a1 1 0 01.707.293l5.414 5.414a1 1 0 01.293.707V19a2 2 0 01-2 2z" />
-                        </svg>
+                            {/* Organization Logo หรือ Default Icon */}
+                            {organizationLogo ? (
+                                <img 
+                                    src={organizationLogo} 
+                                    alt={currentCompany?.name || 'Organization'} 
+                                    className="h-8 w-8 md:h-10 md:w-10 object-contain rounded-lg flex-shrink-0 bg-white dark:bg-slate-700 p-0.5 border border-gray-200 dark:border-slate-600"
+                                />
+                            ) : (
+                                <svg className="h-7 w-7 md:h-8 md:w-8 text-indigo-600 dark:text-indigo-400 flex-shrink-0" xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke="currentColor" aria-hidden="true">
+                                    <path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M9 12h6m-6 4h6m2 5H7a2 2 0 01-2-2V5a2 2 0 012-2h5.586a1 1 0 01.707.293l5.414 5.414a1 1 0 01.293.707V19a2 2 0 01-2 2z" />
+                                </svg>
+                            )}
                             <div className="min-w-0 flex-1">
                                 <h1 className="text-lg md:text-2xl font-bold text-slate-800 dark:text-slate-100 truncate">
                                 {t('app.title')}
@@ -583,7 +625,7 @@ const Header: React.FC = () => {
                                                                     <span>{t('header.companyInfo')}</span>
                                                                 </button>
                                                                 
-                                                                {/* จัดการโลโก้ */}
+                                                                {/* จัดการโลโก้เอกสาร */}
                                                                 <button
                                                                     onClick={() => {
                                                                         handleShowLogoManager();
@@ -592,7 +634,19 @@ const Header: React.FC = () => {
                                                                     className="w-full px-6 py-2.5 text-left text-sm text-pink-600 dark:text-pink-400 hover:bg-pink-50 dark:hover:bg-pink-900/30 transition-colors duration-200 flex items-center gap-3"
                                                                 >
                                                                     <Palette className="w-4 h-4" />
-                                                                    <span>{t('header.logoManagement')}</span>
+                                                                    <span>{t('header.documentLogoManagement')}</span>
+                                                                </button>
+
+                                                                {/* จัดการโลโก้องค์กร */}
+                                                                <button
+                                                                    onClick={() => {
+                                                                        handleShowOrganizationLogo();
+                                                                        setShowSettingsSubmenu(false);
+                                                                    }}
+                                                                    className="w-full px-6 py-2.5 text-left text-sm text-emerald-600 dark:text-emerald-400 hover:bg-emerald-50 dark:hover:bg-emerald-900/30 transition-colors duration-200 flex items-center gap-3"
+                                                                >
+                                                                    <ImageIcon className="w-4 h-4" />
+                                                                    <span>{t('header.organizationLogoManagement')}</span>
                                                                 </button>
                                                                 
                                                                 {/* ตั้งค่าเมนู */}
@@ -929,7 +983,7 @@ const Header: React.FC = () => {
                                                     <span>{t('header.companyInfo')}</span>
                                                 </button>
                                                 
-                                                {/* จัดการโลโก้ */}
+                                                {/* จัดการโลโก้เอกสาร */}
                                                 <button
                                                     onClick={() => {
                                                         handleShowLogoManager();
@@ -939,7 +993,20 @@ const Header: React.FC = () => {
                                                     className="w-full px-4 py-2.5 text-left text-sm font-medium text-pink-700 dark:text-pink-300 bg-pink-50 dark:bg-pink-900/30 hover:bg-pink-100 dark:hover:bg-pink-900/50 rounded-lg transition-all duration-200 flex items-center gap-3"
                                                 >
                                                     <Palette className="w-4 h-4" />
-                                                    <span>{t('header.logoManagement')}</span>
+                                                    <span>{t('header.documentLogoManagement')}</span>
+                                                </button>
+
+                                                {/* จัดการโลโก้องค์กร */}
+                                                <button
+                                                    onClick={() => {
+                                                        handleShowOrganizationLogo();
+                                                        setShowMobileMenu(false);
+                                                        setShowSettingsSubmenu(false);
+                                                    }}
+                                                    className="w-full px-4 py-2.5 text-left text-sm font-medium text-emerald-700 dark:text-emerald-300 bg-emerald-50 dark:bg-emerald-900/30 hover:bg-emerald-100 dark:hover:bg-emerald-900/50 rounded-lg transition-all duration-200 flex items-center gap-3"
+                                                >
+                                                    <ImageIcon className="w-4 h-4" />
+                                                    <span>{t('header.organizationLogoManagement')}</span>
                                                 </button>
                                                 
                                                 {/* ตั้งค่าเมนู */}
@@ -1538,6 +1605,12 @@ const Header: React.FC = () => {
                     onSave={handleSaveCompanyInfo}
                 />
             )}
+
+            {/* Organization Logo Manager Modal */}
+            <OrganizationLogoManager
+                isOpen={showOrganizationLogoModal}
+                onClose={() => setShowOrganizationLogoModal(false)}
+            />
 
             {/* Account Linking Modal */}
             <AccountLinkingModal
