@@ -834,11 +834,11 @@ const UserManagement: React.FC<UserManagementProps> = ({ companyId, companyName,
                     color: #333;
                 }
 
-                :global(.dark) .user-management-header h2 {
+                .dark .user-management-header h2 {
                     color: #e2e8f0;
                 }
 
-                :global(.dark) .user-management-header {
+                .dark .user-management-header {
                     border-bottom-color: #475569;
                 }
 
@@ -864,7 +864,7 @@ const UserManagement: React.FC<UserManagementProps> = ({ companyId, companyName,
                     color: #666;
                 }
 
-                :global(.dark) .loading {
+                .dark .loading {
                     color: #94a3b8;
                 }
 
@@ -876,7 +876,7 @@ const UserManagement: React.FC<UserManagementProps> = ({ companyId, companyName,
                     margin-bottom: 20px;
                 }
 
-                :global(.dark) .error-message {
+                .dark .error-message {
                     background: rgba(239, 68, 68, 0.2);
                     color: #fca5a5;
                 }
@@ -929,7 +929,7 @@ const UserManagement: React.FC<UserManagementProps> = ({ companyId, companyName,
                     border-bottom: 2px solid #e0e0e0;
                 }
 
-                :global(.dark) .tabs {
+                .dark .tabs {
                     border-bottom-color: #475569;
                 }
 
@@ -945,7 +945,7 @@ const UserManagement: React.FC<UserManagementProps> = ({ companyId, companyName,
                     transition: all 0.3s;
                 }
 
-                :global(.dark) .tab {
+                .dark .tab {
                     color: #94a3b8;
                 }
 
@@ -953,7 +953,7 @@ const UserManagement: React.FC<UserManagementProps> = ({ companyId, companyName,
                     color: #2196F3;
                 }
 
-                :global(.dark) .tab:hover {
+                .dark .tab:hover {
                     color: #60a5fa;
                 }
 
@@ -962,7 +962,7 @@ const UserManagement: React.FC<UserManagementProps> = ({ companyId, companyName,
                     border-bottom-color: #2196F3;
                 }
 
-                :global(.dark) .tab.active {
+                .dark .tab.active {
                     color: #60a5fa;
                     border-bottom-color: #60a5fa;
                 }
@@ -978,8 +978,8 @@ const UserManagement: React.FC<UserManagementProps> = ({ companyId, companyName,
                     color: #333;
                 }
 
-                :global(.dark) .members-list-section h3,
-                :global(.dark) .invitations-list-section h3 {
+                .dark .members-list-section h3,
+                .dark .invitations-list-section h3 {
                     color: #e2e8f0;
                 }
 
@@ -992,170 +992,13 @@ const UserManagement: React.FC<UserManagementProps> = ({ companyId, companyName,
                     border-radius: 4px;
                 }
 
-                :global(.dark) .no-members,
-                :global(.dark) .no-invitations {
+                .dark .no-members,
+                .dark .no-invitations {
                     color: #94a3b8;
                     background: #334155;
                 }
 
-                .members-table {
-                    overflow-x: auto;
-                }
-
-                .members-table table {
-                    width: 100%;
-                    border-collapse: collapse;
-                    background: white;
-                    box-shadow: 0 2px 4px rgba(0,0,0,0.1);
-                }
-
-                :global(.dark) .members-table table {
-                    background: #1e293b;
-                    box-shadow: 0 2px 4px rgba(0,0,0,0.3);
-                }
-
-                .members-table th,
-                .members-table td {
-                    padding: 12px;
-                    text-align: left;
-                    border-bottom: 1px solid #e0e0e0;
-                }
-
-                .members-table td {
-                    color: #1f2937;
-                }
-
-                :global(.dark) .members-table th,
-                :global(.dark) .members-table td {
-                    border-bottom-color: #475569;
-                    color: #e2e8f0;
-                }
-
-                .members-table th {
-                    background: #f5f5f5;
-                    font-weight: 600;
-                    color: #374151;
-                }
-
-                :global(.dark) .members-table th {
-                    background: #334155;
-                    color: #cbd5e1;
-                }
-
-                .members-table tr:hover {
-                    background: #f9f9f9;
-                }
-
-                :global(.dark) .members-table tr:hover {
-                    background: #334155;
-                }
-
-                /* Invitations Table - Light Mode */
-                .invitations-table {
-                    overflow-x: auto;
-                }
-
-                .invitations-table table {
-                    width: 100%;
-                    border-collapse: collapse;
-                    background: white;
-                    box-shadow: 0 2px 4px rgba(0,0,0,0.1);
-                }
-
-                :global(.dark) .invitations-table table {
-                    background: #1e293b;
-                    box-shadow: 0 2px 4px rgba(0,0,0,0.3);
-                }
-
-                .invitations-table th,
-                .invitations-table td {
-                    padding: 12px;
-                    text-align: left;
-                    border-bottom: 1px solid #e0e0e0;
-                }
-
-                .invitations-table td {
-                    color: #1f2937;
-                }
-
-                :global(.dark) .invitations-table th,
-                :global(.dark) .invitations-table td {
-                    border-bottom-color: #475569;
-                    color: #e2e8f0;
-                }
-
-                .invitations-table th {
-                    background: #f5f5f5;
-                    font-weight: 600;
-                    color: #374151;
-                }
-
-                :global(.dark) .invitations-table th {
-                    background: #334155;
-                    color: #cbd5e1;
-                }
-
-                .invitations-table tr:hover {
-                    background: #f9f9f9;
-                }
-
-                :global(.dark) .invitations-table tr:hover {
-                    background: #334155;
-                }
-
-                .role-badge,
-                .status-badge {
-                    display: inline-block;
-                    padding: 4px 12px;
-                    border-radius: 12px;
-                    font-size: 12px;
-                    font-weight: 500;
-                }
-
-                .role-badge.admin {
-                    background: #fff3e0;
-                    color: #e65100;
-                }
-
-                .role-badge.member {
-                    background: #e3f2fd;
-                    color: #1565c0;
-                }
-
-                .status-badge.active {
-                    background: #e8f5e9;
-                    color: #2e7d32;
-                }
-
-                .status-badge.pending {
-                    background: #fff3e0;
-                    color: #f57c00;
-                }
-
-                .status-badge.inactive {
-                    background: #ffebee;
-                    color: #c62828;
-                }
-
-                .status-badge.invitation-pending {
-                    background: #fff3e0;
-                    color: #f57c00;
-                }
-
-                .status-badge.invitation-accepted {
-                    background: #e8f5e9;
-                    color: #2e7d32;
-                }
-
-                .status-badge.invitation-rejected {
-                    background: #ffebee;
-                    color: #c62828;
-                }
-
-                .status-badge.invitation-expired {
-                    background: #f5f5f5;
-                    color: #666;
-                }
+                /* Tables and badges now use Tailwind classes directly */
 
                 .actions-cell {
                     display: flex;
@@ -1202,7 +1045,7 @@ const UserManagement: React.FC<UserManagementProps> = ({ companyId, companyName,
                     font-style: italic;
                 }
 
-                :global(.dark) .self-indicator {
+                .dark .self-indicator {
                     color: #94a3b8;
                 }
 
@@ -1231,7 +1074,7 @@ const UserManagement: React.FC<UserManagementProps> = ({ companyId, companyName,
                     box-shadow: 0 10px 40px rgba(0, 0, 0, 0.2);
                 }
 
-                :global(.dark) .modal-content-inner {
+                .dark .modal-content-inner {
                     background: #1e293b;
                     box-shadow: 0 10px 40px rgba(0, 0, 0, 0.5);
                 }
@@ -1268,7 +1111,7 @@ const UserManagement: React.FC<UserManagementProps> = ({ companyId, companyName,
                     font-size: 14px;
                 }
 
-                :global(.dark) .form-group label {
+                .dark .form-group label {
                     color: #e2e8f0;
                 }
 
@@ -1286,15 +1129,15 @@ const UserManagement: React.FC<UserManagementProps> = ({ companyId, companyName,
                     color: #333;
                 }
 
-                :global(.dark) .form-group input,
-                :global(.dark) .form-group select {
+                .dark .form-group input,
+                .dark .form-group select {
                     background: #334155;
                     border-color: #475569;
                     color: #e2e8f0;
                 }
 
-                :global(.dark) .form-group input::placeholder,
-                :global(.dark) .form-group select::placeholder {
+                .dark .form-group input::placeholder,
+                .dark .form-group select::placeholder {
                     color: #94a3b8;
                 }
 
@@ -1304,8 +1147,8 @@ const UserManagement: React.FC<UserManagementProps> = ({ companyId, companyName,
                     border-color: #667eea;
                 }
 
-                :global(.dark) .form-group input:focus,
-                :global(.dark) .form-group select:focus {
+                .dark .form-group input:focus,
+                .dark .form-group select:focus {
                     border-color: #818cf8;
                 }
 
@@ -1315,8 +1158,8 @@ const UserManagement: React.FC<UserManagementProps> = ({ companyId, companyName,
                     cursor: not-allowed;
                 }
 
-                :global(.dark) .form-group input:disabled,
-                :global(.dark) .form-group select:disabled {
+                .dark .form-group input:disabled,
+                .dark .form-group select:disabled {
                     background: #1e293b;
                     color: #64748b;
                 }
@@ -1326,7 +1169,7 @@ const UserManagement: React.FC<UserManagementProps> = ({ companyId, companyName,
                     color: #666;
                 }
 
-                :global(.dark) .input-disabled {
+                .dark .input-disabled {
                     background: #1e293b !important;
                     color: #64748b;
                 }
@@ -1338,7 +1181,7 @@ const UserManagement: React.FC<UserManagementProps> = ({ companyId, companyName,
                     color: #666;
                 }
 
-                :global(.dark) .hint {
+                .dark .hint {
                     color: #94a3b8;
                 }
 
@@ -1351,7 +1194,7 @@ const UserManagement: React.FC<UserManagementProps> = ({ companyId, companyName,
                     border-top: 1px solid #e0e0e0;
                 }
 
-                :global(.dark) .modal-actions-inner {
+                .dark .modal-actions-inner {
                     border-top-color: #475569;
                 }
 
@@ -1367,7 +1210,7 @@ const UserManagement: React.FC<UserManagementProps> = ({ companyId, companyName,
                     transition: all 0.3s;
                 }
 
-                :global(.dark) .btn-cancel {
+                .dark .btn-cancel {
                     background: #475569;
                     color: #e2e8f0;
                 }
@@ -1376,7 +1219,7 @@ const UserManagement: React.FC<UserManagementProps> = ({ companyId, companyName,
                     background: #e0e0e0;
                 }
 
-                :global(.dark) .btn-cancel:hover:not(:disabled) {
+                .dark .btn-cancel:hover:not(:disabled) {
                     background: #64748b;
                 }
 

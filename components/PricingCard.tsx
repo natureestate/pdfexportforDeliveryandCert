@@ -63,15 +63,15 @@ const PricingCard: React.FC<PricingCardProps> = ({
     // สีพื้นหลังตาม plan
     const getBgGradient = () => {
         if (plan.isPopular) {
-            return 'bg-gradient-to-br from-amber-50 to-orange-50 border-amber-300';
+            return 'bg-gradient-to-br from-amber-50 to-orange-50 dark:from-amber-900/20 dark:to-orange-900/20 border-amber-300 dark:border-amber-600';
         }
         switch (plan.id) {
             case 'enterprise':
-                return 'bg-gradient-to-br from-purple-50 to-indigo-50 border-purple-200';
+                return 'bg-gradient-to-br from-purple-50 to-indigo-50 dark:from-purple-900/20 dark:to-indigo-900/20 border-purple-200 dark:border-purple-600';
             case 'starter':
-                return 'bg-gradient-to-br from-blue-50 to-cyan-50 border-blue-200';
+                return 'bg-gradient-to-br from-blue-50 to-cyan-50 dark:from-blue-900/20 dark:to-cyan-900/20 border-blue-200 dark:border-blue-600';
             default:
-                return 'bg-white border-gray-200';
+                return 'bg-white dark:bg-slate-800 border-gray-200 dark:border-slate-600';
         }
     };
 
@@ -118,38 +118,38 @@ const PricingCard: React.FC<PricingCardProps> = ({
                 </div>
 
                 {/* Plan Name */}
-                <h3 className="text-xl font-bold text-gray-900">{plan.name}</h3>
-                <p className="text-sm text-gray-500 mt-1">{plan.nameTh}</p>
+                <h3 className="text-xl font-bold text-gray-900 dark:text-gray-100">{plan.name}</h3>
+                <p className="text-sm text-gray-500 dark:text-gray-400 mt-1">{plan.nameTh}</p>
             </div>
 
             {/* Price */}
             <div className="text-center mb-6">
                 {isFree ? (
-                    <div className="text-4xl font-bold text-gray-900">ฟรี</div>
+                    <div className="text-4xl font-bold text-gray-900 dark:text-gray-100">ฟรี</div>
                 ) : isEnterprise ? (
-                    <div className="text-2xl font-bold text-gray-900">ติดต่อฝ่ายขาย</div>
+                    <div className="text-2xl font-bold text-gray-900 dark:text-gray-100">ติดต่อฝ่ายขาย</div>
                 ) : (
                     <>
                         <div className="flex items-baseline justify-center gap-1">
-                            <span className="text-4xl font-bold text-gray-900">
+                            <span className="text-4xl font-bold text-gray-900 dark:text-gray-100">
                                 {formatPrice(monthlyPrice, 'THB').replace('฿', '')}
                             </span>
-                            <span className="text-gray-500">/เดือน</span>
+                            <span className="text-gray-500 dark:text-gray-400">/เดือน</span>
                         </div>
                         
                         {billingCycle === 'yearly' && yearlyDiscount > 0 && (
                             <div className="mt-2 space-y-1">
-                                <div className="text-sm text-gray-500 line-through">
+                                <div className="text-sm text-gray-500 dark:text-gray-400 line-through">
                                     {formatPrice(plan.priceMonthly * 12, 'THB')}/ปี
                                 </div>
-                                <div className="text-sm font-medium text-green-600">
+                                <div className="text-sm font-medium text-green-600 dark:text-green-400">
                                     {formatPrice(price, 'THB')}/ปี (ประหยัด {yearlyDiscount}%)
                                 </div>
                             </div>
                         )}
                         
                         {billingCycle === 'monthly' && yearlyDiscount > 0 && (
-                            <div className="mt-2 text-xs text-amber-600">
+                            <div className="mt-2 text-xs text-amber-600 dark:text-amber-400">
                                 💡 จ่ายรายปีประหยัด {yearlyDiscount}%
                             </div>
                         )}
@@ -163,14 +163,14 @@ const PricingCard: React.FC<PricingCardProps> = ({
                 disabled={isLoading || isCurrentPlan}
                 className={`w-full py-3 px-4 rounded-xl font-semibold text-sm transition-all duration-200 ${
                     isCurrentPlan
-                        ? 'bg-gray-100 text-gray-400 cursor-not-allowed'
+                        ? 'bg-gray-100 dark:bg-slate-700 text-gray-400 dark:text-gray-500 cursor-not-allowed'
                         : plan.isPopular
                         ? 'bg-gradient-to-r from-amber-500 to-orange-500 text-white hover:from-amber-600 hover:to-orange-600 shadow-lg hover:shadow-xl'
                         : isEnterprise
                         ? 'bg-gradient-to-r from-purple-600 to-indigo-600 text-white hover:from-purple-700 hover:to-indigo-700'
                         : isFree
-                        ? 'bg-gray-100 text-gray-700 hover:bg-gray-200'
-                        : 'bg-gray-900 text-white hover:bg-gray-800'
+                        ? 'bg-gray-100 dark:bg-slate-700 text-gray-700 dark:text-gray-200 hover:bg-gray-200 dark:hover:bg-slate-600'
+                        : 'bg-gray-900 dark:bg-slate-600 text-white hover:bg-gray-800 dark:hover:bg-slate-500'
                 } disabled:opacity-50`}
             >
                 {isLoading ? (
@@ -196,88 +196,88 @@ const PricingCard: React.FC<PricingCardProps> = ({
             <div className="mt-6 space-y-3">
                 {plan.highlights.map((highlight, index) => (
                     <div key={index} className="flex items-start gap-2">
-                        <Check className="w-5 h-5 text-green-500 flex-shrink-0 mt-0.5" />
-                        <span className="text-sm text-gray-600">{highlight}</span>
+                        <Check className="w-5 h-5 text-green-500 dark:text-green-400 flex-shrink-0 mt-0.5" />
+                        <span className="text-sm text-gray-600 dark:text-gray-300">{highlight}</span>
                     </div>
                 ))}
             </div>
 
             {/* Feature Details */}
-            <div className="mt-6 pt-6 border-t border-gray-200">
-                <h4 className="text-sm font-semibold text-gray-900 mb-3">รายละเอียด</h4>
+            <div className="mt-6 pt-6 border-t border-gray-200 dark:border-slate-600">
+                <h4 className="text-sm font-semibold text-gray-900 dark:text-gray-100 mb-3">รายละเอียด</h4>
                 <div className="space-y-2 text-sm">
                     {/* Users */}
                     <div className="flex justify-between">
-                        <span className="text-gray-500">ผู้ใช้งาน</span>
-                        <span className="font-medium">
+                        <span className="text-gray-500 dark:text-gray-400">ผู้ใช้งาน</span>
+                        <span className="font-medium text-gray-800 dark:text-gray-200">
                             {plan.maxUsers === -1 ? 'ไม่จำกัด' : `${plan.maxUsers} คน`}
                         </span>
                     </div>
                     
                     {/* Documents */}
                     <div className="flex justify-between">
-                        <span className="text-gray-500">เอกสาร/เดือน</span>
-                        <span className="font-medium">
+                        <span className="text-gray-500 dark:text-gray-400">เอกสาร/เดือน</span>
+                        <span className="font-medium text-gray-800 dark:text-gray-200">
                             {plan.maxDocuments === -1 ? 'ไม่จำกัด' : `${plan.maxDocuments} ใบ`}
                         </span>
                     </div>
                     
                     {/* Document Types */}
                     <div className="flex justify-between">
-                        <span className="text-gray-500">ประเภทเอกสาร</span>
-                        <span className="font-medium">
+                        <span className="text-gray-500 dark:text-gray-400">ประเภทเอกสาร</span>
+                        <span className="font-medium text-gray-800 dark:text-gray-200">
                             {plan.features.documentAccess === 'full' ? 'ครบทุกประเภท' : 'พื้นฐาน'}
                         </span>
                     </div>
                     
                     {/* Custom Logo */}
                     <div className="flex justify-between">
-                        <span className="text-gray-500">Custom Logo</span>
+                        <span className="text-gray-500 dark:text-gray-400">Custom Logo</span>
                         {plan.allowCustomLogo ? (
-                            <Check className="w-5 h-5 text-green-500" />
+                            <Check className="w-5 h-5 text-green-500 dark:text-green-400" />
                         ) : (
-                            <X className="w-5 h-5 text-red-400" />
+                            <X className="w-5 h-5 text-red-400 dark:text-red-500" />
                         )}
                     </div>
                     
                     {/* Watermark */}
                     <div className="flex justify-between">
-                        <span className="text-gray-500">ไม่มีลายน้ำ</span>
+                        <span className="text-gray-500 dark:text-gray-400">ไม่มีลายน้ำ</span>
                         {!plan.features.hasWatermark ? (
-                            <Check className="w-5 h-5 text-green-500" />
+                            <Check className="w-5 h-5 text-green-500 dark:text-green-400" />
                         ) : (
-                            <X className="w-5 h-5 text-red-400" />
+                            <X className="w-5 h-5 text-red-400 dark:text-red-500" />
                         )}
                     </div>
                     
                     {/* CRM */}
                     <div className="flex justify-between">
-                        <span className="text-gray-500">ฐานข้อมูลลูกค้า</span>
-                        <span className="font-medium">
+                        <span className="text-gray-500 dark:text-gray-400">ฐานข้อมูลลูกค้า</span>
+                        <span className="font-medium text-gray-800 dark:text-gray-200">
                             {plan.maxCustomers === -1 ? 'ไม่จำกัด' : `${plan.maxCustomers} ราย`}
                         </span>
                     </div>
                     
                     {/* Contractors */}
                     <div className="flex justify-between">
-                        <span className="text-gray-500">ช่าง/ผู้รับเหมา</span>
-                        <span className="font-medium">
+                        <span className="text-gray-500 dark:text-gray-400">ช่าง/ผู้รับเหมา</span>
+                        <span className="font-medium text-gray-800 dark:text-gray-200">
                             {plan.maxContractors === -1 ? 'ไม่จำกัด' : `${plan.maxContractors} ราย`}
                         </span>
                     </div>
                     
                     {/* PDF Exports */}
                     <div className="flex justify-between">
-                        <span className="text-gray-500">Export PDF</span>
-                        <span className="font-medium">
+                        <span className="text-gray-500 dark:text-gray-400">Export PDF</span>
+                        <span className="font-medium text-gray-800 dark:text-gray-200">
                             {plan.maxPdfExports === -1 ? 'ไม่จำกัด' : `${plan.maxPdfExports} ครั้ง/เดือน`}
                         </span>
                     </div>
                     
                     {/* History */}
                     <div className="flex justify-between">
-                        <span className="text-gray-500">ประวัติเอกสาร</span>
-                        <span className="font-medium">
+                        <span className="text-gray-500 dark:text-gray-400">ประวัติเอกสาร</span>
+                        <span className="font-medium text-gray-800 dark:text-gray-200">
                             {plan.historyRetentionDays === -1 
                                 ? 'Audit Log' 
                                 : plan.historyRetentionDays >= 365
