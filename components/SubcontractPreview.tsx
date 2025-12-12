@@ -83,9 +83,9 @@ const SubcontractPreview = forwardRef<HTMLDivElement, SubcontractPreviewProps>((
             </div>
 
             {/* ทำที่ และ วันที่ */}
-            <div className="flex justify-between mb-4 text-sm">
-                <p><strong>ทำที่:</strong> {data.contractLocation || '...........................................................................'}</p>
-                <p><strong>วันที่:</strong> {formatThaiDate(data.contractDate)}</p>
+            <div className="flex justify-between mb-4 text-sm text-gray-800">
+                <p><strong>ทำที่:</strong> <span className="text-gray-900">{data.contractLocation || '...........................................................................'}</span></p>
+                <p><strong>วันที่:</strong> <span className="text-gray-900">{formatThaiDate(data.contractDate)}</span></p>
             </div>
 
             {/* คำนำสัญญา */}
@@ -260,26 +260,26 @@ const SubcontractPreview = forwardRef<HTMLDivElement, SubcontractPreviewProps>((
             </div>
 
             {/* ส่วนลงนาม */}
-            <div className="grid grid-cols-1 md:grid-cols-3 gap-6 mt-8 pt-6 border-t">
+            <div className="grid grid-cols-1 md:grid-cols-3 gap-6 mt-8 pt-6 border-t border-gray-300">
                 {/* ผู้ว่าจ้าง */}
-                <div className="text-center">
+                <div className="text-center text-gray-800">
                     <p className="mb-8">ลงชื่อ ...............................................</p>
-                    <p className="text-sm">( {data.employerSignName || '...............................................'} )</p>
-                    <p className="text-sm font-medium text-gray-700 mt-1">ผู้ว่าจ้าง</p>
+                    <p className="text-sm text-gray-900">( {data.employerSignName || '...............................................'} )</p>
+                    <p className="text-sm font-medium text-blue-600 mt-1">ผู้ว่าจ้าง</p>
                 </div>
                 
                 {/* ผู้รับจ้าง */}
-                <div className="text-center">
+                <div className="text-center text-gray-800">
                     <p className="mb-8">ลงชื่อ ...............................................</p>
-                    <p className="text-sm">( {data.contractorSignName || '...............................................'} )</p>
-                    <p className="text-sm font-medium text-gray-700 mt-1">ผู้รับจ้าง</p>
+                    <p className="text-sm text-gray-900">( {data.contractorSignName || '...............................................'} )</p>
+                    <p className="text-sm font-medium text-blue-600 mt-1">ผู้รับจ้าง</p>
                 </div>
                 
                 {/* พยาน */}
-                <div className="text-center">
+                <div className="text-center text-gray-800">
                     <p className="mb-8">ลงชื่อ ...............................................</p>
-                    <p className="text-sm">( {data.witnessName || '...............................................'} )</p>
-                    <p className="text-sm font-medium text-gray-700 mt-1">พยาน</p>
+                    <p className="text-sm text-gray-900">( {data.witnessName || '...............................................'} )</p>
+                    <p className="text-sm font-medium text-blue-600 mt-1">พยาน</p>
                 </div>
             </div>
 

@@ -20,10 +20,10 @@ export interface InvoiceFormProps {
 const FormDivider: React.FC<{ title: string }> = ({ title }) => (
     <div className="relative">
         <div className="absolute inset-0 flex items-center" aria-hidden="true">
-            <div className="w-full border-t border-gray-300" />
+            <div className="w-full border-t border-gray-300 dark:border-gray-600" />
         </div>
         <div className="relative flex justify-start">
-            <span className="bg-white pr-3 text-lg font-medium text-gray-900">{title}</span>
+            <span className="bg-white dark:bg-slate-800 pr-3 text-lg font-medium text-gray-900 dark:text-gray-100">{title}</span>
         </div>
     </div>
 );
@@ -170,17 +170,17 @@ const InvoiceForm: React.FC<InvoiceFormProps> = ({
         <div className="space-y-8 pt-4">
             {/* Confirmation Modal */}
             {isConfirmModalOpen && itemToRemove !== null && (
-                <div className="fixed inset-0 bg-gray-600 bg-opacity-50 overflow-y-auto h-full w-full z-50 flex items-center justify-center">
-                    <div className="relative mx-auto p-5 border w-96 shadow-lg rounded-md bg-white">
+                <div className="fixed inset-0 bg-gray-600 bg-opacity-50 dark:bg-black dark:bg-opacity-60 overflow-y-auto h-full w-full z-50 flex items-center justify-center">
+                    <div className="relative mx-auto p-5 border w-96 shadow-lg rounded-md bg-white dark:bg-slate-800 dark:border-slate-700">
                         <div className="mt-3 text-center">
-                            <div className="mx-auto flex items-center justify-center h-12 w-12 rounded-full bg-red-100">
-                                <svg className="h-6 w-6 text-red-600" stroke="currentColor" fill="none" viewBox="0 0 24 24">
+                            <div className="mx-auto flex items-center justify-center h-12 w-12 rounded-full bg-red-100 dark:bg-red-900/30">
+                                <svg className="h-6 w-6 text-red-600 dark:text-red-400" stroke="currentColor" fill="none" viewBox="0 0 24 24">
                                     <path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M12 9v2m0 4h.01m-6.938 4h13.856c1.54 0 2.502-1.667 1.732-3L13.732 4c-.77-1.333-2.694-1.333-3.464 0L3.34 16c-.77 1.333.192 3 1.732 3z" />
                                 </svg>
                             </div>
-                            <h3 className="text-lg leading-6 font-medium text-gray-900 mt-2">ยืนยันการลบ</h3>
+                            <h3 className="text-lg leading-6 font-medium text-gray-900 dark:text-gray-100 mt-2">ยืนยันการลบ</h3>
                             <div className="mt-2 px-7 py-3">
-                                <p className="text-sm text-gray-500">
+                                <p className="text-sm text-gray-500 dark:text-gray-400">
                                     คุณแน่ใจหรือไม่ว่าต้องการลบรายการนี้?
                                 </p>
                             </div>
@@ -193,7 +193,7 @@ const InvoiceForm: React.FC<InvoiceFormProps> = ({
                                 </button>
                                 <button
                                     onClick={() => setIsConfirmModalOpen(false)}
-                                    className="px-4 py-2 bg-gray-200 text-gray-800 text-base font-medium rounded-md w-auto shadow-sm hover:bg-gray-300 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-gray-500"
+                                    className="px-4 py-2 bg-gray-200 dark:bg-slate-700 text-gray-800 dark:text-gray-200 text-base font-medium rounded-md w-auto shadow-sm hover:bg-gray-300 dark:hover:bg-slate-600 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-gray-500"
                                 >
                                     ยกเลิก
                                 </button>
@@ -206,7 +206,7 @@ const InvoiceForm: React.FC<InvoiceFormProps> = ({
             {/* Form Fields */}
             <div className="space-y-6">
                 {/* เลขที่เอกสาร */}
-                <div className="text-xs sm:text-sm text-gray-600">
+                <div className="text-xs sm:text-sm text-gray-600 dark:text-gray-400">
                     <span className="font-medium">เลขที่ใบแจ้งหนี้:</span> <span className="font-mono">{data.invoiceNumber || 'กำลังสร้าง...'}</span>
                 </div>
                 
@@ -239,25 +239,25 @@ const InvoiceForm: React.FC<InvoiceFormProps> = ({
                     />
 
                     <div>
-                        <label htmlFor="customerName" className="block text-xs sm:text-sm font-medium text-slate-700">ชื่อลูกค้า/บริษัท</label>
-                        <input type="text" id="customerName" value={data.customerName} onChange={(e) => handleDataChange('customerName', e.target.value)} className="mt-1 block w-full rounded-md border-gray-300 shadow-sm focus:border-indigo-500 focus:ring-indigo-500 text-xs sm:text-sm bg-gray-50" />
+                        <label htmlFor="customerName" className="block text-xs sm:text-sm font-medium text-slate-700 dark:text-slate-300">ชื่อลูกค้า/บริษัท</label>
+                        <input type="text" id="customerName" value={data.customerName} onChange={(e) => handleDataChange('customerName', e.target.value)} className="mt-1 block w-full rounded-md border-gray-300 shadow-sm focus:border-indigo-500 focus:ring-indigo-500 text-xs sm:text-sm bg-gray-50 dark:bg-slate-700 dark:text-gray-100 dark:border-slate-600" />
                     </div>
                     <div>
-                        <label htmlFor="customerAddress" className="block text-xs sm:text-sm font-medium text-slate-700">ที่อยู่</label>
-                        <textarea id="customerAddress" value={data.customerAddress} onChange={(e) => handleDataChange('customerAddress', e.target.value)} rows={3} className="mt-1 block w-full rounded-md border-gray-300 shadow-sm focus:border-indigo-500 focus:ring-indigo-500 text-xs sm:text-sm bg-gray-50" />
+                        <label htmlFor="customerAddress" className="block text-xs sm:text-sm font-medium text-slate-700 dark:text-slate-300">ที่อยู่</label>
+                        <textarea id="customerAddress" value={data.customerAddress} onChange={(e) => handleDataChange('customerAddress', e.target.value)} rows={3} className="mt-1 block w-full rounded-md border-gray-300 shadow-sm focus:border-indigo-500 focus:ring-indigo-500 text-xs sm:text-sm bg-gray-50 dark:bg-slate-700 dark:text-gray-100 dark:border-slate-600" />
                     </div>
                     <div className="grid grid-cols-1 md:grid-cols-3 gap-3 sm:gap-4">
                         <div>
-                            <label htmlFor="customerPhone" className="block text-xs sm:text-sm font-medium text-slate-700">เบอร์โทรศัพท์</label>
-                            <input type="text" id="customerPhone" value={data.customerPhone || ''} onChange={(e) => handleDataChange('customerPhone', e.target.value)} className="mt-1 block w-full rounded-md border-gray-300 shadow-sm focus:border-indigo-500 focus:ring-indigo-500 text-xs sm:text-sm bg-gray-50" />
+                            <label htmlFor="customerPhone" className="block text-xs sm:text-sm font-medium text-slate-700 dark:text-slate-300">เบอร์โทรศัพท์</label>
+                            <input type="text" id="customerPhone" value={data.customerPhone || ''} onChange={(e) => handleDataChange('customerPhone', e.target.value)} className="mt-1 block w-full rounded-md border-gray-300 shadow-sm focus:border-indigo-500 focus:ring-indigo-500 text-xs sm:text-sm bg-gray-50 dark:bg-slate-700 dark:text-gray-100 dark:border-slate-600" />
                         </div>
                         <div>
-                            <label htmlFor="customerEmail" className="block text-xs sm:text-sm font-medium text-slate-700">อีเมล</label>
-                            <input type="email" id="customerEmail" value={data.customerEmail || ''} onChange={(e) => handleDataChange('customerEmail', e.target.value)} className="mt-1 block w-full rounded-md border-gray-300 shadow-sm focus:border-indigo-500 focus:ring-indigo-500 text-xs sm:text-sm bg-gray-50" />
+                            <label htmlFor="customerEmail" className="block text-xs sm:text-sm font-medium text-slate-700 dark:text-slate-300">อีเมล</label>
+                            <input type="email" id="customerEmail" value={data.customerEmail || ''} onChange={(e) => handleDataChange('customerEmail', e.target.value)} className="mt-1 block w-full rounded-md border-gray-300 shadow-sm focus:border-indigo-500 focus:ring-indigo-500 text-xs sm:text-sm bg-gray-50 dark:bg-slate-700 dark:text-gray-100 dark:border-slate-600" />
                         </div>
                         <div>
-                            <label htmlFor="customerTaxId" className="block text-xs sm:text-sm font-medium text-slate-700">เลขประจำตัวผู้เสียภาษี</label>
-                            <input type="text" id="customerTaxId" value={data.customerTaxId || ''} onChange={(e) => handleDataChange('customerTaxId', e.target.value)} className="mt-1 block w-full rounded-md border-gray-300 shadow-sm focus:border-indigo-500 focus:ring-indigo-500 text-xs sm:text-sm bg-gray-50" />
+                            <label htmlFor="customerTaxId" className="block text-xs sm:text-sm font-medium text-slate-700 dark:text-slate-300">เลขประจำตัวผู้เสียภาษี</label>
+                            <input type="text" id="customerTaxId" value={data.customerTaxId || ''} onChange={(e) => handleDataChange('customerTaxId', e.target.value)} className="mt-1 block w-full rounded-md border-gray-300 shadow-sm focus:border-indigo-500 focus:ring-indigo-500 text-xs sm:text-sm bg-gray-50 dark:bg-slate-700 dark:text-gray-100 dark:border-slate-600" />
                         </div>
                     </div>
                 </div>
@@ -266,16 +266,16 @@ const InvoiceForm: React.FC<InvoiceFormProps> = ({
                 <FormDivider title="ส่วนที่ 2: รายละเอียดเอกสาร" />
                 <div className="grid grid-cols-1 md:grid-cols-3 gap-3 sm:gap-4">
                     <div>
-                        <label htmlFor="invoiceDate" className="block text-xs sm:text-sm font-medium text-slate-700">วันที่ออกใบแจ้งหนี้</label>
-                        <input type="date" id="invoiceDate" value={formatDateForInput(data.invoiceDate)} onChange={(e) => handleDataChange('invoiceDate', e.target.value ? new Date(e.target.value) : null)} className="mt-1 block w-full rounded-md border-gray-300 shadow-sm focus:border-indigo-500 focus:ring-indigo-500 text-xs sm:text-sm bg-gray-50" />
+                        <label htmlFor="invoiceDate" className="block text-xs sm:text-sm font-medium text-slate-700 dark:text-slate-300">วันที่ออกใบแจ้งหนี้</label>
+                        <input type="date" id="invoiceDate" value={formatDateForInput(data.invoiceDate)} onChange={(e) => handleDataChange('invoiceDate', e.target.value ? new Date(e.target.value) : null)} className="mt-1 block w-full rounded-md border-gray-300 shadow-sm focus:border-indigo-500 focus:ring-indigo-500 text-xs sm:text-sm bg-gray-50 dark:bg-slate-700 dark:text-gray-100 dark:border-slate-600" />
                     </div>
                     <div>
-                        <label htmlFor="dueDate" className="block text-xs sm:text-sm font-medium text-slate-700">วันที่ครบกำหนดชำระ</label>
-                        <input type="date" id="dueDate" value={formatDateForInput(data.dueDate)} onChange={(e) => handleDataChange('dueDate', e.target.value ? new Date(e.target.value) : null)} className="mt-1 block w-full rounded-md border-gray-300 shadow-sm focus:border-indigo-500 focus:ring-indigo-500 text-xs sm:text-sm bg-gray-50" />
+                        <label htmlFor="dueDate" className="block text-xs sm:text-sm font-medium text-slate-700 dark:text-slate-300">วันที่ครบกำหนดชำระ</label>
+                        <input type="date" id="dueDate" value={formatDateForInput(data.dueDate)} onChange={(e) => handleDataChange('dueDate', e.target.value ? new Date(e.target.value) : null)} className="mt-1 block w-full rounded-md border-gray-300 shadow-sm focus:border-indigo-500 focus:ring-indigo-500 text-xs sm:text-sm bg-gray-50 dark:bg-slate-700 dark:text-gray-100 dark:border-slate-600" />
                     </div>
                     <div>
-                        <label htmlFor="referenceNumber" className="block text-xs sm:text-sm font-medium text-slate-700">เลขที่อ้างอิง</label>
-                        <input type="text" id="referenceNumber" value={data.referenceNumber || ''} onChange={(e) => handleDataChange('referenceNumber', e.target.value)} className="mt-1 block w-full rounded-md border-gray-300 shadow-sm focus:border-indigo-500 focus:ring-indigo-500 text-xs sm:text-sm bg-gray-50" />
+                        <label htmlFor="referenceNumber" className="block text-xs sm:text-sm font-medium text-slate-700 dark:text-slate-300">เลขที่อ้างอิง</label>
+                        <input type="text" id="referenceNumber" value={data.referenceNumber || ''} onChange={(e) => handleDataChange('referenceNumber', e.target.value)} className="mt-1 block w-full rounded-md border-gray-300 shadow-sm focus:border-indigo-500 focus:ring-indigo-500 text-xs sm:text-sm bg-gray-50 dark:bg-slate-700 dark:text-gray-100 dark:border-slate-600" />
                     </div>
                 </div>
 
@@ -283,33 +283,33 @@ const InvoiceForm: React.FC<InvoiceFormProps> = ({
                 <FormDivider title="ส่วนที่ 3: รายการสินค้า/บริการ" />
                 <div className="overflow-x-auto -mx-3 sm:mx-0">
                     <table className="min-w-full divide-y divide-gray-200 text-xs sm:text-sm">
-                        <thead className="bg-gray-50">
+                        <thead className="bg-gray-50 dark:bg-slate-700">
                             <tr>
-                                <th scope="col" className="px-2 sm:px-3 py-1.5 sm:py-2 text-left text-xs font-medium text-gray-500 uppercase tracking-wider w-2/5">รายละเอียด</th>
-                                <th scope="col" className="px-2 sm:px-3 py-1.5 sm:py-2 text-left text-xs font-medium text-gray-500 uppercase tracking-wider w-1/6">จำนวน</th>
-                                <th scope="col" className="px-2 sm:px-3 py-1.5 sm:py-2 text-left text-xs font-medium text-gray-500 uppercase tracking-wider w-1/6">หน่วย</th>
-                                <th scope="col" className="px-2 sm:px-3 py-1.5 sm:py-2 text-left text-xs font-medium text-gray-500 uppercase tracking-wider w-1/6">ราคาต่อหน่วย</th>
-                                <th scope="col" className="px-2 sm:px-3 py-1.5 sm:py-2 text-left text-xs font-medium text-gray-500 uppercase tracking-wider w-1/6">จำนวนเงิน</th>
+                                <th scope="col" className="px-2 sm:px-3 py-1.5 sm:py-2 text-left text-xs font-medium text-gray-500 dark:text-gray-400 uppercase tracking-wider w-2/5">รายละเอียด</th>
+                                <th scope="col" className="px-2 sm:px-3 py-1.5 sm:py-2 text-left text-xs font-medium text-gray-500 dark:text-gray-400 uppercase tracking-wider w-1/6">จำนวน</th>
+                                <th scope="col" className="px-2 sm:px-3 py-1.5 sm:py-2 text-left text-xs font-medium text-gray-500 dark:text-gray-400 uppercase tracking-wider w-1/6">หน่วย</th>
+                                <th scope="col" className="px-2 sm:px-3 py-1.5 sm:py-2 text-left text-xs font-medium text-gray-500 dark:text-gray-400 uppercase tracking-wider w-1/6">ราคาต่อหน่วย</th>
+                                <th scope="col" className="px-2 sm:px-3 py-1.5 sm:py-2 text-left text-xs font-medium text-gray-500 dark:text-gray-400 uppercase tracking-wider w-1/6">จำนวนเงิน</th>
                                 <th scope="col" className="relative px-2 sm:px-3 py-1.5 sm:py-2 w-10 sm:w-12"><span className="sr-only">ลบ</span></th>
                             </tr>
                         </thead>
-                        <tbody className="bg-white divide-y divide-gray-200">
+                        <tbody className="bg-white dark:bg-slate-800 divide-y divide-gray-200 dark:divide-gray-700">
                             {data.items.map((item, index) => (
                                 <tr key={index}>
                                     <td className="px-1 sm:px-2 py-1 whitespace-nowrap">
-                                        <textarea value={item.description} onChange={(e) => handleItemChange(index, 'description', e.target.value)} rows={2} className="w-full rounded-md border-gray-300 shadow-sm focus:border-indigo-300 focus:ring-indigo-200 focus:ring-opacity-50 text-xs sm:text-sm bg-gray-50 text-gray-900"></textarea>
+                                        <textarea value={item.description} onChange={(e) => handleItemChange(index, 'description', e.target.value)} rows={2} className="w-full rounded-md border-gray-300 dark:border-slate-600 shadow-sm focus:border-indigo-300 focus:ring-indigo-200 focus:ring-opacity-50 text-xs sm:text-sm bg-gray-50 dark:bg-slate-700 text-gray-900 dark:text-gray-100"></textarea>
                                     </td>
                                     <td className="px-1 sm:px-2 py-1 whitespace-nowrap">
-                                        <input type="number" value={item.quantity} onChange={(e) => handleItemChange(index, 'quantity', parseFloat(e.target.value) || 0)} className="w-full rounded-md border-gray-300 shadow-sm focus:border-indigo-300 focus:ring-indigo-200 focus:ring-opacity-50 text-xs sm:text-sm bg-gray-50 text-gray-900" />
+                                        <input type="number" value={item.quantity} onChange={(e) => handleItemChange(index, 'quantity', parseFloat(e.target.value) || 0)} className="w-full rounded-md border-gray-300 dark:border-slate-600 shadow-sm focus:border-indigo-300 focus:ring-indigo-200 focus:ring-opacity-50 text-xs sm:text-sm bg-gray-50 dark:bg-slate-700 text-gray-900 dark:text-gray-100" />
                                     </td>
                                     <td className="px-1 sm:px-2 py-1 whitespace-nowrap">
-                                        <input type="text" value={item.unit} onChange={(e) => handleItemChange(index, 'unit', e.target.value)} className="w-full rounded-md border-gray-300 shadow-sm focus:border-indigo-300 focus:ring-indigo-200 focus:ring-opacity-50 text-xs sm:text-sm bg-gray-50 text-gray-900" />
+                                        <input type="text" value={item.unit} onChange={(e) => handleItemChange(index, 'unit', e.target.value)} className="w-full rounded-md border-gray-300 dark:border-slate-600 shadow-sm focus:border-indigo-300 focus:ring-indigo-200 focus:ring-opacity-50 text-xs sm:text-sm bg-gray-50 dark:bg-slate-700 text-gray-900 dark:text-gray-100" />
                                     </td>
                                     <td className="px-1 sm:px-2 py-1 whitespace-nowrap">
-                                        <input type="number" step="0.01" value={item.unitPrice} onChange={(e) => handleItemChange(index, 'unitPrice', parseFloat(e.target.value) || 0)} className="w-full rounded-md border-gray-300 shadow-sm focus:border-indigo-300 focus:ring-indigo-200 focus:ring-opacity-50 text-xs sm:text-sm bg-gray-50 text-gray-900" />
+                                        <input type="number" step="0.01" value={item.unitPrice} onChange={(e) => handleItemChange(index, 'unitPrice', parseFloat(e.target.value) || 0)} className="w-full rounded-md border-gray-300 dark:border-slate-600 shadow-sm focus:border-indigo-300 focus:ring-indigo-200 focus:ring-opacity-50 text-xs sm:text-sm bg-gray-50 dark:bg-slate-700 text-gray-900 dark:text-gray-100" />
                                     </td>
                                     <td className="px-1 sm:px-2 py-1 whitespace-nowrap">
-                                        <input type="number" step="0.01" value={item.amount} readOnly className="w-full rounded-md border-gray-300 shadow-sm text-xs sm:text-sm bg-gray-100 text-gray-900 font-medium" />
+                                        <input type="number" step="0.01" value={item.amount} readOnly className="w-full rounded-md border-gray-300 dark:border-slate-600 shadow-sm text-xs sm:text-sm bg-gray-100 dark:bg-slate-600 text-gray-900 dark:text-gray-100 font-medium" />
                                     </td>
                                     <td className="px-1 sm:px-2 py-1 whitespace-nowrap text-center">
                                         <button type="button" onClick={() => openConfirmModal(index)} className="text-red-600 hover:text-red-900 p-1 rounded-full hover:bg-red-100">
@@ -321,7 +321,7 @@ const InvoiceForm: React.FC<InvoiceFormProps> = ({
                         </tbody>
                     </table>
                 </div>
-                <button type="button" onClick={addItem} className="mt-3 sm:mt-4 inline-flex items-center px-2 sm:px-3 py-1.5 sm:py-2 border border-gray-300 shadow-sm text-xs sm:text-sm leading-4 font-medium rounded-md text-gray-700 bg-white hover:bg-gray-50 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-indigo-500">
+                <button type="button" onClick={addItem} className="mt-3 sm:mt-4 inline-flex items-center px-2 sm:px-3 py-1.5 sm:py-2 border border-gray-300 dark:border-slate-600 shadow-sm text-xs sm:text-sm leading-4 font-medium rounded-md text-gray-700 dark:text-gray-200 bg-white dark:bg-slate-700 hover:bg-gray-50 dark:hover:bg-slate-600 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-indigo-500">
                     <svg className="-ml-0.5 mr-2 h-4 w-4" xmlns="http://www.w3.org/2000/svg" viewBox="0 0 20 20" fill="currentColor" aria-hidden="true">
                         <path fillRule="evenodd" d="M10 3a1 1 0 011 1v5h5a1 1 0 110 2h-5v5a1 1 0 11-2 0v-5H4a1 1 0 110-2h5V4a1 1 0 011-1z" clipRule="evenodd" />
                     </svg>
@@ -333,32 +333,32 @@ const InvoiceForm: React.FC<InvoiceFormProps> = ({
                 <div className="grid grid-cols-1 md:grid-cols-2 gap-3 sm:gap-4">
                     <div className="space-y-3 sm:space-y-4">
                         <div className="flex flex-col sm:flex-row sm:justify-between sm:items-center gap-2">
-                            <label htmlFor="taxRate" className="block text-xs sm:text-sm font-medium text-slate-700">อัตราภาษีมูลค่าเพิ่ม (%)</label>
-                            <input type="number" id="taxRate" value={data.taxRate} onChange={(e) => handleDataChange('taxRate', parseFloat(e.target.value) || 0)} step="0.01" className="w-full sm:w-24 rounded-md border-gray-300 shadow-sm focus:border-indigo-500 focus:ring-indigo-500 text-xs sm:text-sm bg-gray-50" />
+                            <label htmlFor="taxRate" className="block text-xs sm:text-sm font-medium text-slate-700 dark:text-slate-300">อัตราภาษีมูลค่าเพิ่ม (%)</label>
+                            <input type="number" id="taxRate" value={data.taxRate} onChange={(e) => handleDataChange('taxRate', parseFloat(e.target.value) || 0)} step="0.01" className="w-full sm:w-24 rounded-md border-gray-300 shadow-sm focus:border-indigo-500 focus:ring-indigo-500 text-xs sm:text-sm bg-gray-50 dark:bg-slate-700 dark:text-gray-100 dark:border-slate-600" />
                         </div>
                         <div className="flex flex-col sm:flex-row sm:justify-between sm:items-center gap-2">
-                            <label htmlFor="discount" className="block text-xs sm:text-sm font-medium text-slate-700">ส่วนลด (บาท)</label>
-                            <input type="number" id="discount" value={data.discount} onChange={(e) => handleDataChange('discount', parseFloat(e.target.value) || 0)} step="0.01" className="w-full sm:w-32 rounded-md border-gray-300 shadow-sm focus:border-indigo-500 focus:ring-indigo-500 text-xs sm:text-sm bg-gray-50" />
+                            <label htmlFor="discount" className="block text-xs sm:text-sm font-medium text-slate-700 dark:text-slate-300">ส่วนลด (บาท)</label>
+                            <input type="number" id="discount" value={data.discount} onChange={(e) => handleDataChange('discount', parseFloat(e.target.value) || 0)} step="0.01" className="w-full sm:w-32 rounded-md border-gray-300 shadow-sm focus:border-indigo-500 focus:ring-indigo-500 text-xs sm:text-sm bg-gray-50 dark:bg-slate-700 dark:text-gray-100 dark:border-slate-600" />
                         </div>
                     </div>
-                    <div className="space-y-2 bg-gray-50 p-4 rounded-lg">
+                    <div className="space-y-2 bg-gray-50 dark:bg-slate-700 p-4 rounded-lg">
                         <div className="flex justify-between">
-                            <span className="text-sm text-gray-600">ยอดรวมก่อนภาษี:</span>
-                            <span className="text-sm font-medium">{data.subtotal.toLocaleString('th-TH', { minimumFractionDigits: 2, maximumFractionDigits: 2 })} บาท</span>
+                            <span className="text-sm text-gray-600 dark:text-gray-400">ยอดรวมก่อนภาษี:</span>
+                            <span className="text-sm font-medium dark:text-gray-200">{data.subtotal.toLocaleString('th-TH', { minimumFractionDigits: 2, maximumFractionDigits: 2 })} บาท</span>
                         </div>
                         <div className="flex justify-between">
-                            <span className="text-sm text-gray-600">ภาษีมูลค่าเพิ่ม ({data.taxRate}%):</span>
-                            <span className="text-sm font-medium">{data.taxAmount.toLocaleString('th-TH', { minimumFractionDigits: 2, maximumFractionDigits: 2 })} บาท</span>
+                            <span className="text-sm text-gray-600 dark:text-gray-400">ภาษีมูลค่าเพิ่ม ({data.taxRate}%):</span>
+                            <span className="text-sm font-medium dark:text-gray-200">{data.taxAmount.toLocaleString('th-TH', { minimumFractionDigits: 2, maximumFractionDigits: 2 })} บาท</span>
                         </div>
                         {data.discount > 0 && (
-                            <div className="flex justify-between text-red-600">
+                            <div className="flex justify-between text-red-600 dark:text-red-400">
                                 <span className="text-sm">ส่วนลด:</span>
                                 <span className="text-sm font-medium">-{data.discount.toLocaleString('th-TH', { minimumFractionDigits: 2, maximumFractionDigits: 2 })} บาท</span>
                             </div>
                         )}
-                        <div className="flex justify-between pt-2 border-t border-gray-300">
-                            <span className="text-base font-semibold text-gray-900">ยอดรวมทั้งสิ้น:</span>
-                            <span className="text-base font-bold text-indigo-600">{data.total.toLocaleString('th-TH', { minimumFractionDigits: 2, maximumFractionDigits: 2 })} บาท</span>
+                        <div className="flex justify-between pt-2 border-t border-gray-300 dark:border-gray-600">
+                            <span className="text-base font-semibold text-gray-900 dark:text-gray-100">ยอดรวมทั้งสิ้น:</span>
+                            <span className="text-base font-bold text-indigo-600 dark:text-indigo-400">{data.total.toLocaleString('th-TH', { minimumFractionDigits: 2, maximumFractionDigits: 2 })} บาท</span>
                         </div>
                     </div>
                 </div>
@@ -367,16 +367,16 @@ const InvoiceForm: React.FC<InvoiceFormProps> = ({
                 <FormDivider title="ส่วนที่ 5: ข้อมูลเพิ่มเติม" />
                 <div className="space-y-3 sm:space-y-4">
                     <div>
-                        <label htmlFor="paymentTerms" className="block text-xs sm:text-sm font-medium text-slate-700">เงื่อนไขการชำระเงิน</label>
-                        <textarea id="paymentTerms" value={data.paymentTerms || ''} onChange={(e) => handleDataChange('paymentTerms', e.target.value)} rows={2} className="mt-1 block w-full rounded-md border-gray-300 shadow-sm focus:border-indigo-500 focus:ring-indigo-500 text-xs sm:text-sm bg-gray-50" placeholder="เช่น ชำระภายใน 30 วัน, ชำระเงินสด" />
+                        <label htmlFor="paymentTerms" className="block text-xs sm:text-sm font-medium text-slate-700 dark:text-slate-300">เงื่อนไขการชำระเงิน</label>
+                        <textarea id="paymentTerms" value={data.paymentTerms || ''} onChange={(e) => handleDataChange('paymentTerms', e.target.value)} rows={2} className="mt-1 block w-full rounded-md border-gray-300 shadow-sm focus:border-indigo-500 focus:ring-indigo-500 text-xs sm:text-sm bg-gray-50 dark:bg-slate-700 dark:text-gray-100 dark:border-slate-600" placeholder="เช่น ชำระภายใน 30 วัน, ชำระเงินสด" />
                     </div>
                     <div>
-                        <label htmlFor="notes" className="block text-xs sm:text-sm font-medium text-slate-700">หมายเหตุ</label>
-                        <textarea id="notes" value={data.notes || ''} onChange={(e) => handleDataChange('notes', e.target.value)} rows={3} className="mt-1 block w-full rounded-md border-gray-300 shadow-sm focus:border-indigo-500 focus:ring-indigo-500 text-xs sm:text-sm bg-gray-50" />
+                        <label htmlFor="notes" className="block text-xs sm:text-sm font-medium text-slate-700 dark:text-slate-300">หมายเหตุ</label>
+                        <textarea id="notes" value={data.notes || ''} onChange={(e) => handleDataChange('notes', e.target.value)} rows={3} className="mt-1 block w-full rounded-md border-gray-300 shadow-sm focus:border-indigo-500 focus:ring-indigo-500 text-xs sm:text-sm bg-gray-50 dark:bg-slate-700 dark:text-gray-100 dark:border-slate-600" />
                     </div>
                     <div>
-                        <label htmlFor="issuedBy" className="block text-xs sm:text-sm font-medium text-slate-700">ผู้ออกเอกสาร</label>
-                        <input type="text" id="issuedBy" value={data.issuedBy || ''} onChange={(e) => handleDataChange('issuedBy', e.target.value)} className="mt-1 block w-full rounded-md border-gray-300 shadow-sm focus:border-indigo-500 focus:ring-indigo-500 text-xs sm:text-sm bg-gray-50" />
+                        <label htmlFor="issuedBy" className="block text-xs sm:text-sm font-medium text-slate-700 dark:text-slate-300">ผู้ออกเอกสาร</label>
+                        <input type="text" id="issuedBy" value={data.issuedBy || ''} onChange={(e) => handleDataChange('issuedBy', e.target.value)} className="mt-1 block w-full rounded-md border-gray-300 shadow-sm focus:border-indigo-500 focus:ring-indigo-500 text-xs sm:text-sm bg-gray-50 dark:bg-slate-700 dark:text-gray-100 dark:border-slate-600" />
                     </div>
                 </div>
             </div>

@@ -55,13 +55,13 @@ const VariationOrderPreview = forwardRef<HTMLDivElement, VariationOrderPreviewPr
                 <div className="w-3/5 text-right">
                     <h1 className="text-2xl font-bold text-gray-800">ใบแจ้งเปลี่ยนแปลงงาน</h1>
                     <h2 className="text-lg text-gray-500">VARIATION ORDER (VO)</h2>
-                    <div className="mt-4 text-xs space-y-1">
-                        <p><span className="font-semibold text-gray-600">เลขที่:</span> {data.voNumber || '________________'}</p>
-                        <p><span className="font-semibold text-gray-600">วันที่ออก:</span> {formatDate(data.date)}</p>
+                    <div className="mt-4 text-xs space-y-1 text-gray-700">
+                        <p><span className="font-semibold text-gray-600">เลขที่:</span> <span className="text-gray-800">{data.voNumber || '________________'}</span></p>
+                        <p><span className="font-semibold text-gray-600">วันที่ออก:</span> <span className="text-gray-800">{formatDate(data.date)}</span></p>
                         {data.contractNumber && (
-                            <p><span className="font-semibold text-gray-600">อ้างอิงสัญญาเลขที่:</span> {data.contractNumber}</p>
+                            <p><span className="font-semibold text-gray-600">อ้างอิงสัญญาเลขที่:</span> <span className="text-gray-800">{data.contractNumber}</span></p>
                         )}
-                        <p><span className="font-semibold text-gray-600">ผู้ร้องขอ:</span> {getRequestedByText(data.requestedBy)}</p>
+                        <p><span className="font-semibold text-gray-600">ผู้ร้องขอ:</span> <span className="text-gray-800">{getRequestedByText(data.requestedBy)}</span></p>
                     </div>
                 </div>
             </header>
@@ -200,7 +200,7 @@ const VariationOrderPreview = forwardRef<HTMLDivElement, VariationOrderPreviewPr
                     {data.taxRate > 0 && (
                         <div className="flex justify-between text-sm">
                             <span className="text-gray-600">ภาษีมูลค่าเพิ่ม ({data.taxRate}%):</span>
-                            <span className="font-medium">{data.taxAmount.toLocaleString('th-TH', { minimumFractionDigits: 2, maximumFractionDigits: 2 })} บาท</span>
+                            <span className="font-medium text-gray-800">{data.taxAmount.toLocaleString('th-TH', { minimumFractionDigits: 2, maximumFractionDigits: 2 })} บาท</span>
                         </div>
                     )}
                     <div className="flex justify-between pt-2 border-t border-gray-400 text-base">

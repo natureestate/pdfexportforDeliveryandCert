@@ -20,10 +20,10 @@ export interface WarrantyFormProps {
 const FormDivider: React.FC<{ title: string }> = ({ title }) => (
     <div className="relative">
         <div className="absolute inset-0 flex items-center" aria-hidden="true">
-            <div className="w-full border-t border-gray-300" />
+            <div className="w-full border-t border-gray-300 dark:border-gray-600" />
         </div>
         <div className="relative flex justify-start">
-            <span className="bg-white pr-3 text-lg font-medium text-gray-900">{title}</span>
+            <span className="bg-white dark:bg-slate-800 pr-3 text-lg font-medium text-gray-900 dark:text-gray-100">{title}</span>
         </div>
     </div>
 );
@@ -129,7 +129,7 @@ const WarrantyForm: React.FC<WarrantyFormProps> = ({
         <div className="space-y-8 pt-4">
              <div className="space-y-6">
                 {/* เลขที่ใบรับประกัน - แสดงด้านบนสุด */}
-                <div className="text-xs sm:text-sm text-gray-600">
+                <div className="text-xs sm:text-sm text-gray-600 dark:text-gray-400">
                     <span className="font-medium">เลขที่ใบรับประกัน:</span> <span className="font-mono">{data.warrantyNumber || 'กำลังสร้าง...'}</span>
                 </div>
                 
@@ -160,30 +160,30 @@ const WarrantyForm: React.FC<WarrantyFormProps> = ({
                     />
 
                     <div>
-                        <label htmlFor="projectName" className="block text-xs sm:text-sm font-medium text-slate-700">ชื่อโครงการ</label>
-                        <input type="text" id="projectName" value={data.projectName} onChange={(e) => handleDataChange('projectName', e.target.value)} className="mt-1 block w-full rounded-md border-gray-300 shadow-sm focus:border-indigo-500 focus:ring-indigo-500 text-xs sm:text-sm bg-gray-50" placeholder="เช่น โครงการบ้านมหาสารคาม" />
+                        <label htmlFor="projectName" className="block text-xs sm:text-sm font-medium text-slate-700 dark:text-slate-300">ชื่อโครงการ</label>
+                        <input type="text" id="projectName" value={data.projectName} onChange={(e) => handleDataChange('projectName', e.target.value)} className="mt-1 block w-full rounded-md border-gray-300 shadow-sm focus:border-indigo-500 focus:ring-indigo-500 text-xs sm:text-sm bg-gray-50 dark:bg-slate-700 dark:text-gray-100 dark:border-slate-600" placeholder="เช่น โครงการบ้านมหาสารคาม" />
                     </div>
                     <div className="grid grid-cols-1 md:grid-cols-2 gap-3 sm:gap-4">
                         <div>
-                            <label htmlFor="customerName" className="block text-xs sm:text-sm font-medium text-slate-700">ชื่อลูกค้า</label>
-                            <input type="text" id="customerName" value={data.customerName} onChange={(e) => handleDataChange('customerName', e.target.value)} className="mt-1 block w-full rounded-md border-gray-300 shadow-sm focus:border-indigo-500 focus:ring-indigo-500 text-xs sm:text-sm bg-gray-50" placeholder="เช่น คุณชัยทัต" />
+                            <label htmlFor="customerName" className="block text-xs sm:text-sm font-medium text-slate-700 dark:text-slate-300">ชื่อลูกค้า</label>
+                            <input type="text" id="customerName" value={data.customerName} onChange={(e) => handleDataChange('customerName', e.target.value)} className="mt-1 block w-full rounded-md border-gray-300 shadow-sm focus:border-indigo-500 focus:ring-indigo-500 text-xs sm:text-sm bg-gray-50 dark:bg-slate-700 dark:text-gray-100 dark:border-slate-600" placeholder="เช่น คุณชัยทัต" />
                         </div>
                         <div>
-                            <label htmlFor="customerPhone" className="block text-xs sm:text-sm font-medium text-slate-700">โทรศัพท์ลูกค้า</label>
-                            <input type="tel" id="customerPhone" value={data.customerPhone} onChange={(e) => handleDataChange('customerPhone', e.target.value)} className="mt-1 block w-full rounded-md border-gray-300 shadow-sm focus:border-indigo-500 focus:ring-indigo-500 text-xs sm:text-sm bg-gray-50" placeholder="เช่น 089-xxx-xxxx" />
+                            <label htmlFor="customerPhone" className="block text-xs sm:text-sm font-medium text-slate-700 dark:text-slate-300">โทรศัพท์ลูกค้า</label>
+                            <input type="tel" id="customerPhone" value={data.customerPhone} onChange={(e) => handleDataChange('customerPhone', e.target.value)} className="mt-1 block w-full rounded-md border-gray-300 shadow-sm focus:border-indigo-500 focus:ring-indigo-500 text-xs sm:text-sm bg-gray-50 dark:bg-slate-700 dark:text-gray-100 dark:border-slate-600" placeholder="เช่น 089-xxx-xxxx" />
                         </div>
                     </div>
                     <div>
-                        <label htmlFor="customerEmail" className="block text-xs sm:text-sm font-medium text-slate-700">อีเมลลูกค้า</label>
-                        <input type="email" id="customerEmail" value={data.customerEmail || ''} onChange={(e) => handleDataChange('customerEmail', e.target.value)} className="mt-1 block w-full rounded-md border-gray-300 shadow-sm focus:border-indigo-500 focus:ring-indigo-500 text-xs sm:text-sm bg-gray-50" placeholder="เช่น customer@example.com" />
+                        <label htmlFor="customerEmail" className="block text-xs sm:text-sm font-medium text-slate-700 dark:text-slate-300">อีเมลลูกค้า</label>
+                        <input type="email" id="customerEmail" value={data.customerEmail || ''} onChange={(e) => handleDataChange('customerEmail', e.target.value)} className="mt-1 block w-full rounded-md border-gray-300 shadow-sm focus:border-indigo-500 focus:ring-indigo-500 text-xs sm:text-sm bg-gray-50 dark:bg-slate-700 dark:text-gray-100 dark:border-slate-600" placeholder="เช่น customer@example.com" />
                     </div>
                     <div>
-                        <label htmlFor="customerAddress" className="block text-xs sm:text-sm font-medium text-slate-700">ที่อยู่โครงการ/ลูกค้า</label>
-                        <textarea id="customerAddress" value={data.customerAddress} onChange={(e) => handleDataChange('customerAddress', e.target.value)} rows={2} className="mt-1 block w-full rounded-md border-gray-300 shadow-sm focus:border-indigo-500 focus:ring-indigo-500 text-xs sm:text-sm bg-gray-50" placeholder="เช่น 123 หมู่ 5 ตำบลแวง อำเภอแกดำ มหาสารคาม" />
+                        <label htmlFor="customerAddress" className="block text-xs sm:text-sm font-medium text-slate-700 dark:text-slate-300">ที่อยู่โครงการ/ลูกค้า</label>
+                        <textarea id="customerAddress" value={data.customerAddress} onChange={(e) => handleDataChange('customerAddress', e.target.value)} rows={2} className="mt-1 block w-full rounded-md border-gray-300 shadow-sm focus:border-indigo-500 focus:ring-indigo-500 text-xs sm:text-sm bg-gray-50 dark:bg-slate-700 dark:text-gray-100 dark:border-slate-600" placeholder="เช่น 123 หมู่ 5 ตำบลแวง อำเภอแกดำ มหาสารคาม" />
                     </div>
                     <div>
-                        <label htmlFor="purchaseDate" className="block text-xs sm:text-sm font-medium text-slate-700">วันที่ส่งมอบสินค้า</label>
-                        <input type="date" id="purchaseDate" value={formatDateForInput(data.purchaseDate)} onChange={(e) => handleDataChange('purchaseDate', e.target.value ? new Date(e.target.value) : null)} className="mt-1 block w-full rounded-md border-gray-300 shadow-sm focus:border-indigo-500 focus:ring-indigo-500 text-xs sm:text-sm bg-gray-50" />
+                        <label htmlFor="purchaseDate" className="block text-xs sm:text-sm font-medium text-slate-700 dark:text-slate-300">วันที่ส่งมอบสินค้า</label>
+                        <input type="date" id="purchaseDate" value={formatDateForInput(data.purchaseDate)} onChange={(e) => handleDataChange('purchaseDate', e.target.value ? new Date(e.target.value) : null)} className="mt-1 block w-full rounded-md border-gray-300 shadow-sm focus:border-indigo-500 focus:ring-indigo-500 text-xs sm:text-sm bg-gray-50 dark:bg-slate-700 dark:text-gray-100 dark:border-slate-600" />
                     </div>
                 </div>
 
@@ -193,7 +193,7 @@ const WarrantyForm: React.FC<WarrantyFormProps> = ({
                     {/* Service Template Selector */}
                     <div>
                         <div className="flex flex-col sm:flex-row sm:items-center sm:justify-between mb-2 gap-2">
-                            <label className="block text-xs sm:text-sm font-medium text-slate-700">ข้อมูลสินค้า/บริการ</label>
+                            <label className="block text-xs sm:text-sm font-medium text-slate-700 dark:text-slate-300">ข้อมูลสินค้า/บริการ</label>
                             <button
                                 type="button"
                                 onClick={() => setShowServiceSelector(!showServiceSelector)}
@@ -218,47 +218,47 @@ const WarrantyForm: React.FC<WarrantyFormProps> = ({
                     </div>
 
                     <div>
-                        <label htmlFor="serviceName" className="block text-xs sm:text-sm font-medium text-slate-700">ประเภทสินค้า</label>
+                        <label htmlFor="serviceName" className="block text-xs sm:text-sm font-medium text-slate-700 dark:text-slate-300">ประเภทสินค้า</label>
                         <input 
                             type="text" 
                             id="serviceName" 
                             value={data.serviceName} 
                             onChange={(e) => handleDataChange('serviceName', e.target.value)} 
-                            className="mt-1 block w-full rounded-md border-gray-300 shadow-sm focus:border-indigo-500 focus:ring-indigo-500 text-xs sm:text-sm bg-gray-50" 
+                            className="mt-1 block w-full rounded-md border-gray-300 shadow-sm focus:border-indigo-500 focus:ring-indigo-500 text-xs sm:text-sm bg-gray-50 dark:bg-slate-700 dark:text-gray-100 dark:border-slate-600" 
                             placeholder="เช่น โครงสร้างสำเร็จระบบ Fully precast concrete"
                         />
                     </div>
                     <div>
-                        <label htmlFor="productDetail" className="block text-xs sm:text-sm font-medium text-slate-700">รายการสินค้า</label>
+                        <label htmlFor="productDetail" className="block text-xs sm:text-sm font-medium text-slate-700 dark:text-slate-300">รายการสินค้า</label>
                         <input 
                             type="text" 
                             id="productDetail" 
                             value={data.productDetail} 
                             onChange={(e) => handleDataChange('productDetail', e.target.value)} 
-                            className="mt-1 block w-full rounded-md border-gray-300 shadow-sm focus:border-indigo-500 focus:ring-indigo-500 text-xs sm:text-sm bg-gray-50" 
+                            className="mt-1 block w-full rounded-md border-gray-300 shadow-sm focus:border-indigo-500 focus:ring-indigo-500 text-xs sm:text-sm bg-gray-50 dark:bg-slate-700 dark:text-gray-100 dark:border-slate-600" 
                             placeholder="เช่น โครงสร้างสำเร็จรูป"
                         />
                     </div>
                     <div className="grid grid-cols-1 md:grid-cols-2 gap-3 sm:gap-4">
                         <div>
-                            <label htmlFor="houseModel" className="block text-xs sm:text-sm font-medium text-slate-700">แบบบ้าน</label>
+                            <label htmlFor="houseModel" className="block text-xs sm:text-sm font-medium text-slate-700 dark:text-slate-300">แบบบ้าน</label>
                             <input 
                                 type="text" 
                                 id="houseModel" 
                                 value={data.houseModel} 
                                 onChange={(e) => handleDataChange('houseModel', e.target.value)} 
-                                className="block w-full rounded-md border-gray-300 shadow-sm focus:border-indigo-500 focus:ring-indigo-500 text-xs sm:text-sm bg-gray-50" 
+                                className="block w-full rounded-md border-gray-300 shadow-sm focus:border-indigo-500 focus:ring-indigo-500 text-xs sm:text-sm bg-gray-50 dark:bg-slate-700 dark:text-gray-100 dark:border-slate-600" 
                                 placeholder="เช่น A01, Modern Loft"
                             />
                         </div>
                         <div>
-                            <label htmlFor="batchNo" className="block text-xs sm:text-sm font-medium text-slate-700">หมายเลขการผลิต (Batch No.)</label>
+                            <label htmlFor="batchNo" className="block text-xs sm:text-sm font-medium text-slate-700 dark:text-slate-300">หมายเลขการผลิต (Batch No.)</label>
                             <input 
                                 type="text" 
                                 id="batchNo" 
                                 value={data.batchNo} 
                                 onChange={(e) => handleDataChange('batchNo', e.target.value)} 
-                                className="block w-full rounded-md border-gray-300 shadow-sm focus:border-indigo-500 focus:ring-indigo-500 text-xs sm:text-sm bg-gray-50" 
+                                className="block w-full rounded-md border-gray-300 shadow-sm focus:border-indigo-500 focus:ring-indigo-500 text-xs sm:text-sm bg-gray-50 dark:bg-slate-700 dark:text-gray-100 dark:border-slate-600" 
                                 placeholder="เช่น BATCH-2025-08-A01"
                             />
                         </div>
@@ -273,18 +273,18 @@ const WarrantyForm: React.FC<WarrantyFormProps> = ({
                             onChange={(e) => handleDataChange('showBatchNo', e.target.checked)}
                             className="h-4 w-4 text-indigo-600 focus:ring-indigo-500 border-gray-300 rounded"
                         />
-                        <label htmlFor="showBatchNo" className="ml-2 block text-xs sm:text-sm text-slate-700">
+                        <label htmlFor="showBatchNo" className="ml-2 block text-xs sm:text-sm text-slate-700 dark:text-slate-300">
                             แสดงหมายเลขการผลิต (Batch No.) ในเอกสาร
                         </label>
                     </div>
                     <div>
-                        <label htmlFor="warrantyPeriod" className="block text-xs sm:text-sm font-medium text-slate-700">ระยะเวลารับประกัน</label>
+                        <label htmlFor="warrantyPeriod" className="block text-xs sm:text-sm font-medium text-slate-700 dark:text-slate-300">ระยะเวลารับประกัน</label>
                         <input 
                             type="text" 
                             id="warrantyPeriod" 
                             value={data.warrantyPeriod} 
                             onChange={(e) => handleDataChange('warrantyPeriod', e.target.value)} 
-                            className="mt-1 block w-full rounded-md border-gray-300 shadow-sm focus:border-indigo-500 focus:ring-indigo-500 text-xs sm:text-sm bg-gray-50" 
+                            className="mt-1 block w-full rounded-md border-gray-300 shadow-sm focus:border-indigo-500 focus:ring-indigo-500 text-xs sm:text-sm bg-gray-50 dark:bg-slate-700 dark:text-gray-100 dark:border-slate-600" 
                             placeholder="เช่น 3 ปี, 5 ปี"
                             disabled={data.useMultipleWarrantyTypes}
                         />
@@ -298,7 +298,7 @@ const WarrantyForm: React.FC<WarrantyFormProps> = ({
                 <FormDivider title="ส่วนที่ 3: การรับประกัน" />
                 <div className="space-y-4">
                     {/* Checkbox สำหรับเปิดใช้การรับประกันแบบงานรับสร้างบ้าน */}
-                    <div className="bg-blue-50 border border-blue-200 rounded-lg p-3 sm:p-4">
+                    <div className="bg-blue-50 dark:bg-blue-900/20 border border-blue-200 dark:border-blue-900/50 rounded-lg p-3 sm:p-4">
                         <div className="flex items-start">
                             <input
                                 type="checkbox"
@@ -315,15 +315,15 @@ const WarrantyForm: React.FC<WarrantyFormProps> = ({
                                 className="h-4 w-4 text-indigo-600 focus:ring-indigo-500 border-gray-300 rounded mt-1"
                             />
                             <label htmlFor="useMultipleWarrantyTypes" className="ml-3 block">
-                                <span className="text-xs sm:text-sm font-semibold text-slate-800">🏠 ใช้การรับประกันแบบงานรับสร้างบ้าน (หลายประเภท)</span>
-                                <p className="text-xs text-slate-600 mt-1">เหมาะสำหรับงานก่อสร้างที่มีการรับประกันแยกตามประเภทงาน</p>
+                                <span className="text-xs sm:text-sm font-semibold text-slate-800 dark:text-blue-200">🏠 ใช้การรับประกันแบบงานรับสร้างบ้าน (หลายประเภท)</span>
+                                <p className="text-xs text-slate-600 dark:text-blue-300 mt-1">เหมาะสำหรับงานก่อสร้างที่มีการรับประกันแยกตามประเภทงาน</p>
                             </label>
                         </div>
 
                         {/* แสดง Checkbox ประเภทการรับประกันเมื่อเปิดใช้งาน */}
                         {data.useMultipleWarrantyTypes && (
-                            <div className="mt-3 sm:mt-4 ml-0 sm:ml-7 space-y-2 sm:space-y-3 border-t border-blue-200 pt-3 sm:pt-4">
-                                <p className="text-xs font-medium text-slate-700 mb-2">เลือกประเภทการรับประกัน:</p>
+                            <div className="mt-3 sm:mt-4 ml-0 sm:ml-7 space-y-2 sm:space-y-3 border-t border-blue-200 dark:border-blue-900/50 pt-3 sm:pt-4">
+                                <p className="text-xs font-medium text-slate-700 dark:text-slate-300 mb-2">เลือกประเภทการรับประกัน:</p>
                                 
                                 {/* รับประกันทั่วไป 1 ปี */}
                                 <div className="flex items-center">
@@ -334,7 +334,7 @@ const WarrantyForm: React.FC<WarrantyFormProps> = ({
                                         onChange={(e) => handleDataChange('warrantyGeneral', e.target.checked)}
                                         className="h-4 w-4 text-green-600 focus:ring-green-500 border-gray-300 rounded"
                                     />
-                                    <label htmlFor="warrantyGeneral" className="ml-2 block text-xs sm:text-sm text-slate-700">
+                                    <label htmlFor="warrantyGeneral" className="ml-2 block text-xs sm:text-sm text-slate-700 dark:text-slate-300">
                                         <span className="font-medium">รับประกันทั่วไป</span> <span className="text-green-600 font-semibold">1 ปี</span>
                                     </label>
                                 </div>
@@ -348,7 +348,7 @@ const WarrantyForm: React.FC<WarrantyFormProps> = ({
                                         onChange={(e) => handleDataChange('warrantyRoof', e.target.checked)}
                                         className="h-4 w-4 text-blue-600 focus:ring-blue-500 border-gray-300 rounded"
                                     />
-                                    <label htmlFor="warrantyRoof" className="ml-2 block text-xs sm:text-sm text-slate-700">
+                                    <label htmlFor="warrantyRoof" className="ml-2 block text-xs sm:text-sm text-slate-700 dark:text-slate-300">
                                         <span className="font-medium">รับประกันงานหลังคา</span> <span className="text-blue-600 font-semibold">3 ปี</span>
                                     </label>
                                 </div>
@@ -362,7 +362,7 @@ const WarrantyForm: React.FC<WarrantyFormProps> = ({
                                         onChange={(e) => handleDataChange('warrantyStructure', e.target.checked)}
                                         className="h-4 w-4 text-purple-600 focus:ring-purple-500 border-gray-300 rounded"
                                     />
-                                    <label htmlFor="warrantyStructure" className="ml-2 block text-xs sm:text-sm text-slate-700">
+                                    <label htmlFor="warrantyStructure" className="ml-2 block text-xs sm:text-sm text-slate-700 dark:text-slate-300">
                                         <span className="font-medium">รับประกันงานโครงสร้าง</span> <span className="text-purple-600 font-semibold">15 ปี</span>
                                     </label>
                                 </div>
@@ -372,8 +372,8 @@ const WarrantyForm: React.FC<WarrantyFormProps> = ({
 
                     <div className="grid grid-cols-1 md:grid-cols-2 gap-3 sm:gap-4">
                         <div>
-                            <label htmlFor="warrantyEndDate" className="block text-xs sm:text-sm font-medium text-slate-700">วันสิ้นสุดการรับประกัน</label>
-                            <div className="mt-1 block w-full rounded-md border border-gray-300 px-2 sm:px-3 py-1.5 sm:py-2 bg-gray-100 text-xs sm:text-sm text-slate-700">
+                            <label htmlFor="warrantyEndDate" className="block text-xs sm:text-sm font-medium text-slate-700 dark:text-slate-300">วันสิ้นสุดการรับประกัน</label>
+                            <div className="mt-1 block w-full rounded-md border border-gray-300 dark:border-slate-600 px-2 sm:px-3 py-1.5 sm:py-2 bg-gray-100 dark:bg-slate-700 text-xs sm:text-sm text-slate-700 dark:text-slate-300">
                                 {data.warrantyEndDate ? new Intl.DateTimeFormat('th-TH', {
                                     year: 'numeric',
                                     month: 'long',
@@ -383,13 +383,13 @@ const WarrantyForm: React.FC<WarrantyFormProps> = ({
                             <p className="mt-1 text-xs text-green-600">✅ คำนวณอัตโนมัติจากวันส่งมอบ + ระยะเวลารับประกัน (ไม่สามารถแก้ไขได้)</p>
                         </div>
                         <div>
-                            <label htmlFor="issueDate" className="block text-xs sm:text-sm font-medium text-slate-700">วันที่ออกเอกสาร</label>
+                            <label htmlFor="issueDate" className="block text-xs sm:text-sm font-medium text-slate-700 dark:text-slate-300">วันที่ออกเอกสาร</label>
                             <input 
                                 type="date" 
                                 id="issueDate" 
                                 value={formatDateForInput(data.issueDate)} 
                                 onChange={(e) => handleDataChange('issueDate', e.target.value ? new Date(e.target.value) : null)} 
-                                className="mt-1 block w-full rounded-md border-gray-300 shadow-sm focus:border-indigo-500 focus:ring-indigo-500 text-xs sm:text-sm bg-gray-50" 
+                                className="mt-1 block w-full rounded-md border-gray-300 shadow-sm focus:border-indigo-500 focus:ring-indigo-500 text-xs sm:text-sm bg-gray-50 dark:bg-slate-700 dark:text-gray-100 dark:border-slate-600" 
                             />
                         </div>
                     </div>
@@ -398,7 +398,7 @@ const WarrantyForm: React.FC<WarrantyFormProps> = ({
                 {/* ส่วนที่ 4: เงื่อนไขการรับประกัน */}
                 <FormDivider title="ส่วนที่ 4: เงื่อนไขการรับประกัน" />
                 <div>
-                     <textarea id="terms" value={data.terms} onChange={(e) => handleDataChange('terms', e.target.value)} rows={6} className="mt-1 block w-full rounded-md border-gray-300 shadow-sm focus:border-indigo-500 focus:ring-indigo-500 text-xs sm:text-sm bg-gray-50" placeholder="ระบุเงื่อนไขการรับประกัน ขอบเขต และข้อจำกัดต่างๆ" />
+                     <textarea id="terms" value={data.terms} onChange={(e) => handleDataChange('terms', e.target.value)} rows={6} className="mt-1 block w-full rounded-md border-gray-300 shadow-sm focus:border-indigo-500 focus:ring-indigo-500 text-xs sm:text-sm bg-gray-50 dark:bg-slate-700 dark:text-gray-100 dark:border-slate-600" placeholder="ระบุเงื่อนไขการรับประกัน ขอบเขต และข้อจำกัดต่างๆ" />
                 </div>
             </div>
         </div>

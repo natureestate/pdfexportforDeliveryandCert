@@ -1120,7 +1120,7 @@ const AppContent: React.FC = () => {
                                                         {isAdmin && (
                                                             <button
                                                                 onClick={() => setShowMenuSettings(true)}
-                                                                className="whitespace-nowrap py-2.5 sm:py-3 px-3 sm:px-4 border-b-2 border-transparent text-gray-400 hover:text-gray-600 hover:bg-gray-50 font-medium text-xs sm:text-sm transition-all flex-shrink-0 rounded-t-lg flex items-center gap-1.5"
+                                                                className="whitespace-nowrap py-2.5 sm:py-3 px-3 sm:px-4 border-b-2 border-transparent text-gray-400 dark:text-gray-500 hover:text-gray-600 dark:hover:text-gray-300 hover:bg-gray-50 dark:hover:bg-slate-700 font-medium text-xs sm:text-sm transition-all flex-shrink-0 rounded-t-lg flex items-center gap-1.5"
                                                                 title="ตั้งค่าเมนู"
                                                             >
                                                                 <Settings className="w-4 h-4" />
@@ -1310,12 +1310,12 @@ const AppContent: React.FC = () => {
                         <div>
                             <div className="sticky top-4 lg:top-8">
                                 <div className="flex flex-col sm:flex-row sm:justify-between sm:items-center mb-3 sm:mb-4 gap-2 sm:gap-2">
-                                    <h2 className="text-lg sm:text-xl font-semibold text-slate-700">{t('form.documentPreview')}</h2>
+                                    <h2 className="text-lg sm:text-xl font-semibold text-slate-700 dark:text-slate-200">{t('form.documentPreview')}</h2>
                                     <div className="flex flex-col sm:flex-row gap-2 flex-wrap">
                                         <button
                                             type="button"
                                             onClick={handleCreateNewForm}
-                                            className="inline-flex items-center justify-center px-3 py-2 border border-gray-300 text-xs sm:text-sm font-medium rounded-md shadow-sm text-gray-700 bg-white hover:bg-gray-50 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-indigo-500"
+                                            className="inline-flex items-center justify-center px-3 py-2 border border-gray-300 dark:border-slate-600 text-xs sm:text-sm font-medium rounded-md shadow-sm text-gray-700 dark:text-gray-200 bg-white dark:bg-slate-700 hover:bg-gray-50 dark:hover:bg-slate-600 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-indigo-500"
                                         >
                                             <svg xmlns="http://www.w3.org/2000/svg" className="h-4 w-4 mr-1 sm:mr-2" viewBox="0 0 20 20" fill="currentColor">
                                                 <path fillRule="evenodd" d="M10 3a1 1 0 011 1v5h5a1 1 0 110 2h-5v5a1 1 0 11-2 0v-5H4a1 1 0 110-2h5V4a1 1 0 011-1z" clipRule="evenodd" />
@@ -1360,7 +1360,7 @@ const AppContent: React.FC = () => {
                                         </button>
                                     </div>
                                 </div>
-                                <div className="bg-white p-1 rounded-lg shadow-lg">
+                                <div className="bg-white p-1 rounded-lg shadow-lg dark:shadow-slate-900/50 dark:ring-1 dark:ring-slate-700">
                                     {activeTab === 'delivery' ? (
                                         <DocumentPreview ref={printableAreaRef} data={deliveryData} />
                                     ) : activeTab === 'warranty' ? (
@@ -1458,7 +1458,7 @@ const AppContentWithOnboardingCheck: React.FC = () => {
             <div className="min-h-screen bg-slate-100 flex items-center justify-center">
                 <div className="text-center">
                     <div className="w-8 h-8 border-4 border-indigo-600 border-t-transparent rounded-full animate-spin mx-auto"></div>
-                    <p className="text-gray-500 mt-2">กำลังโหลด...</p>
+                    <p className="text-gray-500 dark:text-gray-400 mt-2">กำลังโหลด...</p>
                 </div>
             </div>
         );

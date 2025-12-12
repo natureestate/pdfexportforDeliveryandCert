@@ -45,9 +45,9 @@ const DocumentPreview = forwardRef<HTMLDivElement, DocumentPreviewProps>(({ data
                 <div className="w-3/5 text-right">
                     <h1 className="text-2xl font-bold text-gray-800">{currentLang === 'en' ? 'DELIVERY NOTE' : 'ใบส่งมอบงาน'}</h1>
                     <h2 className="text-lg text-gray-500">{currentLang === 'en' ? '' : 'DELIVERY NOTE'}</h2>
-                    <div className="mt-4 text-xs">
-                        <p><span className="font-semibold text-gray-600">{t('pdf.documentNumber')}:</span> {data.docNumber || '________________'}</p>
-                        <p><span className="font-semibold text-gray-600">{t('pdf.date')}:</span> {formatDate(data.date)}</p>
+                    <div className="mt-4 text-xs text-gray-700">
+                        <p><span className="font-semibold text-gray-600">{t('pdf.documentNumber')}:</span> <span className="text-gray-800">{data.docNumber || '________________'}</span></p>
+                        <p><span className="font-semibold text-gray-600">{t('pdf.date')}:</span> <span className="text-gray-800">{formatDate(data.date)}</span></p>
                     </div>
                 </div>
             </header>
@@ -100,19 +100,19 @@ const DocumentPreview = forwardRef<HTMLDivElement, DocumentPreviewProps>(({ data
                 </table>
             </section>
 
-            <footer className="mt-16 text-xs">
+            <footer className="mt-16 text-xs text-gray-700">
                 <div className="grid grid-cols-2 gap-12 text-center">
                     <div>
                         <div className="border-b border-dotted border-slate-400 w-3/4 mx-auto pb-1 mb-2"></div>
-                        <p>({data.senderName || '...........................'})</p>
-                        <p className="font-semibold mt-1">{t('delivery.sender')}</p>
-                        <p className="mt-4">{t('pdf.date')}: ......./......./...........</p>
+                        <p className="text-gray-800">({data.senderName || '...........................'})</p>
+                        <p className="font-semibold mt-1 text-blue-600">{t('delivery.sender')}</p>
+                        <p className="mt-4 text-gray-700">{t('pdf.date')}: ......./......./...........</p>
                     </div>
                     <div>
                         <div className="border-b border-dotted border-slate-400 w-3/4 mx-auto pb-1 mb-2"></div>
-                        <p>({data.receiverName || '...........................'})</p>
-                        <p className="font-semibold mt-1">{t('delivery.receiver')}</p>
-                        <p className="mt-4">{t('pdf.date')}: ......./......./...........</p>
+                        <p className="text-gray-800">({data.receiverName || '...........................'})</p>
+                        <p className="font-semibold mt-1 text-blue-600">{t('delivery.receiver')}</p>
+                        <p className="mt-4 text-gray-700">{t('pdf.date')}: ......./......./...........</p>
                     </div>
                 </div>
                 {/* QR Code สำหรับตรวจสอบเอกสาร */}

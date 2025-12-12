@@ -37,14 +37,14 @@ const InvoicePreview = forwardRef<HTMLDivElement, InvoicePreviewProps>(({ data }
                 <div className="w-3/5 text-right">
                     <h1 className="text-2xl font-bold text-gray-800">ใบแจ้งหนี้</h1>
                     <h2 className="text-lg text-gray-500">INVOICE</h2>
-                    <div className="mt-4 text-xs space-y-1">
-                        <p><span className="font-semibold text-gray-600">เลขที่:</span> {data.invoiceNumber || '________________'}</p>
-                        <p><span className="font-semibold text-gray-600">วันที่ออก:</span> {formatDate(data.invoiceDate)}</p>
+                    <div className="mt-4 text-xs space-y-1 text-gray-700">
+                        <p><span className="font-semibold text-gray-600">เลขที่:</span> <span className="text-gray-800">{data.invoiceNumber || '________________'}</span></p>
+                        <p><span className="font-semibold text-gray-600">วันที่ออก:</span> <span className="text-gray-800">{formatDate(data.invoiceDate)}</span></p>
                         {data.dueDate && (
-                            <p><span className="font-semibold text-gray-600">ครบกำหนดชำระ:</span> {formatDate(data.dueDate)}</p>
+                            <p><span className="font-semibold text-gray-600">ครบกำหนดชำระ:</span> <span className="text-gray-800">{formatDate(data.dueDate)}</span></p>
                         )}
                         {data.referenceNumber && (
-                            <p><span className="font-semibold text-gray-600">เลขที่อ้างอิง:</span> {data.referenceNumber}</p>
+                            <p><span className="font-semibold text-gray-600">เลขที่อ้างอิง:</span> <span className="text-gray-800">{data.referenceNumber}</span></p>
                         )}
                     </div>
                 </div>
@@ -106,18 +106,18 @@ const InvoicePreview = forwardRef<HTMLDivElement, InvoicePreviewProps>(({ data }
                 <div className="w-80 space-y-2">
                     <div className="flex justify-between text-sm">
                         <span className="text-gray-600">ยอดรวมก่อนภาษี:</span>
-                        <span className="font-medium">{data.subtotal.toLocaleString('th-TH', { minimumFractionDigits: 2, maximumFractionDigits: 2 })} บาท</span>
+                        <span className="font-medium text-gray-800">{data.subtotal.toLocaleString('th-TH', { minimumFractionDigits: 2, maximumFractionDigits: 2 })} บาท</span>
                     </div>
                     {data.taxRate > 0 && (
                         <div className="flex justify-between text-sm">
                             <span className="text-gray-600">ภาษีมูลค่าเพิ่ม ({data.taxRate}%):</span>
-                            <span className="font-medium">{data.taxAmount.toLocaleString('th-TH', { minimumFractionDigits: 2, maximumFractionDigits: 2 })} บาท</span>
+                            <span className="font-medium text-gray-800">{data.taxAmount.toLocaleString('th-TH', { minimumFractionDigits: 2, maximumFractionDigits: 2 })} บาท</span>
                         </div>
                     )}
                     {data.discount > 0 && (
                         <div className="flex justify-between text-sm text-red-600">
                             <span>ส่วนลด:</span>
-                            <span className="font-medium">-{data.discount.toLocaleString('th-TH', { minimumFractionDigits: 2, maximumFractionDigits: 2 })} บาท</span>
+                            <span className="font-medium text-red-600">-{data.discount.toLocaleString('th-TH', { minimumFractionDigits: 2, maximumFractionDigits: 2 })} บาท</span>
                         </div>
                     )}
                     <div className="flex justify-between pt-2 border-t border-gray-400 text-base">

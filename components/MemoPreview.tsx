@@ -37,9 +37,9 @@ const MemoPreview = forwardRef<HTMLDivElement, MemoPreviewProps>(({ data }, ref)
                 <div className="w-3/5 text-right">
                     <h1 className="text-2xl font-bold text-gray-800">ใบบันทึก</h1>
                     <h2 className="text-lg text-gray-500">MEMORANDUM</h2>
-                    <div className="mt-4 text-xs">
-                        <p><span className="font-semibold text-gray-600">เลขที่เอกสาร:</span> {data.memoNumber || '________________'}</p>
-                        <p><span className="font-semibold text-gray-600">วันที่:</span> {formatDate(data.date)}</p>
+                    <div className="mt-4 text-xs text-gray-700">
+                        <p><span className="font-semibold text-gray-600">เลขที่เอกสาร:</span> <span className="text-gray-800">{data.memoNumber || '________________'}</span></p>
+                        <p><span className="font-semibold text-gray-600">วันที่:</span> <span className="text-gray-800">{formatDate(data.date)}</span></p>
                     </div>
                 </div>
             </header>
