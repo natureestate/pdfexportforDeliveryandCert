@@ -999,6 +999,10 @@ const UserManagement: React.FC<UserManagementProps> = ({ companyId, companyName,
                     border-bottom: 1px solid #e0e0e0;
                 }
 
+                .members-table td {
+                    color: #1f2937;
+                }
+
                 :global(.dark) .members-table th,
                 :global(.dark) .members-table td {
                     border-bottom-color: #475569;
@@ -1008,7 +1012,7 @@ const UserManagement: React.FC<UserManagementProps> = ({ companyId, companyName,
                 .members-table th {
                     background: #f5f5f5;
                     font-weight: 600;
-                    color: #555;
+                    color: #374151;
                 }
 
                 :global(.dark) .members-table th {
@@ -1021,6 +1025,59 @@ const UserManagement: React.FC<UserManagementProps> = ({ companyId, companyName,
                 }
 
                 :global(.dark) .members-table tr:hover {
+                    background: #334155;
+                }
+
+                /* Invitations Table - Light Mode */
+                .invitations-table {
+                    overflow-x: auto;
+                }
+
+                .invitations-table table {
+                    width: 100%;
+                    border-collapse: collapse;
+                    background: white;
+                    box-shadow: 0 2px 4px rgba(0,0,0,0.1);
+                }
+
+                :global(.dark) .invitations-table table {
+                    background: #1e293b;
+                    box-shadow: 0 2px 4px rgba(0,0,0,0.3);
+                }
+
+                .invitations-table th,
+                .invitations-table td {
+                    padding: 12px;
+                    text-align: left;
+                    border-bottom: 1px solid #e0e0e0;
+                }
+
+                .invitations-table td {
+                    color: #1f2937;
+                }
+
+                :global(.dark) .invitations-table th,
+                :global(.dark) .invitations-table td {
+                    border-bottom-color: #475569;
+                    color: #e2e8f0;
+                }
+
+                .invitations-table th {
+                    background: #f5f5f5;
+                    font-weight: 600;
+                    color: #374151;
+                }
+
+                :global(.dark) .invitations-table th {
+                    background: #334155;
+                    color: #cbd5e1;
+                }
+
+                .invitations-table tr:hover {
+                    background: #f9f9f9;
+                }
+
+                :global(.dark) .invitations-table tr:hover {
                     background: #334155;
                 }
 

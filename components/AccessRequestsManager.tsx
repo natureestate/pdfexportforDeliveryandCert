@@ -178,12 +178,12 @@ const AccessRequestsManager: React.FC<AccessRequestsManagerProps> = ({
     };
 
     return (
-        <div className="bg-white rounded-xl border border-gray-200 overflow-hidden">
+        <div className="bg-white dark:bg-slate-800 rounded-xl border border-gray-200 dark:border-slate-700 overflow-hidden">
             {/* Header */}
-            <div className="p-4 border-b border-gray-200 flex items-center justify-between">
+            <div className="p-4 border-b border-gray-200 dark:border-slate-700 flex items-center justify-between">
                 <div className="flex items-center gap-3">
-                    <div className="w-10 h-10 bg-blue-100 rounded-lg flex items-center justify-center relative">
-                        <UserPlus className="w-5 h-5 text-blue-600" />
+                    <div className="w-10 h-10 bg-blue-100 dark:bg-blue-900/30 rounded-lg flex items-center justify-center relative">
+                        <UserPlus className="w-5 h-5 text-blue-600 dark:text-blue-400" />
                         {pendingCount > 0 && (
                             <span className="absolute -top-1 -right-1 w-5 h-5 bg-red-500 text-white text-xs font-bold rounded-full flex items-center justify-center">
                                 {pendingCount > 9 ? '9+' : pendingCount}
@@ -191,8 +191,8 @@ const AccessRequestsManager: React.FC<AccessRequestsManagerProps> = ({
                         )}
                     </div>
                     <div>
-                        <h3 className="font-semibold text-gray-900">คำขอเข้าร่วม</h3>
-                        <p className="text-sm text-gray-500">
+                        <h3 className="font-semibold text-gray-900 dark:text-gray-100">คำขอเข้าร่วม</h3>
+                        <p className="text-sm text-gray-500 dark:text-gray-400">
                             จัดการคำขอเข้าร่วมองค์กรจากผู้ใช้
                         </p>
                     </div>
@@ -200,11 +200,11 @@ const AccessRequestsManager: React.FC<AccessRequestsManagerProps> = ({
                 <div className="flex items-center gap-2">
                     {/* Filter */}
                     <div className="relative">
-                        <Filter className="absolute left-3 top-1/2 -translate-y-1/2 w-4 h-4 text-gray-400" />
+                        <Filter className="absolute left-3 top-1/2 -translate-y-1/2 w-4 h-4 text-gray-400 dark:text-gray-500" />
                         <select
                             value={statusFilter}
                             onChange={(e) => setStatusFilter(e.target.value as AccessRequestStatus | 'all')}
-                            className="pl-9 pr-4 py-2 border border-gray-300 rounded-lg text-sm focus:ring-2 focus:ring-blue-500 focus:border-transparent"
+                            className="pl-9 pr-4 py-2 border border-gray-300 dark:border-slate-600 rounded-lg text-sm focus:ring-2 focus:ring-blue-500 focus:border-transparent bg-white dark:bg-slate-700 text-gray-900 dark:text-gray-100"
                         >
                             <option value="all">ทั้งหมด</option>
                             <option value="pending">รอการอนุมัติ</option>
@@ -215,7 +215,7 @@ const AccessRequestsManager: React.FC<AccessRequestsManagerProps> = ({
                     <button
                         onClick={loadRequests}
                         disabled={isLoading}
-                        className="p-2 text-gray-500 hover:text-gray-700 hover:bg-gray-100 rounded-lg"
+                        className="p-2 text-gray-500 dark:text-gray-400 hover:text-gray-700 dark:hover:text-gray-200 hover:bg-gray-100 dark:hover:bg-slate-700 rounded-lg"
                         title="รีเฟรช"
                     >
                         <RefreshCw className={`w-5 h-5 ${isLoading ? 'animate-spin' : ''}`} />
@@ -225,11 +225,11 @@ const AccessRequestsManager: React.FC<AccessRequestsManagerProps> = ({
 
             {/* Error */}
             {error && (
-                <div className="p-4 bg-red-50 border-b border-red-200 flex items-center gap-2">
-                    <AlertCircle className="w-5 h-5 text-red-500" />
-                    <p className="text-sm text-red-700">{error}</p>
+                <div className="p-4 bg-red-50 dark:bg-red-900/20 border-b border-red-200 dark:border-red-800 flex items-center gap-2">
+                    <AlertCircle className="w-5 h-5 text-red-500 dark:text-red-400" />
+                    <p className="text-sm text-red-700 dark:text-red-300">{error}</p>
                     <button onClick={() => setError(null)} className="ml-auto">
-                        <X className="w-4 h-4 text-red-500" />
+                        <X className="w-4 h-4 text-red-500 dark:text-red-400" />
                     </button>
                 </div>
             )}
@@ -238,13 +238,13 @@ const AccessRequestsManager: React.FC<AccessRequestsManagerProps> = ({
             <div className="p-4">
                 {isLoading ? (
                     <div className="text-center py-8">
-                        <Loader2 className="w-8 h-8 animate-spin text-gray-400 mx-auto" />
-                        <p className="text-sm text-gray-500 mt-2">กำลังโหลด...</p>
+                        <Loader2 className="w-8 h-8 animate-spin text-gray-400 dark:text-gray-500 mx-auto" />
+                        <p className="text-sm text-gray-500 dark:text-gray-400 mt-2">กำลังโหลด...</p>
                     </div>
                 ) : requests.length === 0 ? (
                     <div className="text-center py-8">
-                        <UserPlus className="w-12 h-12 text-gray-300 mx-auto mb-3" />
-                        <p className="text-gray-500">
+                        <UserPlus className="w-12 h-12 text-gray-300 dark:text-gray-600 mx-auto mb-3" />
+                        <p className="text-gray-500 dark:text-gray-400">
                             {statusFilter === 'pending'
                                 ? 'ไม่มีคำขอที่รอการอนุมัติ'
                                 : 'ยังไม่มีคำขอเข้าร่วม'}
@@ -256,23 +256,23 @@ const AccessRequestsManager: React.FC<AccessRequestsManagerProps> = ({
                             <div
                                 key={request.id}
                                 className={`border rounded-lg p-4 ${
-                                    request.status === 'pending' ? 'bg-amber-50 border-amber-200' : 'bg-white border-gray-200'
+                                    request.status === 'pending' ? 'bg-amber-50 dark:bg-amber-900/20 border-amber-200 dark:border-amber-800' : 'bg-white dark:bg-slate-700 border-gray-200 dark:border-slate-600'
                                 }`}
                             >
                                 <div className="flex items-start justify-between gap-4">
                                     <div className="flex-1 min-w-0">
                                         {/* User info */}
                                         <div className="flex items-center gap-2 mb-2">
-                                            <div className="w-8 h-8 bg-gray-200 rounded-full flex items-center justify-center">
-                                                <span className="text-sm font-medium text-gray-600">
+                                            <div className="w-8 h-8 bg-gray-200 dark:bg-slate-600 rounded-full flex items-center justify-center">
+                                                <span className="text-sm font-medium text-gray-600 dark:text-gray-300">
                                                     {(request.userName || request.userEmail || '?')[0].toUpperCase()}
                                                 </span>
                                             </div>
                                             <div>
-                                                <p className="font-medium text-gray-900">
+                                                <p className="font-medium text-gray-900 dark:text-gray-100">
                                                     {request.userName || 'ไม่ระบุชื่อ'}
                                                 </p>
-                                                <div className="flex items-center gap-3 text-sm text-gray-500">
+                                                <div className="flex items-center gap-3 text-sm text-gray-500 dark:text-gray-400">
                                                     {request.userEmail && (
                                                         <span className="flex items-center gap-1">
                                                             <Mail className="w-3 h-3" />
@@ -291,9 +291,9 @@ const AccessRequestsManager: React.FC<AccessRequestsManagerProps> = ({
 
                                         {/* Message */}
                                         {request.message && (
-                                            <div className="flex items-start gap-2 mt-2 p-2 bg-white rounded border border-gray-200">
-                                                <MessageSquare className="w-4 h-4 text-gray-400 flex-shrink-0 mt-0.5" />
-                                                <p className="text-sm text-gray-600">{request.message}</p>
+                                            <div className="flex items-start gap-2 mt-2 p-2 bg-white dark:bg-slate-600 rounded border border-gray-200 dark:border-slate-500">
+                                                <MessageSquare className="w-4 h-4 text-gray-400 dark:text-gray-500 flex-shrink-0 mt-0.5" />
+                                                <p className="text-sm text-gray-600 dark:text-gray-300">{request.message}</p>
                                             </div>
                                         )}
 
@@ -303,11 +303,11 @@ const AccessRequestsManager: React.FC<AccessRequestsManagerProps> = ({
                                                 <StatusIcon status={request.status} />
                                                 {getStatusLabel(request.status)}
                                             </span>
-                                            <span className="text-gray-500">
+                                            <span className="text-gray-500 dark:text-gray-400">
                                                 ส่งเมื่อ {formatDate(request.createdAt)}
                                             </span>
                                             {request.reviewedAt && (
-                                                <span className="text-gray-500">
+                                                <span className="text-gray-500 dark:text-gray-400">
                                                     ตรวจสอบเมื่อ {formatDate(request.reviewedAt)}
                                                 </span>
                                             )}
@@ -315,8 +315,8 @@ const AccessRequestsManager: React.FC<AccessRequestsManagerProps> = ({
 
                                         {/* Rejection reason */}
                                         {request.status === 'rejected' && request.rejectionReason && (
-                                            <div className="mt-2 p-2 bg-red-50 rounded border border-red-200">
-                                                <p className="text-sm text-red-700">
+                                            <div className="mt-2 p-2 bg-red-50 dark:bg-red-900/20 rounded border border-red-200 dark:border-red-800">
+                                                <p className="text-sm text-red-700 dark:text-red-300">
                                                     <strong>เหตุผล:</strong> {request.rejectionReason}
                                                 </p>
                                             </div>
@@ -324,7 +324,7 @@ const AccessRequestsManager: React.FC<AccessRequestsManagerProps> = ({
 
                                         {/* Approved role */}
                                         {request.status === 'approved' && request.assignedRole && (
-                                            <div className="mt-2 flex items-center gap-1 text-sm text-emerald-700">
+                                            <div className="mt-2 flex items-center gap-1 text-sm text-emerald-700 dark:text-emerald-400">
                                                 <Shield className="w-4 h-4" />
                                                 <span>เข้าร่วมเป็น {request.assignedRole === 'admin' ? 'Admin' : 'Member'}</span>
                                             </div>
@@ -352,7 +352,7 @@ const AccessRequestsManager: React.FC<AccessRequestsManagerProps> = ({
                                             <button
                                                 onClick={() => setShowRejectModal(request)}
                                                 disabled={processingId === request.id}
-                                                className="flex items-center gap-1 px-3 py-1.5 border border-red-300 text-red-600 rounded-lg hover:bg-red-50 disabled:opacity-50 text-sm"
+                                                className="flex items-center gap-1 px-3 py-1.5 border border-red-300 dark:border-red-700 text-red-600 dark:text-red-400 rounded-lg hover:bg-red-50 dark:hover:bg-red-900/30 disabled:opacity-50 text-sm"
                                             >
                                                 <X className="w-4 h-4" />
                                                 <span>ปฏิเสธ</span>
@@ -369,24 +369,24 @@ const AccessRequestsManager: React.FC<AccessRequestsManagerProps> = ({
             {/* Approve Modal */}
             {showApproveModal && (
                 <div className="fixed inset-0 bg-black/50 flex items-center justify-center z-50 p-4">
-                    <div className="bg-white rounded-xl max-w-md w-full shadow-xl">
-                        <div className="p-4 border-b border-gray-200">
-                            <h3 className="font-semibold text-gray-900">อนุมัติคำขอ</h3>
+                    <div className="bg-white dark:bg-slate-800 rounded-xl max-w-md w-full shadow-xl">
+                        <div className="p-4 border-b border-gray-200 dark:border-slate-700">
+                            <h3 className="font-semibold text-gray-900 dark:text-gray-100">อนุมัติคำขอ</h3>
                         </div>
 
                         <div className="p-4 space-y-4">
-                            <p className="text-gray-600">
-                                อนุมัติให้ <strong>{showApproveModal.userName || showApproveModal.userEmail}</strong> เข้าร่วมองค์กร
+                            <p className="text-gray-600 dark:text-gray-300">
+                                อนุมัติให้ <strong className="text-gray-900 dark:text-gray-100">{showApproveModal.userName || showApproveModal.userEmail}</strong> เข้าร่วมองค์กร
                             </p>
 
                             <div>
-                                <label className="block text-sm font-medium text-gray-700 mb-1">
+                                <label className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-1">
                                     กำหนดบทบาท
                                 </label>
                                 <select
                                     value={approveRole}
                                     onChange={(e) => setApproveRole(e.target.value as UserRole)}
-                                    className="w-full px-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-emerald-500 focus:border-transparent"
+                                    className="w-full px-3 py-2 border border-gray-300 dark:border-slate-600 rounded-lg focus:ring-2 focus:ring-emerald-500 focus:border-transparent bg-white dark:bg-slate-700 text-gray-900 dark:text-gray-100"
                                 >
                                     <option value="member">Member (สมาชิกทั่วไป)</option>
                                     <option value="admin">Admin (ผู้ดูแลระบบ)</option>
@@ -394,11 +394,11 @@ const AccessRequestsManager: React.FC<AccessRequestsManagerProps> = ({
                             </div>
                         </div>
 
-                        <div className="p-4 border-t border-gray-200 flex gap-3">
+                        <div className="p-4 border-t border-gray-200 dark:border-slate-700 flex gap-3">
                             <button
                                 onClick={() => setShowApproveModal(null)}
                                 disabled={processingId === showApproveModal.id}
-                                className="flex-1 py-2 border border-gray-300 text-gray-700 rounded-lg hover:bg-gray-50 disabled:opacity-50"
+                                className="flex-1 py-2 border border-gray-300 dark:border-slate-600 text-gray-700 dark:text-gray-300 rounded-lg hover:bg-gray-50 dark:hover:bg-slate-700 disabled:opacity-50"
                             >
                                 ยกเลิก
                             </button>
@@ -427,18 +427,18 @@ const AccessRequestsManager: React.FC<AccessRequestsManagerProps> = ({
             {/* Reject Modal */}
             {showRejectModal && (
                 <div className="fixed inset-0 bg-black/50 flex items-center justify-center z-50 p-4">
-                    <div className="bg-white rounded-xl max-w-md w-full shadow-xl">
-                        <div className="p-4 border-b border-gray-200">
-                            <h3 className="font-semibold text-gray-900">ปฏิเสธคำขอ</h3>
+                    <div className="bg-white dark:bg-slate-800 rounded-xl max-w-md w-full shadow-xl">
+                        <div className="p-4 border-b border-gray-200 dark:border-slate-700">
+                            <h3 className="font-semibold text-gray-900 dark:text-gray-100">ปฏิเสธคำขอ</h3>
                         </div>
 
                         <div className="p-4 space-y-4">
-                            <p className="text-gray-600">
-                                ปฏิเสธคำขอจาก <strong>{showRejectModal.userName || showRejectModal.userEmail}</strong>
+                            <p className="text-gray-600 dark:text-gray-300">
+                                ปฏิเสธคำขอจาก <strong className="text-gray-900 dark:text-gray-100">{showRejectModal.userName || showRejectModal.userEmail}</strong>
                             </p>
 
                             <div>
-                                <label className="block text-sm font-medium text-gray-700 mb-1">
+                                <label className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-1">
                                     เหตุผล (ไม่บังคับ)
                                 </label>
                                 <textarea
@@ -446,19 +446,19 @@ const AccessRequestsManager: React.FC<AccessRequestsManagerProps> = ({
                                     onChange={(e) => setRejectReason(e.target.value)}
                                     placeholder="เช่น ไม่พบข้อมูลในระบบ..."
                                     rows={3}
-                                    className="w-full px-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-red-500 focus:border-transparent"
+                                    className="w-full px-3 py-2 border border-gray-300 dark:border-slate-600 rounded-lg focus:ring-2 focus:ring-red-500 focus:border-transparent bg-white dark:bg-slate-700 text-gray-900 dark:text-gray-100 placeholder-gray-400 dark:placeholder-gray-500"
                                 />
                             </div>
                         </div>
 
-                        <div className="p-4 border-t border-gray-200 flex gap-3">
+                        <div className="p-4 border-t border-gray-200 dark:border-slate-700 flex gap-3">
                             <button
                                 onClick={() => {
                                     setShowRejectModal(null);
                                     setRejectReason('');
                                 }}
                                 disabled={processingId === showRejectModal.id}
-                                className="flex-1 py-2 border border-gray-300 text-gray-700 rounded-lg hover:bg-gray-50 disabled:opacity-50"
+                                className="flex-1 py-2 border border-gray-300 dark:border-slate-600 text-gray-700 dark:text-gray-300 rounded-lg hover:bg-gray-50 dark:hover:bg-slate-700 disabled:opacity-50"
                             >
                                 ยกเลิก
                             </button>

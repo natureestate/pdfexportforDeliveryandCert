@@ -174,16 +174,16 @@ const OrganizationCodeManager: React.FC<OrganizationCodeManagerProps> = ({
     };
 
     return (
-        <div className="bg-white rounded-xl border border-gray-200 overflow-hidden">
+        <div className="bg-white dark:bg-slate-800 rounded-xl border border-gray-200 dark:border-slate-700 overflow-hidden">
             {/* Header */}
-            <div className="p-4 border-b border-gray-200 flex items-center justify-between">
+            <div className="p-4 border-b border-gray-200 dark:border-slate-700 flex items-center justify-between">
                 <div className="flex items-center gap-3">
-                    <div className="w-10 h-10 bg-emerald-100 rounded-lg flex items-center justify-center">
-                        <KeyRound className="w-5 h-5 text-emerald-600" />
+                    <div className="w-10 h-10 bg-emerald-100 dark:bg-emerald-900/30 rounded-lg flex items-center justify-center">
+                        <KeyRound className="w-5 h-5 text-emerald-600 dark:text-emerald-400" />
                     </div>
                     <div>
-                        <h3 className="font-semibold text-gray-900">Join Codes</h3>
-                        <p className="text-sm text-gray-500">
+                        <h3 className="font-semibold text-gray-900 dark:text-gray-100">Join Codes</h3>
+                        <p className="text-sm text-gray-500 dark:text-gray-400">
                             รหัสสำหรับเข้าร่วมองค์กรโดยไม่ต้องรอคำเชิญ
                         </p>
                     </div>
@@ -192,7 +192,7 @@ const OrganizationCodeManager: React.FC<OrganizationCodeManagerProps> = ({
                     <button
                         onClick={loadCodes}
                         disabled={isLoading}
-                        className="p-2 text-gray-500 hover:text-gray-700 hover:bg-gray-100 rounded-lg"
+                        className="p-2 text-gray-500 dark:text-gray-400 hover:text-gray-700 dark:hover:text-gray-200 hover:bg-gray-100 dark:hover:bg-slate-700 rounded-lg"
                         title="รีเฟรช"
                     >
                         <RefreshCw className={`w-5 h-5 ${isLoading ? 'animate-spin' : ''}`} />
@@ -209,11 +209,11 @@ const OrganizationCodeManager: React.FC<OrganizationCodeManagerProps> = ({
 
             {/* Error */}
             {error && (
-                <div className="p-4 bg-red-50 border-b border-red-200 flex items-center gap-2">
-                    <AlertCircle className="w-5 h-5 text-red-500" />
-                    <p className="text-sm text-red-700">{error}</p>
+                <div className="p-4 bg-red-50 dark:bg-red-900/20 border-b border-red-200 dark:border-red-800 flex items-center gap-2">
+                    <AlertCircle className="w-5 h-5 text-red-500 dark:text-red-400" />
+                    <p className="text-sm text-red-700 dark:text-red-300">{error}</p>
                     <button onClick={() => setError(null)} className="ml-auto">
-                        <X className="w-4 h-4 text-red-500" />
+                        <X className="w-4 h-4 text-red-500 dark:text-red-400" />
                     </button>
                 </div>
             )}
@@ -222,14 +222,14 @@ const OrganizationCodeManager: React.FC<OrganizationCodeManagerProps> = ({
             <div className="p-4">
                 {isLoading ? (
                     <div className="text-center py-8">
-                        <Loader2 className="w-8 h-8 animate-spin text-gray-400 mx-auto" />
-                        <p className="text-sm text-gray-500 mt-2">กำลังโหลด...</p>
+                        <Loader2 className="w-8 h-8 animate-spin text-gray-400 dark:text-gray-500 mx-auto" />
+                        <p className="text-sm text-gray-500 dark:text-gray-400 mt-2">กำลังโหลด...</p>
                     </div>
                 ) : codes.length === 0 ? (
                     <div className="text-center py-8">
-                        <KeyRound className="w-12 h-12 text-gray-300 mx-auto mb-3" />
-                        <p className="text-gray-500">ยังไม่มี Join Code</p>
-                        <p className="text-sm text-gray-400 mt-1">
+                        <KeyRound className="w-12 h-12 text-gray-300 dark:text-gray-600 mx-auto mb-3" />
+                        <p className="text-gray-500 dark:text-gray-400">ยังไม่มี Join Code</p>
+                        <p className="text-sm text-gray-400 dark:text-gray-500 mt-1">
                             สร้าง code เพื่อให้ผู้อื่นเข้าร่วมองค์กรได้ง่ายขึ้น
                         </p>
                     </div>
@@ -244,7 +244,7 @@ const OrganizationCodeManager: React.FC<OrganizationCodeManagerProps> = ({
                                 <div
                                     key={code.id}
                                     className={`border rounded-lg p-4 ${
-                                        isDisabled ? 'bg-gray-50 border-gray-200' : 'bg-white border-gray-200'
+                                        isDisabled ? 'bg-gray-50 dark:bg-slate-700/50 border-gray-200 dark:border-slate-600' : 'bg-white dark:bg-slate-700 border-gray-200 dark:border-slate-600'
                                     }`}
                                 >
                                     <div className="flex items-start justify-between gap-4">
@@ -252,7 +252,7 @@ const OrganizationCodeManager: React.FC<OrganizationCodeManagerProps> = ({
                                             {/* Code */}
                                             <div className="flex items-center gap-2 mb-2">
                                                 <code className={`text-lg font-mono font-bold tracking-wider ${
-                                                    isDisabled ? 'text-gray-400' : 'text-gray-900'
+                                                    isDisabled ? 'text-gray-400 dark:text-gray-500' : 'text-gray-900 dark:text-gray-100'
                                                 }`}>
                                                     {code.code}
                                                 </code>
@@ -260,8 +260,8 @@ const OrganizationCodeManager: React.FC<OrganizationCodeManagerProps> = ({
                                                     onClick={() => handleCopy(code.code)}
                                                     className={`p-1 rounded ${
                                                         copiedCode === code.code
-                                                            ? 'text-emerald-600'
-                                                            : 'text-gray-400 hover:text-gray-600'
+                                                            ? 'text-emerald-600 dark:text-emerald-400'
+                                                            : 'text-gray-400 dark:text-gray-500 hover:text-gray-600 dark:hover:text-gray-300'
                                                     }`}
                                                     title="คัดลอก"
                                                 >
@@ -273,24 +273,24 @@ const OrganizationCodeManager: React.FC<OrganizationCodeManagerProps> = ({
                                                 </button>
                                                 {/* Status badges */}
                                                 {!code.isActive && (
-                                                    <span className="text-xs px-2 py-0.5 bg-gray-200 text-gray-600 rounded">
+                                                    <span className="text-xs px-2 py-0.5 bg-gray-200 dark:bg-slate-600 text-gray-600 dark:text-gray-300 rounded">
                                                         ปิดใช้งาน
                                                     </span>
                                                 )}
                                                 {expired && (
-                                                    <span className="text-xs px-2 py-0.5 bg-red-100 text-red-600 rounded">
+                                                    <span className="text-xs px-2 py-0.5 bg-red-100 dark:bg-red-900/30 text-red-600 dark:text-red-400 rounded">
                                                         หมดอายุ
                                                     </span>
                                                 )}
                                                 {maxedOut && (
-                                                    <span className="text-xs px-2 py-0.5 bg-amber-100 text-amber-600 rounded">
+                                                    <span className="text-xs px-2 py-0.5 bg-amber-100 dark:bg-amber-900/30 text-amber-600 dark:text-amber-400 rounded">
                                                         ใช้ครบแล้ว
                                                     </span>
                                                 )}
                                             </div>
 
                                             {/* Info */}
-                                            <div className="flex flex-wrap gap-4 text-sm text-gray-500">
+                                            <div className="flex flex-wrap gap-4 text-sm text-gray-500 dark:text-gray-400">
                                                 <div className="flex items-center gap-1">
                                                     <Shield className="w-4 h-4" />
                                                     <span>{code.role === 'admin' ? 'Admin' : 'Member'}</span>
@@ -312,7 +312,7 @@ const OrganizationCodeManager: React.FC<OrganizationCodeManagerProps> = ({
 
                                             {/* Description */}
                                             {code.description && (
-                                                <p className="text-sm text-gray-600 mt-2">
+                                                <p className="text-sm text-gray-600 dark:text-gray-300 mt-2">
                                                     {code.description}
                                                 </p>
                                             )}
@@ -324,8 +324,8 @@ const OrganizationCodeManager: React.FC<OrganizationCodeManagerProps> = ({
                                                 onClick={() => handleToggleActive(code)}
                                                 className={`p-2 rounded-lg ${
                                                     code.isActive
-                                                        ? 'text-emerald-600 hover:bg-emerald-50'
-                                                        : 'text-gray-400 hover:bg-gray-100'
+                                                        ? 'text-emerald-600 dark:text-emerald-400 hover:bg-emerald-50 dark:hover:bg-emerald-900/30'
+                                                        : 'text-gray-400 dark:text-gray-500 hover:bg-gray-100 dark:hover:bg-slate-600'
                                                 }`}
                                                 title={code.isActive ? 'ปิดใช้งาน' : 'เปิดใช้งาน'}
                                             >
@@ -337,7 +337,7 @@ const OrganizationCodeManager: React.FC<OrganizationCodeManagerProps> = ({
                                             </button>
                                             <button
                                                 onClick={() => handleDelete(code)}
-                                                className="p-2 text-red-500 hover:bg-red-50 rounded-lg"
+                                                className="p-2 text-red-500 dark:text-red-400 hover:bg-red-50 dark:hover:bg-red-900/30 rounded-lg"
                                                 title="ลบ"
                                             >
                                                 <Trash2 className="w-5 h-5" />
@@ -354,27 +354,27 @@ const OrganizationCodeManager: React.FC<OrganizationCodeManagerProps> = ({
             {/* Create Modal */}
             {showCreateModal && (
                 <div className="fixed inset-0 bg-black/50 flex items-center justify-center z-50 p-4">
-                    <div className="bg-white rounded-xl max-w-md w-full shadow-xl">
-                        <div className="p-4 border-b border-gray-200 flex items-center justify-between">
-                            <h3 className="font-semibold text-gray-900">สร้าง Join Code ใหม่</h3>
+                    <div className="bg-white dark:bg-slate-800 rounded-xl max-w-md w-full shadow-xl">
+                        <div className="p-4 border-b border-gray-200 dark:border-slate-700 flex items-center justify-between">
+                            <h3 className="font-semibold text-gray-900 dark:text-gray-100">สร้าง Join Code ใหม่</h3>
                             <button
                                 onClick={() => setShowCreateModal(false)}
-                                className="p-1 hover:bg-gray-100 rounded"
+                                className="p-1 hover:bg-gray-100 dark:hover:bg-slate-700 rounded"
                             >
-                                <X className="w-5 h-5 text-gray-500" />
+                                <X className="w-5 h-5 text-gray-500 dark:text-gray-400" />
                             </button>
                         </div>
 
                         <div className="p-4 space-y-4">
                             {/* Role */}
                             <div>
-                                <label className="block text-sm font-medium text-gray-700 mb-1">
+                                <label className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-1">
                                     บทบาทเมื่อเข้าร่วม
                                 </label>
                                 <select
                                     value={newCodeRole}
                                     onChange={(e) => setNewCodeRole(e.target.value as UserRole)}
-                                    className="w-full px-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-emerald-500 focus:border-transparent"
+                                    className="w-full px-3 py-2 border border-gray-300 dark:border-slate-600 rounded-lg focus:ring-2 focus:ring-emerald-500 focus:border-transparent bg-white dark:bg-slate-700 text-gray-900 dark:text-gray-100"
                                 >
                                     <option value="member">Member (สมาชิกทั่วไป)</option>
                                     <option value="admin">Admin (ผู้ดูแลระบบ)</option>
@@ -383,13 +383,13 @@ const OrganizationCodeManager: React.FC<OrganizationCodeManagerProps> = ({
 
                             {/* Max Uses */}
                             <div>
-                                <label className="block text-sm font-medium text-gray-700 mb-1">
+                                <label className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-1">
                                     จำนวนครั้งที่ใช้ได้
                                 </label>
                                 <select
                                     value={newCodeMaxUses}
                                     onChange={(e) => setNewCodeMaxUses(parseInt(e.target.value))}
-                                    className="w-full px-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-emerald-500 focus:border-transparent"
+                                    className="w-full px-3 py-2 border border-gray-300 dark:border-slate-600 rounded-lg focus:ring-2 focus:ring-emerald-500 focus:border-transparent bg-white dark:bg-slate-700 text-gray-900 dark:text-gray-100"
                                 >
                                     <option value={-1}>ไม่จำกัด</option>
                                     <option value={1}>1 ครั้ง</option>
@@ -403,13 +403,13 @@ const OrganizationCodeManager: React.FC<OrganizationCodeManagerProps> = ({
 
                             {/* Expiry */}
                             <div>
-                                <label className="block text-sm font-medium text-gray-700 mb-1">
+                                <label className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-1">
                                     หมดอายุใน
                                 </label>
                                 <select
                                     value={newCodeExpiryDays}
                                     onChange={(e) => setNewCodeExpiryDays(parseInt(e.target.value))}
-                                    className="w-full px-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-emerald-500 focus:border-transparent"
+                                    className="w-full px-3 py-2 border border-gray-300 dark:border-slate-600 rounded-lg focus:ring-2 focus:ring-emerald-500 focus:border-transparent bg-white dark:bg-slate-700 text-gray-900 dark:text-gray-100"
                                 >
                                     <option value={0}>ไม่หมดอายุ</option>
                                     <option value={1}>1 วัน</option>
@@ -422,7 +422,7 @@ const OrganizationCodeManager: React.FC<OrganizationCodeManagerProps> = ({
 
                             {/* Description */}
                             <div>
-                                <label className="block text-sm font-medium text-gray-700 mb-1">
+                                <label className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-1">
                                     คำอธิบาย (ไม่บังคับ)
                                 </label>
                                 <input
@@ -430,16 +430,16 @@ const OrganizationCodeManager: React.FC<OrganizationCodeManagerProps> = ({
                                     value={newCodeDescription}
                                     onChange={(e) => setNewCodeDescription(e.target.value)}
                                     placeholder="เช่น สำหรับทีมขาย"
-                                    className="w-full px-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-emerald-500 focus:border-transparent"
+                                    className="w-full px-3 py-2 border border-gray-300 dark:border-slate-600 rounded-lg focus:ring-2 focus:ring-emerald-500 focus:border-transparent bg-white dark:bg-slate-700 text-gray-900 dark:text-gray-100 placeholder-gray-400 dark:placeholder-gray-500"
                                 />
                             </div>
                         </div>
 
-                        <div className="p-4 border-t border-gray-200 flex gap-3">
+                        <div className="p-4 border-t border-gray-200 dark:border-slate-700 flex gap-3">
                             <button
                                 onClick={() => setShowCreateModal(false)}
                                 disabled={isCreating}
-                                className="flex-1 py-2 border border-gray-300 text-gray-700 rounded-lg hover:bg-gray-50 disabled:opacity-50"
+                                className="flex-1 py-2 border border-gray-300 dark:border-slate-600 text-gray-700 dark:text-gray-300 rounded-lg hover:bg-gray-50 dark:hover:bg-slate-700 disabled:opacity-50"
                             >
                                 ยกเลิก
                             </button>
