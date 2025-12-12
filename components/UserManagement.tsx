@@ -26,7 +26,7 @@ import { useAuth } from '../contexts/AuthContext';
 import InviteMemberModal from './InviteMemberModal';
 import OrganizationCodeManager from './OrganizationCodeManager';
 import AccessRequestsManager from './AccessRequestsManager';
-import { Users, Crown, User, Save, Loader, KeyRound, UserPlus } from 'lucide-react';
+import { Users, Crown, User, Save, Loader, KeyRound, UserPlus, X, AlertTriangle, Mail, Plus, RefreshCw, Trash2, Copy, Clock, CheckCircle, XCircle, Timer, Edit } from 'lucide-react';
 
 interface UserManagementProps {
     companyId: string;
@@ -339,14 +339,14 @@ const UserManagement: React.FC<UserManagementProps> = ({ companyId, companyName,
                 <h2>จัดการสมาชิก: {companyName}</h2>
                 {onClose && (
                     <button onClick={onClose} className="close-button">
-                        ✕
+                        <X className="w-5 h-5" />
                     </button>
                 )}
             </div>
 
             {error && (
                 <div className="error-message">
-                    ⚠️ {error}
+                    <AlertTriangle className="w-4 h-4 inline mr-1" /> {error}
                 </div>
             )}
 
@@ -354,10 +354,10 @@ const UserManagement: React.FC<UserManagementProps> = ({ companyId, companyName,
             {isAdmin && (
                 <div className="invite-button-section">
                     <button onClick={() => setShowInviteModal(true)} className="btn-invite">
-                        📨 เชิญสมาชิกใหม่
+                        <Mail className="w-4 h-4 inline mr-1" /> เชิญสมาชิกใหม่
                     </button>
                     <button onClick={handleOpenAddMember} className="btn-add-direct">
-                        ➕ เพิ่มสมาชิกโดยตรง
+                        <Plus className="w-4 h-4 inline mr-1" /> เพิ่มสมาชิกโดยตรง
                     </button>
                 </div>
             )}
@@ -375,7 +375,7 @@ const UserManagement: React.FC<UserManagementProps> = ({ companyId, companyName,
                         className={`tab ${activeTab === 'invitations' ? 'active' : ''}`}
                         onClick={() => setActiveTab('invitations')}
                     >
-                        📨 คำเชิญ ({invitations.filter(i => i.status === 'pending').length})
+                        <Mail className="w-4 h-4 inline mr-1" /> คำเชิญ ({invitations.filter(i => i.status === 'pending').length})
                     </button>
                     <button
                         className={`tab ${activeTab === 'codes' ? 'active' : ''}`}
@@ -426,9 +426,9 @@ const UserManagement: React.FC<UserManagementProps> = ({ companyId, companyName,
                                         </td>
                                         <td>
                                             <span className={`status-badge ${member.status}`}>
-                                                {member.status === 'active' ? '✅ Active' : 
-                                                 member.status === 'pending' ? '⏳ Pending' : 
-                                                 '❌ Inactive'}
+                                                {member.status === 'active' ? <><CheckCircle className="w-3 h-3 inline mr-0.5" /> Active</> : 
+                                                 member.status === 'pending' ? <><Clock className="w-3 h-3 inline mr-0.5" /> Pending</> : 
+                                                 <><XCircle className="w-3 h-3 inline mr-0.5" /> Inactive</>}
                                             </span>
                                         </td>
                                         <td>
@@ -445,21 +445,21 @@ const UserManagement: React.FC<UserManagementProps> = ({ companyId, companyName,
                                                             className="btn-small btn-edit"
                                                             title="แก้ไขข้อมูล"
                                                         >
-                                                            ✏️
+                                                            <Edit className="w-4 h-4" />
                                                         </button>
                                                         <button
                                                             onClick={() => handleChangeRole(member.id!, member.role)}
                                                             className="btn-small btn-secondary"
                                                             title="เปลี่ยนบทบาท"
                                                         >
-                                                            🔄
+                                                            <RefreshCw className="w-4 h-4" />
                                                         </button>
                                                         <button
                                                             onClick={() => handleRemoveMember(member.id!, member.email)}
                                                             className="btn-small btn-danger"
                                                             title="ลบสมาชิก"
                                                         >
-                                                            🗑️
+                                                            <Trash2 className="w-4 h-4" />
                                                         </button>
                                                     </>
                                                 )}
@@ -470,7 +470,7 @@ const UserManagement: React.FC<UserManagementProps> = ({ companyId, companyName,
                                                             className="btn-small btn-edit"
                                                             title="แก้ไขข้อมูลของฉัน"
                                                         >
-                                                            ✏️
+                                                            <Edit className="w-4 h-4" />
                                                         </button>
                                                         <span className="self-indicator">(คุณ)</span>
                                                     </>
@@ -518,10 +518,10 @@ const UserManagement: React.FC<UserManagementProps> = ({ companyId, companyName,
                                             </td>
                                             <td>
                                                 <span className={`status-badge invitation-${invitation.status}`}>
-                                                    {invitation.status === 'pending' ? '⏳ รอการยอมรับ' :
-                                                     invitation.status === 'accepted' ? '✅ ยอมรับแล้ว' :
-                                                     invitation.status === 'rejected' ? '❌ ปฏิเสธ' :
-                                                     '⏰ หมดอายุ'}
+                                                    {invitation.status === 'pending' ? <><Clock className="w-3 h-3 inline mr-0.5" /> รอการยอมรับ</> :
+                                                     invitation.status === 'accepted' ? <><CheckCircle className="w-3 h-3 inline mr-0.5" /> ยอมรับแล้ว</> :
+                                                     invitation.status === 'rejected' ? <><XCircle className="w-3 h-3 inline mr-0.5" /> ปฏิเสธ</> :
+                                                     <><Timer className="w-3 h-3 inline mr-0.5" /> หมดอายุ</>}
                                                 </span>
                                             </td>
                                             <td>
@@ -545,21 +545,21 @@ const UserManagement: React.FC<UserManagementProps> = ({ companyId, companyName,
                                                             className="btn-small btn-copy"
                                                             title="คัดลอกลิงก์"
                                                         >
-                                                            📋
+                                                            <Copy className="w-4 h-4" />
                                                         </button>
                                                         <button
                                                             onClick={() => handleResendInvitation(invitation.id!, invitation.email)}
                                                             className="btn-small btn-secondary"
                                                             title="ส่งใหม่"
                                                         >
-                                                            🔄
+                                                            <RefreshCw className="w-4 h-4" />
                                                         </button>
                                                         <button
                                                             onClick={() => handleCancelInvitation(invitation.id!, invitation.email)}
                                                             className="btn-small btn-danger"
                                                             title="ยกเลิก"
                                                         >
-                                                            🗑️
+                                                            <Trash2 className="w-4 h-4" />
                                                         </button>
                                                     </>
                                                 )}
@@ -608,19 +608,19 @@ const UserManagement: React.FC<UserManagementProps> = ({ companyId, companyName,
                 <div className="modal-overlay" onClick={() => setShowAddMemberModal(false)}>
                     <div className="modal-content-inner" onClick={(e) => e.stopPropagation()}>
                         <div className="modal-header-inner">
-                            <h3>➕ เพิ่มสมาชิกโดยตรง</h3>
+                            <h3><Plus className="w-5 h-5 inline mr-1" /> เพิ่มสมาชิกโดยตรง</h3>
                             <button 
                                 onClick={() => setShowAddMemberModal(false)} 
                                 className="close-button"
                                 disabled={addMemberLoading}
                             >
-                                ✕
+                                <X className="w-5 h-5" />
                             </button>
                         </div>
                         <form onSubmit={handleAddMember} className="modal-body">
                             {addMemberError && (
                                 <div className="error-message">
-                                    ⚠️ {addMemberError}
+                                    <AlertTriangle className="w-4 h-4 inline mr-1" /> {addMemberError}
                                 </div>
                             )}
                             
@@ -689,7 +689,7 @@ const UserManagement: React.FC<UserManagementProps> = ({ companyId, companyName,
                                     className="btn-submit"
                                     disabled={addMemberLoading}
                                 >
-                                    {addMemberLoading ? '⏳ กำลังเพิ่ม...' : '✅ เพิ่มสมาชิก'}
+                                    {addMemberLoading ? <><Loader className="w-4 h-4 inline mr-1 animate-spin" /> กำลังเพิ่ม...</> : <><CheckCircle className="w-4 h-4 inline mr-1" /> เพิ่มสมาชิก</>}
                                 </button>
                             </div>
                         </form>
@@ -702,19 +702,19 @@ const UserManagement: React.FC<UserManagementProps> = ({ companyId, companyName,
                 <div className="modal-overlay" onClick={() => setShowEditMemberModal(false)}>
                     <div className="modal-content-inner" onClick={(e) => e.stopPropagation()}>
                         <div className="modal-header-inner">
-                            <h3>✏️ แก้ไขข้อมูลสมาชิก</h3>
+                            <h3><Edit className="w-5 h-5 inline mr-1" /> แก้ไขข้อมูลสมาชิก</h3>
                             <button 
                                 onClick={() => setShowEditMemberModal(false)} 
                                 className="close-button"
                                 disabled={editMemberLoading}
                             >
-                                ✕
+                                <X className="w-5 h-5" />
                             </button>
                         </div>
                         <form onSubmit={handleSaveEditMember} className="modal-body">
                             {editMemberError && (
                                 <div className="error-message">
-                                    ⚠️ {editMemberError}
+                                    <AlertTriangle className="w-4 h-4 inline mr-1" /> {editMemberError}
                                 </div>
                             )}
                             
