@@ -430,11 +430,11 @@ const HistoryList: React.FC<HistoryListProps> = ({ activeDocType, onLoadDocument
 
             {/* Modal Preview เอกสาร */}
             {showPreviewModal && previewData && previewDoc && (
-                <div className="fixed inset-0 bg-gray-900 bg-opacity-75 overflow-y-auto h-full w-full z-50 flex items-center justify-center p-4">
-                    <div className="relative bg-white rounded-lg shadow-xl max-w-4xl w-full max-h-[90vh] flex flex-col">
+                <div className="fixed inset-0 bg-gray-900 bg-opacity-75 dark:bg-black dark:bg-opacity-80 overflow-y-auto h-full w-full z-50 flex items-center justify-center p-4">
+                    <div className="relative bg-white dark:bg-slate-800 rounded-lg shadow-xl max-w-4xl w-full max-h-[90vh] flex flex-col">
                         {/* Header */}
-                        <div className="flex justify-between items-center p-4 border-b border-gray-200">
-                            <h2 className="text-xl font-semibold text-gray-900">
+                        <div className="flex justify-between items-center p-4 border-b border-gray-200 dark:border-slate-700">
+                            <h2 className="text-xl font-semibold text-gray-900 dark:text-gray-100">
                                 ตัวอย่าง{documentTypeName}
                             </h2>
                             <div className="flex items-center gap-2">

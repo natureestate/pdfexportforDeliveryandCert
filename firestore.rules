@@ -195,14 +195,20 @@ service cloud.firestore {
     
     // Company Members (สมาชิกในองค์กร)
     match /companyMembers/{memberId} {
-      // อ่าน: สมาชิกบริษัทเดียวกัน หรือ Super Admin
+      // อ่าน: 
+      // 1. Super Admin
+      // 2. สมาชิกบริษัทเดียวกัน
+      // 3. เจ้าของ membership นี้ (ด้วย userId)
+      // 4. ผู้ที่ถูกเชิญ (ด้วย email) - สำหรับ pending memberships ที่ user ยังไม่ได้ login
       // memberId format: {userId}_{companyId}
       allow read: if isAuthenticated() && (
         isSuperAdmin() ||
         // ตรวจสอบว่าเป็นสมาชิกของบริษัทเดียวกัน
         (resource.data.companyId != null && isMemberOfCompany(resource.data.companyId)) ||
-        // หรือเป็นเจ้าของ membership นี้
-        resource.data.userId == request.auth.uid
+        // หรือเป็นเจ้าของ membership นี้ (ด้วย userId)
+        resource.data.userId == request.auth.uid ||
+        // หรือเป็นผู้ที่ถูกเชิญ (ด้วย email) - สำหรับ pending memberships
+        (resource.data.email != null && resource.data.email == request.auth.token.email)
       );
       
       // สร้าง: Admin ของบริษัท หรือ เจ้าของบริษัท หรือ Super Admin
@@ -212,11 +218,15 @@ service cloud.firestore {
         isAdminOfCompany(request.resource.data.companyId)
       );
       
-      // แก้ไข: Admin ของบริษัท หรือ เจ้าของบริษัท หรือ Super Admin
+      // แก้ไข: 
+      // 1. Admin ของบริษัท หรือ เจ้าของบริษัท หรือ Super Admin
+      // 2. ผู้ที่ถูกเชิญ (ด้วย email) - สำหรับ activate pending membership ของตัวเอง
       allow update: if isAuthenticated() && (
         isSuperAdmin() ||
         isCompanyOwner(resource.data.companyId) ||
-        isAdminOfCompany(resource.data.companyId)
+        isAdminOfCompany(resource.data.companyId) ||
+        // อนุญาตให้ผู้ที่ถูกเชิญ activate membership ของตัวเอง
+        (resource.data.email != null && resource.data.email == request.auth.token.email && resource.data.status == 'pending')
       );
       
       // ลบ: Admin ของบริษัท หรือ เจ้าของบริษัท หรือ Super Admin
@@ -284,14 +294,19 @@ service cloud.firestore {
     
     // Document Numbers (เลขที่เอกสารอัตโนมัติ - Running Number)
     match /documentNumbers/{counterId} {
-      // อ่าน: เจ้าของ หรือ สมาชิกบริษัทเดียวกัน
+      // อ่าน: เจ้าของ (ด้วย userId ใน counterId) หรือ สมาชิกบริษัทเดียวกัน
+      // หมายเหตุ: counterId format = {userId}_{prefix}_{date} หรือ {companyId}_{prefix}_{date}
       allow read: if isAuthenticated() && (
         isSuperAdmin() ||
+        // เจ้าของ document (userId ใน data)
         (resource.data.userId != null && isOwner(resource.data.userId)) ||
-        (resource.data.companyId != null && isMemberOfCompany(resource.data.companyId))
+        // สมาชิกบริษัทเดียวกัน
+        (resource.data.companyId != null && isMemberOfCompany(resource.data.companyId)) ||
+        // กรณี counterId ขึ้นต้นด้วย userId ของตัวเอง (สำหรับ personal documents)
+        counterId.matches(request.auth.uid + '_.*')
       );
       
-      // สร้าง: ต้อง Login และ userId ต้องตรงกับผู้ใช้
+      // สร้าง: ต้อง Login และ userId ต้องตรงกับผู้ใช้ หรือเป็นสมาชิกบริษัท
       allow create: if isAuthenticated() && (
         request.resource.data.userId == request.auth.uid ||
         (request.resource.data.companyId != null && isMemberOfCompany(request.resource.data.companyId))
@@ -301,7 +316,9 @@ service cloud.firestore {
       allow update: if isAuthenticated() && (
         isSuperAdmin() ||
         (resource.data.userId != null && isOwner(resource.data.userId)) ||
-        (resource.data.companyId != null && isMemberOfCompany(resource.data.companyId))
+        (resource.data.companyId != null && isMemberOfCompany(resource.data.companyId)) ||
+        // กรณี counterId ขึ้นต้นด้วย userId ของตัวเอง
+        counterId.matches(request.auth.uid + '_.*')
       );
       
       // ไม่อนุญาตให้ลบ counter (เพื่อรักษาความสมบูรณ์ของข้อมูล)
@@ -513,6 +530,84 @@ service cloud.firestore {
       allow delete: if isAuthenticated() && (
         isSuperAdmin() ||
         (resource.data.companyId != null && isCompanyOwner(resource.data.companyId)) ||
+        (resource.data.companyId != null && isAdminOfCompany(resource.data.companyId))
+      );
+    }
+    
+    // ============================================================
+    // ระบบ Join Code และ Access Request (Organization Onboarding)
+    // ============================================================
+    
+    // Organization Codes (รหัสเข้าร่วมองค์กร)
+    // ใช้สำหรับให้ User ใหม่เข้าร่วมองค์กรได้โดยไม่ต้องรอคำเชิญ
+    match /organizationCodes/{codeId} {
+      // อ่าน: 
+      // 1. Admin ของบริษัท (เพื่อจัดการ codes)
+      // 2. User ที่ Login (เพื่อใช้ code เข้าร่วม)
+      allow read: if isAuthenticated();
+      
+      // สร้าง: Admin ของบริษัท หรือ เจ้าของบริษัท หรือ Super Admin
+      allow create: if isAuthenticated() && (
+        isSuperAdmin() ||
+        isCompanyOwner(request.resource.data.companyId) ||
+        isAdminOfCompany(request.resource.data.companyId)
+      );
+      
+      // แก้ไข: Admin ของบริษัท หรือ เจ้าของบริษัท หรือ Super Admin
+      allow update: if isAuthenticated() && (
+        isSuperAdmin() ||
+        (resource.data.companyId != null && isCompanyOwner(resource.data.companyId)) ||
+        (resource.data.companyId != null && isAdminOfCompany(resource.data.companyId))
+      );
+      
+      // ลบ: Admin ของบริษัท หรือ เจ้าของบริษัท หรือ Super Admin
+      allow delete: if isAuthenticated() && (
+        isSuperAdmin() ||
+        (resource.data.companyId != null && isCompanyOwner(resource.data.companyId)) ||
+        (resource.data.companyId != null && isAdminOfCompany(resource.data.companyId))
+      );
+    }
+    
+    // Organization Code Usages (ประวัติการใช้ Join Code)
+    match /organizationCodeUsages/{usageId} {
+      // อ่าน: Admin ของบริษัท หรือ Super Admin
+      allow read: if isAuthenticated() && (
+        isSuperAdmin() ||
+        (resource.data.companyId != null && isAdminOfCompany(resource.data.companyId))
+      );
+      
+      // สร้าง: User ที่ใช้ code (userId ต้องตรงกับ user ปัจจุบัน)
+      allow create: if isAuthenticated() && request.resource.data.userId == request.auth.uid;
+      
+      // ไม่อนุญาตให้แก้ไขหรือลบ (เพื่อรักษาประวัติ)
+      allow update, delete: if false;
+    }
+    
+    // Access Requests (คำขอเข้าร่วมองค์กร)
+    // ใช้สำหรับให้ User ขอเข้าร่วมองค์กร แล้วรอ Admin อนุมัติ
+    match /accessRequests/{requestId} {
+      // อ่าน: 
+      // 1. เจ้าของคำขอ (เพื่อดูสถานะ)
+      // 2. Admin ของบริษัท (เพื่อจัดการคำขอ)
+      allow read: if isAuthenticated() && (
+        isSuperAdmin() ||
+        resource.data.userId == request.auth.uid ||
+        (resource.data.companyId != null && isAdminOfCompany(resource.data.companyId))
+      );
+      
+      // สร้าง: User ที่ Login (userId ต้องตรงกับ user ปัจจุบัน)
+      allow create: if isAuthenticated() && request.resource.data.userId == request.auth.uid;
+      
+      // แก้ไข: Admin ของบริษัท (เพื่ออนุมัติหรือปฏิเสธ)
+      allow update: if isAuthenticated() && (
+        isSuperAdmin() ||
+        (resource.data.companyId != null && isAdminOfCompany(resource.data.companyId))
+      );
+      
+      // ลบ: เจ้าของคำขอ (เพื่อยกเลิกคำขอ) หรือ Admin ของบริษัท หรือ Super Admin
+      allow delete: if isAuthenticated() && (
+        isSuperAdmin() ||
+        resource.data.userId == request.auth.uid ||
         (resource.data.companyId != null && isAdminOfCompany(resource.data.companyId))
       );
     }

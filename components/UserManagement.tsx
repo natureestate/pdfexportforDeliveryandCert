@@ -24,7 +24,9 @@ import {
 } from '../services/invitations';
 import { useAuth } from '../contexts/AuthContext';
 import InviteMemberModal from './InviteMemberModal';
-import { Users, Crown, User, Save, Loader } from 'lucide-react';
+import OrganizationCodeManager from './OrganizationCodeManager';
+import AccessRequestsManager from './AccessRequestsManager';
+import { Users, Crown, User, Save, Loader, KeyRound, UserPlus } from 'lucide-react';
 
 interface UserManagementProps {
     companyId: string;
@@ -62,7 +64,7 @@ const UserManagement: React.FC<UserManagementProps> = ({ companyId, companyName,
     const [loading, setLoading] = useState(true);
     const [error, setError] = useState<string | null>(null);
     const [showInviteModal, setShowInviteModal] = useState(false);
-    const [activeTab, setActiveTab] = useState<'members' | 'invitations'>('members');
+    const [activeTab, setActiveTab] = useState<'members' | 'invitations' | 'codes' | 'requests'>('members');
     
     // State สำหรับ Add Member Modal
     const [showAddMemberModal, setShowAddMemberModal] = useState(false);
@@ -375,6 +377,18 @@ const UserManagement: React.FC<UserManagementProps> = ({ companyId, companyName,
                     >
                         📨 คำเชิญ ({invitations.filter(i => i.status === 'pending').length})
                     </button>
+                    <button
+                        className={`tab ${activeTab === 'codes' ? 'active' : ''}`}
+                        onClick={() => setActiveTab('codes')}
+                    >
+                        <KeyRound className="w-4 h-4 inline mr-1" />Join Codes
+                    </button>
+                    <button
+                        className={`tab ${activeTab === 'requests' ? 'active' : ''}`}
+                        onClick={() => setActiveTab('requests')}
+                    >
+                        <UserPlus className="w-4 h-4 inline mr-1" />คำขอเข้าร่วม
+                    </button>
                 </div>
             )}
 
@@ -556,6 +570,26 @@ const UserManagement: React.FC<UserManagementProps> = ({ companyId, companyName,
                             </table>
                         </div>
                     )}
+                </div>
+            )}
+
+            {/* Join Codes Tab (เฉพาะ Admin) */}
+            {activeTab === 'codes' && isAdmin && (
+                <div className="codes-section">
+                    <OrganizationCodeManager 
+                        companyId={companyId} 
+                        companyName={companyName} 
+                    />
+                </div>
+            )}
+
+            {/* Access Requests Tab (เฉพาะ Admin) */}
+            {activeTab === 'requests' && isAdmin && (
+                <div className="requests-section">
+                    <AccessRequestsManager 
+                        companyId={companyId} 
+                        companyName={companyName} 
+                    />
                 </div>
             )}
 

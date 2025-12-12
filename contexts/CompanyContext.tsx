@@ -19,6 +19,9 @@ interface CompanyContextType {
     // กำลังโหลดข้อมูล
     loading: boolean;
     
+    // ต้องไปหน้า Onboarding หรือไม่ (user login แต่ยังไม่มีองค์กร)
+    needsOnboarding: boolean;
+    
     // เลือกบริษัท
     selectCompany: (company: Company) => void;
     
@@ -37,6 +40,7 @@ export const CompanyProvider: React.FC<CompanyProviderProps> = ({ children }) =>
     const [currentCompany, setCurrentCompany] = useState<Company | null>(null);
     const [companies, setCompanies] = useState<Company[]>([]);
     const [loading, setLoading] = useState(true);
+    const [needsOnboarding, setNeedsOnboarding] = useState(false);
 
     /**
      * โหลดรายการบริษัททั้งหมด
@@ -48,6 +52,7 @@ export const CompanyProvider: React.FC<CompanyProviderProps> = ({ children }) =>
             console.log('⚠️ [CompanyContext] ไม่มี User, ล้างข้อมูล');
             setCurrentCompany(null);
             setCompanies([]);
+            setNeedsOnboarding(false);
             setLoading(false);
             return;
         }
@@ -56,16 +61,21 @@ export const CompanyProvider: React.FC<CompanyProviderProps> = ({ children }) =>
             setLoading(true);
             console.log('⏳ [CompanyContext] กำลังโหลด...');
             
-            // ตรวจสอบว่าต้อง Migrate หรือไม่
-            const needMigration = await checkNeedMigration();
-            if (needMigration) {
-                console.log('🔄 พบองค์กรเก่าที่ต้อง Migrate...');
-                try {
-                    await migrateOldCompanies();
-                    console.log('✅ Migration สำเร็จ');
-                } catch (error) {
-                    console.error('❌ Migration ล้มเหลว:', error);
+            // ตรวจสอบว่าต้อง Migrate หรือไม่ (wrap ใน try-catch แยก เพื่อไม่ให้ error migration หยุดการทำงาน)
+            try {
+                const needMigration = await checkNeedMigration();
+                if (needMigration) {
+                    console.log('🔄 พบองค์กรเก่าที่ต้อง Migrate...');
+                    try {
+                        await migrateOldCompanies();
+                        console.log('✅ Migration สำเร็จ');
+                    } catch (migrationError) {
+                        console.error('❌ Migration ล้มเหลว:', migrationError);
+                    }
                 }
+            } catch (checkMigrationError) {
+                // User ใหม่อาจไม่มีสิทธิ์เข้าถึง collection เก่า - ไม่เป็นไร ข้ามไป
+                console.log('ℹ️ [CompanyContext] ข้าม Migration check (user ใหม่หรือไม่มีสิทธิ์)');
             }
             
             // ดึงรายการบริษัททั้งหมด
@@ -84,14 +94,21 @@ export const CompanyProvider: React.FC<CompanyProviderProps> = ({ children }) =>
                 } else {
                     console.log('ℹ️ [CompanyContext] ใช้บริษัทเดิม:', currentCompany.name);
                 }
+                setNeedsOnboarding(false);
+                console.log('✅ [CompanyContext] needsOnboarding = false (มีบริษัท)');
             } else {
-                console.log('⚠️ [CompanyContext] ไม่มีบริษัทเลย');
+                console.log('⚠️ [CompanyContext] ไม่มีบริษัทเลย - ต้องไปหน้า Onboarding');
                 setCurrentCompany(null);
+                setNeedsOnboarding(true); // User login แล้วแต่ยังไม่มีองค์กร
+                console.log('🚀 [CompanyContext] needsOnboarding = true (ไม่มีบริษัท)');
             }
         } catch (error) {
             console.error('❌ [CompanyContext] โหลดบริษัทล้มเหลว:', error);
             setCompanies([]);
             setCurrentCompany(null);
+            // ถ้าโหลดบริษัทล้มเหลว ให้ไปหน้า onboarding เพื่อให้ user สร้างองค์กรใหม่
+            setNeedsOnboarding(true);
+            console.log('🚀 [CompanyContext] needsOnboarding = true (เกิด error)');
         } finally {
             setLoading(false);
             console.log('✅ [CompanyContext] โหลดเสร็จสิ้น');
@@ -124,6 +141,7 @@ export const CompanyProvider: React.FC<CompanyProviderProps> = ({ children }) =>
         currentCompany,
         companies,
         loading,
+        needsOnboarding,
         selectCompany,
         refreshCompanies,
     };

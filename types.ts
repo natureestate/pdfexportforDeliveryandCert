@@ -17,6 +17,85 @@ export type MemberStatus = 'active' | 'pending' | 'inactive';
 // สถานะของคำเชิญ
 export type InvitationStatus = 'pending' | 'accepted' | 'rejected' | 'expired';
 
+// สถานะของคำขอเข้าร่วมองค์กร (Access Request)
+export type AccessRequestStatus = 'pending' | 'approved' | 'rejected';
+
+// ============================================================
+// Organization Join Code Types (ระบบ Join Code สำหรับเข้าร่วมองค์กร)
+// ============================================================
+
+/**
+ * Organization Join Code - รหัสสำหรับเข้าร่วมองค์กร
+ * Admin สร้าง code แล้วแชร์ให้ user ใหม่ใช้เข้าร่วมได้โดยไม่ต้องรอคำเชิญ
+ */
+export interface OrganizationCode {
+    id?: string;                    // Document ID
+    code: string;                   // รหัสเข้าร่วม (8-10 ตัวอักษร เช่น "ABC123XYZ")
+    companyId: string;              // ID ขององค์กร
+    companyName: string;            // ชื่อองค์กร (สำหรับแสดงผล)
+    role: UserRole;                 // บทบาทเริ่มต้นเมื่อเข้าร่วม (admin หรือ member)
+    maxUses: number;                // จำนวนครั้งสูงสุดที่ใช้ได้ (-1 = ไม่จำกัด)
+    usedCount: number;              // จำนวนครั้งที่ใช้ไปแล้ว
+    expiresAt?: Date;               // วันหมดอายุ (optional, null = ไม่หมดอายุ)
+    isActive: boolean;              // code ยังใช้งานได้หรือไม่
+    description?: string;           // คำอธิบาย (optional เช่น "สำหรับทีมขาย")
+    createdBy: string;              // User ID ของผู้สร้าง
+    createdByName?: string;         // ชื่อผู้สร้าง (สำหรับแสดงผล)
+    createdAt?: Date;
+    updatedAt?: Date;
+}
+
+/**
+ * ข้อมูลผู้ใช้ที่เข้าร่วมด้วย Code
+ */
+export interface OrganizationCodeUsage {
+    id?: string;                    // Document ID
+    codeId: string;                 // ID ของ OrganizationCode
+    code: string;                   // รหัสที่ใช้
+    userId: string;                 // User ID ของผู้ใช้
+    userEmail?: string;             // Email ของผู้ใช้
+    userName?: string;              // ชื่อผู้ใช้
+    companyId: string;              // ID ขององค์กร
+    joinedAt?: Date;                // วันที่เข้าร่วม
+}
+
+// ============================================================
+// Access Request Types (ระบบขอเข้าร่วมองค์กร)
+// ============================================================
+
+/**
+ * Access Request - คำขอเข้าร่วมองค์กร
+ * User ส่งคำขอไปยังองค์กร แล้ว Admin อนุมัติหรือปฏิเสธ
+ */
+export interface AccessRequest {
+    id?: string;                    // Document ID
+    userId: string;                 // User ID ของผู้ขอ
+    userEmail: string;              // Email ของผู้ขอ
+    userName?: string;              // ชื่อผู้ขอ
+    userPhone?: string;             // เบอร์โทรผู้ขอ (optional)
+    companyId: string;              // ID ขององค์กรที่ขอเข้าร่วม
+    companyName: string;            // ชื่อองค์กร (สำหรับแสดงผล)
+    status: AccessRequestStatus;    // สถานะคำขอ: pending, approved, rejected
+    message?: string;               // ข้อความจากผู้ขอ (optional เช่น "ผมเป็นพนักงานใหม่ของบริษัท")
+    reviewedBy?: string;            // User ID ของ Admin ที่ตรวจสอบ
+    reviewedByName?: string;        // ชื่อ Admin ที่ตรวจสอบ
+    reviewedAt?: Date;              // วันที่ตรวจสอบ
+    rejectionReason?: string;       // เหตุผลที่ปฏิเสธ (ถ้ามี)
+    assignedRole?: UserRole;        // บทบาทที่ได้รับ (เมื่ออนุมัติ)
+    createdAt?: Date;
+    updatedAt?: Date;
+}
+
+/**
+ * ข้อมูลองค์กรสำหรับแสดงในรายการ (ใช้ในหน้า Request Access)
+ */
+export interface PublicCompanyInfo {
+    id: string;                     // Company ID
+    name: string;                   // ชื่อองค์กร
+    memberCount?: number;           // จำนวนสมาชิก (optional)
+    logoUrl?: string;               // URL โลโก้ (optional)
+}
+
 // ============================================================
 // Document Verification Types (QR Code Verification System)
 // ============================================================

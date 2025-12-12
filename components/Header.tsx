@@ -416,7 +416,6 @@ const Header: React.FC = () => {
                             <>
                                 {/* Desktop Menu */}
                                 <div className="hidden md:flex items-center gap-4">
-                                    <LanguageSwitcher compact />
                                     <CompanySelector />
                                     
                                     {/* Desktop User Menu */}
@@ -622,12 +621,27 @@ const Header: React.FC = () => {
                                                                     <span>{t('header.tabSettings')}</span>
                                                                 </button>
                                                                 
-                                                                {/* ธีม Dark/Light */}
+                                                                                {/* ธีม Dark/Light */}
                                                                 <div className="px-6 py-2.5 border-t border-gray-200 dark:border-slate-600">
                                                                     <ThemeToggle showLabel />
                                                                 </div>
+                                                                
+                                                                {/* เปลี่ยนภาษา */}
+                                                                <div className="px-6 py-2.5 border-t border-gray-200 dark:border-slate-600">
+                                                                    <LanguageSwitcher showLabel />
+                                                                </div>
                                                             </div>
                                                         )}
+                                                    </div>
+                                                )}
+
+                                                {/* ธีม และ ภาษา - สำหรับ user ที่ไม่ใช่ admin */}
+                                                {(!isAdmin || !currentCompany) && (
+                                                    <div className="px-4 py-3 border-b border-gray-200 dark:border-slate-600 space-y-3">
+                                                        <ThemeToggle showLabel />
+                                                        <div className="pt-2 border-t border-gray-100 dark:border-slate-700">
+                                                            <LanguageSwitcher showLabel />
+                                                        </div>
                                                     </div>
                                                 )}
 
@@ -954,27 +968,42 @@ const Header: React.FC = () => {
                                                     <span>{t('header.tabSettings')}</span>
                                                 </button>
                                                 
-                                                {/* ธีม Dark/Light */}
+                                                                {/* ธีม Dark/Light */}
                                                 <div className="mt-2 pt-2 border-t border-gray-200 dark:border-slate-600">
-                                                    <ThemeToggle showLabel />
-                                                </div>
-                                            </div>
-                                        )}
-                                    </div>
-                                )}
+                                                                    <ThemeToggle showLabel />
+                                                                </div>
+                                                                
+                                                                {/* เปลี่ยนภาษา */}
+                                                                <div className="mt-2 pt-2 border-t border-gray-200 dark:border-slate-600">
+                                                                    <LanguageSwitcher showLabel />
+                                                                </div>
+                                                            </div>
+                                                        )}
+                                                    </div>
+                                                )}
 
-                                {/* ปุ่มดูโควตา */}
-                                {currentCompany && (
-                                    <button
-                                        onClick={handleShowQuota}
-                                        className="w-full px-4 py-3.5 text-left text-sm font-medium text-purple-700 dark:text-purple-300 bg-purple-50 dark:bg-purple-900/30 hover:bg-purple-100 dark:hover:bg-purple-900/50 rounded-lg transition-all duration-200 flex items-center gap-3 mb-2 shadow-sm hover:shadow"
-                                    >
-                                        <div className="w-9 h-9 rounded-lg bg-purple-200 dark:bg-purple-800 flex items-center justify-center">
-                                            <BarChart3 className="w-5 h-5 text-purple-700 dark:text-purple-300" />
-                                        </div>
-                                        <span>{t('header.viewQuota')}</span>
-                                    </button>
-                                )}
+                                                {/* ธีม และ ภาษา - สำหรับ user ที่ไม่ใช่ admin (Mobile) */}
+                                                {(!isAdmin || !currentCompany) && (
+                                                    <div className="mb-2 p-3 bg-gray-50 dark:bg-slate-700 rounded-lg space-y-3">
+                                                        <ThemeToggle showLabel />
+                                                        <div className="pt-2 border-t border-gray-200 dark:border-slate-600">
+                                                            <LanguageSwitcher showLabel />
+                                                        </div>
+                                                    </div>
+                                                )}
+
+                                                {/* ปุ่มดูโควตา */}
+                                                {currentCompany && (
+                                                    <button
+                                                        onClick={handleShowQuota}
+                                                        className="w-full px-4 py-3.5 text-left text-sm font-medium text-purple-700 dark:text-purple-300 bg-purple-50 dark:bg-purple-900/30 hover:bg-purple-100 dark:hover:bg-purple-900/50 rounded-lg transition-all duration-200 flex items-center gap-3 mb-2 shadow-sm hover:shadow"
+                                                    >
+                                                        <div className="w-9 h-9 rounded-lg bg-purple-200 dark:bg-purple-800 flex items-center justify-center">
+                                                            <BarChart3 className="w-5 h-5 text-purple-700 dark:text-purple-300" />
+                                                        </div>
+                                                        <span>{t('header.viewQuota')}</span>
+                                                    </button>
+                                                )}
 
                                 {/* ปุ่มแพ็กเกจ/อัปเกรด */}
                                 {currentCompany && (

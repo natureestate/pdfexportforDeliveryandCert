@@ -7,7 +7,7 @@
 
 import React, { createContext, useContext, useState, useEffect, ReactNode } from 'react';
 import { User } from 'firebase/auth';
-import { onAuthStateChanged, getLinkedProviders } from '../services/auth';
+import { onAuthStateChanged, getLinkedProviders, signOut as authLogout } from '../services/auth';
 import { 
     activatePendingMemberships, 
     activatePendingMembershipsByPhone,
@@ -26,6 +26,8 @@ interface AuthContextType {
     pendingMembershipsCount: number;
     // ฟังก์ชันสำหรับ refresh providers
     refreshLinkedProviders: () => void;
+    // ฟังก์ชันสำหรับ logout
+    logout: () => Promise<void>;
 }
 
 // สร้าง Context
@@ -140,6 +142,20 @@ export const AuthProvider: React.FC<AuthProviderProps> = ({ children }) => {
         return () => unsubscribe();
     }, []);
 
+    /**
+     * Logout function
+     * ออกจากระบบและล้างข้อมูล
+     */
+    const logout = async () => {
+        try {
+            await authLogout();
+            // State จะถูก reset อัตโนมัติผ่าน onAuthStateChanged
+        } catch (error) {
+            console.error('❌ Logout ล้มเหลว:', error);
+            throw error;
+        }
+    };
+
     const value: AuthContextType = {
         user,
         loading,
@@ -148,6 +164,7 @@ export const AuthProvider: React.FC<AuthProviderProps> = ({ children }) => {
         hasMultipleProviders: linkedProviders.length > 1,
         pendingMembershipsCount,
         refreshLinkedProviders,
+        logout,
     };
 
     return (

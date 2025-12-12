@@ -34,6 +34,7 @@ import SubcontractPreview from './components/SubcontractPreview';
 import HistoryList from './components/HistoryList';
 import AcceptInvitationPage from './components/AcceptInvitationPage';
 import SuperAdminDashboard from './components/SuperAdminDashboard';
+import OnboardingPage from './components/OnboardingPage';
 import CookieConsentModal from './components/CookieConsentModal';
 import MenuSettingsModal from './components/MenuSettingsModal';
 import VerificationPage from './components/VerificationPage';
@@ -1444,6 +1445,34 @@ const AppContent: React.FC = () => {
     );
 };
 
+/**
+ * Wrapper Component ที่ตรวจสอบว่าต้องไปหน้า Onboarding หรือไม่
+ * ถ้า User ยังไม่มีองค์กร จะ redirect ไปหน้า Onboarding
+ */
+const AppContentWithOnboardingCheck: React.FC = () => {
+    const { needsOnboarding, loading } = useCompany();
+    
+    // ถ้ากำลังโหลดข้อมูล ให้แสดง Loading
+    if (loading) {
+        return (
+            <div className="min-h-screen bg-slate-100 flex items-center justify-center">
+                <div className="text-center">
+                    <div className="w-8 h-8 border-4 border-indigo-600 border-t-transparent rounded-full animate-spin mx-auto"></div>
+                    <p className="text-gray-500 mt-2">กำลังโหลด...</p>
+                </div>
+            </div>
+        );
+    }
+    
+    // ถ้าต้องไปหน้า Onboarding (User login แล้วแต่ยังไม่มีองค์กร)
+    if (needsOnboarding) {
+        return <Navigate to="/onboarding" replace />;
+    }
+    
+    // ถ้ามีองค์กรแล้ว แสดงหน้าหลัก
+    return <AppContent />;
+};
+
 // Main App Component with Providers and Routing
 const App: React.FC = () => {
     const [cookieConsent, setCookieConsent] = useState<string | null>(null);
@@ -1524,6 +1553,18 @@ const App: React.FC = () => {
                     }
                 />
                 
+                {/* หน้า Onboarding - สำหรับ User ใหม่ที่ยังไม่มีองค์กร */}
+                <Route
+                    path="/onboarding"
+                    element={
+                        <CompanyProvider>
+                            <ProtectedRoute>
+                                <OnboardingPage />
+                            </ProtectedRoute>
+                        </CompanyProvider>
+                    }
+                />
+                
                 {/* หน้าหลัก - ต้อง login และมี CompanyProvider + MenuProvider + TabProvider */}
                 <Route
                     path="*"
@@ -1532,7 +1573,7 @@ const App: React.FC = () => {
                             <MenuProvider>
                                 <TabProvider>
                                     <ProtectedRoute>
-                                        <AppContent />
+                                        <AppContentWithOnboardingCheck />
                                     </ProtectedRoute>
                                 </TabProvider>
                             </MenuProvider>

@@ -82,6 +82,8 @@ export const migrateOldCompanies = async (): Promise<void> => {
 
 /**
  * ตรวจสอบว่ามีองค์กรเก่าที่ต้อง Migrate หรือไม่
+ * หมายเหตุ: User ใหม่ที่ยังไม่มีองค์กรจะไม่มีสิทธิ์ query companies collection
+ * ดังนั้น function นี้จะ return false สำหรับ user ใหม่
  */
 export const checkNeedMigration = async (): Promise<boolean> => {
     try {
@@ -96,7 +98,23 @@ export const checkNeedMigration = async (): Promise<boolean> => {
             where('userId', '==', currentUser.uid)
         );
 
-        const querySnapshot = await getDocs(q);
+        let querySnapshot;
+        try {
+            querySnapshot = await getDocs(q);
+        } catch (queryError: any) {
+            // User ใหม่อาจไม่มีสิทธิ์ query companies collection
+            // เพราะยังไม่มีองค์กรใดๆ - ไม่เป็นไร return false
+            if (queryError?.code === 'permission-denied') {
+                console.log('ℹ️ [Migration] User ใหม่ - ไม่มีองค์กรเก่าที่ต้อง migrate');
+                return false;
+            }
+            throw queryError;
+        }
+
+        // ถ้าไม่มีองค์กรเลย ไม่ต้อง migrate
+        if (querySnapshot.empty) {
+            return false;
+        }
 
         // ตรวจสอบแต่ละองค์กร
         for (const doc of querySnapshot.docs) {
@@ -116,6 +134,7 @@ export const checkNeedMigration = async (): Promise<boolean> => {
         return false;
     } catch (error) {
         console.error('❌ ตรวจสอบ Migration ล้มเหลว:', error);
+        // Return false เพื่อไม่ให้หยุดการทำงาน
         return false;
     }
 };

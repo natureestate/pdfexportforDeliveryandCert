@@ -344,11 +344,16 @@ export const generatePdf = async (element: HTMLElement, filename: string): Promi
         const originalMaxHeight = element.style.maxHeight;
         const originalAspectRatio = element.style.aspectRatio;
         const originalBoxSizing = element.style.boxSizing;
+        const originalPadding = element.style.padding;
         
         // 🔥 บังคับให้ element มีขนาดเท่ากับ A4 จริงๆ (210mm x 297mm)
         // แปลงเป็น pixels โดยใช้ 96 DPI standard (1mm = 3.7795 pixels)
         const A4_WIDTH_PX = 794;  // 210mm * 3.7795
         const A4_HEIGHT_PX = 1123; // 297mm * 3.7795
+        
+        // ✅ กำหนด padding มาตรฐานสำหรับ PDF (48px = p-12 ใน Tailwind)
+        // เพื่อให้ได้ผลลัพธ์เหมือนกันทั้ง Desktop และ Mobile
+        const STANDARD_PADDING_PX = 48; // 48px = 12.7mm margin ทุกด้าน
         
         // ✅ คง padding เดิมของ element ไว้ เพื่อให้มีระยะเว้นจากขอบกระดาษเหมือน preview
         // ใช้ inline styles เพื่อบังคับขนาด A4 แต่ไม่ลบ padding
@@ -360,7 +365,11 @@ export const generatePdf = async (element: HTMLElement, filename: string): Promi
         element.style.overflow = 'visible';
         element.style.boxSizing = 'border-box'; // ใช้ border-box เพื่อให้ padding ถูกนับในขนาด
         
-        console.log(`📏 Set element size to A4: ${A4_WIDTH_PX}x${A4_HEIGHT_PX}px (preserved padding for margins)`);
+        // 🔥 บังคับ padding มาตรฐานเพื่อให้ PDF เหมือนกันทุกอุปกรณ์ (Desktop/Mobile)
+        // แก้ปัญหา responsive padding (p-8 md:p-12) ที่ทำให้ margin ต่างกัน
+        element.style.padding = `${STANDARD_PADDING_PX}px`;
+        
+        console.log(`📏 Set element size to A4: ${A4_WIDTH_PX}x${A4_HEIGHT_PX}px with standard padding: ${STANDARD_PADDING_PX}px`);
         
         // รอให้ DOM อัปเดตขนาดใหม่
         await new Promise(resolve => setTimeout(resolve, 100));
@@ -403,6 +412,7 @@ export const generatePdf = async (element: HTMLElement, filename: string): Promi
         element.style.maxHeight = originalMaxHeight;
         element.style.aspectRatio = originalAspectRatio;
         element.style.boxSizing = originalBoxSizing;
+        element.style.padding = originalPadding;
 
         console.log(`Canvas created successfully: ${canvas.width}x${canvas.height}`);
 
