@@ -9,7 +9,7 @@ import CustomerSelector from './CustomerSelector';
 import ContractorSelector from './ContractorSelector';
 import { Customer } from '../services/customers';
 import { Contractor } from '../services/contractors';
-import { generateDocumentNumber } from '../services/documentNumber';
+import { generateDocumentNumber, DocumentType } from '../services/documentNumber';
 import { useCompany } from '../contexts/CompanyContext';
 import { numberToThaiText } from '../utils/numberToThaiText';
 
@@ -189,7 +189,7 @@ const SubcontractForm: React.FC<SubcontractFormProps> = ({
         const generateNumber = async () => {
             if (!data.contractNumber && currentCompany?.id) {
                 try {
-                    const docNumber = await generateDocumentNumber(currentCompany.id, 'subcontract');
+                    const docNumber = await generateDocumentNumber('subcontract' as DocumentType);
                     handleDataChange('contractNumber', docNumber);
                 } catch (error) {
                     console.error('❌ สร้างเลขที่สัญญาล้มเหลว:', error);

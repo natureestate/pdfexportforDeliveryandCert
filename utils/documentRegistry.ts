@@ -219,9 +219,9 @@ export const DOCUMENT_REGISTRY = {
 /**
  * Helper function สำหรับ generate PDF filename
  */
-export const generatePdfFilename = <T extends DocumentData>(
+export const generatePdfFilename = (
     type: DocType,
-    data: T
+    data: DocumentData
 ): string => {
     const config = DOCUMENT_REGISTRY[type];
     
@@ -263,8 +263,9 @@ export const generatePdfFilename = <T extends DocumentData>(
         return `${yy}${mm}${dd}`;
     };
 
-    const customerName = cleanCustomerName(config.getCustomerName(data));
-    const dateStr = formatDateToYYMMDD(config.getDate(data));
+    // ใช้ type assertion เพราะ TypeScript ไม่สามารถ infer ได้ว่า data ตรงกับ config
+    const customerName = cleanCustomerName((config.getCustomerName as (data: unknown) => string)(data));
+    const dateStr = formatDateToYYMMDD((config.getDate as (data: unknown) => Date | null | undefined)(data));
     const uuid = generateUUID().substring(0, 8);
 
     return `${config.prefix}_${customerName}_${dateStr}_${uuid}.pdf`;
@@ -273,9 +274,9 @@ export const generatePdfFilename = <T extends DocumentData>(
 /**
  * Helper function สำหรับ save หรือ update document
  */
-export const saveOrUpdateDocument = async <T extends DocumentData>(
+export const saveOrUpdateDocument = async (
     type: DocType,
-    data: T,
+    data: DocumentData,
     documentId: string | null,
     companyId?: string
 ): Promise<{ id: string; message: string }> => {
@@ -283,13 +284,15 @@ export const saveOrUpdateDocument = async <T extends DocumentData>(
     const isEditMode = !!documentId;
 
     if (isEditMode) {
-        await config.updateFn(documentId, data);
+        // ใช้ type assertion เพราะ TypeScript ไม่สามารถ infer ได้ว่า data ตรงกับ config
+        await (config.updateFn as (id: string, data: unknown) => Promise<void>)(documentId, data);
         return {
             id: documentId,
             message: config.successMessages.update,
         };
     } else {
-        const id = await config.saveFn(data, companyId);
+        // ใช้ type assertion เพราะ TypeScript ไม่สามารถ infer ได้ว่า data ตรงกับ config
+        const id = await (config.saveFn as (data: unknown, companyId?: string) => Promise<string>)(data, companyId);
         return {
             id,
             message: `${config.successMessages.save} (ID: ${id})`,

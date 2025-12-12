@@ -323,7 +323,7 @@ const SuperAdminDashboard: React.FC = () => {
 
         try {
             setQuotaUpdating(true);
-            await changePlan(companyId, newPlan, user?.uid);
+            await changePlan(companyId, newPlan, 'monthly', user?.uid);
             
             // รีโหลดข้อมูล
             const quotasData = await getAllQuotas();
@@ -674,8 +674,8 @@ const SuperAdminDashboard: React.FC = () => {
                                 <span className="info-label"><BarChart3 className="w-4 h-4 inline mr-1" />แผนทั้งหมด:</span>
                                 <span className="info-value">
                                     Free: {quotas.filter(q => q.plan === 'free').length} | 
-                                    Basic: {quotas.filter(q => q.plan === 'basic').length} | 
-                                    Premium: {quotas.filter(q => q.plan === 'premium').length} | 
+                                    Starter: {quotas.filter(q => q.plan === 'starter').length} | 
+                                    Business: {quotas.filter(q => q.plan === 'business').length} | 
                                     Enterprise: {quotas.filter(q => q.plan === 'enterprise').length}
                                 </span>
                             </div>
