@@ -277,8 +277,8 @@ export const getImageAsBase64FromPath = async (storagePath: string): Promise<str
                     
                     ctx.drawImage(img, 0, 0);
                     
-                    // แปลง canvas เป็น Base64
-                    const base64 = canvas.toDataURL('image/jpeg', 0.95);
+                    // แปลง canvas เป็น Base64 (ใช้ PNG เพื่อรักษา transparency)
+                    const base64 = canvas.toDataURL('image/png');
                     console.log('✅ Successfully converted via Image+Canvas method');
                     resolve(base64);
                 } catch (canvasError) {

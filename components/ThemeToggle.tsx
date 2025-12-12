@@ -36,46 +36,43 @@ const ThemeToggle: React.FC<ThemeToggleProps> = ({ showLabel = false, className 
         );
     }
 
-    // แสดงปุ่มพร้อม label และตัวเลือก
+    // แสดงปุ่มพร้อม label และตัวเลือก (compact)
     return (
-        <div className={`flex items-center gap-2 ${className}`}>
-            <span className="text-sm font-medium text-gray-700 dark:text-gray-300">ธีม:</span>
-            <div className="inline-flex rounded-lg border border-gray-200 dark:border-slate-600 p-1 bg-gray-50 dark:bg-slate-700">
+        <div className={`flex items-center justify-between ${className}`}>
+            <span className="text-xs font-medium text-gray-500 dark:text-gray-400">ธีม</span>
+            <div className="inline-flex rounded-md border border-gray-200 dark:border-slate-600 p-0.5 bg-gray-50 dark:bg-slate-700">
                 <button
                     onClick={() => setTheme('light')}
-                    className={`flex items-center gap-1.5 px-3 py-1.5 rounded-md text-sm font-medium transition-colors ${
+                    className={`flex items-center justify-center w-7 h-7 rounded transition-colors ${
                         theme === 'light'
-                            ? 'bg-white dark:bg-slate-600 text-amber-600 shadow-sm'
-                            : 'text-gray-500 dark:text-gray-400 hover:text-gray-700 dark:hover:text-gray-200'
+                            ? 'bg-white dark:bg-slate-600 text-amber-500 shadow-sm'
+                            : 'text-gray-400 dark:text-gray-500 hover:text-gray-600 dark:hover:text-gray-300'
                     }`}
                     title="Light Mode"
                 >
-                    <Sun className="w-4 h-4" />
-                    <span className="hidden sm:inline">Light</span>
+                    <Sun className="w-3.5 h-3.5" />
                 </button>
                 <button
                     onClick={() => setTheme('dark')}
-                    className={`flex items-center gap-1.5 px-3 py-1.5 rounded-md text-sm font-medium transition-colors ${
+                    className={`flex items-center justify-center w-7 h-7 rounded transition-colors ${
                         theme === 'dark'
-                            ? 'bg-white dark:bg-slate-600 text-indigo-600 shadow-sm'
-                            : 'text-gray-500 dark:text-gray-400 hover:text-gray-700 dark:hover:text-gray-200'
+                            ? 'bg-white dark:bg-slate-600 text-indigo-500 shadow-sm'
+                            : 'text-gray-400 dark:text-gray-500 hover:text-gray-600 dark:hover:text-gray-300'
                     }`}
                     title="Dark Mode"
                 >
-                    <Moon className="w-4 h-4" />
-                    <span className="hidden sm:inline">Dark</span>
+                    <Moon className="w-3.5 h-3.5" />
                 </button>
                 <button
                     onClick={() => setTheme('system')}
-                    className={`flex items-center gap-1.5 px-3 py-1.5 rounded-md text-sm font-medium transition-colors ${
+                    className={`flex items-center justify-center w-7 h-7 rounded transition-colors ${
                         theme === 'system'
-                            ? 'bg-white dark:bg-slate-600 text-green-600 shadow-sm'
-                            : 'text-gray-500 dark:text-gray-400 hover:text-gray-700 dark:hover:text-gray-200'
+                            ? 'bg-white dark:bg-slate-600 text-emerald-500 shadow-sm'
+                            : 'text-gray-400 dark:text-gray-500 hover:text-gray-600 dark:hover:text-gray-300'
                     }`}
                     title="System (Auto)"
                 >
-                    <Monitor className="w-4 h-4" />
-                    <span className="hidden sm:inline">Auto</span>
+                    <Monitor className="w-3.5 h-3.5" />
                 </button>
             </div>
         </div>
