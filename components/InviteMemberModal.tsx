@@ -260,6 +260,11 @@ const InviteMemberModal: React.FC<InviteMemberModalProps> = ({
                         box-shadow: 0 10px 40px rgba(0, 0, 0, 0.2);
                     }
 
+                    :global(.dark) .modal-content {
+                        background: #1e293b;
+                        box-shadow: 0 10px 40px rgba(0, 0, 0, 0.5);
+                    }
+
                     .modal-header {
                         display: flex;
                         justify-content: space-between;
@@ -310,6 +315,12 @@ const InviteMemberModal: React.FC<InviteMemberModalProps> = ({
                         border-left: 4px solid #c62828;
                     }
 
+                    :global(.dark) .error-message {
+                        background: rgba(239, 68, 68, 0.2);
+                        color: #fca5a5;
+                        border-left-color: #ef4444;
+                    }
+
                     .form-section {
                         margin-bottom: 20px;
                     }
@@ -322,6 +333,10 @@ const InviteMemberModal: React.FC<InviteMemberModalProps> = ({
                         font-size: 14px;
                     }
 
+                    :global(.dark) .form-section label {
+                        color: #e2e8f0;
+                    }
+
                     .form-section input,
                     .form-section select,
                     .form-section textarea {
@@ -332,6 +347,21 @@ const InviteMemberModal: React.FC<InviteMemberModalProps> = ({
                         font-size: 14px;
                         transition: border-color 0.3s;
                         font-family: inherit;
+                        background: white;
+                        color: #333;
+                    }
+
+                    :global(.dark) .form-section input,
+                    :global(.dark) .form-section select,
+                    :global(.dark) .form-section textarea {
+                        background: #334155;
+                        border-color: #475569;
+                        color: #e2e8f0;
+                    }
+
+                    :global(.dark) .form-section input::placeholder,
+                    :global(.dark) .form-section textarea::placeholder {
+                        color: #94a3b8;
                     }
 
                     .form-section input:focus,
@@ -341,6 +371,12 @@ const InviteMemberModal: React.FC<InviteMemberModalProps> = ({
                         border-color: #667eea;
                     }
 
+                    :global(.dark) .form-section input:focus,
+                    :global(.dark) .form-section select:focus,
+                    :global(.dark) .form-section textarea:focus {
+                        border-color: #818cf8;
+                    }
+
                     .form-section input:disabled,
                     .form-section select:disabled,
                     .form-section textarea:disabled {
@@ -348,9 +384,21 @@ const InviteMemberModal: React.FC<InviteMemberModalProps> = ({
                         cursor: not-allowed;
                     }
 
+                    :global(.dark) .form-section input:disabled,
+                    :global(.dark) .form-section select:disabled,
+                    :global(.dark) .form-section textarea:disabled {
+                        background: #1e293b;
+                        color: #64748b;
+                    }
+
                     .input-disabled {
                         background: #f5f5f5 !important;
                         color: #666;
+                    }
+
+                    :global(.dark) .input-disabled {
+                        background: #1e293b !important;
+                        color: #64748b;
                     }
 
                     .form-section textarea {
@@ -366,11 +414,20 @@ const InviteMemberModal: React.FC<InviteMemberModalProps> = ({
                         line-height: 1.4;
                     }
 
+                    :global(.dark) .hint {
+                        color: #94a3b8;
+                    }
+
                     .checkbox-section {
                         background: #f8f9fa;
                         padding: 15px;
                         border-radius: 6px;
                         border: 2px solid #e0e0e0;
+                    }
+
+                    :global(.dark) .checkbox-section {
+                        background: #334155;
+                        border-color: #475569;
                     }
 
                     .checkbox-label {
@@ -379,6 +436,10 @@ const InviteMemberModal: React.FC<InviteMemberModalProps> = ({
                         cursor: pointer;
                         font-weight: 500;
                         margin-bottom: 0;
+                    }
+
+                    :global(.dark) .checkbox-label {
+                        color: #e2e8f0;
                     }
 
                     .checkbox-label input[type="checkbox"] {
@@ -399,6 +460,10 @@ const InviteMemberModal: React.FC<InviteMemberModalProps> = ({
                         margin-top: 25px;
                         padding-top: 20px;
                         border-top: 1px solid #e0e0e0;
+                    }
+
+                    :global(.dark) .modal-actions {
+                        border-top-color: #475569;
                     }
 
                     .btn-primary,
@@ -433,8 +498,17 @@ const InviteMemberModal: React.FC<InviteMemberModalProps> = ({
                         color: #333;
                     }
 
+                    :global(.dark) .btn-secondary {
+                        background: #475569;
+                        color: #e2e8f0;
+                    }
+
                     .btn-secondary:hover:not(:disabled) {
                         background: #e0e0e0;
+                    }
+
+                    :global(.dark) .btn-secondary:hover:not(:disabled) {
+                        background: #64748b;
                     }
 
                     .btn-secondary:disabled {

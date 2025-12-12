@@ -812,6 +812,14 @@ const UserManagement: React.FC<UserManagementProps> = ({ companyId, companyName,
                     color: #333;
                 }
 
+                :global(.dark) .user-management-header h2 {
+                    color: #e2e8f0;
+                }
+
+                :global(.dark) .user-management-header {
+                    border-bottom-color: #475569;
+                }
+
                 .close-button {
                     background: #f44336;
                     color: white;
@@ -834,12 +842,21 @@ const UserManagement: React.FC<UserManagementProps> = ({ companyId, companyName,
                     color: #666;
                 }
 
+                :global(.dark) .loading {
+                    color: #94a3b8;
+                }
+
                 .error-message {
                     background: #ffebee;
                     color: #c62828;
                     padding: 12px;
                     border-radius: 4px;
                     margin-bottom: 20px;
+                }
+
+                :global(.dark) .error-message {
+                    background: rgba(239, 68, 68, 0.2);
+                    color: #fca5a5;
                 }
 
                 .invite-button-section {
@@ -890,6 +907,10 @@ const UserManagement: React.FC<UserManagementProps> = ({ companyId, companyName,
                     border-bottom: 2px solid #e0e0e0;
                 }
 
+                :global(.dark) .tabs {
+                    border-bottom-color: #475569;
+                }
+
                 .tab {
                     background: none;
                     border: none;
@@ -902,13 +923,26 @@ const UserManagement: React.FC<UserManagementProps> = ({ companyId, companyName,
                     transition: all 0.3s;
                 }
 
+                :global(.dark) .tab {
+                    color: #94a3b8;
+                }
+
                 .tab:hover {
                     color: #2196F3;
+                }
+
+                :global(.dark) .tab:hover {
+                    color: #60a5fa;
                 }
 
                 .tab.active {
                     color: #2196F3;
                     border-bottom-color: #2196F3;
+                }
+
+                :global(.dark) .tab.active {
+                    color: #60a5fa;
+                    border-bottom-color: #60a5fa;
                 }
 
                 .members-list-section,
@@ -922,6 +956,11 @@ const UserManagement: React.FC<UserManagementProps> = ({ companyId, companyName,
                     color: #333;
                 }
 
+                :global(.dark) .members-list-section h3,
+                :global(.dark) .invitations-list-section h3 {
+                    color: #e2e8f0;
+                }
+
                 .no-members,
                 .no-invitations {
                     text-align: center;
@@ -929,6 +968,12 @@ const UserManagement: React.FC<UserManagementProps> = ({ companyId, companyName,
                     color: #999;
                     background: #f9f9f9;
                     border-radius: 4px;
+                }
+
+                :global(.dark) .no-members,
+                :global(.dark) .no-invitations {
+                    color: #94a3b8;
+                    background: #334155;
                 }
 
                 .members-table {
@@ -942,11 +987,22 @@ const UserManagement: React.FC<UserManagementProps> = ({ companyId, companyName,
                     box-shadow: 0 2px 4px rgba(0,0,0,0.1);
                 }
 
+                :global(.dark) .members-table table {
+                    background: #1e293b;
+                    box-shadow: 0 2px 4px rgba(0,0,0,0.3);
+                }
+
                 .members-table th,
                 .members-table td {
                     padding: 12px;
                     text-align: left;
                     border-bottom: 1px solid #e0e0e0;
+                }
+
+                :global(.dark) .members-table th,
+                :global(.dark) .members-table td {
+                    border-bottom-color: #475569;
+                    color: #e2e8f0;
                 }
 
                 .members-table th {
@@ -955,8 +1011,17 @@ const UserManagement: React.FC<UserManagementProps> = ({ companyId, companyName,
                     color: #555;
                 }
 
+                :global(.dark) .members-table th {
+                    background: #334155;
+                    color: #cbd5e1;
+                }
+
                 .members-table tr:hover {
                     background: #f9f9f9;
+                }
+
+                :global(.dark) .members-table tr:hover {
+                    background: #334155;
                 }
 
                 .role-badge,
@@ -1058,6 +1123,10 @@ const UserManagement: React.FC<UserManagementProps> = ({ companyId, companyName,
                     font-style: italic;
                 }
 
+                :global(.dark) .self-indicator {
+                    color: #94a3b8;
+                }
+
                 /* Modal Styles */
                 .modal-overlay {
                     position: fixed;
@@ -1081,6 +1150,11 @@ const UserManagement: React.FC<UserManagementProps> = ({ companyId, companyName,
                     max-height: 90vh;
                     overflow-y: auto;
                     box-shadow: 0 10px 40px rgba(0, 0, 0, 0.2);
+                }
+
+                :global(.dark) .modal-content-inner {
+                    background: #1e293b;
+                    box-shadow: 0 10px 40px rgba(0, 0, 0, 0.5);
                 }
 
                 .modal-header-inner {
@@ -1115,6 +1189,10 @@ const UserManagement: React.FC<UserManagementProps> = ({ companyId, companyName,
                     font-size: 14px;
                 }
 
+                :global(.dark) .form-group label {
+                    color: #e2e8f0;
+                }
+
                 .form-group input,
                 .form-group select {
                     width: 100%;
@@ -1125,6 +1203,20 @@ const UserManagement: React.FC<UserManagementProps> = ({ companyId, companyName,
                     transition: border-color 0.3s;
                     font-family: inherit;
                     box-sizing: border-box;
+                    background: white;
+                    color: #333;
+                }
+
+                :global(.dark) .form-group input,
+                :global(.dark) .form-group select {
+                    background: #334155;
+                    border-color: #475569;
+                    color: #e2e8f0;
+                }
+
+                :global(.dark) .form-group input::placeholder,
+                :global(.dark) .form-group select::placeholder {
+                    color: #94a3b8;
                 }
 
                 .form-group input:focus,
@@ -1133,15 +1225,31 @@ const UserManagement: React.FC<UserManagementProps> = ({ companyId, companyName,
                     border-color: #667eea;
                 }
 
+                :global(.dark) .form-group input:focus,
+                :global(.dark) .form-group select:focus {
+                    border-color: #818cf8;
+                }
+
                 .form-group input:disabled,
                 .form-group select:disabled {
                     background: #f5f5f5;
                     cursor: not-allowed;
                 }
 
+                :global(.dark) .form-group input:disabled,
+                :global(.dark) .form-group select:disabled {
+                    background: #1e293b;
+                    color: #64748b;
+                }
+
                 .input-disabled {
                     background: #f5f5f5 !important;
                     color: #666;
+                }
+
+                :global(.dark) .input-disabled {
+                    background: #1e293b !important;
+                    color: #64748b;
                 }
 
                 .hint {
@@ -1151,6 +1259,10 @@ const UserManagement: React.FC<UserManagementProps> = ({ companyId, companyName,
                     color: #666;
                 }
 
+                :global(.dark) .hint {
+                    color: #94a3b8;
+                }
+
                 .modal-actions-inner {
                     display: flex;
                     gap: 12px;
@@ -1158,6 +1270,10 @@ const UserManagement: React.FC<UserManagementProps> = ({ companyId, companyName,
                     margin-top: 25px;
                     padding-top: 20px;
                     border-top: 1px solid #e0e0e0;
+                }
+
+                :global(.dark) .modal-actions-inner {
+                    border-top-color: #475569;
                 }
 
                 .btn-cancel {
@@ -1172,8 +1288,17 @@ const UserManagement: React.FC<UserManagementProps> = ({ companyId, companyName,
                     transition: all 0.3s;
                 }
 
+                :global(.dark) .btn-cancel {
+                    background: #475569;
+                    color: #e2e8f0;
+                }
+
                 .btn-cancel:hover:not(:disabled) {
                     background: #e0e0e0;
+                }
+
+                :global(.dark) .btn-cancel:hover:not(:disabled) {
+                    background: #64748b;
                 }
 
                 .btn-cancel:disabled {
