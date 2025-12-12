@@ -40,7 +40,7 @@ const VariationOrderPreview = forwardRef<HTMLDivElement, VariationOrderPreviewPr
 
     return (
         <div ref={ref} className="bg-white shadow-lg p-8 md:p-12 w-full aspect-[210/297] overflow-auto text-sm" id="printable-area">
-            <header className="flex justify-between items-start pb-4 border-b-2 border-gray-800">
+            <header className="flex justify-between items-start pb-4 border-b border-gray-400">
                 <div className="w-2/5">
                     {/* Wrapper สำหรับ trim ขอบบนล่าง */}
                     <div className="max-h-[168px] overflow-hidden flex items-center justify-start">
@@ -203,7 +203,7 @@ const VariationOrderPreview = forwardRef<HTMLDivElement, VariationOrderPreviewPr
                             <span className="font-medium">{data.taxAmount.toLocaleString('th-TH', { minimumFractionDigits: 2, maximumFractionDigits: 2 })} บาท</span>
                         </div>
                     )}
-                    <div className="flex justify-between pt-2 border-t-2 border-gray-800 text-base">
+                    <div className="flex justify-between pt-2 border-t border-gray-400 text-base">
                         <span className="font-bold text-gray-900">ยอดรวมที่ต้องชำระเพิ่ม/หัก:</span>
                         <span className={`font-bold ${data.totalAmount >= 0 ? 'text-indigo-600' : 'text-red-600'}`}>
                             {data.totalAmount.toLocaleString('th-TH', { minimumFractionDigits: 2, maximumFractionDigits: 2 })} บาท
@@ -257,7 +257,7 @@ const VariationOrderPreview = forwardRef<HTMLDivElement, VariationOrderPreviewPr
                 <div className="grid grid-cols-2 gap-6">
                     <div className="text-center">
                         <p className="font-semibold text-slate-600 text-sm mb-4">ลงนามผู้อนุมัติ (ลูกค้า)</p>
-                        <div className="border-t-2 border-gray-800 pt-2 mt-16">
+                        <div className="border-t border-gray-400 pt-2 mt-16">
                             <p className="text-xs text-gray-600">({data.customerApproverName || '...........................'})</p>
                             {data.customerApproverDate && (
                                 <p className="text-xs text-gray-600 mt-1">วันที่: {formatDate(data.customerApproverDate)}</p>
@@ -266,7 +266,7 @@ const VariationOrderPreview = forwardRef<HTMLDivElement, VariationOrderPreviewPr
                     </div>
                     <div className="text-center">
                         <p className="font-semibold text-slate-600 text-sm mb-4">ลงนามผู้เสนอ (บริษัท)</p>
-                        <div className="border-t-2 border-gray-800 pt-2 mt-16">
+                        <div className="border-t border-gray-400 pt-2 mt-16">
                             <p className="text-xs text-gray-600">({data.companyApproverName || '...........................'})</p>
                             {data.companyApproverDate && (
                                 <p className="text-xs text-gray-600 mt-1">วันที่: {formatDate(data.companyApproverDate)}</p>

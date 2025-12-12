@@ -32,7 +32,7 @@ const WarrantyPreview = forwardRef<HTMLDivElement, WarrantyPreviewProps>(({ data
         <div ref={ref} className="bg-white shadow-xl w-full aspect-[210/297] overflow-auto flex flex-col" id="printable-area">
             <div className="p-3 border-2 border-indigo-700 m-1.5 flex-grow flex flex-col">
                 {/* Header Section */}
-                <header className="mb-2 pb-1.5 border-b-2 border-indigo-300">
+                <header className="mb-2 pb-1.5 border-b border-indigo-300">
                     {/* ข้อความส่วนหัว */}
                     <div className="text-center pt-2">
                         <h1 className="text-2xl font-bold text-indigo-900 tracking-wide">ใบรับประกันสินค้า</h1>
@@ -195,7 +195,7 @@ const WarrantyPreview = forwardRef<HTMLDivElement, WarrantyPreviewProps>(({ data
                 </main>
                 
                 {/* Footer Section */}
-                <footer className="mt-1.5 pt-1.5 border-t-2 border-indigo-300">
+                <footer className="mt-1.5 pt-1.5 border-t border-indigo-300">
                     <div className="grid grid-cols-3 gap-2 items-end">
                         <div className="text-xs text-slate-600">
                             <p className="font-semibold text-xs text-slate-900">วันที่ออกเอกสาร: {formatDate(data.issueDate)}</p>

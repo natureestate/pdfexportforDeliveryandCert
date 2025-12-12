@@ -23,7 +23,7 @@ const MemoPreview = forwardRef<HTMLDivElement, MemoPreviewProps>(({ data }, ref)
     return (
         <div ref={ref} className="bg-white shadow-lg p-8 md:p-12 w-full aspect-[210/297] overflow-auto text-sm" id="printable-area">
             {/* Header */}
-            <header className="flex justify-between items-start pb-4 border-b-2 border-gray-800">
+            <header className="flex justify-between items-start pb-4 border-b border-gray-400">
                 <div className="w-2/5">
                     <div className="max-h-[168px] overflow-hidden flex items-center justify-start">
                         <img 

@@ -22,7 +22,7 @@ const QuotationPreview = forwardRef<HTMLDivElement, QuotationPreviewProps>(({ da
 
     return (
         <div ref={ref} className="bg-white shadow-lg p-8 md:p-12 w-full aspect-[210/297] overflow-auto text-sm" id="printable-area">
-            <header className="flex justify-between items-start pb-4 border-b-2 border-gray-800">
+            <header className="flex justify-between items-start pb-4 border-b border-gray-400">
                 <div className="w-2/5">
                     {/* Wrapper สำหรับ trim ขอบบนล่าง */}
                     <div className="max-h-[168px] overflow-hidden flex items-center justify-start">
@@ -120,7 +120,7 @@ const QuotationPreview = forwardRef<HTMLDivElement, QuotationPreviewProps>(({ da
                             <span className="font-medium">-{data.discount.toLocaleString('th-TH', { minimumFractionDigits: 2, maximumFractionDigits: 2 })} บาท</span>
                         </div>
                     )}
-                    <div className="flex justify-between pt-2 border-t-2 border-gray-800 text-base">
+                    <div className="flex justify-between pt-2 border-t border-gray-400 text-base">
                         <span className="font-bold text-gray-900">ยอดรวมทั้งสิ้น:</span>
                         <span className="font-bold text-indigo-600">{data.total.toLocaleString('th-TH', { minimumFractionDigits: 2, maximumFractionDigits: 2 })} บาท</span>
                     </div>
