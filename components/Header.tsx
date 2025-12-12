@@ -436,7 +436,7 @@ const Header: React.FC = () => {
                                 <img 
                                     src={organizationLogo} 
                                     alt={currentCompany?.name || 'Organization'} 
-                                    className="h-8 w-8 md:h-10 md:w-10 object-contain rounded-lg flex-shrink-0 bg-white dark:bg-slate-700 p-0.5 border border-gray-200 dark:border-slate-600"
+                                    className="h-10 w-auto md:h-12 max-w-[120px] md:max-w-[150px] object-contain flex-shrink-0"
                                 />
                             ) : (
                                 <svg className="h-7 w-7 md:h-8 md:w-8 text-indigo-600 dark:text-indigo-400 flex-shrink-0" xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke="currentColor" aria-hidden="true">

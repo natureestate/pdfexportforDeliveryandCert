@@ -25,30 +25,39 @@ const OrganizationLogoManager: React.FC<OrganizationLogoManagerProps> = ({ isOpe
     const [isDeleting, setIsDeleting] = useState(false);
     const [error, setError] = useState<string | null>(null);
     const [success, setSuccess] = useState<string | null>(null);
+    const [hasJustUploaded, setHasJustUploaded] = useState(false); // ป้องกัน reset หลัง upload
 
-    // โหลด logo ปัจจุบันเมื่อเปิด modal
+    // โหลด logo ปัจจุบันเมื่อเปิด modal (ครั้งแรก)
     useEffect(() => {
         const loadCurrentLogo = async () => {
+            // ถ้าเพิ่ง upload ไป ไม่ต้อง reset preview
+            if (hasJustUploaded) {
+                console.log('🔒 [OrganizationLogo] Skip loading - just uploaded');
+                return;
+            }
+            
             if (isOpen && currentCompany?.organizationLogoUrl) {
                 try {
+                    console.log('📥 [OrganizationLogo] Loading current logo:', currentCompany.organizationLogoUrl);
                     const base64 = await convertStorageUrlToBase64(currentCompany.organizationLogoUrl);
                     setLogoPreview(base64);
                 } catch (error) {
                     console.error('Error loading organization logo:', error);
                     setLogoPreview(currentCompany.organizationLogoUrl);
                 }
-            } else {
+            } else if (isOpen && !currentCompany?.organizationLogoUrl && !hasJustUploaded) {
                 setLogoPreview(null);
             }
         };
         loadCurrentLogo();
-    }, [isOpen, currentCompany?.organizationLogoUrl]);
+    }, [isOpen, currentCompany?.organizationLogoUrl, hasJustUploaded]);
 
     // Reset states เมื่อเปิด modal
     useEffect(() => {
         if (isOpen) {
             setError(null);
             setSuccess(null);
+            setHasJustUploaded(false); // Reset flag เมื่อเปิด modal ใหม่
         }
     }, [isOpen]);
 
@@ -74,32 +83,59 @@ const OrganizationLogoManager: React.FC<OrganizationLogoManagerProps> = ({ isOpe
         setIsUploading(true);
 
         try {
-            // อัปโหลดไฟล์ไปยัง Firebase Storage
-            const fileName = `org-logo-${currentCompany?.id}-${Date.now()}.${file.name.split('.').pop()}`;
-            const logoUrl = await uploadLogoFile(file, fileName);
+            console.log('🚀 [OrganizationLogo] Starting upload...');
+            console.log('📁 [OrganizationLogo] File:', file.name, file.type, file.size);
+            console.log('🏢 [OrganizationLogo] Company ID:', currentCompany?.id);
 
-            // อัปเดต Company document
-            if (currentCompany?.id) {
-                await updateCompany(currentCompany.id, {
-                    organizationLogoUrl: logoUrl,
-                });
-            }
-
-            // แสดง preview
+            // แสดง preview ก่อน
             const reader = new FileReader();
             reader.onload = (e) => {
                 setLogoPreview(e.target?.result as string);
             };
             reader.readAsDataURL(file);
 
+            // อัปโหลดไฟล์ไปยัง Firebase Storage
+            const fileExtension = file.name.split('.').pop() || 'png';
+            const fileName = `org-logo-${currentCompany?.id}-${Date.now()}.${fileExtension}`;
+            console.log('📤 [OrganizationLogo] Uploading with filename:', fileName);
+            
+            const logoUrl = await uploadLogoFile(file, fileName);
+            console.log('✅ [OrganizationLogo] Upload success, URL:', logoUrl);
+
+            // อัปเดต Company document
+            if (currentCompany?.id) {
+                console.log('💾 [OrganizationLogo] Updating company document...');
+                await updateCompany(currentCompany.id, {
+                    organizationLogoUrl: logoUrl,
+                });
+                console.log('✅ [OrganizationLogo] Company document updated');
+            }
+
+            // ตั้ง flag ว่าเพิ่ง upload เพื่อป้องกัน useEffect reset preview
+            setHasJustUploaded(true);
+            
             // Refresh companies เพื่ออัปเดต context
+            console.log('🔄 [OrganizationLogo] Refreshing companies...');
             await refreshCompanies();
+            console.log('✅ [OrganizationLogo] Companies refreshed');
 
             setSuccess(t('organizationLogo.uploadSuccess'));
-            setTimeout(() => setSuccess(null), 3000);
-        } catch (error) {
-            console.error('Error uploading organization logo:', error);
-            setError(t('organizationLogo.uploadError'));
+            setTimeout(() => setSuccess(null), 5000); // แสดงนานขึ้น
+        } catch (error: any) {
+            console.error('❌ [OrganizationLogo] Error uploading:', error);
+            console.error('❌ [OrganizationLogo] Error code:', error?.code);
+            console.error('❌ [OrganizationLogo] Error message:', error?.message);
+            
+            // แสดง error message ที่ชัดเจนกว่า
+            let errorMessage = t('organizationLogo.uploadError');
+            if (error?.code === 'storage/unauthorized') {
+                errorMessage = 'ไม่มีสิทธิ์อัปโหลดไฟล์ กรุณา Login ใหม่';
+            } else if (error?.code === 'storage/quota-exceeded') {
+                errorMessage = 'พื้นที่จัดเก็บเต็มแล้ว';
+            } else if (error?.message) {
+                errorMessage = error.message;
+            }
+            setError(errorMessage);
         } finally {
             setIsUploading(false);
             // Reset input

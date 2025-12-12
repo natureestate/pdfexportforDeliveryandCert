@@ -86,13 +86,15 @@ export const CompanyProvider: React.FC<CompanyProviderProps> = ({ children }) =>
             // ตั้งค่าบริษัทแรกเป็น current (ถ้ามีและยังไม่มี current)
             if (companiesList.length > 0) {
                 // ถ้ามี currentCompany แล้ว ตรวจสอบว่ายังอยู่ใน list หรือไม่
-                const stillExists = currentCompany && companiesList.find(c => c.id === currentCompany.id);
+                const existingCompany = currentCompany && companiesList.find(c => c.id === currentCompany.id);
                 
-                if (!currentCompany || !stillExists) {
+                if (!currentCompany || !existingCompany) {
                     setCurrentCompany(companiesList[0]);
                     console.log('✅ [CompanyContext] เลือกบริษัทแรก:', companiesList[0].name);
                 } else {
-                    console.log('ℹ️ [CompanyContext] ใช้บริษัทเดิม:', currentCompany.name);
+                    // อัปเดต currentCompany ด้วยข้อมูลใหม่ (เช่น organizationLogoUrl ที่เพิ่งอัปเดต)
+                    setCurrentCompany(existingCompany);
+                    console.log('🔄 [CompanyContext] อัปเดตบริษัทปัจจุบัน:', existingCompany.name, 'orgLogo:', existingCompany.organizationLogoUrl);
                 }
                 setNeedsOnboarding(false);
                 console.log('✅ [CompanyContext] needsOnboarding = false (มีบริษัท)');

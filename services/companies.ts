@@ -160,6 +160,7 @@ export const getUserCompanies = async (): Promise<Company[]> => {
                         logoUrl: data.logoUrl,
                         logoType: data.logoType,
                         defaultLogoUrl: data.defaultLogoUrl,
+                        organizationLogoUrl: data.organizationLogoUrl, // โลโก้องค์กรสำหรับ Header
                         memberCount: data.memberCount || 0,
                         createdAt: data.createdAt?.toDate(),
                         updatedAt: data.updatedAt?.toDate(),
@@ -209,6 +210,7 @@ export const getCompanyById = async (companyId: string): Promise<Company | null>
             logoUrl: data.logoUrl,
             logoType: data.logoType,
             defaultLogoUrl: data.defaultLogoUrl,
+            organizationLogoUrl: data.organizationLogoUrl, // โลโก้องค์กรสำหรับ Header
             memberCount: data.memberCount || 0,
             createdAt: data.createdAt?.toDate(),
             updatedAt: data.updatedAt?.toDate(),
