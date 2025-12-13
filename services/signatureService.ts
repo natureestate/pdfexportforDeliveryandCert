@@ -428,12 +428,16 @@ export async function saveSignature(params: {
             updatedAt: serverTimestamp(),
         });
 
-        // อัปเดตเอกสารต้นทาง
+        // อัปเดตเอกสารต้นทาง (รวมถึง signatureImageUrl สำหรับแสดงลายเซ็นบนเอกสาร)
         await updateDoc(docRef, {
             signatureStatus: 'signed' as SignatureStatus,
             signedBy: signerName,
             signedAt: Timestamp.fromDate(signedAt),
             signatureId: signatureId,
+            // เพิ่ม signatureImageUrl สำหรับแสดงลายเซ็นบนเอกสาร
+            // ถ้าเป็นแบบ draw จะเป็น Base64 data URL, ถ้าเป็นแบบ type จะสร้างเป็น text
+            signatureImageUrl: signatureType === 'draw' ? signatureData : null,
+            signerPhoneNumber: signerPhone,
             updatedAt: serverTimestamp(),
         });
 
