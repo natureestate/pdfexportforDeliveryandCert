@@ -103,56 +103,87 @@ const DocumentPreview = forwardRef<HTMLDivElement, DocumentPreviewProps>(({ data
 
             <footer className="mt-16 text-xs text-gray-700">
                 <div className="grid grid-cols-2 gap-12 text-center">
+                    {/* ผู้ส่ง */}
                     <div>
                         <div className="border-b border-dotted border-slate-400 w-3/4 mx-auto pb-1 mb-2"></div>
                         <p className="text-gray-800">({data.senderName || '...........................'})</p>
                         <p className="font-semibold mt-1 text-blue-600">{t('delivery.sender')}</p>
                         <p className="mt-4 text-gray-700">{t('pdf.date')}: ......./......./...........</p>
                     </div>
+                    {/* ผู้รับ - แสดงลายเซ็นถ้าเซ็นแล้ว */}
                     <div>
-                        <div className="border-b border-dotted border-slate-400 w-3/4 mx-auto pb-1 mb-2"></div>
-                        <p className="text-gray-800">({data.receiverName || '...........................'})</p>
+                        {/* แสดงรูปลายเซ็น (ถ้าเซ็นแล้ว) */}
+                        {data.signatureStatus === 'signed' && data.signatureImageUrl ? (
+                            <div className="mb-2">
+                                <img 
+                                    src={data.signatureImageUrl} 
+                                    alt="ลายเซ็นผู้รับ"
+                                    className="h-16 max-w-[200px] mx-auto object-contain"
+                                />
+                            </div>
+                        ) : (
+                            <div className="border-b border-dotted border-slate-400 w-3/4 mx-auto pb-1 mb-2"></div>
+                        )}
+                        <p className="text-gray-800">
+                            ({data.signatureStatus === 'signed' && data.signedBy ? data.signedBy : (data.receiverName || '...........................')})
+                        </p>
                         <p className="font-semibold mt-1 text-blue-600">{t('delivery.receiver')}</p>
-                        <p className="mt-4 text-gray-700">{t('pdf.date')}: ......./......./...........</p>
+                        {/* แสดงวันที่เซ็น (ถ้าเซ็นแล้ว) หรือช่องกรอก */}
+                        {data.signatureStatus === 'signed' && data.signedAt ? (
+                            <p className="mt-4 text-gray-700">
+                                {t('pdf.date')}: {new Intl.DateTimeFormat('th-TH', {
+                                    year: 'numeric',
+                                    month: 'long',
+                                    day: 'numeric',
+                                }).format(data.signedAt instanceof Date ? data.signedAt : new Date(data.signedAt))}
+                            </p>
+                        ) : (
+                            <p className="mt-4 text-gray-700">{t('pdf.date')}: ......./......./...........</p>
+                        )}
+                        {/* Badge เซ็นแล้ว */}
+                        {data.signatureStatus === 'signed' && (
+                            <p className="mt-2 text-green-600 font-semibold text-xs">✓ ยืนยันรับมอบแล้ว</p>
+                        )}
                     </div>
                 </div>
-                {/* QR Codes - ตรวจสอบเอกสาร และ เซ็นรับมอบ */}
-                <div className="mt-6 flex justify-between items-end">
-                    {/* QR Code สำหรับตรวจสอบเอกสาร */}
-                    <QRCodeFooter 
-                        docType="delivery" 
-                        verificationToken={data.verificationToken}
-                        size={70}
-                    />
-                    
-                    {/* QR Code สำหรับเซ็นรับมอบ (ถ้ายังไม่ได้เซ็น) */}
-                    {data.signToken && data.signatureStatus !== 'signed' && (
-                        <QRCodeFooterSign 
+
+                {/* QR Codes - จัดแนวตรงกันทั้งสอง QR */}
+                <div className="mt-6 flex justify-between items-start">
+                    {/* QR Code สำหรับตรวจสอบเอกสาร (ซ้าย) */}
+                    <div className="flex flex-col items-center" style={{ minWidth: 90 }}>
+                        <QRCodeFooter 
                             docType="delivery" 
-                            signToken={data.signToken}
+                            verificationToken={data.verificationToken}
                             size={70}
-                            label="สแกนเพื่อเซ็นรับมอบ"
                         />
-                    )}
+                    </div>
                     
-                    {/* แสดงข้อมูลการเซ็น (ถ้าเซ็นแล้ว) */}
-                    {data.signatureStatus === 'signed' && data.signedBy && (
-                        <div className="text-right text-xs">
-                            <p className="text-green-600 font-semibold">✓ เซ็นรับมอบแล้ว</p>
-                            <p className="text-slate-600">โดย: {data.signedBy}</p>
-                            {data.signedAt && (
-                                <p className="text-slate-500">
-                                    เมื่อ: {new Intl.DateTimeFormat('th-TH', {
-                                        year: 'numeric',
-                                        month: 'short',
-                                        day: 'numeric',
-                                        hour: '2-digit',
-                                        minute: '2-digit'
-                                    }).format(data.signedAt)}
-                                </p>
-                            )}
-                        </div>
-                    )}
+                    {/* QR Code สำหรับเซ็นรับมอบ (ขวา) - แสดงถ้ายังไม่ได้เซ็น หรือแสดงข้อมูลการเซ็น */}
+                    <div className="flex flex-col items-center" style={{ minWidth: 90 }}>
+                        {data.signToken && data.signatureStatus !== 'signed' ? (
+                            <QRCodeFooterSign 
+                                docType="delivery" 
+                                signToken={data.signToken}
+                                size={70}
+                                label="สแกนเพื่อเซ็นรับมอบ"
+                            />
+                        ) : data.signatureStatus === 'signed' ? (
+                            <div className="text-center text-xs p-2 bg-green-50 border border-green-200 rounded-md" style={{ minWidth: 90 }}>
+                                <p className="text-green-600 font-semibold">✓ เซ็นแล้ว</p>
+                                {data.signedAt && (
+                                    <p className="text-slate-500 mt-1 text-[10px]">
+                                        {new Intl.DateTimeFormat('th-TH', {
+                                            day: 'numeric',
+                                            month: 'short',
+                                            year: '2-digit',
+                                            hour: '2-digit',
+                                            minute: '2-digit'
+                                        }).format(data.signedAt instanceof Date ? data.signedAt : new Date(data.signedAt))}
+                                    </p>
+                                )}
+                            </div>
+                        ) : null}
+                    </div>
                 </div>
             </footer>
         </div>

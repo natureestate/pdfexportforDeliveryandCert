@@ -496,6 +496,9 @@ const AppContent: React.FC = () => {
     // Edit Mode - track ว่ากำลัง edit document เดิมหรือสร้างใหม่
     const [editingDocumentId, setEditingDocumentId] = useState<string | null>(null);
     
+    // ตรวจสอบว่าเอกสารปัจจุบันถูกเซ็นแล้วหรือยัง (สำหรับ Lock Edit)
+    const isCurrentDocumentSigned = activeTab === 'delivery' && deliveryData.signatureStatus === 'signed';
+    
     // Menu Settings Modal
     const [showMenuSettings, setShowMenuSettings] = useState(false);
     const [showUserMenuSettings, setShowUserMenuSettings] = useState(false);
@@ -862,6 +865,9 @@ const AppContent: React.FC = () => {
 
     // ฟังก์ชันโหลดเอกสารจาก History (สำหรับ Edit)
     const handleLoadDocument = useCallback((doc: DeliveryNoteDocument | WarrantyDocument | InvoiceDocument | ReceiptDocument | TaxInvoiceDocument | QuotationDocument | PurchaseOrderDocument | MemoDocument | VariationOrderDocument | SubcontractDocument) => {
+        // ตรวจสอบว่าเอกสารถูกเซ็นแล้วหรือไม่ - ถ้าเซ็นแล้วให้โหลดแบบ View Only
+        const isDocSigned = 'signatureStatus' in doc && doc.signatureStatus === 'signed';
+        
         // โหลด logo จากเอกสาร
         if (doc.logoUrl || doc.logo) {
             setSharedLogo(doc.logo || null);
@@ -870,7 +876,8 @@ const AppContent: React.FC = () => {
         }
 
         // Track document ID สำหรับ edit mode
-        setEditingDocumentId(doc.id || null);
+        // ถ้าเอกสารเซ็นแล้ว ไม่ set editingDocumentId เพื่อป้องกันการ edit
+        setEditingDocumentId(isDocSigned ? null : (doc.id || null));
 
         if ('project' in doc) {
             // เป็น DeliveryNoteDocument
@@ -879,6 +886,13 @@ const AppContent: React.FC = () => {
                 date: doc.date || null,
             });
             setActiveTab('delivery');
+            
+            // แจ้งเตือนถ้าเอกสารถูกเซ็นแล้ว
+            if (isDocSigned) {
+                showToast('⚠️ เอกสารนี้ถูกเซ็นรับมอบแล้ว ไม่สามารถแก้ไขได้', 'warning');
+                setViewMode('form'); // ไปหน้า form แต่เป็น view only mode
+                return; // return ก่อนเพื่อไม่แสดง toast documentLoaded
+            }
         } else if ('warrantyNumber' in doc) {
             // เป็น WarrantyDocument
             setWarrantyData({
@@ -1083,7 +1097,24 @@ const AppContent: React.FC = () => {
                         {/* Form Section */}
                         <div className="bg-white dark:bg-slate-800 p-3 sm:p-4 md:p-6 rounded-lg shadow-lg mb-6 lg:mb-0 transition-colors">
                             {/* Edit Mode Indicator */}
-                            {editingDocumentId && (
+                            {/* Locked Document Indicator - แสดงเมื่อเอกสารถูกเซ็นแล้ว */}
+                            {isCurrentDocumentSigned && (
+                                <div className="mb-3 sm:mb-4 p-2 sm:p-3 bg-red-50 dark:bg-red-900/30 border border-red-200 dark:border-red-700 rounded-lg flex flex-col sm:flex-row sm:items-center sm:justify-between gap-2">
+                                    <div className="flex flex-col sm:flex-row sm:items-center min-w-0">
+                                        <span className="text-red-700 dark:text-red-400 font-medium text-sm">🔒 เอกสารถูก Lock</span>
+                                        <span className="ml-0 sm:ml-2 text-xs sm:text-sm text-red-600 dark:text-red-300">เอกสารนี้ถูกเซ็นรับมอบแล้ว ไม่สามารถแก้ไขได้</span>
+                                    </div>
+                                    <button
+                                        onClick={handleCreateNewForm}
+                                        className="text-xs sm:text-sm px-2 sm:px-3 py-1 bg-white dark:bg-slate-700 border border-red-300 dark:border-red-600 rounded hover:bg-red-50 dark:hover:bg-red-900/50 text-red-700 dark:text-red-400 whitespace-nowrap"
+                                    >
+                                        🆕 สร้างเอกสารใหม่
+                                    </button>
+                                </div>
+                            )}
+                            
+                            {/* Edit Mode Indicator */}
+                            {editingDocumentId && !isCurrentDocumentSigned && (
                                 <div className="mb-3 sm:mb-4 p-2 sm:p-3 bg-amber-50 dark:bg-amber-900/30 border border-amber-200 dark:border-amber-700 rounded-lg flex flex-col sm:flex-row sm:items-center sm:justify-between gap-2">
                                     <div className="flex flex-col sm:flex-row sm:items-center min-w-0">
                                         <span className="text-amber-700 dark:text-amber-400 font-medium text-sm">✏️ {t('form.editMode')}</span>
@@ -1330,7 +1361,8 @@ const AppContent: React.FC = () => {
                                         <button
                                             type="button"
                                             onClick={handleSaveToFirestore}
-                                            disabled={isSaving}
+                                            disabled={isSaving || isCurrentDocumentSigned}
+                                            title={isCurrentDocumentSigned ? 'เอกสารถูกเซ็นรับมอบแล้ว ไม่สามารถแก้ไขได้' : undefined}
                                             className="inline-flex items-center justify-center px-3 sm:px-4 py-2 border border-transparent text-xs sm:text-sm font-medium rounded-md shadow-sm text-white bg-green-600 hover:bg-green-700 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-green-500 disabled:bg-green-300 disabled:cursor-not-allowed"
                                         >
                                             {isSaving ? (
