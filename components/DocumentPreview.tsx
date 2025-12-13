@@ -9,6 +9,27 @@ interface DocumentPreviewProps {
     data: DeliveryNoteData;
 }
 
+// Helper function สำหรับแปลง Firestore Timestamp เป็น Date
+const toDate = (value: unknown): Date | null => {
+    if (!value) return null;
+    // ถ้าเป็น Date object แล้ว
+    if (value instanceof Date) return value;
+    // ถ้าเป็น Firestore Timestamp (มี toDate method)
+    if (typeof value === 'object' && value !== null && 'toDate' in value && typeof (value as any).toDate === 'function') {
+        return (value as any).toDate();
+    }
+    // ถ้าเป็น object ที่มี seconds (Firestore Timestamp format)
+    if (typeof value === 'object' && value !== null && 'seconds' in value) {
+        return new Date((value as any).seconds * 1000);
+    }
+    // ถ้าเป็น string หรือ number
+    if (typeof value === 'string' || typeof value === 'number') {
+        const date = new Date(value);
+        return isNaN(date.getTime()) ? null : date;
+    }
+    return null;
+};
+
 const DocumentPreview = forwardRef<HTMLDivElement, DocumentPreviewProps>(({ data }, ref) => {
     const { t, i18n } = useTranslation();
     const currentLang = i18n.language;
@@ -23,6 +44,9 @@ const DocumentPreview = forwardRef<HTMLDivElement, DocumentPreviewProps>(({ data
             day: 'numeric',
         }).format(date);
     };
+    
+    // แปลง signedAt เป็น Date object ที่ถูกต้อง
+    const signedAtDate = toDate(data.signedAt);
 
     // ✅ กำหนดโลโก้ที่จะแสดง - ใช้ logo (Base64) ก่อนเพื่อหลีกเลี่ยงปัญหา CORS
     // ถ้าไม่มี Base64 ให้ใช้ logoUrl แต่อาจมีปัญหา CORS
@@ -129,13 +153,13 @@ const DocumentPreview = forwardRef<HTMLDivElement, DocumentPreviewProps>(({ data
                         </p>
                         <p className="font-semibold mt-1 text-blue-600">{t('delivery.receiver')}</p>
                         {/* แสดงวันที่เซ็น (ถ้าเซ็นแล้ว) หรือช่องกรอก */}
-                        {data.signatureStatus === 'signed' && data.signedAt ? (
+                        {data.signatureStatus === 'signed' && signedAtDate ? (
                             <p className="mt-4 text-gray-700">
                                 {t('pdf.date')}: {new Intl.DateTimeFormat('th-TH', {
                                     year: 'numeric',
                                     month: 'long',
                                     day: 'numeric',
-                                }).format(data.signedAt instanceof Date ? data.signedAt : new Date(data.signedAt))}
+                                }).format(signedAtDate)}
                             </p>
                         ) : (
                             <p className="mt-4 text-gray-700">{t('pdf.date')}: ......./......./...........</p>
@@ -170,7 +194,7 @@ const DocumentPreview = forwardRef<HTMLDivElement, DocumentPreviewProps>(({ data
                         ) : data.signatureStatus === 'signed' ? (
                             <div className="text-center text-xs p-2 bg-green-50 border border-green-200 rounded-md" style={{ minWidth: 90 }}>
                                 <p className="text-green-600 font-semibold">✓ เซ็นแล้ว</p>
-                                {data.signedAt && (
+                                {signedAtDate && (
                                     <p className="text-slate-500 mt-1 text-[10px]">
                                         {new Intl.DateTimeFormat('th-TH', {
                                             day: 'numeric',
@@ -178,7 +202,7 @@ const DocumentPreview = forwardRef<HTMLDivElement, DocumentPreviewProps>(({ data
                                             year: '2-digit',
                                             hour: '2-digit',
                                             minute: '2-digit'
-                                        }).format(data.signedAt instanceof Date ? data.signedAt : new Date(data.signedAt))}
+                                        }).format(signedAtDate)}
                                     </p>
                                 )}
                             </div>
