@@ -38,6 +38,7 @@ import OnboardingPage from './components/OnboardingPage';
 import CookieConsentModal from './components/CookieConsentModal';
 import MenuSettingsModal from './components/MenuSettingsModal';
 import VerificationPage from './components/VerificationPage';
+import SignApprovalPage from './components/SignApprovalPage';
 import UserMenuSettingsModal from './components/UserMenuSettingsModal';
 import PricingPage from './components/PricingPage';
 import SubscriptionManager from './components/SubscriptionManager';
@@ -50,6 +51,7 @@ import { saveDeliveryNote, saveWarrantyCard, saveInvoice, saveReceipt, saveTaxIn
 import type { DeliveryNoteDocument, WarrantyDocument, InvoiceDocument, ReceiptDocument, TaxInvoiceDocument, QuotationDocument, PurchaseOrderDocument, MemoDocument, VariationOrderDocument, SubcontractDocument } from './services/firestore';
 import { DOCUMENT_REGISTRY, generatePdfFilename as generatePdfFilenameFromRegistry, saveOrUpdateDocument, type DocType, type DocumentData } from './utils/documentRegistry';
 import { generateVerificationToken } from './services/verification';
+import { generateSignToken } from './services/signatureService';
 
 const getInitialDeliveryData = (): DeliveryNoteData => ({
     logo: null,
@@ -66,6 +68,9 @@ const getInitialDeliveryData = (): DeliveryNoteData => ({
     ],
     senderName: '',
     receiverName: '',
+    // Signature fields (QR Scan to Sign/Approve)
+    signToken: generateSignToken(), // สร้าง Token สำหรับเซ็นชื่อรับมอบ
+    signatureStatus: 'pending',     // สถานะการเซ็น: pending, signed, rejected
 });
 
 const initialDeliveryData = getInitialDeliveryData();
@@ -1510,6 +1515,9 @@ const App: React.FC = () => {
                 
                 {/* หน้าตรวจสอบเอกสาร QR Code - Public Access (ไม่ต้อง login) */}
                 <Route path="/verify/:docType/:token" element={<VerificationPage />} />
+                
+                {/* หน้าเซ็นชื่อยืนยันรับมอบ - Public Access (ไม่ต้อง login, ต้อง verify OTP) */}
+                <Route path="/sign/:docType/:token" element={<SignApprovalPage />} />
                 
                 {/* หน้า Super Admin - ต้อง login และเป็น Super Admin (ไม่ต้องมี CompanyProvider) */}
                 <Route 

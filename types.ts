@@ -97,6 +97,76 @@ export interface PublicCompanyInfo {
 }
 
 // ============================================================
+// Document Signature Types (QR Scan to Sign/Approve System)
+// ระบบเซ็นชื่อยืนยันรับมอบงานผ่าน QR Code
+// ============================================================
+
+// สถานะการเซ็นเอกสาร
+export type SignatureStatus = 'pending' | 'signed' | 'rejected';
+
+// ประเภทลายเซ็น
+export type SignatureType = 'draw' | 'typed';
+
+// บทบาทผู้เซ็น
+export type SignerRole = 'receiver' | 'approver' | 'witness';
+
+// ข้อมูลลายเซ็น (เก็บใน signatures collection)
+export interface DocumentSignature {
+    id?: string;                     // Document ID
+    documentId: string;              // ID ของเอกสารที่เซ็น
+    docType: string;                 // ประเภทเอกสาร (delivery, invoice, etc.)
+    signToken: string;               // Token สำหรับเซ็น (UUID)
+    companyId?: string;              // ID ของบริษัทเจ้าของเอกสาร
+    
+    // ข้อมูลผู้เซ็น
+    signerName: string;              // ชื่อผู้เซ็น
+    signerPhone: string;             // เบอร์โทรที่ verify OTP
+    signerRole: SignerRole;          // บทบาท (ผู้รับมอบ, ผู้อนุมัติ, พยาน)
+    
+    // ลายเซ็น
+    signatureType: SignatureType;    // draw หรือ typed
+    signatureData: string;           // Base64 image (วาด) หรือ text (พิมพ์)
+    signatureImageUrl?: string;      // URL ของรูปลายเซ็น (ถ้า upload ไป Storage)
+    
+    // สถานะ
+    status: SignatureStatus;         // pending, signed, rejected
+    signedAt?: Date;                 // วันที่เซ็น
+    rejectedAt?: Date;               // วันที่ปฏิเสธ (ถ้ามี)
+    rejectionReason?: string;        // เหตุผลที่ปฏิเสธ (ถ้ามี)
+    
+    // OTP Verification
+    otpVerifiedAt?: Date;            // วันที่ยืนยัน OTP
+    otpPhone?: string;               // เบอร์โทรที่ใช้ยืนยัน OTP
+    
+    // Audit Trail
+    ipAddress?: string;              // IP Address ผู้เซ็น
+    userAgent?: string;              // Browser/Device info
+    
+    // Metadata
+    createdAt?: Date;
+    updatedAt?: Date;
+}
+
+// ข้อมูลเอกสารสำหรับหน้า Sign (Public)
+export interface PublicSigningData {
+    documentType: string;            // ประเภทเอกสาร (ชื่อไทย)
+    documentNumber: string;          // เลขที่เอกสาร
+    documentDate: Date | null;       // วันที่เอกสาร
+    companyName: string;             // ชื่อบริษัทผู้ออกเอกสาร
+    companyPhone?: string;           // เบอร์โทรบริษัท
+    customerName?: string;           // ชื่อลูกค้า (ถ้ามี)
+    projectName?: string;            // ชื่อโครงการ (ถ้ามี)
+    items?: Array<{                  // รายการงาน (สำหรับ Delivery Note)
+        description: string;
+        quantity: number;
+        unit: string;
+    }>;
+    signatureStatus: SignatureStatus; // สถานะการเซ็น
+    signedBy?: string;               // ชื่อผู้เซ็น (ถ้าเซ็นแล้ว)
+    signedAt?: Date;                 // วันที่เซ็น (ถ้าเซ็นแล้ว)
+}
+
+// ============================================================
 // Document Verification Types (QR Code Verification System)
 // ============================================================
 
@@ -107,10 +177,17 @@ export type DocumentStatus = 'active' | 'cancelled';
 // เพิ่มใน Document Data ทุกประเภท
 export interface DocumentVerificationFields {
     verificationToken?: string;      // UUID v4 สำหรับตรวจสอบเอกสาร (สร้างอัตโนมัติ)
+    signToken?: string;              // UUID v4 สำหรับเซ็นชื่อยืนยัน (แยกจาก verificationToken)
     documentStatus?: DocumentStatus; // สถานะเอกสาร: active หรือ cancelled
     cancelledAt?: Date;              // วันที่ยกเลิกเอกสาร (ถ้ามี)
     cancelledBy?: string;            // User ID ของผู้ยกเลิก (ถ้ามี)
     cancelledReason?: string;        // เหตุผลในการยกเลิก (ถ้ามี)
+    
+    // Signature Fields (ระบบเซ็นชื่อยืนยันรับมอบ)
+    signatureStatus?: SignatureStatus; // สถานะการเซ็น: pending, signed, rejected
+    signedBy?: string;               // ชื่อผู้เซ็น
+    signedAt?: Date;                 // วันที่เซ็น
+    signatureId?: string;            // Reference to signatures collection
 }
 
 // ข้อมูลสำหรับหน้า Public Verification

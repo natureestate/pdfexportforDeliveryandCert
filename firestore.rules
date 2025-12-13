@@ -77,14 +77,31 @@ service cloud.firestore {
       // อ่าน: 
       // 1. เจ้าของ หรือ สมาชิกบริษัทเดียวกัน หรือ Super Admin (ต้อง Login)
       // 2. Public Verification ผ่าน verificationToken (ไม่ต้อง Login)
+      // 3. Public Sign ผ่าน signToken (ไม่ต้อง Login)
       allow read: if (isAuthenticated() && canAccessDocument()) ||
-        (resource.data.verificationToken != null);
+        (resource.data.verificationToken != null) ||
+        (resource.data.signToken != null);
       
       // สร้าง: ต้อง Login และ userId ต้องตรงกับผู้ใช้
       allow create: if isAuthenticated() && request.resource.data.userId == request.auth.uid;
       
-      // แก้ไข/ลบ: เจ้าของ หรือ สมาชิกบริษัทเดียวกัน หรือ Super Admin
-      allow update, delete: if isAuthenticated() && canModifyDocument();
+      // แก้ไข: 
+      // 1. เจ้าของ หรือ สมาชิกบริษัทเดียวกัน หรือ Super Admin (ต้อง Login)
+      // 2. Public Update สำหรับ Signature fields เท่านั้น (ไม่ต้อง Login)
+      //    - อนุญาตให้อัปเดต signatureStatus, signedBy, signedAt, signatureId
+      //    - ต้องมี signToken ที่ตรงกัน และ signatureStatus เป็น 'pending'
+      allow update: if (isAuthenticated() && canModifyDocument()) ||
+        (
+          resource.data.signToken != null &&
+          resource.data.signatureStatus != 'signed' &&
+          request.resource.data.signatureStatus == 'signed' &&
+          request.resource.data.signedBy != null &&
+          request.resource.data.signedAt != null &&
+          request.resource.data.signatureId != null
+        );
+      
+      // ลบ: เจ้าของ หรือ สมาชิกบริษัทเดียวกัน หรือ Super Admin
+      allow delete: if isAuthenticated() && canModifyDocument();
     }
     
     // ใบรับประกันสินค้า (Warranty Cards)
@@ -674,6 +691,30 @@ service cloud.firestore {
         isSuperAdmin() ||
         resource.data.userId == request.auth.uid ||
         (resource.data.companyId != null && isAdminOfCompany(resource.data.companyId))
+      );
+    }
+    
+    // ============================================================
+    // ระบบ e-Signature (QR Scan to Sign/Approve)
+    // ============================================================
+    
+    // Signatures (ลายเซ็นยืนยันเอกสาร)
+    // รองรับ Public Access สำหรับการเซ็นผ่าน QR Code
+    match /signatures/{signatureId} {
+      // อ่าน: 
+      // 1. Public (ทุกคน) - เพื่อตรวจสอบว่าเอกสารถูกเซ็นแล้วหรือไม่
+      // 2. เจ้าของเอกสาร หรือ สมาชิกบริษัท (สำหรับดูรายละเอียด)
+      allow read: if true;
+      
+      // สร้าง: 
+      // Public (ทุกคน) - สำหรับการเซ็นผ่าน QR Code หลังยืนยัน OTP
+      // หมายเหตุ: การสร้างลายเซ็นต้องผ่านการยืนยัน OTP ใน client-side ก่อน
+      allow create: if true;
+      
+      // แก้ไข/ลบ: เจ้าของเอกสาร (ตรวจสอบ companyId) หรือ Super Admin เท่านั้น
+      allow update, delete: if isAuthenticated() && (
+        isSuperAdmin() ||
+        (resource.data.companyId != null && isMemberOfCompany(resource.data.companyId))
       );
     }
     

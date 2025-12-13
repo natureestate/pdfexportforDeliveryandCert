@@ -3,6 +3,7 @@ import { useTranslation } from 'react-i18next';
 import { DeliveryNoteData } from '../types';
 import { getDefaultLogoUrl } from '../services/logoStorage';
 import QRCodeFooter from './QRCodeFooter';
+import QRCodeFooterSign from './QRCodeFooterSign';
 
 interface DocumentPreviewProps {
     data: DeliveryNoteData;
@@ -115,13 +116,43 @@ const DocumentPreview = forwardRef<HTMLDivElement, DocumentPreviewProps>(({ data
                         <p className="mt-4 text-gray-700">{t('pdf.date')}: ......./......./...........</p>
                     </div>
                 </div>
-                {/* QR Code สำหรับตรวจสอบเอกสาร */}
-                <div className="mt-6">
+                {/* QR Codes - ตรวจสอบเอกสาร และ เซ็นรับมอบ */}
+                <div className="mt-6 flex justify-between items-end">
+                    {/* QR Code สำหรับตรวจสอบเอกสาร */}
                     <QRCodeFooter 
                         docType="delivery" 
                         verificationToken={data.verificationToken}
                         size={70}
                     />
+                    
+                    {/* QR Code สำหรับเซ็นรับมอบ (ถ้ายังไม่ได้เซ็น) */}
+                    {data.signToken && data.signatureStatus !== 'signed' && (
+                        <QRCodeFooterSign 
+                            docType="delivery" 
+                            signToken={data.signToken}
+                            size={70}
+                            label="สแกนเพื่อเซ็นรับมอบ"
+                        />
+                    )}
+                    
+                    {/* แสดงข้อมูลการเซ็น (ถ้าเซ็นแล้ว) */}
+                    {data.signatureStatus === 'signed' && data.signedBy && (
+                        <div className="text-right text-xs">
+                            <p className="text-green-600 font-semibold">✓ เซ็นรับมอบแล้ว</p>
+                            <p className="text-slate-600">โดย: {data.signedBy}</p>
+                            {data.signedAt && (
+                                <p className="text-slate-500">
+                                    เมื่อ: {new Intl.DateTimeFormat('th-TH', {
+                                        year: 'numeric',
+                                        month: 'short',
+                                        day: 'numeric',
+                                        hour: '2-digit',
+                                        minute: '2-digit'
+                                    }).format(data.signedAt)}
+                                </p>
+                            )}
+                        </div>
+                    )}
                 </div>
             </footer>
         </div>
