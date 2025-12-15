@@ -15,10 +15,11 @@ import MemoPreview from './MemoPreview';
 import VariationOrderPreview from './VariationOrderPreview';
 import SubcontractPreview from './SubcontractPreview';
 import DocumentActions from './DocumentActions';
-import type { DeliveryNoteData, WarrantyData, InvoiceData, ReceiptData, QuotationData, PurchaseOrderData, MemoData, VariationOrderData, SubcontractData } from '../types';
+import TaxInvoicePreview from './TaxInvoicePreview';
+import type { DeliveryNoteData, WarrantyData, InvoiceData, ReceiptData, TaxInvoiceData, QuotationData, PurchaseOrderData, MemoData, VariationOrderData, SubcontractData } from '../types';
 
 // Type alias สำหรับข้อมูลเอกสารทั้งหมด
-type DocumentDataType = DeliveryNoteData | WarrantyData | InvoiceData | ReceiptData | QuotationData | PurchaseOrderData | MemoData | VariationOrderData | SubcontractData;
+type DocumentDataType = DeliveryNoteData | WarrantyData | InvoiceData | ReceiptData | TaxInvoiceData | QuotationData | PurchaseOrderData | MemoData | VariationOrderData | SubcontractData;
 type AllDocumentDocument = DeliveryNoteDocument | WarrantyDocument | InvoiceDocument | ReceiptDocument | QuotationDocument | PurchaseOrderDocument | MemoDocument | VariationOrderDocument | SubcontractDocument | TaxInvoiceDocument;
 
 interface HistoryListProps {
@@ -42,7 +43,7 @@ const HistoryList: React.FC<HistoryListProps> = ({ activeDocType, onLoadDocument
         limit: 50,
     });
     
-    const [deleteConfirm, setDeleteConfirm] = useState<{ type: 'delivery' | 'warranty' | 'invoice' | 'receipt' | 'quotation' | 'purchase-order' | 'memo', id: string } | null>(null);
+    const [deleteConfirm, setDeleteConfirm] = useState<{ type: 'delivery' | 'warranty' | 'invoice' | 'receipt' | 'tax-invoice' | 'quotation' | 'purchase-order' | 'memo' | 'variation-order' | 'subcontract', id: string } | null>(null);
     const [downloadingPdfId, setDownloadingPdfId] = useState<string | null>(null); // เก็บ ID ของเอกสารที่กำลัง download
     
     // State สำหรับยกเลิก/กู้คืนเอกสาร
@@ -51,7 +52,7 @@ const HistoryList: React.FC<HistoryListProps> = ({ activeDocType, onLoadDocument
     const [cancellingId, setCancellingId] = useState<string | null>(null);
     const [restoringId, setRestoringId] = useState<string | null>(null);
     const previewRef = useRef<HTMLDivElement>(null); // Ref สำหรับ preview component ที่ซ่อนอยู่
-    const [previewData, setPreviewData] = useState<DeliveryNoteData | WarrantyData | InvoiceData | ReceiptData | QuotationData | PurchaseOrderData | MemoData | VariationOrderData | SubcontractData | null>(null); // ข้อมูลสำหรับ preview
+    const [previewData, setPreviewData] = useState<DeliveryNoteData | WarrantyData | InvoiceData | ReceiptData | TaxInvoiceData | QuotationData | PurchaseOrderData | MemoData | VariationOrderData | SubcontractData | null>(null); // ข้อมูลสำหรับ preview
     const [showPreviewModal, setShowPreviewModal] = useState(false); // แสดง preview modal หรือไม่
     const [previewDoc, setPreviewDoc] = useState<AllDocumentDocument | null>(null); // เอกสารที่กำลัง preview
     const previewModalRef = useRef<HTMLDivElement>(null); // Ref สำหรับ preview component ใน modal
@@ -345,6 +346,16 @@ const HistoryList: React.FC<HistoryListProps> = ({ activeDocType, onLoadDocument
                 (receipt.paymentMethod || '').toLowerCase().includes(searchLower) ||
                 (receipt.receiptDate ? formatDate(receipt.receiptDate).toLowerCase().includes(searchLower) : false)
             );
+        } else if (activeDocType === 'tax-invoice') {
+            // ฟิลเตอร์สำหรับใบกำกับภาษี
+            const taxInvoice = item as TaxInvoiceDocument;
+            return (
+                (taxInvoice.taxInvoiceNumber || '').toLowerCase().includes(searchLower) ||
+                (taxInvoice.customerName || '').toLowerCase().includes(searchLower) ||
+                (taxInvoice.companyName || '').toLowerCase().includes(searchLower) ||
+                (taxInvoice.total ? taxInvoice.total.toString().includes(searchLower) : false) ||
+                (taxInvoice.taxInvoiceDate ? formatDate(taxInvoice.taxInvoiceDate).toLowerCase().includes(searchLower) : false)
+            );
         } else if (activeDocType === 'quotation') {
             const quotation = item as QuotationDocument;
             return (
@@ -363,7 +374,7 @@ const HistoryList: React.FC<HistoryListProps> = ({ activeDocType, onLoadDocument
                 (purchaseOrder.total ? purchaseOrder.total.toString().includes(searchLower) : false) ||
                 (purchaseOrder.purchaseOrderDate ? formatDate(purchaseOrder.purchaseOrderDate).toLowerCase().includes(searchLower) : false)
             );
-        } else {
+        } else if (activeDocType === 'memo') {
             const memo = item as MemoDocument;
             return (
                 (memo.memoNumber || '').toLowerCase().includes(searchLower) ||
@@ -373,6 +384,28 @@ const HistoryList: React.FC<HistoryListProps> = ({ activeDocType, onLoadDocument
                 (memo.projectName || '').toLowerCase().includes(searchLower) ||
                 (memo.date ? formatDate(memo.date).toLowerCase().includes(searchLower) : false)
             );
+        } else if (activeDocType === 'variation-order') {
+            const vo = item as VariationOrderDocument;
+            return (
+                (vo.voNumber || '').toLowerCase().includes(searchLower) ||
+                (vo.subject || '').toLowerCase().includes(searchLower) ||
+                (vo.customerName || '').toLowerCase().includes(searchLower) ||
+                (vo.projectName || '').toLowerCase().includes(searchLower) ||
+                (vo.date ? formatDate(vo.date).toLowerCase().includes(searchLower) : false)
+            );
+        } else if (activeDocType === 'subcontract') {
+            // ฟิลเตอร์สำหรับสัญญาจ้างเหมาช่วง
+            const subcontract = item as SubcontractDocument;
+            return (
+                (subcontract.contractNumber || '').toLowerCase().includes(searchLower) ||
+                (subcontract.contractorName || '').toLowerCase().includes(searchLower) ||
+                (subcontract.projectName || '').toLowerCase().includes(searchLower) ||
+                (subcontract.companyName || '').toLowerCase().includes(searchLower) ||
+                (subcontract.scopeOfWork || '').toLowerCase().includes(searchLower) ||
+                (subcontract.contractDate ? formatDate(subcontract.contractDate).toLowerCase().includes(searchLower) : false)
+            );
+        } else {
+            return true;
         }
     });
 
@@ -415,6 +448,9 @@ const HistoryList: React.FC<HistoryListProps> = ({ activeDocType, onLoadDocument
                         {activeDocType === 'receipt' && (
                             <ReceiptPreview ref={previewRef} data={previewData as ReceiptData} />
                         )}
+                        {activeDocType === 'tax-invoice' && (
+                            <TaxInvoicePreview ref={previewRef} data={previewData as TaxInvoiceData} />
+                        )}
                         {activeDocType === 'quotation' && (
                             <QuotationPreview ref={previewRef} data={previewData as QuotationData} />
                         )}
@@ -423,6 +459,12 @@ const HistoryList: React.FC<HistoryListProps> = ({ activeDocType, onLoadDocument
                         )}
                         {activeDocType === 'memo' && (
                             <MemoPreview ref={previewRef} data={previewData as MemoData} />
+                        )}
+                        {activeDocType === 'variation-order' && (
+                            <VariationOrderPreview ref={previewRef} data={previewData as VariationOrderData} />
+                        )}
+                        {activeDocType === 'subcontract' && (
+                            <SubcontractPreview ref={previewRef} data={previewData as SubcontractData} />
                         )}
                     </>
                 )}
@@ -483,13 +525,19 @@ const HistoryList: React.FC<HistoryListProps> = ({ activeDocType, onLoadDocument
                                     <InvoicePreview ref={previewModalRef} data={previewData as InvoiceData} />
                                 ) : activeDocType === 'receipt' ? (
                                     <ReceiptPreview ref={previewModalRef} data={previewData as ReceiptData} />
+                                ) : activeDocType === 'tax-invoice' ? (
+                                    <TaxInvoicePreview ref={previewModalRef} data={previewData as TaxInvoiceData} />
                                 ) : activeDocType === 'quotation' ? (
                                     <QuotationPreview ref={previewModalRef} data={previewData as QuotationData} />
                                 ) : activeDocType === 'purchase-order' ? (
                                     <PurchaseOrderPreview ref={previewModalRef} data={previewData as PurchaseOrderData} />
-                                ) : (
+                                ) : activeDocType === 'memo' ? (
                                     <MemoPreview ref={previewModalRef} data={previewData as MemoData} />
-                                )}
+                                ) : activeDocType === 'variation-order' ? (
+                                    <VariationOrderPreview ref={previewModalRef} data={previewData as VariationOrderData} />
+                                ) : activeDocType === 'subcontract' ? (
+                                    <SubcontractPreview ref={previewModalRef} data={previewData as SubcontractData} />
+                                ) : null}
                             </div>
                         </div>
                     </div>
@@ -596,7 +644,7 @@ const HistoryList: React.FC<HistoryListProps> = ({ activeDocType, onLoadDocument
                     <div className="flex-1 sm:flex-none relative">
                         <input
                             type="text"
-                            placeholder={`ค้นหา${activeDocType === 'delivery' ? 'เลขที่, โครงการ, จาก, ถึง' : activeDocType === 'warranty' ? 'หมายเลข, สินค้า, ลูกค้า' : activeDocType === 'invoice' ? 'เลขที่, ลูกค้า, ยอดรวม' : activeDocType === 'receipt' ? 'เลขที่, ลูกค้า, ยอดรวม, วิธีการชำระเงิน' : activeDocType === 'quotation' ? 'เลขที่, ลูกค้า, ยอดรวม' : activeDocType === 'purchase-order' ? 'เลขที่, ผู้ขาย, ยอดรวม' : 'เลขที่, เรื่อง, จาก, ถึง, โครงการ'}`}
+                            placeholder={`ค้นหา${activeDocType === 'delivery' ? 'เลขที่, โครงการ, จาก, ถึง' : activeDocType === 'warranty' ? 'หมายเลข, สินค้า, ลูกค้า' : activeDocType === 'invoice' ? 'เลขที่, ลูกค้า, ยอดรวม' : activeDocType === 'receipt' ? 'เลขที่, ลูกค้า, ยอดรวม, วิธีการชำระเงิน' : activeDocType === 'tax-invoice' ? 'เลขที่, ลูกค้า, ยอดรวม' : activeDocType === 'quotation' ? 'เลขที่, ลูกค้า, ยอดรวม' : activeDocType === 'purchase-order' ? 'เลขที่, ผู้ขาย, ยอดรวม' : activeDocType === 'variation-order' ? 'เลขที่, เรื่อง, ลูกค้า, โครงการ' : activeDocType === 'subcontract' ? 'เลขที่, เรื่อง, จาก, ถึง, โครงการ' : 'เลขที่, เรื่อง, จาก, ถึง, โครงการ'}`}
                             value={searchTerm}
                             onChange={(e) => setSearchTerm(e.target.value)}
                             className="w-full sm:w-64 px-3 sm:px-4 py-2 pl-9 sm:pl-10 text-xs sm:text-sm border border-gray-300 dark:border-slate-600 rounded-md focus:outline-none focus:ring-2 focus:ring-indigo-500 focus:border-transparent bg-white dark:bg-slate-700 text-gray-800 dark:text-gray-100"
@@ -884,6 +932,71 @@ const HistoryList: React.FC<HistoryListProps> = ({ activeDocType, onLoadDocument
                         </div>
                     );
                     })
+                ) : activeDocType === 'tax-invoice' ? (
+                    // รายการใบกำกับภาษี
+                    paginatedList.map((taxInvoice) => {
+                        const taxInvoiceItem = taxInvoice as TaxInvoiceDocument;
+                        const isCancelled = (taxInvoiceItem as any).documentStatus === 'cancelled';
+                        return (
+                        <div key={taxInvoiceItem.id} className={`group bg-white dark:bg-slate-800 border rounded-lg p-3 sm:p-4 hover:shadow-md transition-shadow ${isCancelled ? 'border-red-300 dark:border-red-700 bg-red-50 dark:bg-red-900/20' : 'border-gray-200 dark:border-slate-700'}`}>
+                            <div className="flex flex-col sm:flex-row sm:justify-between sm:items-start gap-3">
+                                <div className="flex-1 min-w-0">
+                                    {/* แสดงสถานะเอกสาร */}
+                                    {isCancelled && (
+                                        <div className="mb-2">
+                                            <span className="inline-flex items-center px-2 py-0.5 rounded text-xs font-medium bg-red-100 text-red-800">
+                                                ❌ ยกเลิกแล้ว
+                                            </span>
+                                        </div>
+                                    )}
+                                    <h3 className={`text-base sm:text-lg font-semibold break-words ${isCancelled ? 'text-gray-500 dark:text-gray-400 line-through' : 'text-gray-900 dark:text-gray-100'}`}>{taxInvoiceItem.customerName || 'ไม่ระบุลูกค้า'}</h3>
+                                    <div className="mt-2 grid grid-cols-1 sm:grid-cols-2 gap-2 text-xs sm:text-sm text-gray-600 dark:text-gray-300">
+                                        <div>
+                                            <span className="font-medium">เลขที่:</span>{' '}
+                                            <button
+                                                onClick={() => handleShowPreview(taxInvoiceItem)}
+                                                className={`hover:underline cursor-pointer break-all ${isCancelled ? 'text-gray-500' : 'text-blue-600 hover:text-blue-800'}`}
+                                                title="คลิกเพื่อดูตัวอย่าง"
+                                            >
+                                                {taxInvoiceItem.taxInvoiceNumber}
+                                            </button>
+                                        </div>
+                                        <div>
+                                            <span className="font-medium">วันที่ออก:</span> {taxInvoiceItem.taxInvoiceDate ? formatDate(taxInvoiceItem.taxInvoiceDate) : 'ไม่ระบุ'}
+                                        </div>
+                                        <div>
+                                            <span className="font-medium">ผู้ขาย:</span> <span className="break-words">{taxInvoiceItem.companyName || 'ไม่ระบุ'}</span>
+                                        </div>
+                                        <div>
+                                            <span className="font-medium">ยอดรวม:</span> <span className={`font-bold ${isCancelled ? 'text-gray-500' : 'text-green-600'}`}>{(taxInvoiceItem.total ?? 0).toLocaleString('th-TH', { minimumFractionDigits: 2, maximumFractionDigits: 2 })} บาท</span>
+                                        </div>
+                                        <div>
+                                            <span className="font-medium">ภาษี:</span> <span className={`${isCancelled ? 'text-gray-500' : 'text-orange-600'}`}>{(taxInvoiceItem.taxAmount ?? 0).toLocaleString('th-TH', { minimumFractionDigits: 2, maximumFractionDigits: 2 })} บาท</span>
+                                        </div>
+                                    </div>
+                                    <div className="mt-2 text-xs text-gray-400 dark:text-gray-500">
+                                        บันทึกเมื่อ: {formatDate(taxInvoiceItem.createdAt)}
+                                    </div>
+                                </div>
+                                {/* ปุ่ม Actions - ใช้ DocumentActions component */}
+                                <DocumentActions
+                                    onEdit={() => onLoadDocument(taxInvoiceItem)}
+                                    onDownload={() => handleDownloadPdf(taxInvoiceItem)}
+                                    onCancel={() => setCancelConfirm({ id: taxInvoiceItem.id!, docNumber: taxInvoiceItem.taxInvoiceNumber })}
+                                    onRestore={() => handleRestoreDocument(taxInvoiceItem.id!)}
+                                    onDelete={() => setDeleteConfirm({ type: 'tax-invoice', id: taxInvoiceItem.id! })}
+                                    onPreview={() => handleShowPreview(taxInvoiceItem)}
+                                    isCancelled={isCancelled}
+                                    isDownloading={downloadingPdfId === taxInvoiceItem.id}
+                                    isCancelling={cancellingId === taxInvoiceItem.id}
+                                    isRestoring={restoringId === taxInvoiceItem.id}
+                                    showPreview={true}
+                                    showOnHover={true}
+                                />
+                            </div>
+                        </div>
+                    );
+                    })
                 ) : activeDocType === 'quotation' ? (
                     // รายการใบเสนอราคา
                     paginatedList.map((quotation) => {
@@ -990,7 +1103,7 @@ const HistoryList: React.FC<HistoryListProps> = ({ activeDocType, onLoadDocument
                         </div>
                     );
                     })
-                ) : (
+                ) : activeDocType === 'memo' ? (
                     // รายการใบบันทึก
                     paginatedList.map((memo) => {
                         const memoItem = memo as MemoDocument;
@@ -1043,7 +1156,134 @@ const HistoryList: React.FC<HistoryListProps> = ({ activeDocType, onLoadDocument
                         </div>
                     );
                     })
-                )}
+                ) : activeDocType === 'variation-order' ? (
+                    // รายการใบส่วนต่าง
+                    paginatedList.map((vo) => {
+                        const voItem = vo as VariationOrderDocument;
+                        return (
+                        <div key={voItem.id} className="group bg-white dark:bg-slate-800 border border-gray-200 dark:border-slate-700 rounded-lg p-3 sm:p-4 hover:shadow-md transition-shadow">
+                            <div className="flex flex-col sm:flex-row sm:justify-between sm:items-start gap-3">
+                                <div className="flex-1 min-w-0">
+                                    <h3 className="text-base sm:text-lg font-semibold text-gray-900 dark:text-gray-100 break-words">{voItem.subject || 'ไม่ระบุเรื่อง'}</h3>
+                                    <div className="mt-2 grid grid-cols-1 sm:grid-cols-2 gap-2 text-xs sm:text-sm text-gray-600 dark:text-gray-300">
+                                        <div>
+                                            <span className="font-medium">เลขที่:</span>{' '}
+                                            <button
+                                                onClick={() => handleShowPreview(voItem)}
+                                                className="text-blue-600 hover:text-blue-800 hover:underline cursor-pointer break-all"
+                                                title="คลิกเพื่อดูตัวอย่าง"
+                                            >
+                                                {voItem.voNumber}
+                                            </button>
+                                        </div>
+                                        <div>
+                                            <span className="font-medium">วันที่ออก:</span> {voItem.date ? formatDate(voItem.date) : 'ไม่ระบุ'}
+                                        </div>
+                                        <div>
+                                            <span className="font-medium">ลูกค้า:</span> <span className="break-words">{voItem.customerName || 'ไม่ระบุ'}</span>
+                                        </div>
+                                        <div>
+                                            <span className="font-medium">โครงการ:</span> <span className="break-words">{voItem.projectName || 'ไม่ระบุ'}</span>
+                                        </div>
+                                        <div>
+                                            <span className="font-medium">ยอดสุทธิ:</span>{' '}
+                                            <span className={`font-bold ${(voItem.netDifference ?? 0) >= 0 ? 'text-green-600' : 'text-red-600'}`}>
+                                                {(voItem.netDifference ?? 0) >= 0 ? '+' : ''}{(voItem.netDifference ?? 0).toLocaleString('th-TH', { minimumFractionDigits: 2, maximumFractionDigits: 2 })} บาท
+                                            </span>
+                                        </div>
+                                    </div>
+                                    <div className="mt-2 text-xs text-gray-400 dark:text-gray-500">
+                                        บันทึกเมื่อ: {formatDate(voItem.createdAt)}
+                                    </div>
+                                </div>
+                                {/* ปุ่ม Actions - ใช้ DocumentActions component */}
+                                <DocumentActions
+                                    onEdit={() => onLoadDocument(voItem)}
+                                    onDownload={() => handleDownloadPdf(voItem)}
+                                    onDelete={() => setDeleteConfirm({ type: 'variation-order', id: voItem.id! })}
+                                    onPreview={() => handleShowPreview(voItem)}
+                                    isDownloading={downloadingPdfId === voItem.id}
+                                    showPreview={true}
+                                    showOnHover={true}
+                                />
+                            </div>
+                        </div>
+                    );
+                    })
+                ) : activeDocType === 'subcontract' ? (
+                    // รายการสัญญาจ้างเหมาช่วง (สัญญาช่าง)
+                    paginatedList.map((contract) => {
+                        const contractItem = contract as SubcontractDocument;
+                        const isCancelled = (contractItem as any).documentStatus === 'cancelled';
+                        return (
+                        <div key={contractItem.id} className={`group bg-white dark:bg-slate-800 border rounded-lg p-3 sm:p-4 hover:shadow-md transition-shadow ${isCancelled ? 'border-red-300 dark:border-red-700 bg-red-50 dark:bg-red-900/20' : 'border-gray-200 dark:border-slate-700'}`}>
+                            <div className="flex flex-col sm:flex-row sm:justify-between sm:items-start gap-3">
+                                <div className="flex-1 min-w-0">
+                                    {/* แสดงสถานะเอกสาร */}
+                                    {isCancelled && (
+                                        <div className="mb-2">
+                                            <span className="inline-flex items-center px-2 py-0.5 rounded text-xs font-medium bg-red-100 text-red-800">
+                                                ❌ ยกเลิกแล้ว
+                                            </span>
+                                        </div>
+                                    )}
+                                    <h3 className={`text-base sm:text-lg font-semibold break-words ${isCancelled ? 'text-gray-500 dark:text-gray-400 line-through' : 'text-gray-900 dark:text-gray-100'}`}>
+                                        {contractItem.scopeOfWork || contractItem.projectName || 'ไม่ระบุเรื่อง'}
+                                    </h3>
+                                    <div className="mt-2 grid grid-cols-1 sm:grid-cols-2 gap-2 text-xs sm:text-sm text-gray-600 dark:text-gray-300">
+                                        <div>
+                                            <span className="font-medium">เลขที่:</span>{' '}
+                                            <button
+                                                onClick={() => handleShowPreview(contractItem)}
+                                                className={`hover:underline cursor-pointer break-all ${isCancelled ? 'text-gray-500' : 'text-blue-600 hover:text-blue-800'}`}
+                                                title="คลิกเพื่อดูตัวอย่าง"
+                                            >
+                                                {contractItem.contractNumber || 'ไม่ระบุ'}
+                                            </button>
+                                        </div>
+                                        <div>
+                                            <span className="font-medium">วันที่ออก:</span> {contractItem.contractDate ? formatDate(contractItem.contractDate) : 'ไม่ระบุ'}
+                                        </div>
+                                        <div>
+                                            <span className="font-medium">จาก:</span> <span className="break-words">{contractItem.companyName || 'ไม่ระบุ'}</span>
+                                        </div>
+                                        <div>
+                                            <span className="font-medium">ถึง:</span> <span className="break-words">{contractItem.contractorName || 'ไม่ระบุ'}</span>
+                                        </div>
+                                        <div>
+                                            <span className="font-medium">โครงการ:</span> <span className="break-words">{contractItem.projectName || 'ไม่ระบุ'}</span>
+                                        </div>
+                                        <div>
+                                            <span className="font-medium">ค่าจ้างรวม:</span>{' '}
+                                            <span className={`font-bold ${isCancelled ? 'text-gray-500' : 'text-indigo-600'}`}>
+                                                {(contractItem.totalContractAmount ?? 0).toLocaleString('th-TH', { minimumFractionDigits: 2, maximumFractionDigits: 2 })} บาท
+                                            </span>
+                                        </div>
+                                    </div>
+                                    <div className="mt-2 text-xs text-gray-400 dark:text-gray-500">
+                                        บันทึกเมื่อ: {formatDate(contractItem.createdAt)}
+                                    </div>
+                                </div>
+                                {/* ปุ่ม Actions - ใช้ DocumentActions component */}
+                                <DocumentActions
+                                    onEdit={() => onLoadDocument(contractItem)}
+                                    onDownload={() => handleDownloadPdf(contractItem)}
+                                    onCancel={() => setCancelConfirm({ id: contractItem.id!, docNumber: contractItem.contractNumber || '' })}
+                                    onRestore={() => handleRestoreDocument(contractItem.id!)}
+                                    onDelete={() => setDeleteConfirm({ type: 'subcontract', id: contractItem.id! })}
+                                    onPreview={() => handleShowPreview(contractItem)}
+                                    isCancelled={isCancelled}
+                                    isDownloading={downloadingPdfId === contractItem.id}
+                                    isCancelling={cancellingId === contractItem.id}
+                                    isRestoring={restoringId === contractItem.id}
+                                    showPreview={true}
+                                    showOnHover={true}
+                                />
+                            </div>
+                        </div>
+                    );
+                    })
+                ) : null}
             </div>
 
             {/* Pagination Controls */}
