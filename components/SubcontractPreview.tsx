@@ -118,33 +118,33 @@ const SubcontractPreview = forwardRef<HTMLDivElement, SubcontractPreviewProps>((
                     {data.items.length > 0 && (
                         <div className="my-2.5">
                             <p className="mb-1.5">โดยมีรายละเอียดเนื้องานและปริมาณงานตามรายการดังนี้:</p>
-                            <table className="w-full border-collapse border border-gray-300 text-[10px]">
+                            <table className="w-full border-collapse border border-gray-300 text-[10px]" style={{ borderCollapse: 'collapse' }}>
                                 <thead className="bg-gray-100">
                                     <tr>
-                                        <th className="border border-gray-300 px-1.5 py-1 text-center align-middle w-8">ลำดับ</th>
-                                        <th className="border border-gray-300 px-1.5 py-1 text-left align-middle">รายการงาน (Description)</th>
-                                        <th className="border border-gray-300 px-1.5 py-1 text-center align-middle w-14">ปริมาณ</th>
-                                        <th className="border border-gray-300 px-1.5 py-1 text-center align-middle w-12">หน่วย</th>
-                                        <th className="border border-gray-300 px-1.5 py-1 text-right align-middle w-20">ราคา/หน่วย</th>
-                                        <th className="border border-gray-300 px-1.5 py-1 text-right align-middle w-20">รวมเป็นเงิน</th>
+                                        <th className="border border-gray-300 px-1.5 py-1.5 text-center w-8" style={{ verticalAlign: 'middle' }}>ลำดับ</th>
+                                        <th className="border border-gray-300 px-1.5 py-1.5 text-left" style={{ verticalAlign: 'middle' }}>รายการงาน (Description)</th>
+                                        <th className="border border-gray-300 px-1.5 py-1.5 text-center w-14" style={{ verticalAlign: 'middle' }}>ปริมาณ</th>
+                                        <th className="border border-gray-300 px-1.5 py-1.5 text-center w-12" style={{ verticalAlign: 'middle' }}>หน่วย</th>
+                                        <th className="border border-gray-300 px-1.5 py-1.5 text-right w-20" style={{ verticalAlign: 'middle' }}>ราคา/หน่วย</th>
+                                        <th className="border border-gray-300 px-1.5 py-1.5 text-right w-20" style={{ verticalAlign: 'middle' }}>รวมเป็นเงิน</th>
                                     </tr>
                                 </thead>
                                 <tbody>
                                     {data.items.map((item, index) => (
                                         <tr key={index}>
-                                            <td className="border border-gray-300 px-1.5 py-1 text-center align-middle">{index + 1}</td>
-                                            <td className="border border-gray-300 px-1.5 py-1 align-middle">{item.description || '-'}</td>
-                                            <td className="border border-gray-300 px-1.5 py-1 text-center align-middle">{item.quantity}</td>
-                                            <td className="border border-gray-300 px-1.5 py-1 text-center align-middle">{item.unit}</td>
-                                            <td className="border border-gray-300 px-1.5 py-1 text-right align-middle">{formatCurrency(item.unitPrice)}</td>
-                                            <td className="border border-gray-300 px-1.5 py-1 text-right align-middle font-medium">{formatCurrency(item.amount)}</td>
+                                            <td className="border border-gray-300 px-1.5 py-1.5 text-center" style={{ verticalAlign: 'middle' }}>{index + 1}</td>
+                                            <td className="border border-gray-300 px-1.5 py-1.5" style={{ verticalAlign: 'middle' }}>{item.description || '-'}</td>
+                                            <td className="border border-gray-300 px-1.5 py-1.5 text-center" style={{ verticalAlign: 'middle' }}>{item.quantity}</td>
+                                            <td className="border border-gray-300 px-1.5 py-1.5 text-center" style={{ verticalAlign: 'middle' }}>{item.unit}</td>
+                                            <td className="border border-gray-300 px-1.5 py-1.5 text-right" style={{ verticalAlign: 'middle' }}>{formatCurrency(item.unitPrice)}</td>
+                                            <td className="border border-gray-300 px-1.5 py-1.5 text-right font-medium" style={{ verticalAlign: 'middle' }}>{formatCurrency(item.amount)}</td>
                                         </tr>
                                     ))}
                                 </tbody>
                                 <tfoot className="bg-gray-50">
                                     <tr>
-                                        <td colSpan={5} className="border border-gray-300 px-1.5 py-1 text-right align-middle font-bold">รวมทั้งสิ้น</td>
-                                        <td className="border border-gray-300 px-1.5 py-1 text-right align-middle font-bold text-indigo-600">{formatCurrency(data.totalWorkAmount)}</td>
+                                        <td colSpan={5} className="border border-gray-300 px-1.5 py-1.5 text-right font-bold" style={{ verticalAlign: 'middle' }}>รวมทั้งสิ้น</td>
+                                        <td className="border border-gray-300 px-1.5 py-1.5 text-right font-bold text-indigo-600" style={{ verticalAlign: 'middle' }}>{formatCurrency(data.totalWorkAmount)}</td>
                                     </tr>
                                 </tfoot>
                             </table>
@@ -176,30 +176,30 @@ const SubcontractPreview = forwardRef<HTMLDivElement, SubcontractPreviewProps>((
                     
                     {data.paymentMilestones.length > 0 && (
                         <div className="my-2.5">
-                            <table className="w-full border-collapse border border-gray-300 text-[10px]">
+                            <table className="w-full border-collapse border border-gray-300 text-[10px]" style={{ borderCollapse: 'collapse' }}>
                                 <thead className="bg-green-50">
                                     <tr>
-                                        <th className="border border-gray-300 px-1.5 py-1 text-center align-middle w-10">งวดที่</th>
-                                        <th className="border border-gray-300 px-1.5 py-1 text-left align-middle">รายละเอียดงานที่ต้องแล้วเสร็จ (Milestone)</th>
-                                        <th className="border border-gray-300 px-1.5 py-1 text-center align-middle w-14">% ของยอด</th>
-                                        <th className="border border-gray-300 px-1.5 py-1 text-right align-middle w-24">จำนวนเงิน (บาท)</th>
+                                        <th className="border border-gray-300 px-1.5 py-1.5 text-center w-10" style={{ verticalAlign: 'middle' }}>งวดที่</th>
+                                        <th className="border border-gray-300 px-1.5 py-1.5 text-left" style={{ verticalAlign: 'middle' }}>รายละเอียดงานที่ต้องแล้วเสร็จ (Milestone)</th>
+                                        <th className="border border-gray-300 px-1.5 py-1.5 text-center w-14" style={{ verticalAlign: 'middle' }}>% ของยอด</th>
+                                        <th className="border border-gray-300 px-1.5 py-1.5 text-right w-24" style={{ verticalAlign: 'middle' }}>จำนวนเงิน (บาท)</th>
                                     </tr>
                                 </thead>
                                 <tbody>
                                     {data.paymentMilestones.map((milestone, index) => (
                                         <tr key={index}>
-                                            <td className="border border-gray-300 px-1.5 py-1 text-center align-middle font-medium">{milestone.milestone}</td>
-                                            <td className="border border-gray-300 px-1.5 py-1 align-middle">{milestone.description || '-'}</td>
-                                            <td className="border border-gray-300 px-1.5 py-1 text-center align-middle">{milestone.percentage}%</td>
-                                            <td className="border border-gray-300 px-1.5 py-1 text-right align-middle">{formatCurrency(milestone.amount)}</td>
+                                            <td className="border border-gray-300 px-1.5 py-1.5 text-center font-medium" style={{ verticalAlign: 'middle' }}>{milestone.milestone}</td>
+                                            <td className="border border-gray-300 px-1.5 py-1.5" style={{ verticalAlign: 'middle' }}>{milestone.description || '-'}</td>
+                                            <td className="border border-gray-300 px-1.5 py-1.5 text-center" style={{ verticalAlign: 'middle' }}>{milestone.percentage}%</td>
+                                            <td className="border border-gray-300 px-1.5 py-1.5 text-right" style={{ verticalAlign: 'middle' }}>{formatCurrency(milestone.amount)}</td>
                                         </tr>
                                     ))}
                                 </tbody>
                                 <tfoot className="bg-green-50">
                                     <tr>
-                                        <td colSpan={2} className="border border-gray-300 px-1.5 py-1 text-right align-middle font-bold">รวม</td>
-                                        <td className="border border-gray-300 px-1.5 py-1 text-center align-middle font-bold">{totalMilestonePercentage}%</td>
-                                        <td className="border border-gray-300 px-1.5 py-1 text-right align-middle font-bold text-green-600">{formatCurrency(totalMilestoneAmount)}</td>
+                                        <td colSpan={2} className="border border-gray-300 px-1.5 py-1.5 text-right font-bold" style={{ verticalAlign: 'middle' }}>รวม</td>
+                                        <td className="border border-gray-300 px-1.5 py-1.5 text-center font-bold" style={{ verticalAlign: 'middle' }}>{totalMilestonePercentage}%</td>
+                                        <td className="border border-gray-300 px-1.5 py-1.5 text-right font-bold text-green-600" style={{ verticalAlign: 'middle' }}>{formatCurrency(totalMilestoneAmount)}</td>
                                     </tr>
                                 </tfoot>
                             </table>

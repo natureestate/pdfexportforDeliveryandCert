@@ -79,6 +79,8 @@ export type DocumentDocument =
 // Helper function สำหรับดึงชื่อลูกค้า/ผู้ขายจาก document data
 type CustomerNameGetter<T extends DocumentData> = (data: T) => string;
 type DateGetter<T extends DocumentData> = (data: T) => Date | null | undefined;
+type ProjectNameGetter<T extends DocumentData> = (data: T) => string;
+type CompanyNameGetter<T extends DocumentData> = (data: T) => string;
 
 // Configuration สำหรับแต่ละ Document Type
 interface DocumentConfig<T extends DocumentData> {
@@ -86,6 +88,8 @@ interface DocumentConfig<T extends DocumentData> {
     saveFn: (data: T, companyId?: string) => Promise<string>;  // Function สำหรับ save
     updateFn: (id: string, data: Partial<T>) => Promise<void>; // Function สำหรับ update
     getCustomerName: CustomerNameGetter<T>;           // Function สำหรับดึงชื่อลูกค้า/ผู้ขาย
+    getProjectName: ProjectNameGetter<T>;             // Function สำหรับดึงชื่อโครงการ
+    getCompanyName: CompanyNameGetter<T>;             // Function สำหรับดึงชื่อองค์กร/บริษัท
     getDate: DateGetter<T>;                           // Function สำหรับดึงวันที่
     successMessages: {
         save: string;                                  // Success message เมื่อ save สำเร็จ
@@ -99,7 +103,9 @@ export const DOCUMENT_REGISTRY = {
         prefix: 'DN',
         saveFn: saveDeliveryNote,
         updateFn: updateDeliveryNote,
-        getCustomerName: (data: DeliveryNoteData) => data.toCompany || 'Customer',
+        getCustomerName: (data: DeliveryNoteData) => data.toCompany || '',
+        getProjectName: (data: DeliveryNoteData) => data.projectName || '',
+        getCompanyName: (data: DeliveryNoteData) => data.fromCompany || '',
         getDate: (data: DeliveryNoteData) => data.date,
         successMessages: {
             save: 'บันทึกใบส่งมอบงานสำเร็จ',
@@ -111,7 +117,9 @@ export const DOCUMENT_REGISTRY = {
         prefix: 'WR',
         saveFn: saveWarrantyCard,
         updateFn: updateWarrantyCard,
-        getCustomerName: (data: WarrantyData) => data.customerName || 'Customer',
+        getCustomerName: (data: WarrantyData) => data.customerName || '',
+        getProjectName: (data: WarrantyData) => data.projectName || '',
+        getCompanyName: (data: WarrantyData) => data.companyName || '',
         getDate: (data: WarrantyData) => data.purchaseDate,
         successMessages: {
             save: 'บันทึกใบรับประกันสำเร็จ',
@@ -123,7 +131,9 @@ export const DOCUMENT_REGISTRY = {
         prefix: 'IN',
         saveFn: saveInvoice,
         updateFn: updateInvoice,
-        getCustomerName: (data: InvoiceData) => data.customerName || 'Customer',
+        getCustomerName: (data: InvoiceData) => data.customerName || '',
+        getProjectName: (data: InvoiceData) => data.projectName || '',
+        getCompanyName: (data: InvoiceData) => data.companyName || '',
         getDate: (data: InvoiceData) => data.invoiceDate,
         successMessages: {
             save: 'บันทึกใบแจ้งหนี้สำเร็จ',
@@ -135,7 +145,9 @@ export const DOCUMENT_REGISTRY = {
         prefix: 'RC',
         saveFn: saveReceipt,
         updateFn: updateReceipt,
-        getCustomerName: (data: ReceiptData) => data.customerName || 'Customer',
+        getCustomerName: (data: ReceiptData) => data.customerName || '',
+        getProjectName: (data: ReceiptData) => data.projectName || '',
+        getCompanyName: (data: ReceiptData) => data.companyName || '',
         getDate: (data: ReceiptData) => data.receiptDate,
         successMessages: {
             save: 'บันทึกใบเสร็จสำเร็จ',
@@ -147,7 +159,9 @@ export const DOCUMENT_REGISTRY = {
         prefix: 'TI',
         saveFn: saveTaxInvoice,
         updateFn: updateTaxInvoice,
-        getCustomerName: (data: TaxInvoiceData) => data.customerName || 'Customer',
+        getCustomerName: (data: TaxInvoiceData) => data.customerName || '',
+        getProjectName: (data: TaxInvoiceData) => data.projectName || '',
+        getCompanyName: (data: TaxInvoiceData) => data.companyName || '',
         getDate: (data: TaxInvoiceData) => data.taxInvoiceDate,
         successMessages: {
             save: 'บันทึกใบกำกับภาษีสำเร็จ',
@@ -159,7 +173,9 @@ export const DOCUMENT_REGISTRY = {
         prefix: 'QT',
         saveFn: saveQuotation,
         updateFn: updateQuotation,
-        getCustomerName: (data: QuotationData) => data.customerName || 'Customer',
+        getCustomerName: (data: QuotationData) => data.customerName || '',
+        getProjectName: (data: QuotationData) => data.projectName || '',
+        getCompanyName: (data: QuotationData) => data.companyName || '',
         getDate: (data: QuotationData) => data.quotationDate,
         successMessages: {
             save: 'บันทึกใบเสนอราคาสำเร็จ',
@@ -171,7 +187,9 @@ export const DOCUMENT_REGISTRY = {
         prefix: 'PO',
         saveFn: savePurchaseOrder,
         updateFn: updatePurchaseOrder,
-        getCustomerName: (data: PurchaseOrderData) => data.supplierName || 'Supplier',
+        getCustomerName: (data: PurchaseOrderData) => data.supplierName || '',
+        getProjectName: (data: PurchaseOrderData) => data.projectName || '',
+        getCompanyName: (data: PurchaseOrderData) => data.companyName || '',
         getDate: (data: PurchaseOrderData) => data.purchaseOrderDate,
         successMessages: {
             save: 'บันทึกใบสั่งซื้อสำเร็จ',
@@ -183,7 +201,9 @@ export const DOCUMENT_REGISTRY = {
         prefix: 'MEMO',
         saveFn: saveMemo,
         updateFn: updateMemo,
-        getCustomerName: (data: MemoData) => data.toName || data.projectName || 'Recipient',
+        getCustomerName: (data: MemoData) => data.toName || '',
+        getProjectName: (data: MemoData) => data.projectName || '',
+        getCompanyName: (data: MemoData) => data.fromName || '',
         getDate: (data: MemoData) => data.date,
         successMessages: {
             save: 'บันทึกใบบันทึกสำเร็จ',
@@ -195,7 +215,9 @@ export const DOCUMENT_REGISTRY = {
         prefix: 'VO',
         saveFn: saveVariationOrder,
         updateFn: updateVariationOrder,
-        getCustomerName: (data: VariationOrderData) => data.customerName || data.projectName || 'Customer',
+        getCustomerName: (data: VariationOrderData) => data.customerName || '',
+        getProjectName: (data: VariationOrderData) => data.projectName || '',
+        getCompanyName: (data: VariationOrderData) => data.companyName || '',
         getDate: (data: VariationOrderData) => data.date,
         successMessages: {
             save: 'บันทึกใบส่วนต่างสำเร็จ',
@@ -207,7 +229,9 @@ export const DOCUMENT_REGISTRY = {
         prefix: 'SC',
         saveFn: saveSubcontract,
         updateFn: updateSubcontract,
-        getCustomerName: (data: SubcontractData) => data.contractorName || data.projectName || 'Contractor',
+        getCustomerName: (data: SubcontractData) => data.contractorName || '',
+        getProjectName: (data: SubcontractData) => data.projectName || '',
+        getCompanyName: (data: SubcontractData) => data.companyName || '',
         getDate: (data: SubcontractData) => data.contractDate,
         successMessages: {
             save: 'บันทึกสัญญาจ้างเหมาช่วงสำเร็จ',
@@ -218,6 +242,8 @@ export const DOCUMENT_REGISTRY = {
 
 /**
  * Helper function สำหรับ generate PDF filename
+ * รูปแบบ: PREFIX_ลูกค้า_โครงการ_องค์กร_YYMMDD_UUID.pdf
+ * ถ้าข้อมูลใดไม่มี จะข้ามไป (ไม่แสดงส่วนนั้น)
  */
 export const generatePdfFilename = (
     type: DocType,
@@ -237,14 +263,16 @@ export const generatePdfFilename = (
         });
     };
 
-    // ทำความสะอาดชื่อลูกค้า
-    const cleanCustomerName = (name: string): string => {
+    // ทำความสะอาดชื่อ (ลบอักขระพิเศษ, จำกัดความยาว)
+    const cleanName = (name: string, maxLength: number = 30): string => {
+        if (!name || name.trim() === '') return '';
         return name
-            .replace(/[^a-zA-Z0-9ก-๙]/g, '_')
-            .replace(/_+/g, '_')
-            .replace(/^_|_$/g, '')
-            .substring(0, 50)
-            || (type === 'purchase-order' ? 'Supplier' : 'Customer');
+            .replace(/[^a-zA-Z0-9ก-๙\s]/g, '') // ลบอักขระพิเศษ (เก็บช่องว่าง)
+            .replace(/\s+/g, '_')               // แปลงช่องว่างเป็น _
+            .replace(/_+/g, '_')                // ลด _ ซ้ำ
+            .replace(/^_|_$/g, '')              // ลบ _ หน้า/หลัง
+            .substring(0, maxLength)
+            .replace(/_$/g, '');                // ลบ _ ท้ายหลังตัด
     };
 
     // แปลงวันที่เป็น YYMMDD
@@ -263,12 +291,42 @@ export const generatePdfFilename = (
         return `${yy}${mm}${dd}`;
     };
 
-    // ใช้ type assertion เพราะ TypeScript ไม่สามารถ infer ได้ว่า data ตรงกับ config
-    const customerName = cleanCustomerName((config.getCustomerName as (data: unknown) => string)(data));
+    // ดึงข้อมูลจาก config (ใช้ type assertion เพราะ TypeScript ไม่สามารถ infer ได้)
+    const customerName = cleanName((config.getCustomerName as (data: unknown) => string)(data), 25);
+    const projectName = cleanName((config.getProjectName as (data: unknown) => string)(data), 25);
+    const companyName = cleanName((config.getCompanyName as (data: unknown) => string)(data), 20);
     const dateStr = formatDateToYYMMDD((config.getDate as (data: unknown) => Date | null | undefined)(data));
     const uuid = generateUUID().substring(0, 8);
 
-    return `${config.prefix}_${customerName}_${dateStr}_${uuid}.pdf`;
+    // สร้างชื่อไฟล์โดยรวมเฉพาะส่วนที่มีข้อมูล
+    // รูปแบบ: PREFIX_ลูกค้า_โครงการ_องค์กร_YYMMDD_UUID.pdf
+    const parts: string[] = [config.prefix];
+    
+    // เพิ่มชื่อลูกค้า (หรือ Supplier/Contractor ตาม type)
+    if (customerName) {
+        parts.push(customerName);
+    }
+    
+    // เพิ่มชื่อโครงการ
+    if (projectName) {
+        parts.push(projectName);
+    }
+    
+    // เพิ่มชื่อองค์กร/บริษัท
+    if (companyName) {
+        parts.push(companyName);
+    }
+    
+    // ถ้าไม่มีข้อมูลใดๆ เลย ให้ใส่ค่า default
+    if (parts.length === 1) {
+        parts.push(type === 'purchase-order' ? 'Supplier' : 'Document');
+    }
+    
+    // เพิ่มวันที่และ UUID
+    parts.push(dateStr);
+    parts.push(uuid);
+
+    return `${parts.join('_')}.pdf`;
 };
 
 /**
