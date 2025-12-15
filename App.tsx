@@ -46,7 +46,7 @@ import Dashboard from './components/Dashboard';
 import CRMPage from './components/CRMPage';
 import ReportsPage from './components/ReportsPage';
 import CalendarPage from './components/CalendarPage';
-import { generatePdf } from './services/pdfGenerator';
+import { generatePdf, generatePng } from './services/pdfGenerator';
 import { saveDeliveryNote, saveWarrantyCard, saveInvoice, saveReceipt, saveTaxInvoice, saveQuotation, savePurchaseOrder } from './services/firestore';
 import type { DeliveryNoteDocument, WarrantyDocument, InvoiceDocument, ReceiptDocument, TaxInvoiceDocument, QuotationDocument, PurchaseOrderDocument, MemoDocument, VariationOrderDocument, SubcontractDocument } from './services/firestore';
 import { DOCUMENT_REGISTRY, generatePdfFilename as generatePdfFilenameFromRegistry, saveOrUpdateDocument, type DocType, type DocumentData } from './utils/documentRegistry';
@@ -863,6 +863,44 @@ const AppContent: React.FC = () => {
         }
     }, [activeTab, getCurrentData, currentCompany, generatePdfFilename, t]);
 
+    // ฟังก์ชัน Export PNG
+    const handleExportPng = useCallback(async () => {
+        if (!printableAreaRef.current) return;
+        
+        // ตรวจสอบ quota ก่อน export (ใช้ quota เดียวกับ PDF)
+        if (currentCompany?.id) {
+            try {
+                const { getQuota } = await import('./services/quota');
+                const quota = await getQuota(currentCompany.id);
+                
+                // ตรวจสอบว่า Free plan สามารถ export ได้หรือไม่
+                if (!quota.features.exportPDF) {
+                    showToast(`❌ ${t('notifications.freePlanNoPdf')}`, 'error');
+                    return;
+                }
+            } catch (error) {
+                console.error('Failed to check quota:', error);
+            }
+        }
+        
+        setIsLoading(true);
+        showToast('กำลังสร้าง PNG...', 'info');
+
+        // สร้างชื่อไฟล์ (ใช้รูปแบบเดียวกับ PDF)
+        const data = getCurrentData();
+        const filename = generatePdfFilename(activeTab, data);
+
+        try {
+            await generatePng(printableAreaRef.current, filename);
+            showToast('สร้างไฟล์ PNG เรียบร้อยแล้ว', 'success');
+        } catch (error) {
+            console.error('Failed to generate PNG:', error);
+            showToast('ไม่สามารถสร้างไฟล์ PNG ได้', 'error');
+        } finally {
+            setIsLoading(false);
+        }
+    }, [activeTab, getCurrentData, currentCompany, generatePdfFilename, t]);
+
     // ฟังก์ชันโหลดเอกสารจาก History (สำหรับ Edit)
     const handleLoadDocument = useCallback((doc: DeliveryNoteDocument | WarrantyDocument | InvoiceDocument | ReceiptDocument | TaxInvoiceDocument | QuotationDocument | PurchaseOrderDocument | MemoDocument | VariationOrderDocument | SubcontractDocument) => {
         // ตรวจสอบว่าเอกสารถูกเซ็นแล้วหรือไม่ - ถ้าเซ็นแล้วให้โหลดแบบ View Only
@@ -1377,11 +1415,13 @@ const AppContent: React.FC = () => {
                                             )}
                                             {isSaving ? t('form.saving') : (editingDocumentId ? <><Save className="w-4 h-4 inline mr-1" />{t('app.update')}</> : <><Save className="w-4 h-4 inline mr-1" />{t('app.save')}</>)}
                                         </button>
+                                        {/* ปุ่ม Export PDF */}
                                         <button
                                             type="button"
                                             onClick={handleExportPdf}
                                             disabled={isLoading}
                                             className="inline-flex items-center justify-center px-3 sm:px-4 py-2 border border-transparent text-xs sm:text-sm font-medium rounded-md shadow-sm text-white bg-indigo-600 hover:bg-indigo-700 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-indigo-500 disabled:bg-indigo-300 disabled:cursor-not-allowed"
+                                            title="ดาวน์โหลดเป็น PDF"
                                         >
                                             {isLoading ? (
                                                 <svg className="animate-spin -ml-1 mr-2 h-4 w-4 text-white" xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24">
@@ -1394,6 +1434,27 @@ const AppContent: React.FC = () => {
                                                 </svg>
                                             )}
                                             {isLoading ? t('form.creatingPdf') : t('form.pdf')}
+                                        </button>
+                                        
+                                        {/* ปุ่ม Export PNG */}
+                                        <button
+                                            type="button"
+                                            onClick={handleExportPng}
+                                            disabled={isLoading}
+                                            className="inline-flex items-center justify-center px-3 sm:px-4 py-2 border border-transparent text-xs sm:text-sm font-medium rounded-md shadow-sm text-white bg-emerald-600 hover:bg-emerald-700 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-emerald-500 disabled:bg-emerald-300 disabled:cursor-not-allowed"
+                                            title="ดาวน์โหลดเป็น PNG"
+                                        >
+                                            {isLoading ? (
+                                                <svg className="animate-spin -ml-1 mr-2 h-4 w-4 text-white" xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24">
+                                                    <circle className="opacity-25" cx="12" cy="12" r="10" stroke="currentColor" strokeWidth="4"></circle>
+                                                    <path className="opacity-75" fill="currentColor" d="M4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4zm2 5.291A7.962 7.962 0 014 12H0c0 3.042 1.135 5.824 3 7.938l3-2.647z"></path>
+                                                </svg>
+                                            ) : (
+                                                <svg xmlns="http://www.w3.org/2000/svg" className="h-4 w-4 mr-1 sm:mr-2" viewBox="0 0 20 20" fill="currentColor">
+                                                    <path fillRule="evenodd" d="M4 3a2 2 0 00-2 2v10a2 2 0 002 2h12a2 2 0 002-2V5a2 2 0 00-2-2H4zm12 12H4l4-8 3 6 2-4 3 6z" clipRule="evenodd" />
+                                                </svg>
+                                            )}
+                                            PNG
                                         </button>
                                     </div>
                                 </div>

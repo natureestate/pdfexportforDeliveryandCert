@@ -1,7 +1,7 @@
 import React, { useEffect, useState, useCallback, useRef } from 'react';
 import type { DeliveryNoteDocument, WarrantyDocument, InvoiceDocument, ReceiptDocument, QuotationDocument, PurchaseOrderDocument, MemoDocument, VariationOrderDocument, SubcontractDocument, TaxInvoiceDocument } from '../services/firestore';
 import { useCompany } from '../contexts/CompanyContext';
-import { generatePdf } from '../services/pdfGenerator';
+import { generatePdf, generatePng } from '../services/pdfGenerator';
 import { generatePdfFilename as generatePdfFilenameFromRegistry, type DocType, type DocumentDocument } from '../utils/documentRegistry';
 import { useDocumentList } from '../hooks/useDocumentList';
 import { cancelDocument, restoreDocument } from '../services/verification';
@@ -276,6 +276,117 @@ const HistoryList: React.FC<HistoryListProps> = ({ activeDocType, onLoadDocument
         }
     }, [activeDocType, currentCompany, generatePdfFilename]);
 
+    // ฟังก์ชันดาวน์โหลด PNG จาก preview modal
+    const handleDownloadPngFromPreview = useCallback(async () => {
+        if (!previewDoc) return;
+        
+        try {
+            setDownloadingPdfId(previewDoc.id || null);
+            
+            // ตรวจสอบ quota ก่อน export (ถ้ามี)
+            if (currentCompany?.id) {
+                try {
+                    const { getQuota } = await import('../services/quota');
+                    const quota = await getQuota(currentCompany.id);
+                    
+                    // ตรวจสอบว่า Free plan สามารถ export ได้หรือไม่
+                    if (!quota.features.exportPDF) {
+                        alert('❌ Free plan ไม่สามารถ Export ได้ กรุณาอัพเกรดแผน');
+                        setDownloadingPdfId(null);
+                        return;
+                    }
+                } catch (error) {
+                    console.error('Failed to check quota:', error);
+                }
+            }
+
+            // รอให้ React render preview component ใน modal และ ref พร้อม
+            let attempts = 0;
+            const maxAttempts = 20;
+            while (attempts < maxAttempts) {
+                await new Promise(resolve => setTimeout(resolve, 100));
+                if (previewModalRef.current) {
+                    break;
+                }
+                attempts++;
+            }
+            
+            if (!previewModalRef.current) {
+                throw new Error('ไม่พบ preview element กรุณาลองใหม่อีกครั้ง');
+            }
+
+            // สร้างชื่อไฟล์
+            const filename = generatePdfFilename(activeDocType, previewDoc as DocumentDataType);
+            
+            // สร้าง PNG
+            await generatePng(previewModalRef.current, filename);
+            
+            console.log('✅ PNG downloaded successfully');
+        } catch (error) {
+            console.error('❌ Error downloading PNG:', error);
+            alert('ไม่สามารถดาวน์โหลด PNG ได้: ' + (error instanceof Error ? error.message : 'Unknown error'));
+        } finally {
+            setDownloadingPdfId(null);
+        }
+    }, [activeDocType, currentCompany, previewDoc]);
+
+    // ฟังก์ชันดาวน์โหลด PNG (จากรายการ)
+    const handleDownloadPng = useCallback(async (doc: DocumentDocument) => {
+        try {
+            setDownloadingPdfId(doc.id || null);
+            
+            // ตรวจสอบ quota ก่อน export (ถ้ามี)
+            if (currentCompany?.id) {
+                try {
+                    const { getQuota } = await import('../services/quota');
+                    const quota = await getQuota(currentCompany.id);
+                    
+                    if (!quota.features.exportPDF) {
+                        alert('❌ Free plan ไม่สามารถ Export ได้ กรุณาอัพเกรดแผน');
+                        setDownloadingPdfId(null);
+                        return;
+                    }
+                } catch (error) {
+                    console.error('Failed to check quota:', error);
+                }
+            }
+
+            // ตั้งค่าข้อมูลสำหรับ preview
+            setPreviewData(doc as DocumentDataType);
+            
+            // รอให้ React render preview component และ ref พร้อม
+            let attempts = 0;
+            const maxAttempts = 20;
+            while (attempts < maxAttempts) {
+                await new Promise(resolve => setTimeout(resolve, 100));
+                if (previewRef.current) {
+                    break;
+                }
+                attempts++;
+            }
+            
+            if (!previewRef.current) {
+                throw new Error('ไม่พบ preview element กรุณาลองใหม่อีกครั้ง');
+            }
+
+            // สร้างชื่อไฟล์
+            const filename = generatePdfFilename(activeDocType, doc as DocumentDataType);
+            
+            // สร้าง PNG
+            await generatePng(previewRef.current, filename);
+            
+            console.log('✅ PNG downloaded successfully');
+        } catch (error) {
+            console.error('❌ Error downloading PNG:', error);
+            alert('ไม่สามารถดาวน์โหลด PNG ได้: ' + (error instanceof Error ? error.message : 'Unknown error'));
+        } finally {
+            setDownloadingPdfId(null);
+            setTimeout(() => {
+                setPreviewData(null);
+            }, 500);
+        }
+    }, [activeDocType, currentCompany, generatePdfFilename]);
+
     // แสดง Loading
     if (loading) {
         return (
@@ -498,7 +609,31 @@ const HistoryList: React.FC<HistoryListProps> = ({ activeDocType, onLoadDocument
                                             <svg className="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                                                 <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M12 10v6m0 0l-3-3m3 3l3-3m2 8H7a2 2 0 01-2-2V5a2 2 0 012-2h5.586a1 1 0 01.707.293l5.414 5.414a1 1 0 01.293.707V19a2 2 0 01-2 2z" />
                                             </svg>
-                                            ดาวน์โหลด PDF
+                                            PDF
+                                        </>
+                                    )}
+                                </button>
+                                {/* ปุ่ม PNG */}
+                                <button
+                                    onClick={handleDownloadPngFromPreview}
+                                    disabled={downloadingPdfId === previewDoc.id}
+                                    className="px-4 py-2 bg-emerald-600 text-white text-sm rounded hover:bg-emerald-700 flex items-center gap-2 disabled:opacity-50 disabled:cursor-not-allowed"
+                                    title="ดาวน์โหลด PNG"
+                                >
+                                    {downloadingPdfId === previewDoc.id ? (
+                                        <>
+                                            <svg className="animate-spin h-4 w-4" xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24">
+                                                <circle className="opacity-25" cx="12" cy="12" r="10" stroke="currentColor" strokeWidth="4"></circle>
+                                                <path className="opacity-75" fill="currentColor" d="M4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4zm2 5.291A7.962 7.962 0 014 12H0c0 3.042 1.135 5.824 3 7.938l3-2.647z"></path>
+                                            </svg>
+                                            กำลังสร้าง...
+                                        </>
+                                    ) : (
+                                        <>
+                                            <svg className="w-4 h-4" fill="currentColor" viewBox="0 0 20 20">
+                                                <path fillRule="evenodd" d="M4 3a2 2 0 00-2 2v10a2 2 0 002 2h12a2 2 0 002-2V5a2 2 0 00-2-2H4zm12 12H4l4-8 3 6 2-4 3 6z" clipRule="evenodd" />
+                                            </svg>
+                                            PNG
                                         </>
                                     )}
                                 </button>
@@ -750,6 +885,7 @@ const HistoryList: React.FC<HistoryListProps> = ({ activeDocType, onLoadDocument
                                 <DocumentActions
                                     onEdit={() => onLoadDocument(noteItem)}
                                     onDownload={() => handleDownloadPdf(noteItem)}
+                                    onDownloadPng={() => handleDownloadPng(noteItem)}
                                     onCancel={() => setCancelConfirm({ id: noteItem.id!, docNumber: noteItem.docNumber })}
                                     onRestore={() => handleRestoreDocument(noteItem.id!)}
                                     onDelete={() => setDeleteConfirm({ type: 'delivery', id: noteItem.id! })}
@@ -807,6 +943,7 @@ const HistoryList: React.FC<HistoryListProps> = ({ activeDocType, onLoadDocument
                                 <DocumentActions
                                     onEdit={() => onLoadDocument(cardItem)}
                                     onDownload={() => handleDownloadPdf(cardItem)}
+                                    onDownloadPng={() => handleDownloadPng(cardItem)}
                                     onDelete={() => setDeleteConfirm({ type: 'warranty', id: cardItem.id! })}
                                     onPreview={() => handleShowPreview(cardItem)}
                                     isDownloading={downloadingPdfId === cardItem.id}
@@ -864,6 +1001,7 @@ const HistoryList: React.FC<HistoryListProps> = ({ activeDocType, onLoadDocument
                                 <DocumentActions
                                     onEdit={() => onLoadDocument(invoiceItem)}
                                     onDownload={() => handleDownloadPdf(invoiceItem)}
+                                    onDownloadPng={() => handleDownloadPng(invoiceItem)}
                                     onCancel={() => setCancelConfirm({ id: invoiceItem.id!, docNumber: invoiceItem.invoiceNumber })}
                                     onRestore={() => handleRestoreDocument(invoiceItem.id!)}
                                     onDelete={() => setDeleteConfirm({ type: 'invoice', id: invoiceItem.id! })}
@@ -922,6 +1060,7 @@ const HistoryList: React.FC<HistoryListProps> = ({ activeDocType, onLoadDocument
                                 <DocumentActions
                                     onEdit={() => onLoadDocument(receiptItem)}
                                     onDownload={() => handleDownloadPdf(receiptItem)}
+                                    onDownloadPng={() => handleDownloadPng(receiptItem)}
                                     onDelete={() => setDeleteConfirm({ type: 'receipt', id: receiptItem.id! })}
                                     onPreview={() => handleShowPreview(receiptItem)}
                                     isDownloading={downloadingPdfId === receiptItem.id}
@@ -982,6 +1121,7 @@ const HistoryList: React.FC<HistoryListProps> = ({ activeDocType, onLoadDocument
                                 <DocumentActions
                                     onEdit={() => onLoadDocument(taxInvoiceItem)}
                                     onDownload={() => handleDownloadPdf(taxInvoiceItem)}
+                                    onDownloadPng={() => handleDownloadPng(taxInvoiceItem)}
                                     onCancel={() => setCancelConfirm({ id: taxInvoiceItem.id!, docNumber: taxInvoiceItem.taxInvoiceNumber })}
                                     onRestore={() => handleRestoreDocument(taxInvoiceItem.id!)}
                                     onDelete={() => setDeleteConfirm({ type: 'tax-invoice', id: taxInvoiceItem.id! })}
@@ -1040,6 +1180,7 @@ const HistoryList: React.FC<HistoryListProps> = ({ activeDocType, onLoadDocument
                                 <DocumentActions
                                     onEdit={() => onLoadDocument(quotationItem)}
                                     onDownload={() => handleDownloadPdf(quotationItem)}
+                                    onDownloadPng={() => handleDownloadPng(quotationItem)}
                                     onDelete={() => setDeleteConfirm({ type: 'quotation', id: quotationItem.id! })}
                                     onPreview={() => handleShowPreview(quotationItem)}
                                     isDownloading={downloadingPdfId === quotationItem.id}
@@ -1093,6 +1234,7 @@ const HistoryList: React.FC<HistoryListProps> = ({ activeDocType, onLoadDocument
                                 <DocumentActions
                                     onEdit={() => onLoadDocument(poItem)}
                                     onDownload={() => handleDownloadPdf(poItem)}
+                                    onDownloadPng={() => handleDownloadPng(poItem)}
                                     onDelete={() => setDeleteConfirm({ type: 'purchase-order', id: poItem.id! })}
                                     onPreview={() => handleShowPreview(poItem)}
                                     isDownloading={downloadingPdfId === poItem.id}
@@ -1146,6 +1288,7 @@ const HistoryList: React.FC<HistoryListProps> = ({ activeDocType, onLoadDocument
                                 <DocumentActions
                                     onEdit={() => onLoadDocument(memoItem)}
                                     onDownload={() => handleDownloadPdf(memoItem)}
+                                    onDownloadPng={() => handleDownloadPng(memoItem)}
                                     onDelete={() => setDeleteConfirm({ type: 'memo', id: memoItem.id! })}
                                     onPreview={() => handleShowPreview(memoItem)}
                                     isDownloading={downloadingPdfId === memoItem.id}
@@ -1200,6 +1343,7 @@ const HistoryList: React.FC<HistoryListProps> = ({ activeDocType, onLoadDocument
                                 <DocumentActions
                                     onEdit={() => onLoadDocument(voItem)}
                                     onDownload={() => handleDownloadPdf(voItem)}
+                                    onDownloadPng={() => handleDownloadPng(voItem)}
                                     onDelete={() => setDeleteConfirm({ type: 'variation-order', id: voItem.id! })}
                                     onPreview={() => handleShowPreview(voItem)}
                                     isDownloading={downloadingPdfId === voItem.id}
@@ -1268,6 +1412,7 @@ const HistoryList: React.FC<HistoryListProps> = ({ activeDocType, onLoadDocument
                                 <DocumentActions
                                     onEdit={() => onLoadDocument(contractItem)}
                                     onDownload={() => handleDownloadPdf(contractItem)}
+                                    onDownloadPng={() => handleDownloadPng(contractItem)}
                                     onCancel={() => setCancelConfirm({ id: contractItem.id!, docNumber: contractItem.contractNumber || '' })}
                                     onRestore={() => handleRestoreDocument(contractItem.id!)}
                                     onDelete={() => setDeleteConfirm({ type: 'subcontract', id: contractItem.id! })}

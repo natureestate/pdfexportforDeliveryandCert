@@ -752,3 +752,128 @@ export const testImageConversion = async (imageUrl: string): Promise<boolean> =>
         return false;
     }
 };
+
+/**
+ * ฟังก์ชันสำหรับสร้าง PNG จาก HTML element
+ * รองรับทั้งหน้าเดียวและหลายหน้า (สำหรับหลายหน้าจะสร้างไฟล์ ZIP)
+ * @param element - HTML element ที่จะสร้าง PNG
+ * @param filename - ชื่อไฟล์ PNG (ไม่ต้องใส่นามสกุล)
+ */
+export const generatePng = async (element: HTMLElement, filename: string): Promise<void> => {
+    // เก็บ restore functions ไว้เพื่อใช้ใน finally
+    let restoreHeaders: (() => void) | null = null;
+    let restoreImages: (() => void) | null = null;
+    
+    // บันทึกค่า style เดิมของ element
+    const originalStyles: Record<string, string> = {
+        width: element.style.width,
+        height: element.style.height,
+        minHeight: element.style.minHeight,
+        maxWidth: element.style.maxWidth,
+        maxHeight: element.style.maxHeight,
+        overflow: element.style.overflow,
+        aspectRatio: element.style.aspectRatio,
+        boxSizing: element.style.boxSizing,
+        padding: element.style.padding,
+    };
+    
+    try {
+        console.log('🖼️ Starting PNG generation process...');
+        console.log(`📏 A4 Size: ${A4_WIDTH_PX}x${A4_HEIGHT_PX}px`);
+        
+        // บังคับให้ element มีความกว้างเท่ากับ A4
+        element.style.width = `${A4_WIDTH_PX}px`;
+        element.style.minHeight = 'auto';
+        element.style.maxWidth = `${A4_WIDTH_PX}px`;
+        element.style.maxHeight = 'none';
+        element.style.height = 'auto';
+        element.style.overflow = 'visible';
+        element.style.aspectRatio = 'auto';
+        element.style.boxSizing = 'border-box';
+        element.style.padding = `${MARGIN_PX}px`;
+        
+        // รอให้ DOM อัปเดตขนาดใหม่
+        await new Promise(resolve => setTimeout(resolve, 100));
+        void element.offsetHeight;
+
+        // ปรับ CSS ของแถบสีและหัวข้อ
+        restoreHeaders = fixSectionHeadersForPdf(element);
+
+        // แปลงรูปภาพเป็น Base64 (ใช้ฟังก์ชันเดียวกับ PDF generation)
+        console.log('🖼️ Converting images to Base64 for PNG...');
+        restoreImages = await preprocessImagesForPdf(element);
+
+        // รอให้ทุกอย่างพร้อม
+        await new Promise(resolve => setTimeout(resolve, 200));
+        void element.offsetHeight;
+
+        // วัดความสูงจริงของเนื้อหา
+        const contentHeight = element.scrollHeight;
+        console.log(`📏 Content height: ${contentHeight}px`);
+
+        // สร้าง canvas ด้วย html2canvas
+        const canvas = await html2canvas(element, {
+            scale: CANVAS_SCALE,
+            useCORS: true,
+            allowTaint: true,
+            logging: false,
+            imageTimeout: 15000,
+            backgroundColor: '#ffffff',
+            windowWidth: A4_WIDTH_PX,
+        });
+        
+        console.log(`🖼️ Canvas created: ${canvas.width}x${canvas.height}px`);
+        
+        // แปลง canvas เป็น PNG blob
+        const blob = await new Promise<Blob | null>((resolve) => {
+            canvas.toBlob(resolve, 'image/png', 1.0);
+        });
+        
+        if (!blob) {
+            throw new Error('Failed to create PNG blob');
+        }
+        
+        // สร้าง download link
+        const url = URL.createObjectURL(blob);
+        const link = document.createElement('a');
+        
+        // ลบนามสกุล .pdf ออกถ้ามี แล้วเพิ่ม .png
+        const pngFilename = filename.replace(/\.pdf$/i, '') + '.png';
+        link.download = pngFilename;
+        link.href = url;
+        
+        // Trigger download
+        document.body.appendChild(link);
+        link.click();
+        document.body.removeChild(link);
+        
+        // Cleanup
+        URL.revokeObjectURL(url);
+        
+        console.log(`💾 PNG saved as: ${pngFilename}`);
+        console.log('✅ PNG generation completed successfully!');
+    } catch (error) {
+        console.error('❌ Error generating PNG:', error);
+        if (error instanceof Error) {
+            console.error('Error message:', error.message);
+        }
+        throw new Error('ไม่สามารถสร้าง PNG ได้ กรุณาลองใหม่อีกครั้ง');
+    } finally {
+        // Restore ค่า style เดิมทั้งหมด
+        try {
+            if (restoreImages) restoreImages();
+        } catch (e) {
+            console.warn('Failed to restore images:', e);
+        }
+        try {
+            if (restoreHeaders) restoreHeaders();
+        } catch (e) {
+            console.warn('Failed to restore headers:', e);
+        }
+        try {
+            restoreElementStyles(element, originalStyles);
+        } catch (e) {
+            console.warn('Failed to restore element styles:', e);
+        }
+    }
+};

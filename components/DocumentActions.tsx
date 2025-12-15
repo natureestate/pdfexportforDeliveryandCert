@@ -14,6 +14,12 @@ const DownloadIcon = () => (
     </svg>
 );
 
+const ImageIcon = () => (
+    <svg className="w-4 h-4" fill="currentColor" viewBox="0 0 20 20">
+        <path fillRule="evenodd" d="M4 3a2 2 0 00-2 2v10a2 2 0 002 2h12a2 2 0 002-2V5a2 2 0 00-2-2H4zm12 12H4l4-8 3 6 2-4 3 6z" clipRule="evenodd" />
+    </svg>
+);
+
 const LoadingSpinner = () => (
     <svg className="animate-spin h-4 w-4" xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24">
         <circle className="opacity-25" cx="12" cy="12" r="10" stroke="currentColor" strokeWidth="4"></circle>
@@ -50,6 +56,7 @@ interface DocumentActionsProps {
     // ฟังก์ชัน callbacks
     onEdit: () => void;
     onDownload: () => void;
+    onDownloadPng?: () => void;  // ดาวน์โหลด PNG
     onCancel?: () => void;
     onRestore?: () => void;
     onDelete: () => void;
@@ -58,6 +65,7 @@ interface DocumentActionsProps {
     // สถานะ
     isCancelled?: boolean;
     isDownloading?: boolean;
+    isDownloadingPng?: boolean;  // กำลังดาวน์โหลด PNG
     isCancelling?: boolean;
     isRestoring?: boolean;
     
@@ -74,12 +82,14 @@ interface DocumentActionsProps {
 const DocumentActions: React.FC<DocumentActionsProps> = ({
     onEdit,
     onDownload,
+    onDownloadPng,
     onCancel,
     onRestore,
     onDelete,
     onPreview,
     isCancelled = false,
     isDownloading = false,
+    isDownloadingPng = false,
     isCancelling = false,
     isRestoring = false,
     showPreview = false,
@@ -139,7 +149,7 @@ const DocumentActions: React.FC<DocumentActionsProps> = ({
             {/* ปุ่มดาวน์โหลด PDF - แสดงตลอด */}
             <button
                 onClick={onDownload}
-                disabled={isDownloading}
+                disabled={isDownloading || isDownloadingPng}
                 className={`
                     ${compact ? 'p-1.5' : 'px-2 sm:px-3 py-1.5 sm:py-1'}
                     bg-blue-600 text-white text-xs sm:text-sm rounded hover:bg-blue-700 
@@ -160,6 +170,33 @@ const DocumentActions: React.FC<DocumentActionsProps> = ({
                     </>
                 )}
             </button>
+
+            {/* ปุ่มดาวน์โหลด PNG - แสดงถ้ามี callback */}
+            {onDownloadPng && (
+                <button
+                    onClick={onDownloadPng}
+                    disabled={isDownloading || isDownloadingPng}
+                    className={`
+                        ${compact ? 'p-1.5' : 'px-2 sm:px-3 py-1.5 sm:py-1'}
+                        bg-emerald-600 text-white text-xs sm:text-sm rounded hover:bg-emerald-700 
+                        flex items-center justify-center gap-1 transition-colors
+                        disabled:opacity-50 disabled:cursor-not-allowed
+                    `}
+                    title="ดาวน์โหลด PNG"
+                >
+                    {isDownloadingPng ? (
+                        <>
+                            <LoadingSpinner />
+                            {!compact && <span className="hidden sm:inline">กำลังสร้าง...</span>}
+                        </>
+                    ) : (
+                        <>
+                            <ImageIcon />
+                            {!compact && <span className="hidden sm:inline">PNG</span>}
+                        </>
+                    )}
+                </button>
+            )}
 
             {/* Dropdown สำหรับ actions อื่นๆ */}
             <ActionDropdown actions={dropdownActions} />
