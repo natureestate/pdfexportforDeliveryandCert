@@ -4,6 +4,31 @@ import html2canvas from 'html2canvas';
 import { font } from '../constants/IBMPlexSansThaiBase64';
 import { convertStorageUrlToBase64, needsBase64Conversion } from './logoStorage';
 
+// ============================================================
+// Constants สำหรับ A4 และ Margin
+// ============================================================
+
+// ขนาด A4 มาตรฐาน (pixels ที่ 96 DPI: 1mm = 3.7795 pixels)
+const A4_WIDTH_PX = 794;   // 210mm * 3.7795
+const A4_HEIGHT_PX = 1123; // 297mm * 3.7795
+
+// Margin มาตรฐาน 15mm ทุกด้าน (Standard)
+const MARGIN_MM = 15;
+const MARGIN_PX = Math.round(MARGIN_MM * 3.7795); // ~57px
+
+// พื้นที่ใช้งานจริงหลังหักขอบ
+const A4_USABLE_WIDTH_PX = A4_WIDTH_PX - (MARGIN_PX * 2);   // ~680px
+const A4_USABLE_HEIGHT_PX = A4_HEIGHT_PX - (MARGIN_PX * 2); // ~1009px
+
+// พื้นที่สำหรับ page number (ที่ footer)
+const PAGE_NUMBER_HEIGHT_PX = 30; // พื้นที่สำหรับหมายเลขหน้า
+
+// พื้นที่เนื้อหาต่อหน้า (หักพื้นที่ page number ออก)
+const CONTENT_PER_PAGE_HEIGHT_PX = A4_USABLE_HEIGHT_PX - PAGE_NUMBER_HEIGHT_PX;
+
+// Scale สำหรับ html2canvas (ความคมชัด)
+const CANVAS_SCALE = 2;
+
 /**
  * แปลงรูปภาพจาก URL เป็น Base64 เพื่อแก้ปัญหา CORS ใน html2canvas
  * สำหรับ Firebase Storage URL จะใช้ Firebase SDK แทน fetch เพื่อหลีกเลี่ยง CORS
@@ -141,22 +166,20 @@ const fixSectionHeadersForPdf = (element: HTMLElement): () => void => {
         
         originalStyles.push({ element: el, styles: originalStyle });
 
-        // ปรับ CSS ให้แน่ใจว่าแถบสีและข้อความตรงกัน - ใช้ padding เท่ากันทั้งบนและล่าง
-        // ใช้วิธีที่ html2canvas render ได้ดี: ตั้งค่า padding-top และ padding-bottom เท่ากัน
-        // และใช้ flexbox กับ alignItems: center เพื่อให้แน่ใจว่าเนื้อหาอยู่กึ่งกลาง
-        el.style.paddingTop = '12px';      // เพิ่ม padding-top ให้มากขึ้นเพื่อให้แน่ใจว่าเนื้อหาอยู่กึ่งกลาง
-        el.style.paddingBottom = '12px';   // เพิ่ม padding-bottom ให้เท่ากัน
+        // ปรับ CSS ให้แน่ใจว่าแถบสีและข้อความตรงกัน
+        el.style.paddingTop = '12px';
+        el.style.paddingBottom = '12px';
         el.style.paddingLeft = '8px';
         el.style.paddingRight = '8px';
         el.style.display = 'flex';
-        el.style.alignItems = 'center';   // จัดกึ่งกลางแนวตั้ง - สำคัญมาก!
-        el.style.alignSelf = 'stretch';   // ให้แน่ใจว่าแถบสีขยายเต็มความสูง
+        el.style.alignItems = 'center';
+        el.style.alignSelf = 'stretch';
         el.style.justifyContent = 'flex-start';
         el.style.height = 'auto';
-        el.style.minHeight = '40px';      // ตั้งค่า min-height เพื่อให้มีพื้นที่เพียงพอ (12px top + 16px content + 12px bottom)
+        el.style.minHeight = '40px';
         el.style.boxSizing = 'border-box';
-        el.style.lineHeight = '1';        // ตั้งค่า line-height เพื่อไม่ให้มี space เพิ่ม
-        el.style.verticalAlign = 'middle'; // เพิ่ม vertical-align สำหรับกรณีที่ flexbox ไม่ทำงาน
+        el.style.lineHeight = '1';
+        el.style.verticalAlign = 'middle';
 
         // ปรับ h3 และ span ภายใน
         const h3 = el.querySelector('h3') as HTMLElement;
@@ -179,9 +202,9 @@ const fixSectionHeadersForPdf = (element: HTMLElement): () => void => {
             h3.style.padding = '0';
             h3.style.display = 'flex';
             h3.style.alignItems = 'center';
-            h3.style.alignSelf = 'center';  // เพิ่ม align-self เพื่อให้แน่ใจว่าอยู่กึ่งกลาง
+            h3.style.alignSelf = 'center';
             h3.style.lineHeight = '1';
-            h3.style.height = '100%';       // ให้ h3 สูงเต็มแถบสี
+            h3.style.height = '100%';
             h3.style.verticalAlign = 'middle';
             h3.style.marginTop = '0';
             h3.style.marginBottom = '0';
@@ -206,7 +229,7 @@ const fixSectionHeadersForPdf = (element: HTMLElement): () => void => {
                 
                 spanEl.style.display = 'inline-flex';
                 spanEl.style.alignItems = 'center';
-                spanEl.style.alignSelf = 'center';  // เพิ่ม align-self เพื่อให้แน่ใจว่าอยู่กึ่งกลาง
+                spanEl.style.alignSelf = 'center';
                 spanEl.style.justifyContent = 'center';
                 spanEl.style.lineHeight = '1';
                 spanEl.style.verticalAlign = 'middle';
@@ -332,121 +355,386 @@ const preprocessImagesForPdf = async (element: HTMLElement): Promise<() => void>
     };
 };
 
-export const generatePdf = async (element: HTMLElement, filename: string): Promise<void> => {
+/**
+ * วัดความสูงเนื้อหาจริงของ element (รวม padding)
+ * @param element - HTML element ที่ต้องการวัด
+ * @returns ความสูงเนื้อหาจริงเป็น pixels
+ */
+const measureContentHeight = (element: HTMLElement): number => {
+    // ใช้ scrollHeight เพื่อให้ได้ความสูงจริงของเนื้อหา
+    const scrollHeight = element.scrollHeight;
+    const offsetHeight = element.offsetHeight;
+    const clientHeight = element.clientHeight;
+    
+    // เลือกค่าที่สูงที่สุดเพื่อให้ได้ความสูงจริง
+    const actualHeight = Math.max(scrollHeight, offsetHeight, clientHeight);
+    
+    console.log(`📐 Measured content height: scrollHeight=${scrollHeight}px, offsetHeight=${offsetHeight}px, clientHeight=${clientHeight}px, using=${actualHeight}px`);
+    
+    // ถ้าวัดได้ 0 ให้ใช้ค่า A4 เป็น fallback
+    if (actualHeight <= 0) {
+        console.warn('⚠️ Content height is 0 or negative, using A4 height as fallback');
+        return A4_HEIGHT_PX;
+    }
+    
+    return actualHeight;
+};
+
+/**
+ * คำนวณจำนวนหน้าที่ต้องใช้
+ * @param contentHeight - ความสูงเนื้อหาทั้งหมด (px)
+ * @returns จำนวนหน้า
+ */
+const calculatePageCount = (contentHeight: number): number => {
+    // หักพื้นที่ margin ออก เพราะเราจะใส่ margin ใน PDF เอง
+    const usableContentHeight = contentHeight;
+    const pageCount = Math.ceil(usableContentHeight / CONTENT_PER_PAGE_HEIGHT_PX);
+    console.log(`📄 Content height: ${usableContentHeight}px, Content per page: ${CONTENT_PER_PAGE_HEIGHT_PX}px, Total pages: ${pageCount}`);
+    return Math.max(1, pageCount);
+};
+
+/**
+ * เพิ่ม font ภาษาไทยลงใน PDF instance
+ * @param pdf - jsPDF instance
+ * @returns true ถ้าเพิ่มสำเร็จ, false ถ้าไม่สำเร็จ
+ */
+const addThaiFont = (pdf: jsPDF): boolean => {
     try {
-        console.log('Starting PDF generation process...');
-        
-        // 🔥 บันทึกค่า style เดิมของ element
-        const originalWidth = element.style.width;
-        const originalHeight = element.style.height;
-        const originalOverflow = element.style.overflow;
-        const originalMaxWidth = element.style.maxWidth;
-        const originalMaxHeight = element.style.maxHeight;
-        const originalAspectRatio = element.style.aspectRatio;
-        const originalBoxSizing = element.style.boxSizing;
-        const originalPadding = element.style.padding;
-        
-        // 🔥 บังคับให้ element มีขนาดเท่ากับ A4 จริงๆ (210mm x 297mm)
-        // แปลงเป็น pixels โดยใช้ 96 DPI standard (1mm = 3.7795 pixels)
-        const A4_WIDTH_PX = 794;  // 210mm * 3.7795
-        const A4_HEIGHT_PX = 1123; // 297mm * 3.7795
-        
-        // ✅ กำหนด padding มาตรฐานสำหรับ PDF (48px = p-12 ใน Tailwind)
-        // เพื่อให้ได้ผลลัพธ์เหมือนกันทั้ง Desktop และ Mobile
-        const STANDARD_PADDING_PX = 48; // 48px = 12.7mm margin ทุกด้าน
-        
-        // ✅ คง padding เดิมของ element ไว้ เพื่อให้มีระยะเว้นจากขอบกระดาษเหมือน preview
-        // ใช้ inline styles เพื่อบังคับขนาด A4 แต่ไม่ลบ padding
-        element.style.width = `${A4_WIDTH_PX}px`;
-        element.style.height = `${A4_HEIGHT_PX}px`;
-        element.style.maxWidth = `${A4_WIDTH_PX}px`;
-        element.style.maxHeight = `${A4_HEIGHT_PX}px`;
-        element.style.aspectRatio = 'auto'; // ปิด aspect-ratio ชั่วคราว
-        element.style.overflow = 'visible';
-        element.style.boxSizing = 'border-box'; // ใช้ border-box เพื่อให้ padding ถูกนับในขนาด
-        
-        // 🔥 บังคับ padding มาตรฐานเพื่อให้ PDF เหมือนกันทุกอุปกรณ์ (Desktop/Mobile)
-        // แก้ปัญหา responsive padding (p-8 md:p-12) ที่ทำให้ margin ต่างกัน
-        element.style.padding = `${STANDARD_PADDING_PX}px`;
-        
-        console.log(`📏 Set element size to A4: ${A4_WIDTH_PX}x${A4_HEIGHT_PX}px with standard padding: ${STANDARD_PADDING_PX}px`);
-        
-        // รอให้ DOM อัปเดตขนาดใหม่
-        await new Promise(resolve => setTimeout(resolve, 100));
-
-        // ปรับ CSS ของแถบสีและหัวข้อให้ตรงกันก่อน render PDF
-        console.log('Fixing section headers alignment for PDF...');
-        const restoreHeaders = fixSectionHeadersForPdf(element);
-
-        // แปลงรูปภาพเป็น Base64 ก่อนสร้าง canvas
-        console.log('Preprocessing images for PDF...');
-        const restoreImages = await preprocessImagesForPdf(element);
-
-        // รอเพิ่มอีก 300ms เพื่อให้ CSS เปลี่ยนแปลงเสร็จสมบูรณ์และ browser render ใหม่
-        await new Promise(resolve => setTimeout(resolve, 300));
-        
-        // Force reflow เพื่อให้แน่ใจว่า browser render CSS ใหม่
-        void element.offsetHeight;
-
-        console.log('Creating canvas with html2canvas...');
-        const canvas = await html2canvas(element, {
-            scale: 2, // Keep scale for high resolution
-            width: A4_WIDTH_PX,
-            height: A4_HEIGHT_PX,
-            useCORS: true,
-            allowTaint: true,
-            logging: true,
-            imageTimeout: 15000,
-            backgroundColor: '#ffffff',
-            windowWidth: A4_WIDTH_PX,
-            windowHeight: A4_HEIGHT_PX,
-        });
-
-        // 🔥 Restore ค่า style เดิมทั้งหมด
-        restoreImages();
-        restoreHeaders();
-        element.style.width = originalWidth;
-        element.style.height = originalHeight;
-        element.style.overflow = originalOverflow;
-        element.style.maxWidth = originalMaxWidth;
-        element.style.maxHeight = originalMaxHeight;
-        element.style.aspectRatio = originalAspectRatio;
-        element.style.boxSizing = originalBoxSizing;
-        element.style.padding = originalPadding;
-
-        console.log(`Canvas created successfully: ${canvas.width}x${canvas.height}`);
-
-        // Use JPEG format with high quality (0.95) for significant file size reduction
-        const imgData = canvas.toDataURL('image/jpeg', 0.95);
-
-        console.log('Creating PDF document...');
-        const pdf = new jsPDF({
-            orientation: 'portrait',
-            unit: 'mm',
-            format: 'a4',
-        });
-
-        // Add font to jsPDF
         pdf.addFileToVFS('IBMPlexSansThai-Regular.ttf', font);
         pdf.addFont('IBMPlexSansThai-Regular.ttf', 'IBMPlexSansThai', 'normal');
         pdf.setFont('IBMPlexSansThai');
-
-        const pdfWidth = pdf.internal.pageSize.getWidth(); // 210mm
-        const pdfHeight = pdf.internal.pageSize.getHeight(); // 297mm
-        
-        // 🔥 ใช้ขนาด A4 เต็มหน้า ไม่มี margin เพราะ element ถูกบังคับขนาดแล้ว
-        console.log(`Adding image to PDF: Full A4 size (${pdfWidth}x${pdfHeight}mm)`);
-        
-        // Specify 'JPEG' as the format - ใช้เต็มหน้า A4
-        pdf.addImage(imgData, 'JPEG', 0, 0, pdfWidth, pdfHeight);
-        
-        console.log(`Saving PDF as: ${filename}`);
-        pdf.save(filename);
-        
-        console.log('PDF generation completed successfully!');
+        return true;
     } catch (error) {
-        console.error('Error generating PDF:', error);
+        console.warn('⚠️ Failed to add Thai font, using default font:', error);
+        return false;
+    }
+};
+
+/**
+ * เพิ่มหมายเลขหน้าลงใน PDF
+ * @param pdf - jsPDF instance
+ * @param currentPage - หน้าปัจจุบัน
+ * @param totalPages - จำนวนหน้าทั้งหมด
+ * @param useThaiText - ใช้ข้อความภาษาไทยหรือไม่
+ */
+const addPageNumber = (pdf: jsPDF, currentPage: number, totalPages: number, useThaiText: boolean = true): void => {
+    try {
+        const pageWidth = pdf.internal.pageSize.getWidth();  // 210mm
+        const pageHeight = pdf.internal.pageSize.getHeight(); // 297mm
+        
+        pdf.setFontSize(10);
+        pdf.setTextColor(102, 102, 102); // #666666 (Gray)
+        
+        // ข้อความหมายเลขหน้า (ใช้ภาษาอังกฤษถ้า font ไทยไม่พร้อม)
+        const pageNumberText = useThaiText 
+            ? `หน้า ${currentPage} / ${totalPages}`
+            : `Page ${currentPage} / ${totalPages}`;
+        
+        // ตำแหน่ง: มุมล่างขวา (ห่างจากขอบ 15mm)
+        const xPosition = pageWidth - MARGIN_MM;
+        const yPosition = pageHeight - (MARGIN_MM / 2); // กลาง margin ล่าง
+        
+        // วางข้อความชิดขวา
+        pdf.text(pageNumberText, xPosition, yPosition, { align: 'right' });
+        
+        console.log(`📝 Added page number: ${pageNumberText}`);
+    } catch (error) {
+        console.warn('⚠️ Failed to add page number:', error);
+        // ไม่ throw error เพื่อให้ PDF ยังสร้างได้แม้ไม่มีเลขหน้า
+    }
+};
+
+/**
+ * สร้าง PDF หลายหน้า (Dynamic Pagination)
+ * วิธีการ: สร้าง canvas เดียวของเนื้อหาทั้งหมด แล้วแบ่งเป็นหลายหน้าใน PDF
+ * @param element - HTML element ที่จะสร้าง PDF
+ * @param filename - ชื่อไฟล์ PDF
+ * @param contentHeight - ความสูงเนื้อหาทั้งหมด
+ */
+const generateMultiPagePdf = async (
+    element: HTMLElement, 
+    filename: string, 
+    contentHeight: number
+): Promise<void> => {
+    console.log(`📚 Generating multi-page PDF...`);
+    console.log(`   Content height: ${contentHeight}px`);
+    
+    // สร้าง canvas ของเนื้อหาทั้งหมด (รวม padding)
+    const fullCanvas = await html2canvas(element, {
+        scale: CANVAS_SCALE,
+        width: A4_WIDTH_PX,
+        height: contentHeight,
+        useCORS: true,
+        allowTaint: true,
+        logging: false,
+        imageTimeout: 15000,
+        backgroundColor: '#ffffff',
+        windowWidth: A4_WIDTH_PX,
+        windowHeight: contentHeight,
+    });
+    
+    console.log(`🖼️ Full canvas created: ${fullCanvas.width}x${fullCanvas.height}px`);
+    
+    // สร้าง PDF ใหม่
+    const pdf = new jsPDF({
+        orientation: 'portrait',
+        unit: 'mm',
+        format: 'a4',
+    });
+    
+    // เพิ่ม font ภาษาไทย (และเก็บผลลัพธ์ว่าสำเร็จหรือไม่)
+    const hasThaiFontMulti = addThaiFont(pdf);
+    
+    const pdfWidth = pdf.internal.pageSize.getWidth();   // 210mm
+    const pdfHeight = pdf.internal.pageSize.getHeight(); // 297mm
+    
+    // คำนวณความสูงต่อหน้าใน canvas (pixels * scale)
+    const pageHeightInCanvas = A4_HEIGHT_PX * CANVAS_SCALE;
+    const totalPages = Math.ceil(fullCanvas.height / pageHeightInCanvas);
+    
+    console.log(`📄 Total pages: ${totalPages} (canvas height: ${fullCanvas.height}px, page height: ${pageHeightInCanvas}px)`);
+    
+    // แบ่ง canvas เป็นหลายหน้า
+    for (let page = 0; page < totalPages; page++) {
+        console.log(`📄 Processing page ${page + 1} of ${totalPages}...`);
+        
+        // ถ้าไม่ใช่หน้าแรก ให้เพิ่มหน้าใหม่
+        if (page > 0) {
+            pdf.addPage();
+        }
+        
+        // คำนวณส่วนที่ต้อง crop จาก canvas
+        const srcY = page * pageHeightInCanvas;
+        const srcHeight = Math.min(pageHeightInCanvas, fullCanvas.height - srcY);
+        
+        // สร้าง canvas ใหม่สำหรับหน้านี้
+        const pageCanvas = document.createElement('canvas');
+        pageCanvas.width = fullCanvas.width;
+        pageCanvas.height = srcHeight;
+        
+        const ctx = pageCanvas.getContext('2d');
+        if (!ctx) {
+            throw new Error('Cannot create canvas context');
+        }
+        
+        // เติมพื้นหลังสีขาว
+        ctx.fillStyle = '#ffffff';
+        ctx.fillRect(0, 0, pageCanvas.width, pageCanvas.height);
+        
+        // วาดส่วนของ canvas ที่ต้องการ
+        ctx.drawImage(
+            fullCanvas,
+            0, srcY,                    // source x, y
+            fullCanvas.width, srcHeight, // source width, height
+            0, 0,                        // dest x, y
+            fullCanvas.width, srcHeight  // dest width, height
+        );
+        
+        // แปลงเป็น image data
+        const imgData = pageCanvas.toDataURL('image/jpeg', 0.95);
+        
+        // คำนวณความสูงใน PDF สำหรับหน้านี้
+        const pageHeightMM = (srcHeight / pageHeightInCanvas) * pdfHeight;
+        
+        // วาง image ลงใน PDF (เต็มความกว้าง)
+        pdf.addImage(imgData, 'JPEG', 0, 0, pdfWidth, pageHeightMM);
+        
+        // เพิ่มหมายเลขหน้า (ใช้ภาษาไทยถ้า font พร้อม)
+        addPageNumber(pdf, page + 1, totalPages, hasThaiFontMulti);
+    }
+    
+    // บันทึก PDF
+    console.log(`💾 Saving multi-page PDF as: ${filename}`);
+    pdf.save(filename);
+    
+    console.log('✅ Multi-page PDF generation completed successfully!');
+};
+
+/**
+ * สร้าง PDF หน้าเดียว (สำหรับเนื้อหาที่พอดี 1 หน้า)
+ * @param element - HTML element ที่จะสร้าง PDF
+ * @param filename - ชื่อไฟล์ PDF
+ */
+const generateSinglePagePdf = async (element: HTMLElement, filename: string): Promise<void> => {
+    console.log('📄 Generating single-page PDF...');
+    
+    // สร้าง canvas ด้วย html2canvas
+    const canvas = await html2canvas(element, {
+        scale: CANVAS_SCALE,
+        width: A4_WIDTH_PX,
+        height: A4_HEIGHT_PX,
+        useCORS: true,
+        allowTaint: true,
+        logging: false,
+        imageTimeout: 15000,
+        backgroundColor: '#ffffff',
+        windowWidth: A4_WIDTH_PX,
+        windowHeight: A4_HEIGHT_PX,
+    });
+    
+    console.log(`🖼️ Canvas created: ${canvas.width}x${canvas.height}px`);
+    
+    // แปลง canvas เป็น image data
+    const imgData = canvas.toDataURL('image/jpeg', 0.95);
+    
+    // สร้าง PDF
+    const pdf = new jsPDF({
+        orientation: 'portrait',
+        unit: 'mm',
+        format: 'a4',
+    });
+    
+    // เพิ่ม font ภาษาไทย (และเก็บผลลัพธ์ว่าสำเร็จหรือไม่)
+    const hasThaiFontSingle = addThaiFont(pdf);
+    
+    const pdfWidth = pdf.internal.pageSize.getWidth();   // 210mm
+    const pdfHeight = pdf.internal.pageSize.getHeight(); // 297mm
+    
+    // วาง image เต็มหน้า A4 (ไม่มี margin เพราะ element มี padding อยู่แล้ว)
+    pdf.addImage(imgData, 'JPEG', 0, 0, pdfWidth, pdfHeight);
+    
+    // เพิ่มหมายเลขหน้า (1/1) - ใช้ภาษาไทยถ้า font พร้อม
+    addPageNumber(pdf, 1, 1, hasThaiFontSingle);
+    
+    // บันทึก PDF
+    console.log(`💾 Saving PDF as: ${filename}`);
+    pdf.save(filename);
+    
+    console.log('✅ Single-page PDF generation completed successfully!');
+};
+
+/**
+ * Restore styles ของ element กลับเป็นค่าเดิม
+ */
+const restoreElementStyles = (
+    element: HTMLElement, 
+    originalStyles: Record<string, string>
+): void => {
+    element.style.width = originalStyles.width || '';
+    element.style.height = originalStyles.height || '';
+    element.style.minHeight = originalStyles.minHeight || '';
+    element.style.maxWidth = originalStyles.maxWidth || '';
+    element.style.maxHeight = originalStyles.maxHeight || '';
+    element.style.overflow = originalStyles.overflow || '';
+    element.style.aspectRatio = originalStyles.aspectRatio || '';
+    element.style.boxSizing = originalStyles.boxSizing || '';
+    element.style.padding = originalStyles.padding || '';
+};
+
+/**
+ * ฟังก์ชันหลักสำหรับสร้าง PDF
+ * รองรับทั้งหน้าเดียวและหลายหน้าแบบอัตโนมัติ
+ * @param element - HTML element ที่จะสร้าง PDF
+ * @param filename - ชื่อไฟล์ PDF
+ */
+export const generatePdf = async (element: HTMLElement, filename: string): Promise<void> => {
+    // เก็บ restore functions ไว้เพื่อใช้ใน finally
+    let restoreHeaders: (() => void) | null = null;
+    let restoreImages: (() => void) | null = null;
+    
+    // 🔥 บันทึกค่า style เดิมของ element
+    const originalStyles: Record<string, string> = {
+        width: element.style.width,
+        height: element.style.height,
+        minHeight: element.style.minHeight,
+        maxWidth: element.style.maxWidth,
+        maxHeight: element.style.maxHeight,
+        overflow: element.style.overflow,
+        aspectRatio: element.style.aspectRatio,
+        boxSizing: element.style.boxSizing,
+        padding: element.style.padding,
+    };
+    
+    try {
+        console.log('🚀 Starting PDF generation process...');
+        console.log(`📏 A4 Size: ${A4_WIDTH_PX}x${A4_HEIGHT_PX}px`);
+        console.log(`📐 Margin: ${MARGIN_MM}mm (${MARGIN_PX}px)`);
+        console.log(`📄 Usable area: ${A4_USABLE_WIDTH_PX}x${A4_USABLE_HEIGHT_PX}px`);
+        
+        // 🔥 บังคับให้ element มีความกว้างเท่ากับ A4
+        // แต่ไม่จำกัดความสูง เพื่อให้วัดความสูงจริงได้
+        element.style.width = `${A4_WIDTH_PX}px`;
+        element.style.minHeight = 'auto';
+        element.style.maxWidth = `${A4_WIDTH_PX}px`;
+        element.style.maxHeight = 'none'; // ไม่จำกัดความสูง
+        element.style.height = 'auto';    // ให้สูงตามเนื้อหา
+        element.style.overflow = 'visible';
+        element.style.aspectRatio = 'auto';
+        element.style.boxSizing = 'border-box';
+        
+        // 🔥 ใช้ padding มาตรฐาน 15mm (57px) เพื่อให้ margin ซ้าย-ขวา-บน-ล่าง เท่ากัน
+        element.style.padding = `${MARGIN_PX}px`;
+        
+        console.log(`📏 Set element width to A4: ${A4_WIDTH_PX}px with padding: ${MARGIN_PX}px`);
+        
+        // รอให้ DOM อัปเดตขนาดใหม่
+        await new Promise(resolve => setTimeout(resolve, 100));
+        
+        // Force reflow
+        void element.offsetHeight;
+
+        // ปรับ CSS ของแถบสีและหัวข้อ
+        console.log('🎨 Fixing section headers alignment...');
+        restoreHeaders = fixSectionHeadersForPdf(element);
+
+        // แปลงรูปภาพเป็น Base64
+        console.log('🖼️ Preprocessing images...');
+        restoreImages = await preprocessImagesForPdf(element);
+
+        // รอให้ CSS และ images พร้อม
+        await new Promise(resolve => setTimeout(resolve, 300));
+        void element.offsetHeight;
+        
+        // 📐 วัดความสูงเนื้อหาจริง
+        const contentHeight = measureContentHeight(element);
+        
+        // คำนวณจำนวนหน้า
+        const pageCount = calculatePageCount(contentHeight);
+        
+        console.log(`📊 Content analysis: ${contentHeight}px content, ${pageCount} page(s) needed`);
+        
+        // ตัดสินใจว่าจะใช้แบบ single page หรือ multi page
+        if (pageCount === 1) {
+            // 📄 หน้าเดียว: บังคับขนาด A4 เต็มหน้า
+            element.style.height = `${A4_HEIGHT_PX}px`;
+            element.style.maxHeight = `${A4_HEIGHT_PX}px`;
+            
+            await new Promise(resolve => setTimeout(resolve, 100));
+            void element.offsetHeight;
+            
+            await generateSinglePagePdf(element, filename);
+        } else {
+            // 📚 หลายหน้า: ใช้ระบบ pagination
+            await generateMultiPagePdf(element, filename, contentHeight);
+        }
+        
+        console.log('🎉 PDF generation completed successfully!');
+    } catch (error) {
+        // Log error details for debugging
+        console.error('❌ Error generating PDF:', error);
+        if (error instanceof Error) {
+            console.error('Error name:', error.name);
+            console.error('Error message:', error.message);
+            console.error('Error stack:', error.stack);
+        }
         throw new Error('ไม่สามารถสร้าง PDF ได้ กรุณาลองใหม่อีกครั้ง');
+    } finally {
+        // 🔥 Restore ค่า style เดิมทั้งหมด (ไม่ว่าจะสำเร็จหรือไม่)
+        try {
+            if (restoreImages) restoreImages();
+        } catch (e) {
+            console.warn('Failed to restore images:', e);
+        }
+        try {
+            if (restoreHeaders) restoreHeaders();
+        } catch (e) {
+            console.warn('Failed to restore headers:', e);
+        }
+        try {
+            restoreElementStyles(element, originalStyles);
+        } catch (e) {
+            console.warn('Failed to restore element styles:', e);
+        }
     }
 };
 
