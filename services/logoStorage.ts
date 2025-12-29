@@ -1,6 +1,7 @@
 /**
  * Logo Storage Service
  * บริการจัดการการอัปโหลด ลบ และดึง URL ของโลโก้จาก Firebase Storage
+ * 🏢 แยกเก็บโลโก้ตามองค์กร (Organization ID)
  */
 
 import { storage } from '../firebase.config';
@@ -15,7 +16,8 @@ import {
     getBlob
 } from 'firebase/storage';
 
-// กำหนด path สำหรับเก็บโลโก้ใน Storage
+// กำหนด path หลักสำหรับเก็บโลโก้ใน Storage
+// โครงสร้างใหม่: logos/{organizationId}/{fileName}
 const LOGO_STORAGE_PATH = 'logos';
 
 // Interface สำหรับข้อมูลโลโก้
@@ -26,20 +28,42 @@ export interface LogoItem {
     size: number;           // ขนาดไฟล์ (bytes)
     uploadedAt: Date;       // วันที่อัปโหลด
     contentType?: string;   // ประเภทไฟล์
+    organizationId?: string; // รหัสองค์กร (ถ้ามี)
 }
+
+/**
+ * สร้าง Storage path สำหรับองค์กร
+ * @param organizationId - รหัสองค์กร (optional)
+ * @returns Storage path ที่เหมาะสม
+ */
+const getOrganizationStoragePath = (organizationId?: string): string => {
+    if (organizationId) {
+        return `${LOGO_STORAGE_PATH}/${organizationId}`;
+    }
+    // Fallback สำหรับกรณีไม่มี organizationId (backwards compatibility)
+    return `${LOGO_STORAGE_PATH}/shared`;
+};
 
 /**
  * อัปโหลดโลโก้จาก File object
  * @param file - ไฟล์รูปภาพที่จะอัปโหลด
  * @param customName - ชื่อไฟล์ที่กำหนดเอง (optional)
+ * @param organizationId - รหัสองค์กร (optional) - ถ้าไม่ระบุจะเก็บใน shared folder
  * @returns URL ของโลโก้ที่อัปโหลด
  */
-export const uploadLogoFile = async (file: File, customName?: string): Promise<string> => {
+export const uploadLogoFile = async (
+    file: File, 
+    customName?: string, 
+    organizationId?: string
+): Promise<string> => {
     try {
         // สร้างชื่อไฟล์ที่ไม่ซ้ำกัน
         const timestamp = Date.now();
         const fileName = customName || `${timestamp}-${file.name}`;
-        const logoRef = ref(storage, `${LOGO_STORAGE_PATH}/${fileName}`);
+        const storagePath = getOrganizationStoragePath(organizationId);
+        const logoRef = ref(storage, `${storagePath}/${fileName}`);
+
+        console.log(`📤 [Storage] Uploading to: ${storagePath}/${fileName}`);
 
         // อัปโหลดไฟล์
         const snapshot = await uploadBytes(logoRef, file);
@@ -47,10 +71,10 @@ export const uploadLogoFile = async (file: File, customName?: string): Promise<s
         // ดึง URL สำหรับดาวน์โหลด
         const downloadURL = await getDownloadURL(snapshot.ref);
         
-        console.log('Logo uploaded successfully:', downloadURL);
+        console.log('✅ Logo uploaded successfully:', downloadURL);
         return downloadURL;
     } catch (error) {
-        console.error('Error uploading logo:', error);
+        console.error('❌ Error uploading logo:', error);
         throw new Error('ไม่สามารถอัปโหลดโลโก้ได้');
     }
 };
@@ -59,14 +83,22 @@ export const uploadLogoFile = async (file: File, customName?: string): Promise<s
  * อัปโหลดโลโก้จาก Base64 string
  * @param base64String - รูปภาพในรูปแบบ Base64
  * @param customName - ชื่อไฟล์ที่กำหนดเอง (optional)
+ * @param organizationId - รหัสองค์กร (optional) - ถ้าไม่ระบุจะเก็บใน shared folder
  * @returns URL ของโลโก้ที่อัปโหลด
  */
-export const uploadLogoBase64 = async (base64String: string, customName?: string): Promise<string> => {
+export const uploadLogoBase64 = async (
+    base64String: string, 
+    customName?: string,
+    organizationId?: string
+): Promise<string> => {
     try {
         // สร้างชื่อไฟล์ที่ไม่ซ้ำกัน
         const timestamp = Date.now();
         const fileName = customName || `logo-${timestamp}.jpg`;
-        const logoRef = ref(storage, `${LOGO_STORAGE_PATH}/${fileName}`);
+        const storagePath = getOrganizationStoragePath(organizationId);
+        const logoRef = ref(storage, `${storagePath}/${fileName}`);
+
+        console.log(`📤 [Storage] Uploading Base64 to: ${storagePath}/${fileName}`);
 
         // อัปโหลด Base64 string
         const snapshot = await uploadString(logoRef, base64String, 'data_url');
@@ -74,10 +106,10 @@ export const uploadLogoBase64 = async (base64String: string, customName?: string
         // ดึง URL สำหรับดาวน์โหลด
         const downloadURL = await getDownloadURL(snapshot.ref);
         
-        console.log('Logo uploaded successfully:', downloadURL);
+        console.log('✅ Logo uploaded successfully:', downloadURL);
         return downloadURL;
     } catch (error) {
-        console.error('Error uploading logo:', error);
+        console.error('❌ Error uploading logo:', error);
         throw new Error('ไม่สามารถอัปโหลดโลโก้ได้');
     }
 };
@@ -166,12 +198,17 @@ export const getDefaultLogoUrl = (companyDefaultLogoUrl?: string | null): string
 };
 
 /**
- * ดึงรายการโลโก้ทั้งหมดจาก Storage
+ * ดึงรายการโลโก้ตามองค์กรจาก Storage
+ * @param organizationId - รหัสองค์กร (optional) - ถ้าไม่ระบุจะดึงจาก shared folder
  * @returns Array ของ LogoItem
  */
-export const listAllLogos = async (): Promise<LogoItem[]> => {
+export const listAllLogos = async (organizationId?: string): Promise<LogoItem[]> => {
     try {
-        const logosRef = ref(storage, LOGO_STORAGE_PATH);
+        const storagePath = getOrganizationStoragePath(organizationId);
+        const logosRef = ref(storage, storagePath);
+        
+        console.log(`📋 [Storage] Listing logos from: ${storagePath}`);
+        
         const result = await listAll(logosRef);
         
         // ดึงข้อมูลของแต่ละไฟล์
@@ -188,7 +225,8 @@ export const listAllLogos = async (): Promise<LogoItem[]> => {
                     fullPath: itemRef.fullPath,
                     size: metadata.size,
                     uploadedAt: new Date(metadata.timeCreated),
-                    contentType: metadata.contentType
+                    contentType: metadata.contentType,
+                    organizationId: organizationId // เพิ่ม organizationId
                 } as LogoItem;
             } catch (error) {
                 console.error(`Error getting metadata for ${itemRef.name}:`, error);
@@ -203,7 +241,7 @@ export const listAllLogos = async (): Promise<LogoItem[]> => {
             .filter((logo): logo is LogoItem => logo !== null)
             .sort((a, b) => b.uploadedAt.getTime() - a.uploadedAt.getTime());
     } catch (error) {
-        console.error('Error listing logos:', error);
+        console.error('❌ Error listing logos:', error);
         throw new Error('ไม่สามารถดึงรายการโลโก้ได้');
     }
 };

@@ -94,12 +94,14 @@ const OrganizationLogoManager: React.FC<OrganizationLogoManagerProps> = ({ isOpe
             };
             reader.readAsDataURL(file);
 
-            // อัปโหลดไฟล์ไปยัง Firebase Storage
+            // อัปโหลดไฟล์ไปยัง Firebase Storage (แยกตามองค์กร)
             const fileExtension = file.name.split('.').pop() || 'png';
-            const fileName = `org-logo-${currentCompany?.id}-${Date.now()}.${fileExtension}`;
+            const fileName = `org-logo-${Date.now()}.${fileExtension}`;
             console.log('📤 [OrganizationLogo] Uploading with filename:', fileName);
+            console.log('📂 [OrganizationLogo] Organization folder:', currentCompany?.id);
             
-            const logoUrl = await uploadLogoFile(file, fileName);
+            // ส่ง organizationId เพื่อแยกเก็บตามองค์กร
+            const logoUrl = await uploadLogoFile(file, fileName, currentCompany?.id);
             console.log('✅ [OrganizationLogo] Upload success, URL:', logoUrl);
 
             // อัปเดต Company document

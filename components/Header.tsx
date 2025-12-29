@@ -1573,6 +1573,7 @@ const Header: React.FC = () => {
                     logoUrl={companyLogoUrl}
                     logoType={companyLogoType}
                     companyDefaultLogoUrl={currentCompany?.defaultLogoUrl}
+                    organizationId={currentCompany?.id}
                     onChange={handleLogoChange}
                     onSetDefaultLogo={handleSetDefaultLogo}
                 />

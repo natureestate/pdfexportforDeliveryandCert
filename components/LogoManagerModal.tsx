@@ -37,6 +37,9 @@ interface LogoManagerModalProps {
     /** URL ของ default logo ที่กำหนดไว้ในองค์กร (optional) */
     companyDefaultLogoUrl?: string | null;
     
+    /** รหัสองค์กร สำหรับแยกเก็บโลโก้ใน Storage */
+    organizationId?: string;
+    
     /** Callback เมื่อโลโก้เปลี่ยนแปลง */
     onChange: (logo: string | null, logoUrl: string | null, logoType: LogoType) => void;
     
@@ -57,6 +60,7 @@ const LogoManagerModal: React.FC<LogoManagerModalProps> = ({
     logoUrl,
     logoType = 'default',
     companyDefaultLogoUrl,
+    organizationId,
     onChange,
     onSetDefaultLogo,
 }) => {
@@ -72,12 +76,15 @@ const LogoManagerModal: React.FC<LogoManagerModalProps> = ({
     const isDefault = logoType === 'default' || !currentLogo;
 
     /**
-     * โหลดรายการโลโก้ที่มีอยู่
+     * โหลดรายการโลโก้ที่มีอยู่ (ตามองค์กร)
      */
     const loadAvailableLogos = async () => {
         setIsLoadingGallery(true);
         try {
-            const logos = await listAllLogos();
+            // ส่ง organizationId เพื่อดึงเฉพาะโลโก้ขององค์กรนี้
+            const logos = await listAllLogos(organizationId);
+            
+            console.log(`📋 [Gallery] Loaded ${logos.length} logos for org: ${organizationId || 'shared'}`);
             
             // ไม่แปลง Base64 ล่วงหน้า เพื่อหลีกเลี่ยงปัญหา CORS
             // จะแปลงเฉพาะตอนที่ผู้ใช้เลือกโลโก้
@@ -146,11 +153,13 @@ const LogoManagerModal: React.FC<LogoManagerModalProps> = ({
             // อัปเดต UI ทันทีด้วย Base64
             onChange(base64String, null, 'custom');
             
-            // อัปโหลดไปยัง Firebase Storage ในพื้นหลัง
+            // อัปโหลดไปยัง Firebase Storage ในพื้นหลัง (แยกตามองค์กร)
             setIsUploading(true);
             try {
-                const uploadedUrl = await uploadLogoBase64(base64String);
+                // ส่ง organizationId เพื่อแยกเก็บตามองค์กร
+                const uploadedUrl = await uploadLogoBase64(base64String, undefined, organizationId);
                 console.log('✅ โลโก้อัปโหลดสำเร็จ:', uploadedUrl);
+                console.log('📂 [Modal] Uploaded to org folder:', organizationId || 'shared');
                 
                 // ✅ แปลง Firebase Storage URL เป็น Base64 เพื่อหลีกเลี่ยงปัญหา CORS
                 console.log('🔄 กำลังแปลง Storage URL เป็น Base64 เพื่อหลีกเลี่ยง CORS...');
