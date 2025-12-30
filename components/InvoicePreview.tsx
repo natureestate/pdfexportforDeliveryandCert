@@ -54,6 +54,14 @@ const InvoicePreview = forwardRef<HTMLDivElement, InvoicePreviewProps>(({ data }
                 <div className="bg-slate-50 p-3 rounded-md">
                     <p className="font-semibold text-slate-600 text-base mb-1">ผู้ขาย:</p>
                     <p className="font-bold text-slate-800">{data.companyName || 'N/A'}</p>
+                    {/* แสดงข้อมูลสาขาตามประกาศอธิบดีกรมสรรพากร (ฉบับที่ 200) */}
+                    {(data.companyBranchCode || data.companyBranchName) && (
+                        <p className="text-slate-600 text-xs font-medium">
+                            {data.companyBranchCode === '00000' 
+                                ? (data.companyBranchName || 'สำนักงานใหญ่')
+                                : `${data.companyBranchName || 'สาขา'} (สาขาที่ ${data.companyBranchCode || 'ไม่ระบุ'})`}
+                        </p>
+                    )}
                     <p className="text-slate-600 whitespace-pre-wrap text-xs">{data.companyAddress || 'N/A'}</p>
                     {data.companyPhone && <p className="text-slate-600 text-xs mt-1">โทร: {data.companyPhone}</p>}
                     {data.companyEmail && <p className="text-slate-600 text-xs">อีเมล: {data.companyEmail}</p>}
@@ -65,6 +73,14 @@ const InvoicePreview = forwardRef<HTMLDivElement, InvoicePreviewProps>(({ data }
                 <div className="bg-slate-50 p-3 rounded-md">
                     <p className="font-semibold text-slate-600 text-base mb-1">ผู้ซื้อ:</p>
                     <p className="font-bold text-slate-800">{data.customerName || 'N/A'}</p>
+                    {/* แสดงข้อมูลสาขาลูกค้า (สำหรับนิติบุคคล) */}
+                    {(data.customerBranchCode || data.customerBranchName) && (
+                        <p className="text-slate-600 text-xs font-medium">
+                            {data.customerBranchCode === '00000' 
+                                ? (data.customerBranchName || 'สำนักงานใหญ่')
+                                : `${data.customerBranchName || 'สาขา'} (สาขาที่ ${data.customerBranchCode || 'ไม่ระบุ'})`}
+                        </p>
+                    )}
                     <p className="text-slate-600 whitespace-pre-wrap text-xs">{data.customerAddress || 'N/A'}</p>
                     {data.customerPhone && <p className="text-slate-600 text-xs mt-1">โทร: {data.customerPhone}</p>}
                     {data.customerEmail && <p className="text-slate-600 text-xs">อีเมล: {data.customerEmail}</p>}

@@ -54,6 +54,17 @@ const WarrantyPreview = forwardRef<HTMLDivElement, WarrantyPreviewProps>(({ data
                         </div>
                         <div className="mt-0.5 pl-1">
                             <DetailRow label="ชื่อบริษัท" value={data.companyName} />
+                            {/* แสดงข้อมูลสาขาตามประกาศอธิบดีกรมสรรพากร (ฉบับที่ 200) */}
+                            {(data.companyBranchCode || data.companyBranchName) && (
+                                <div className="flex py-1 border-b border-slate-200">
+                                    <p className="w-2/5 text-xs text-slate-600 font-medium">สาขา</p>
+                                    <p className="w-3/5 text-xs font-medium text-slate-900">
+                                        {data.companyBranchCode === '00000' 
+                                            ? (data.companyBranchName || 'สำนักงานใหญ่')
+                                            : `${data.companyBranchName || 'สาขา'} (สาขาที่ ${data.companyBranchCode || 'ไม่ระบุ'})`}
+                                    </p>
+                                </div>
+                            )}
                             <DetailRow label="ที่อยู่" value={data.companyAddress} isFullWidth={true} />
                             <div className="grid grid-cols-2 gap-2 mt-1">
                                 <div className="flex py-1 border-b border-slate-200">
@@ -83,6 +94,17 @@ const WarrantyPreview = forwardRef<HTMLDivElement, WarrantyPreviewProps>(({ data
                         <div className="mt-0.5 pl-1">
                             <DetailRow label="ชื่อโครงการ" value={data.projectName} />
                             <DetailRow label="ชื่อลูกค้า" value={data.customerName} />
+                            {/* แสดงข้อมูลสาขาลูกค้า (สำหรับนิติบุคคล) */}
+                            {(data.customerBranchCode || data.customerBranchName) && (
+                                <div className="flex py-1 border-b border-slate-200">
+                                    <p className="w-2/5 text-xs text-slate-600 font-medium">สาขา</p>
+                                    <p className="w-3/5 text-xs font-medium text-slate-900">
+                                        {data.customerBranchCode === '00000' 
+                                            ? (data.customerBranchName || 'สำนักงานใหญ่')
+                                            : `${data.customerBranchName || 'สาขา'} (สาขาที่ ${data.customerBranchCode || 'ไม่ระบุ'})`}
+                                    </p>
+                                </div>
+                            )}
                             <DetailRow label="โทรศัพท์" value={data.customerPhone} />
                             <DetailRow label="อีเมล" value={data.customerEmail} />
                             <DetailRow label="ที่อยู่โครงการ/ลูกค้า" value={data.customerAddress} isFullWidth={true} />

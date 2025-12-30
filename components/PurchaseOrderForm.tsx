@@ -227,6 +227,13 @@ const PurchaseOrderForm: React.FC<PurchaseOrderFormProps> = ({
                             if (customer.taxId) {
                                 handleDataChange('supplierTaxId', customer.taxId);
                             }
+                            // ข้อมูลสาขา (สำหรับนิติบุคคล)
+                            if (customer.branchCode) {
+                                handleDataChange('supplierBranchCode', customer.branchCode);
+                            }
+                            if (customer.branchName) {
+                                handleDataChange('supplierBranchName', customer.branchName);
+                            }
                         }}
                         currentCustomer={{
                             customerName: data.supplierName,

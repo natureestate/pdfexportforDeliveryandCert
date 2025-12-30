@@ -544,6 +544,43 @@ const CustomerSelector: React.FC<CustomerSelectorProps> = ({
                                 />
                             </div>
 
+                            {/* ข้อมูลสาขา (แสดงเมื่อเป็นนิติบุคคล) */}
+                            {newCustomer.customerType === 'company' && (
+                                <div className="grid grid-cols-1 md:grid-cols-2 gap-3 p-3 bg-blue-50 rounded-lg border border-blue-200">
+                                    <div className="md:col-span-2">
+                                        <p className="text-xs font-medium text-blue-700 mb-2">
+                                            📋 ข้อมูลสาขา (ตามประกาศอธิบดีกรมสรรพากร ฉบับที่ 200)
+                                        </p>
+                                    </div>
+                                    <div>
+                                        <label className="block text-xs sm:text-sm font-medium text-gray-700 mb-1">
+                                            รหัสสาขา (5 หลัก)
+                                        </label>
+                                        <input
+                                            type="text"
+                                            value={newCustomer.branchCode || ''}
+                                            onChange={(e) => setNewCustomer(prev => ({ ...prev, branchCode: e.target.value }))}
+                                            maxLength={5}
+                                            className="w-full rounded-md border-gray-300 shadow-sm focus:border-indigo-500 focus:ring-indigo-500 text-xs sm:text-sm px-3 py-2"
+                                            placeholder="00000 (สำนักงานใหญ่)"
+                                        />
+                                        <p className="text-xs text-gray-500 mt-1">00000 = สำนักงานใหญ่</p>
+                                    </div>
+                                    <div>
+                                        <label className="block text-xs sm:text-sm font-medium text-gray-700 mb-1">
+                                            ชื่อสาขา
+                                        </label>
+                                        <input
+                                            type="text"
+                                            value={newCustomer.branchName || ''}
+                                            onChange={(e) => setNewCustomer(prev => ({ ...prev, branchName: e.target.value }))}
+                                            className="w-full rounded-md border-gray-300 shadow-sm focus:border-indigo-500 focus:ring-indigo-500 text-xs sm:text-sm px-3 py-2"
+                                            placeholder="เช่น สำนักงานใหญ่, สาขาลาดพร้าว"
+                                        />
+                                    </div>
+                                </div>
+                            )}
+
                             {/* ที่อยู่ */}
                             <div>
                                 <label className="block text-xs sm:text-sm font-medium text-gray-700 mb-1">
@@ -698,6 +735,43 @@ const CustomerSelector: React.FC<CustomerSelectorProps> = ({
                                     placeholder="เช่น 0123456789012 (สำหรับนิติบุคคล)"
                                 />
                             </div>
+
+                            {/* ข้อมูลสาขา (แสดงเมื่อเป็นนิติบุคคล) */}
+                            {editingCustomer.customerType === 'company' && (
+                                <div className="grid grid-cols-1 md:grid-cols-2 gap-3 p-3 bg-blue-50 rounded-lg border border-blue-200">
+                                    <div className="md:col-span-2">
+                                        <p className="text-xs font-medium text-blue-700 mb-2">
+                                            📋 ข้อมูลสาขา (ตามประกาศอธิบดีกรมสรรพากร ฉบับที่ 200)
+                                        </p>
+                                    </div>
+                                    <div>
+                                        <label className="block text-xs sm:text-sm font-medium text-gray-700 mb-1">
+                                            รหัสสาขา (5 หลัก)
+                                        </label>
+                                        <input
+                                            type="text"
+                                            value={editingCustomer.branchCode || ''}
+                                            onChange={(e) => setEditingCustomer(prev => prev ? ({ ...prev, branchCode: e.target.value }) : null)}
+                                            maxLength={5}
+                                            className="w-full rounded-md border-gray-300 shadow-sm focus:border-indigo-500 focus:ring-indigo-500 text-xs sm:text-sm px-3 py-2"
+                                            placeholder="00000 (สำนักงานใหญ่)"
+                                        />
+                                        <p className="text-xs text-gray-500 mt-1">00000 = สำนักงานใหญ่</p>
+                                    </div>
+                                    <div>
+                                        <label className="block text-xs sm:text-sm font-medium text-gray-700 mb-1">
+                                            ชื่อสาขา
+                                        </label>
+                                        <input
+                                            type="text"
+                                            value={editingCustomer.branchName || ''}
+                                            onChange={(e) => setEditingCustomer(prev => prev ? ({ ...prev, branchName: e.target.value }) : null)}
+                                            className="w-full rounded-md border-gray-300 shadow-sm focus:border-indigo-500 focus:ring-indigo-500 text-xs sm:text-sm px-3 py-2"
+                                            placeholder="เช่น สำนักงานใหญ่, สาขาลาดพร้าว"
+                                        />
+                                    </div>
+                                </div>
+                            )}
 
                             {/* ที่อยู่ */}
                             <div>

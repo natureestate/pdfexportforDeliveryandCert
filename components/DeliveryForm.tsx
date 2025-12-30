@@ -177,6 +177,13 @@ const DeliveryForm: React.FC<DeliveryFormProps> = ({
                             if (customer.email) {
                                 handleDataChange('toEmail', customer.email);
                             }
+                            // ข้อมูลสาขา (สำหรับนิติบุคคล)
+                            if (customer.branchCode) {
+                                handleDataChange('toBranchCode', customer.branchCode);
+                            }
+                            if (customer.branchName) {
+                                handleDataChange('toBranchName', customer.branchName);
+                            }
                         }}
                         currentCustomer={{
                             customerName: data.toCompany,

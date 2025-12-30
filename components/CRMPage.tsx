@@ -68,6 +68,9 @@ interface FormData {
     // Contractor specific
     idCard: string;
     specialties: string[];
+    // ข้อมูลสาขา (สำหรับนิติบุคคล)
+    branchCode: string;
+    branchName: string;
 }
 
 const initialFormData: FormData = {
@@ -89,6 +92,8 @@ const initialFormData: FormData = {
     houseNumber: '',
     idCard: '',
     specialties: [],
+    branchCode: '',
+    branchName: '',
 };
 
 const CRMPage: React.FC = () => {
@@ -204,6 +209,9 @@ const CRMPage: React.FC = () => {
                     houseNumber: customer.houseNumber || '',
                     idCard: '',
                     specialties: [],
+                    // ข้อมูลสาขา (สำหรับนิติบุคคล)
+                    branchCode: customer.branchCode || '',
+                    branchName: customer.branchName || '',
                 });
             } else {
                 const contractor = item as Contractor;
@@ -226,6 +234,9 @@ const CRMPage: React.FC = () => {
                     houseNumber: '',
                     idCard: contractor.idCard || '',
                     specialties: contractor.specialties || [],
+                    // ข้อมูลสาขา (สำหรับนิติบุคคล)
+                    branchCode: contractor.branchCode || '',
+                    branchName: contractor.branchName || '',
                 });
             }
         } else {
@@ -264,6 +275,9 @@ const CRMPage: React.FC = () => {
                     notes: formData.notes || undefined,
                     projectName: formData.projectName || undefined,
                     houseNumber: formData.houseNumber || undefined,
+                    // ข้อมูลสาขา (สำหรับนิติบุคคล)
+                    branchCode: formData.branchCode || undefined,
+                    branchName: formData.branchName || undefined,
                 };
 
                 if (editingId) {
@@ -290,6 +304,9 @@ const CRMPage: React.FC = () => {
                     notes: formData.notes || undefined,
                     idCard: formData.idCard || undefined,
                     specialties: formData.specialties,
+                    // ข้อมูลสาขา (สำหรับนิติบุคคล)
+                    branchCode: formData.branchCode || undefined,
+                    branchName: formData.branchName || undefined,
                 };
 
                 if (editingId) {
@@ -718,6 +735,39 @@ const CRMPage: React.FC = () => {
                                         className="w-full px-3 py-2 border border-gray-300 dark:border-slate-600 rounded-lg focus:ring-2 focus:ring-indigo-500 focus:border-transparent bg-white dark:bg-slate-700 text-gray-800 dark:text-gray-100"
                                         placeholder="เลขประจำตัวผู้เสียภาษี 13 หลัก"
                                     />
+                                </div>
+                            )}
+
+                            {/* ข้อมูลสาขา (ตามประกาศอธิบดีกรมสรรพากร ฉบับที่ 200) */}
+                            {formData.type === 'company' && (
+                                <div className="grid grid-cols-1 sm:grid-cols-2 gap-4 p-3 bg-blue-50 dark:bg-blue-900/20 rounded-lg border border-blue-200 dark:border-blue-800">
+                                    <div className="sm:col-span-2">
+                                        <p className="text-xs font-medium text-blue-700 dark:text-blue-300 mb-2">
+                                            📋 ข้อมูลสาขา (ตามประกาศอธิบดีกรมสรรพากร ฉบับที่ 200)
+                                        </p>
+                                    </div>
+                                    <div>
+                                        <label className="block text-sm font-medium text-gray-700 dark:text-gray-200 mb-1">รหัสสาขา (5 หลัก)</label>
+                                        <input
+                                            type="text"
+                                            value={formData.branchCode || ''}
+                                            onChange={(e) => setFormData({ ...formData, branchCode: e.target.value })}
+                                            maxLength={5}
+                                            className="w-full px-3 py-2 border border-gray-300 dark:border-slate-600 rounded-lg focus:ring-2 focus:ring-indigo-500 focus:border-transparent bg-white dark:bg-slate-700 text-gray-800 dark:text-gray-100"
+                                            placeholder="00000 (สำนักงานใหญ่)"
+                                        />
+                                        <p className="text-xs text-gray-500 dark:text-gray-400 mt-1">00000 = สำนักงานใหญ่</p>
+                                    </div>
+                                    <div>
+                                        <label className="block text-sm font-medium text-gray-700 dark:text-gray-200 mb-1">ชื่อสาขา</label>
+                                        <input
+                                            type="text"
+                                            value={formData.branchName || ''}
+                                            onChange={(e) => setFormData({ ...formData, branchName: e.target.value })}
+                                            className="w-full px-3 py-2 border border-gray-300 dark:border-slate-600 rounded-lg focus:ring-2 focus:ring-indigo-500 focus:border-transparent bg-white dark:bg-slate-700 text-gray-800 dark:text-gray-100"
+                                            placeholder="เช่น สำนักงานใหญ่, สาขาลาดพร้าว"
+                                        />
+                                    </div>
                                 </div>
                             )}
 

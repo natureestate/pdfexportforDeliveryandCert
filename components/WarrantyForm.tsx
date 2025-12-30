@@ -149,6 +149,13 @@ const WarrantyForm: React.FC<WarrantyFormProps> = ({
                             if (customer.email) {
                                 handleDataChange('customerEmail', customer.email);
                             }
+                            // ข้อมูลสาขา (สำหรับนิติบุคคล)
+                            if (customer.branchCode) {
+                                handleDataChange('customerBranchCode', customer.branchCode);
+                            }
+                            if (customer.branchName) {
+                                handleDataChange('customerBranchName', customer.branchName);
+                            }
                         }}
                         currentCustomer={{
                             customerName: data.customerName,

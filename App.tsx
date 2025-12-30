@@ -120,6 +120,9 @@ const initialInvoiceData: InvoiceData = {
     companyEmail: '',
     companyWebsite: '',
     companyTaxId: '',
+    // ข้อมูลสาขา (ตามประกาศอธิบดีกรมสรรพากร ฉบับที่ 200)
+    companyBranchCode: '00000',
+    companyBranchName: 'สำนักงานใหญ่',
     // ข้อมูลลูกค้า/ผู้ซื้อ
     customerName: '',
     customerAddress: '',
@@ -156,6 +159,9 @@ const initialReceiptData: ReceiptData = {
     companyEmail: '',
     companyWebsite: '',
     companyTaxId: '',
+    // ข้อมูลสาขา (ตามประกาศอธิบดีกรมสรรพากร ฉบับที่ 200)
+    companyBranchCode: '00000',
+    companyBranchName: 'สำนักงานใหญ่',
     // ข้อมูลลูกค้า/ผู้ซื้อ
     customerName: '',
     customerAddress: '',
@@ -194,6 +200,9 @@ const initialTaxInvoiceData: TaxInvoiceData = {
     companyEmail: '',
     companyWebsite: '',
     companyTaxId: '',
+    // ข้อมูลสาขา (ตามประกาศอธิบดีกรมสรรพากร ฉบับที่ 200)
+    companyBranchCode: '00000',
+    companyBranchName: 'สำนักงานใหญ่',
     // ข้อมูลลูกค้า/ผู้ซื้อ
     customerName: '',
     customerAddress: '',
@@ -232,6 +241,9 @@ const initialQuotationData: QuotationData = {
     companyEmail: '',
     companyWebsite: '',
     companyTaxId: '',
+    // ข้อมูลสาขา (ตามประกาศอธิบดีกรมสรรพากร ฉบับที่ 200)
+    companyBranchCode: '00000',
+    companyBranchName: 'สำนักงานใหญ่',
     // ข้อมูลลูกค้า/ผู้รับเสนอราคา
     customerName: '',
     customerAddress: '',
@@ -269,6 +281,9 @@ const initialPurchaseOrderData: PurchaseOrderData = {
     companyEmail: '',
     companyWebsite: '',
     companyTaxId: '',
+    // ข้อมูลสาขา (ตามประกาศอธิบดีกรมสรรพากร ฉบับที่ 200)
+    companyBranchCode: '00000',
+    companyBranchName: 'สำนักงานใหญ่',
     // ข้อมูลผู้ขาย/ผู้จำหน่าย
     supplierName: '',
     supplierAddress: '',
@@ -344,6 +359,9 @@ const initialVariationOrderData: VariationOrderData = {
     companyEmail: '',
     companyWebsite: '',
     companyTaxId: '',
+    // ข้อมูลสาขา (ตามประกาศอธิบดีกรมสรรพากร ฉบับที่ 200)
+    companyBranchCode: '00000',
+    companyBranchName: 'สำนักงานใหญ่',
     // ข้อมูลลูกค้า/โครงการ
     customerName: '',
     customerAddress: '',
@@ -395,6 +413,9 @@ const initialSubcontractData: SubcontractData = {
     companyPhone: '',
     companyEmail: '',
     companyTaxId: '',
+    // ข้อมูลสาขา (ตามประกาศอธิบดีกรมสรรพากร ฉบับที่ 200)
+    companyBranchCode: '00000',
+    companyBranchName: 'สำนักงานใหญ่',
     // ข้อมูลผู้รับจ้าง (ช่าง)
     contractorName: '',
     contractorIdCard: '',
@@ -564,6 +585,7 @@ const AppContent: React.FC = () => {
             }));
 
             // Sync ไปยัง InvoiceForm (ข้อมูลบริษัทผู้ขาย)
+            // รวมถึงข้อมูลสาขาตามประกาศอธิบดีกรมสรรพากร (ฉบับที่ 200)
             setInvoiceData(prev => ({
                 ...prev,
                 companyName: currentCompany.name,
@@ -571,9 +593,13 @@ const AppContent: React.FC = () => {
                 companyPhone: currentCompany.phone || '',
                 companyEmail: currentCompany.email || '',
                 companyWebsite: currentCompany.website || '',
+                companyTaxId: currentCompany.taxId || '',
+                companyBranchCode: currentCompany.branchCode || '00000',
+                companyBranchName: currentCompany.branchName || 'สำนักงานใหญ่',
             }));
 
             // Sync ไปยัง ReceiptForm (ข้อมูลบริษัทผู้ขาย)
+            // รวมถึงข้อมูลสาขาตามประกาศอธิบดีกรมสรรพากร (ฉบับที่ 200)
             setReceiptData(prev => ({
                 ...prev,
                 companyName: currentCompany.name,
@@ -581,9 +607,13 @@ const AppContent: React.FC = () => {
                 companyPhone: currentCompany.phone || '',
                 companyEmail: currentCompany.email || '',
                 companyWebsite: currentCompany.website || '',
+                companyTaxId: currentCompany.taxId || '',
+                companyBranchCode: currentCompany.branchCode || '00000',
+                companyBranchName: currentCompany.branchName || 'สำนักงานใหญ่',
             }));
 
             // Sync ไปยัง TaxInvoiceForm (ข้อมูลบริษัทผู้ขาย)
+            // รวมถึงข้อมูลสาขาตามประกาศอธิบดีกรมสรรพากร (ฉบับที่ 200)
             setTaxInvoiceData(prev => ({
                 ...prev,
                 companyName: currentCompany.name,
@@ -591,9 +621,13 @@ const AppContent: React.FC = () => {
                 companyPhone: currentCompany.phone || '',
                 companyEmail: currentCompany.email || '',
                 companyWebsite: currentCompany.website || '',
+                companyTaxId: currentCompany.taxId || '',
+                companyBranchCode: currentCompany.branchCode || '00000',
+                companyBranchName: currentCompany.branchName || 'สำนักงานใหญ่',
             }));
 
             // Sync ไปยัง QuotationForm (ข้อมูลบริษัทผู้เสนอราคา)
+            // รวมถึงข้อมูลสาขาตามประกาศอธิบดีกรมสรรพากร (ฉบับที่ 200)
             setQuotationData(prev => ({
                 ...prev,
                 companyName: currentCompany.name,
@@ -601,9 +635,13 @@ const AppContent: React.FC = () => {
                 companyPhone: currentCompany.phone || '',
                 companyEmail: currentCompany.email || '',
                 companyWebsite: currentCompany.website || '',
+                companyTaxId: currentCompany.taxId || '',
+                companyBranchCode: currentCompany.branchCode || '00000',
+                companyBranchName: currentCompany.branchName || 'สำนักงานใหญ่',
             }));
 
             // Sync ไปยัง PurchaseOrderForm (ข้อมูลบริษัทผู้สั่งซื้อ)
+            // รวมถึงข้อมูลสาขาตามประกาศอธิบดีกรมสรรพากร (ฉบับที่ 200)
             setPurchaseOrderData(prev => ({
                 ...prev,
                 companyName: currentCompany.name,
@@ -611,6 +649,9 @@ const AppContent: React.FC = () => {
                 companyPhone: currentCompany.phone || '',
                 companyEmail: currentCompany.email || '',
                 companyWebsite: currentCompany.website || '',
+                companyTaxId: currentCompany.taxId || '',
+                companyBranchCode: currentCompany.branchCode || '00000',
+                companyBranchName: currentCompany.branchName || 'สำนักงานใหญ่',
             }));
 
             // Sync ไปยัง MemoForm (ข้อมูลบริษัทผู้ออกเอกสาร)
@@ -624,6 +665,7 @@ const AppContent: React.FC = () => {
             }));
 
             // Sync ไปยัง VariationOrderForm (ข้อมูลบริษัทผู้ออกเอกสาร)
+            // รวมถึงข้อมูลสาขาตามประกาศอธิบดีกรมสรรพากร (ฉบับที่ 200)
             setVariationOrderData(prev => ({
                 ...prev,
                 companyName: currentCompany.name,
@@ -632,9 +674,12 @@ const AppContent: React.FC = () => {
                 companyEmail: currentCompany.email || '',
                 companyWebsite: currentCompany.website || '',
                 companyTaxId: currentCompany.taxId || '',
+                companyBranchCode: currentCompany.branchCode || '00000',
+                companyBranchName: currentCompany.branchName || 'สำนักงานใหญ่',
             }));
 
             // Sync ไปยัง SubcontractForm (ข้อมูลผู้ว่าจ้าง)
+            // รวมถึงข้อมูลสาขาตามประกาศอธิบดีกรมสรรพากร (ฉบับที่ 200)
             setSubcontractData(prev => ({
                 ...prev,
                 companyName: currentCompany.name,
@@ -642,6 +687,8 @@ const AppContent: React.FC = () => {
                 companyPhone: currentCompany.phone || '',
                 companyEmail: currentCompany.email || '',
                 companyTaxId: currentCompany.taxId || '',
+                companyBranchCode: currentCompany.branchCode || '00000',
+                companyBranchName: currentCompany.branchName || 'สำนักงานใหญ่',
             }));
         }
     }, [currentCompany]);

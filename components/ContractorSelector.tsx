@@ -212,6 +212,9 @@ const ContractorSelector: React.FC<ContractorSelectorProps> = ({
                 idCard: editingContractor.idCard,
                 taxId: editingContractor.taxId,
                 specialties: specialtiesArray,
+                // ข้อมูลสาขา (สำหรับนิติบุคคล)
+                branchCode: editingContractor.branchCode,
+                branchName: editingContractor.branchName,
             });
             
             await loadContractors();
@@ -557,6 +560,43 @@ const ContractorSelector: React.FC<ContractorSelectorProps> = ({
                                 />
                             </div>
 
+                            {/* ข้อมูลสาขา (แสดงเมื่อเป็นนิติบุคคล) */}
+                            {newContractor.contractorType === 'company' && (
+                                <div className="grid grid-cols-1 md:grid-cols-2 gap-3 p-3 bg-orange-50 rounded-lg border border-orange-200">
+                                    <div className="md:col-span-2">
+                                        <p className="text-xs font-medium text-orange-700 mb-2">
+                                            📋 ข้อมูลสาขา (ตามประกาศอธิบดีกรมสรรพากร ฉบับที่ 200)
+                                        </p>
+                                    </div>
+                                    <div>
+                                        <label className="block text-xs sm:text-sm font-medium text-gray-700 mb-1">
+                                            รหัสสาขา (5 หลัก)
+                                        </label>
+                                        <input
+                                            type="text"
+                                            value={newContractor.branchCode || ''}
+                                            onChange={(e) => setNewContractor(prev => ({ ...prev, branchCode: e.target.value }))}
+                                            maxLength={5}
+                                            className="w-full rounded-md border-gray-300 shadow-sm focus:border-orange-500 focus:ring-orange-500 text-xs sm:text-sm px-3 py-2"
+                                            placeholder="00000 (สำนักงานใหญ่)"
+                                        />
+                                        <p className="text-xs text-gray-500 mt-1">00000 = สำนักงานใหญ่</p>
+                                    </div>
+                                    <div>
+                                        <label className="block text-xs sm:text-sm font-medium text-gray-700 mb-1">
+                                            ชื่อสาขา
+                                        </label>
+                                        <input
+                                            type="text"
+                                            value={newContractor.branchName || ''}
+                                            onChange={(e) => setNewContractor(prev => ({ ...prev, branchName: e.target.value }))}
+                                            className="w-full rounded-md border-gray-300 shadow-sm focus:border-orange-500 focus:ring-orange-500 text-xs sm:text-sm px-3 py-2"
+                                            placeholder="เช่น สำนักงานใหญ่, สาขาลาดพร้าว"
+                                        />
+                                    </div>
+                                </div>
+                            )}
+
                             {/* ที่อยู่ */}
                             <div>
                                 <label className="block text-xs sm:text-sm font-medium text-gray-700 mb-1">
@@ -712,6 +752,43 @@ const ContractorSelector: React.FC<ContractorSelectorProps> = ({
                                     placeholder="เช่น งานปูกระเบื้อง, งานไฟฟ้า, งานประปา"
                                 />
                             </div>
+
+                            {/* ข้อมูลสาขา (แสดงเมื่อเป็นนิติบุคคล) */}
+                            {editingContractor.contractorType === 'company' && (
+                                <div className="grid grid-cols-1 md:grid-cols-2 gap-3 p-3 bg-orange-50 rounded-lg border border-orange-200">
+                                    <div className="md:col-span-2">
+                                        <p className="text-xs font-medium text-orange-700 mb-2">
+                                            📋 ข้อมูลสาขา (ตามประกาศอธิบดีกรมสรรพากร ฉบับที่ 200)
+                                        </p>
+                                    </div>
+                                    <div>
+                                        <label className="block text-xs sm:text-sm font-medium text-gray-700 mb-1">
+                                            รหัสสาขา (5 หลัก)
+                                        </label>
+                                        <input
+                                            type="text"
+                                            value={editingContractor.branchCode || ''}
+                                            onChange={(e) => setEditingContractor(prev => prev ? ({ ...prev, branchCode: e.target.value }) : null)}
+                                            maxLength={5}
+                                            className="w-full rounded-md border-gray-300 shadow-sm focus:border-orange-500 focus:ring-orange-500 text-xs sm:text-sm px-3 py-2"
+                                            placeholder="00000 (สำนักงานใหญ่)"
+                                        />
+                                        <p className="text-xs text-gray-500 mt-1">00000 = สำนักงานใหญ่</p>
+                                    </div>
+                                    <div>
+                                        <label className="block text-xs sm:text-sm font-medium text-gray-700 mb-1">
+                                            ชื่อสาขา
+                                        </label>
+                                        <input
+                                            type="text"
+                                            value={editingContractor.branchName || ''}
+                                            onChange={(e) => setEditingContractor(prev => prev ? ({ ...prev, branchName: e.target.value }) : null)}
+                                            className="w-full rounded-md border-gray-300 shadow-sm focus:border-orange-500 focus:ring-orange-500 text-xs sm:text-sm px-3 py-2"
+                                            placeholder="เช่น สำนักงานใหญ่, สาขาลาดพร้าว"
+                                        />
+                                    </div>
+                                </div>
+                            )}
 
                             {/* ที่อยู่ */}
                             <div>

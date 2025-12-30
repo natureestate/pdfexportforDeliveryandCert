@@ -507,6 +507,8 @@ export interface WarrantyData extends DocumentVerificationFields {
     customerPhone: string;         // เบอร์โทรลูกค้า
     customerAddress: string;       // ที่อยู่ลูกค้า/โครงการ
     customerEmail?: string;         // อีเมลลูกค้า (optional)
+    customerBranchCode?: string;   // รหัสสาขาลูกค้า (optional) - สำหรับนิติบุคคล
+    customerBranchName?: string;   // ชื่อสาขาลูกค้า (optional)
     
     // ข้อมูลสินค้า/บริการ
     serviceName: string;           // ชื่อบริการ/ประเภทสินค้า
@@ -574,8 +576,10 @@ export interface Customer {
     projectName?: string;          // ชื่อโครงการ (ถ้ามี)
     houseNumber?: string;          // บ้านเลขที่/ห้องเลขที่
     
-    // ข้อมูลภาษี
-    taxId?: string;                // เลขประจำตัวผู้เสียภาษี (สำหรับนิติบุคคล)
+    // ข้อมูลภาษี (สำหรับนิติบุคคล)
+    taxId?: string;                // เลขประจำตัวผู้เสียภาษี
+    branchCode?: string;           // รหัสสาขา 5 หลัก (เช่น "00000" = สำนักงานใหญ่)
+    branchName?: string;           // ชื่อสาขา (เช่น "สำนักงานใหญ่", "สาขาลาดพร้าว")
     
     // Tags และหมายเหตุ
     tags?: string[];               // Tags สำหรับจัดกลุ่ม เช่น ['VIP', 'ลูกค้าประจำ']
@@ -611,6 +615,8 @@ export interface InvoiceData extends DocumentVerificationFields {
     companyEmail?: string;         // อีเมลบริษัทผู้ขาย (optional)
     companyWebsite?: string;      // เว็บไซต์บริษัทผู้ขาย (optional)
     companyTaxId?: string;         // เลขประจำตัวผู้เสียภาษี (optional)
+    companyBranchCode?: string;    // รหัสสาขา (optional) - ตามประกาศอธิบดีกรมสรรพากร ฉบับที่ 200
+    companyBranchName?: string;    // ชื่อสาขา (optional)
     
     // ข้อมูลลูกค้า/ผู้ซื้อ
     customerName: string;           // ชื่อลูกค้า/บริษัทผู้ซื้อ
@@ -618,6 +624,8 @@ export interface InvoiceData extends DocumentVerificationFields {
     customerPhone?: string;         // เบอร์โทรศัพท์ลูกค้า (optional)
     customerEmail?: string;         // อีเมลลูกค้า (optional)
     customerTaxId?: string;        // เลขประจำตัวผู้เสียภาษีลูกค้า (optional)
+    customerBranchCode?: string;   // รหัสสาขาลูกค้า (optional)
+    customerBranchName?: string;   // ชื่อสาขาลูกค้า (optional)
     
     // ข้อมูลเอกสาร
     invoiceNumber: string;          // เลขที่ใบแจ้งหนี้
@@ -664,6 +672,8 @@ export interface ReceiptData extends DocumentVerificationFields {
     companyEmail?: string;         // อีเมลบริษัทผู้ขาย (optional)
     companyWebsite?: string;      // เว็บไซต์บริษัทผู้ขาย (optional)
     companyTaxId?: string;         // เลขประจำตัวผู้เสียภาษี (optional)
+    companyBranchCode?: string;    // รหัสสาขา (optional) - ตามประกาศอธิบดีกรมสรรพากร ฉบับที่ 200
+    companyBranchName?: string;    // ชื่อสาขา (optional)
     
     // ข้อมูลลูกค้า/ผู้ซื้อ
     customerName: string;           // ชื่อลูกค้า/บริษัทผู้ซื้อ
@@ -671,6 +681,8 @@ export interface ReceiptData extends DocumentVerificationFields {
     customerPhone?: string;         // เบอร์โทรศัพท์ลูกค้า (optional)
     customerEmail?: string;         // อีเมลลูกค้า (optional)
     customerTaxId?: string;        // เลขประจำตัวผู้เสียภาษีลูกค้า (optional)
+    customerBranchCode?: string;   // รหัสสาขาลูกค้า (optional)
+    customerBranchName?: string;   // ชื่อสาขาลูกค้า (optional)
     
     // ข้อมูลเอกสาร
     receiptNumber: string;          // เลขที่ใบเสร็จ
@@ -720,6 +732,8 @@ export interface TaxInvoiceData extends DocumentVerificationFields {
     companyEmail?: string;         // อีเมลบริษัทผู้ขาย (optional)
     companyWebsite?: string;      // เว็บไซต์บริษัทผู้ขาย (optional)
     companyTaxId?: string;         // เลขประจำตัวผู้เสียภาษี (optional)
+    companyBranchCode?: string;    // รหัสสาขา (optional) - ตามประกาศอธิบดีกรมสรรพากร ฉบับที่ 200
+    companyBranchName?: string;    // ชื่อสาขา (optional)
     
     // ข้อมูลลูกค้า/ผู้ซื้อ
     customerName: string;           // ชื่อลูกค้า/บริษัทผู้ซื้อ
@@ -727,6 +741,8 @@ export interface TaxInvoiceData extends DocumentVerificationFields {
     customerPhone?: string;         // เบอร์โทรศัพท์ลูกค้า (optional)
     customerEmail?: string;         // อีเมลลูกค้า (optional)
     customerTaxId?: string;        // เลขประจำตัวผู้เสียภาษีลูกค้า (optional)
+    customerBranchCode?: string;   // รหัสสาขาลูกค้า (optional)
+    customerBranchName?: string;   // ชื่อสาขาลูกค้า (optional)
     
     // ข้อมูลเอกสาร
     taxInvoiceNumber: string;          // เลขที่ใบกำกับภาษี
@@ -776,6 +792,8 @@ export interface QuotationData extends DocumentVerificationFields {
     companyEmail?: string;         // อีเมลบริษัทผู้เสนอราคา (optional)
     companyWebsite?: string;      // เว็บไซต์บริษัทผู้เสนอราคา (optional)
     companyTaxId?: string;         // เลขประจำตัวผู้เสียภาษี (optional)
+    companyBranchCode?: string;    // รหัสสาขา (optional) - ตามประกาศอธิบดีกรมสรรพากร ฉบับที่ 200
+    companyBranchName?: string;    // ชื่อสาขา (optional)
     
     // ข้อมูลลูกค้า/ผู้รับเสนอราคา
     customerName: string;           // ชื่อลูกค้า/บริษัทผู้รับเสนอราคา
@@ -783,6 +801,8 @@ export interface QuotationData extends DocumentVerificationFields {
     customerPhone?: string;         // เบอร์โทรศัพท์ลูกค้า (optional)
     customerEmail?: string;         // อีเมลลูกค้า (optional)
     customerTaxId?: string;        // เลขประจำตัวผู้เสียภาษีลูกค้า (optional)
+    customerBranchCode?: string;   // รหัสสาขาลูกค้า (optional)
+    customerBranchName?: string;   // ชื่อสาขาลูกค้า (optional)
     
     // ข้อมูลเอกสาร
     quotationNumber: string;          // เลขที่ใบเสนอราคา
@@ -830,6 +850,8 @@ export interface PurchaseOrderData extends DocumentVerificationFields {
     companyEmail?: string;         // อีเมลบริษัทผู้สั่งซื้อ (optional)
     companyWebsite?: string;      // เว็บไซต์บริษัทผู้สั่งซื้อ (optional)
     companyTaxId?: string;         // เลขประจำตัวผู้เสียภาษี (optional)
+    companyBranchCode?: string;    // รหัสสาขา (optional) - ตามประกาศอธิบดีกรมสรรพากร ฉบับที่ 200
+    companyBranchName?: string;    // ชื่อสาขา (optional)
     
     // ข้อมูลผู้ขาย/ผู้จำหน่าย
     supplierName: string;           // ชื่อผู้ขาย/บริษัทผู้จำหน่าย
@@ -837,6 +859,8 @@ export interface PurchaseOrderData extends DocumentVerificationFields {
     supplierPhone?: string;         // เบอร์โทรศัพท์ผู้ขาย (optional)
     supplierEmail?: string;         // อีเมลผู้ขาย (optional)
     supplierTaxId?: string;        // เลขประจำตัวผู้เสียภาษีผู้ขาย (optional)
+    supplierBranchCode?: string;   // รหัสสาขาผู้ขาย (optional)
+    supplierBranchName?: string;   // ชื่อสาขาผู้ขาย (optional)
     
     // ข้อมูลเอกสาร
     purchaseOrderNumber: string;          // เลขที่ใบสั่งซื้อ
@@ -937,6 +961,8 @@ export interface VariationOrderData extends DocumentVerificationFields {
     companyEmail?: string;         // อีเมลบริษัทผู้ออกเอกสาร (optional)
     companyWebsite?: string;       // เว็บไซต์บริษัทผู้ออกเอกสาร (optional)
     companyTaxId?: string;         // เลขประจำตัวผู้เสียภาษี (optional)
+    companyBranchCode?: string;    // รหัสสาขา (optional) - ตามประกาศอธิบดีกรมสรรพากร ฉบับที่ 200
+    companyBranchName?: string;    // ชื่อสาขา (optional)
     
     // ข้อมูลลูกค้า/โครงการ
     customerName: string;           // ชื่อลูกค้า/บริษัท
@@ -944,6 +970,8 @@ export interface VariationOrderData extends DocumentVerificationFields {
     customerPhone?: string;         // เบอร์โทรศัพท์ลูกค้า (optional)
     customerEmail?: string;         // อีเมลลูกค้า (optional)
     customerTaxId?: string;        // เลขประจำตัวผู้เสียภาษีลูกค้า (optional)
+    customerBranchCode?: string;   // รหัสสาขาลูกค้า (optional)
+    customerBranchName?: string;   // ชื่อสาขาลูกค้า (optional)
     
     // ส่วนหัวและข้อมูลอ้างอิง
     voNumber: string;               // เลขที่เอกสาร (VO No.) เช่น VO-001
@@ -1174,9 +1202,11 @@ export interface Contractor {
     province?: string;             // จังหวัด
     postalCode?: string;           // รหัสไปรษณีย์
     
-    // ข้อมูลภาษี
+    // ข้อมูลภาษี (สำหรับนิติบุคคล)
     idCard?: string;               // เลขบัตรประชาชน
-    taxId?: string;                // เลขประจำตัวผู้เสียภาษี (สำหรับนิติบุคคล)
+    taxId?: string;                // เลขประจำตัวผู้เสียภาษี
+    branchCode?: string;           // รหัสสาขา 5 หลัก (เช่น "00000" = สำนักงานใหญ่)
+    branchName?: string;           // ชื่อสาขา (เช่น "สำนักงานใหญ่", "สาขาลาดพร้าว")
     
     // ข้อมูลความเชี่ยวชาญ
     specialties?: string[];        // ความเชี่ยวชาญ เช่น ['งานปูกระเบื้อง', 'งานไฟฟ้า', 'งานประปา']
@@ -1222,12 +1252,16 @@ export interface SubcontractData extends DocumentVerificationFields {
     companyPhone: string;           // เบอร์โทรศัพท์บริษัทผู้ว่าจ้าง
     companyEmail?: string;          // อีเมลบริษัทผู้ว่าจ้าง (optional)
     companyTaxId?: string;          // เลขประจำตัวผู้เสียภาษี (optional)
+    companyBranchCode?: string;     // รหัสสาขา (optional) - ตามประกาศอธิบดีกรมสรรพากร ฉบับที่ 200
+    companyBranchName?: string;     // ชื่อสาขา (optional)
     
     // ข้อมูลผู้รับจ้าง (ช่าง)
     contractorName: string;         // ชื่อช่าง/หัวหน้าชุดช่าง
     contractorIdCard?: string;      // เลขบัตรประชาชน/เลขผู้เสียภาษี
     contractorPhone: string;        // เบอร์โทรศัพท์
     contractorAddress?: string;     // ที่อยู่ผู้รับจ้าง (optional)
+    contractorBranchCode?: string;  // รหัสสาขาผู้รับจ้าง (optional) - สำหรับผู้รับจ้างที่เป็นนิติบุคคล
+    contractorBranchName?: string;  // ชื่อสาขาผู้รับจ้าง (optional)
     
     // ข้อมูลเอกสารและสถานที่
     contractNumber: string;         // เลขที่สัญญา

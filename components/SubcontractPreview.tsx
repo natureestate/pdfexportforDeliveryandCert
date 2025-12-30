@@ -90,13 +90,35 @@ const SubcontractPreview = forwardRef<HTMLDivElement, SubcontractPreviewProps>((
                 
                 {/* ผู้ว่าจ้าง - แบบกระชับ */}
                 <div className="mb-1 pl-2">
-                    <p className="font-medium">(1) ผู้ว่าจ้าง: {data.companyName || '............................'} {data.companyTaxId && <span className="font-normal text-gray-600">เลขผู้เสียภาษี: {data.companyTaxId}</span>}</p>
+                    <p className="font-medium">
+                        (1) ผู้ว่าจ้าง: {data.companyName || '............................'}
+                        {/* แสดงข้อมูลสาขาตามประกาศอธิบดีกรมสรรพากร (ฉบับที่ 200) */}
+                        {(data.companyBranchCode || data.companyBranchName) && (
+                            <span className="font-normal text-gray-600 ml-1">
+                                ({data.companyBranchCode === '00000' 
+                                    ? (data.companyBranchName || 'สำนักงานใหญ่')
+                                    : `${data.companyBranchName || 'สาขา'} สาขาที่ ${data.companyBranchCode || 'ไม่ระบุ'}`})
+                            </span>
+                        )}
+                        {data.companyTaxId && <span className="font-normal text-gray-600 ml-1">เลขผู้เสียภาษี: {data.companyTaxId}</span>}
+                    </p>
                     {data.companyAddress && <p className="text-gray-600 pl-4">ที่อยู่: {data.companyAddress} {data.companyPhone && <span>โทร: {data.companyPhone}</span>}</p>}
                 </div>
                 
                 {/* ผู้รับจ้าง - แบบกระชับ */}
                 <div className="mb-1 pl-2">
-                    <p className="font-medium">(2) ผู้รับจ้าง: {data.contractorName || '............................'} {data.contractorIdCard && <span className="font-normal text-gray-600">เลขประจำตัว: {data.contractorIdCard}</span>}</p>
+                    <p className="font-medium">
+                        (2) ผู้รับจ้าง: {data.contractorName || '............................'}
+                        {/* แสดงข้อมูลสาขาผู้รับจ้าง (สำหรับนิติบุคคล) */}
+                        {(data.contractorBranchCode || data.contractorBranchName) && (
+                            <span className="font-normal text-gray-600 ml-1">
+                                ({data.contractorBranchCode === '00000' 
+                                    ? (data.contractorBranchName || 'สำนักงานใหญ่')
+                                    : `${data.contractorBranchName || 'สาขา'} สาขาที่ ${data.contractorBranchCode || 'ไม่ระบุ'}`})
+                            </span>
+                        )}
+                        {data.contractorIdCard && <span className="font-normal text-gray-600 ml-1">เลขประจำตัว: {data.contractorIdCard}</span>}
+                    </p>
                     <p className="text-gray-600 pl-4">
                         {data.contractorPhone && <span>โทร: {data.contractorPhone} </span>}
                         {data.contractorAddress && <span>ที่อยู่: {data.contractorAddress}</span>}

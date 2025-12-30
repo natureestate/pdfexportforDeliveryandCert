@@ -54,6 +54,14 @@ const PurchaseOrderPreview = forwardRef<HTMLDivElement, PurchaseOrderPreviewProp
                 <div className="bg-slate-50 p-3 rounded-md">
                     <p className="font-semibold text-slate-600 text-base mb-1">ผู้สั่งซื้อ:</p>
                     <p className="font-bold text-slate-800">{data.companyName || 'N/A'}</p>
+                    {/* แสดงข้อมูลสาขาตามประกาศอธิบดีกรมสรรพากร (ฉบับที่ 200) */}
+                    {(data.companyBranchCode || data.companyBranchName) && (
+                        <p className="text-slate-600 text-xs font-medium">
+                            {data.companyBranchCode === '00000' 
+                                ? (data.companyBranchName || 'สำนักงานใหญ่')
+                                : `${data.companyBranchName || 'สาขา'} (สาขาที่ ${data.companyBranchCode || 'ไม่ระบุ'})`}
+                        </p>
+                    )}
                     <p className="text-slate-600 whitespace-pre-wrap text-xs">{data.companyAddress || 'N/A'}</p>
                     {data.companyPhone && <p className="text-slate-600 text-xs mt-1">โทร: {data.companyPhone}</p>}
                     {data.companyEmail && <p className="text-slate-600 text-xs">อีเมล: {data.companyEmail}</p>}
@@ -65,6 +73,14 @@ const PurchaseOrderPreview = forwardRef<HTMLDivElement, PurchaseOrderPreviewProp
                 <div className="bg-slate-50 p-3 rounded-md">
                     <p className="font-semibold text-slate-600 text-base mb-1">ผู้ขาย/ผู้จำหน่าย:</p>
                     <p className="font-bold text-slate-800">{data.supplierName || 'N/A'}</p>
+                    {/* แสดงข้อมูลสาขาผู้ขาย (สำหรับนิติบุคคล) */}
+                    {(data.supplierBranchCode || data.supplierBranchName) && (
+                        <p className="text-slate-600 text-xs font-medium">
+                            {data.supplierBranchCode === '00000' 
+                                ? (data.supplierBranchName || 'สำนักงานใหญ่')
+                                : `${data.supplierBranchName || 'สาขา'} (สาขาที่ ${data.supplierBranchCode || 'ไม่ระบุ'})`}
+                        </p>
+                    )}
                     <p className="text-slate-600 whitespace-pre-wrap text-xs">{data.supplierAddress || 'N/A'}</p>
                     {data.supplierPhone && <p className="text-slate-600 text-xs mt-1">โทร: {data.supplierPhone}</p>}
                     {data.supplierEmail && <p className="text-slate-600 text-xs">อีเมล: {data.supplierEmail}</p>}

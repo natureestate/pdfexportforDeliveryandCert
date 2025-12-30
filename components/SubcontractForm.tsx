@@ -172,6 +172,9 @@ const SubcontractForm: React.FC<SubcontractFormProps> = ({
             contractorPhone: contractor.phone,
             contractorIdCard: contractor.idCard || contractor.taxId || '',
             contractorAddress: contractor.address || '',
+            // ข้อมูลสาขา (สำหรับนิติบุคคล)
+            contractorBranchCode: contractor.branchCode || '',
+            contractorBranchName: contractor.branchName || '',
         }));
     };
     

@@ -228,6 +228,13 @@ const InvoiceForm: React.FC<InvoiceFormProps> = ({
                             if (customer.taxId) {
                                 handleDataChange('customerTaxId', customer.taxId);
                             }
+                            // ข้อมูลสาขา (สำหรับนิติบุคคล)
+                            if (customer.branchCode) {
+                                handleDataChange('customerBranchCode', customer.branchCode);
+                            }
+                            if (customer.branchName) {
+                                handleDataChange('customerBranchName', customer.branchName);
+                            }
                         }}
                         currentCustomer={{
                             customerName: data.customerName,
