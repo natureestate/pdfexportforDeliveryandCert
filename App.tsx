@@ -536,6 +536,7 @@ const AppContent: React.FC = () => {
             console.log('📝 [App] Syncing company data to forms:', currentCompany);
             
             // Sync ไปยัง DeliveryForm (ข้อมูลผู้ส่ง)
+            // รวมถึงข้อมูลสาขาตามประกาศอธิบดีกรมสรรพากร (ฉบับที่ 200)
             setDeliveryData(prev => ({
                 ...prev,
                 fromCompany: currentCompany.name,
@@ -543,9 +544,13 @@ const AppContent: React.FC = () => {
                 fromPhone: currentCompany.phone || '',
                 fromEmail: currentCompany.email || '',
                 fromWebsite: currentCompany.website || '',
+                fromTaxId: currentCompany.taxId || '',
+                fromBranchCode: currentCompany.branchCode || '00000',
+                fromBranchName: currentCompany.branchName || 'สำนักงานใหญ่',
             }));
 
             // Sync ไปยัง WarrantyForm (ข้อมูลบริษัท)
+            // รวมถึงข้อมูลสาขาตามประกาศอธิบดีกรมสรรพากร (ฉบับที่ 200)
             setWarrantyData(prev => ({
                 ...prev,
                 companyName: currentCompany.name,
@@ -553,6 +558,9 @@ const AppContent: React.FC = () => {
                 companyPhone: currentCompany.phone || '',
                 companyEmail: currentCompany.email || '',
                 companyWebsite: currentCompany.website || '',
+                companyTaxId: currentCompany.taxId || '',
+                companyBranchCode: currentCompany.branchCode || '00000',
+                companyBranchName: currentCompany.branchName || 'สำนักงานใหญ่',
             }));
 
             // Sync ไปยัง InvoiceForm (ข้อมูลบริษัทผู้ขาย)

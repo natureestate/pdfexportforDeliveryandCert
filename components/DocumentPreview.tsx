@@ -81,16 +81,36 @@ const DocumentPreview = forwardRef<HTMLDivElement, DocumentPreviewProps>(({ data
                 <div className="bg-slate-50 p-3 rounded-md">
                     <p className="font-semibold text-slate-600 text-base mb-1">{t('delivery.sender')}:</p>
                     <p className="font-bold text-slate-800">{data.fromCompany || 'N/A'}</p>
+                    {/* แสดงข้อมูลสาขาตามประกาศอธิบดีกรมสรรพากร (ฉบับที่ 200) */}
+                    {(data.fromBranchCode || data.fromBranchName) && (
+                        <p className="text-slate-600 text-xs font-medium">
+                            {data.fromBranchCode === '00000' 
+                                ? (data.fromBranchName || 'สำนักงานใหญ่')
+                                : `${data.fromBranchName || 'สาขา'} (สาขาที่ ${data.fromBranchCode || '00001'})`
+                            }
+                        </p>
+                    )}
                     <p className="text-slate-600 whitespace-pre-wrap text-xs">{data.fromAddress || 'N/A'}</p>
-                    {data.fromPhone && <p className="text-slate-600 text-xs mt-1">{t('company.phone')}: {data.fromPhone}</p>}
+                    {data.fromTaxId && <p className="text-slate-600 text-xs mt-1">{t('company.taxId')}: {data.fromTaxId}</p>}
+                    {data.fromPhone && <p className="text-slate-600 text-xs">{t('company.phone')}: {data.fromPhone}</p>}
                     {data.fromEmail && <p className="text-slate-600 text-xs">{t('company.email')}: {data.fromEmail}</p>}
                     {data.fromWebsite && <p className="text-slate-600 text-xs">{t('company.website')}: {data.fromWebsite}</p>}
                 </div>
                 <div className="bg-slate-50 p-3 rounded-md">
                     <p className="font-semibold text-slate-600 text-base mb-1">{t('delivery.receiver')}:</p>
                     <p className="font-bold text-slate-800">{data.toCompany || 'N/A'}</p>
+                    {/* แสดงข้อมูลสาขาผู้รับ (ถ้ามี) */}
+                    {(data.toBranchCode || data.toBranchName) && (
+                        <p className="text-slate-600 text-xs font-medium">
+                            {data.toBranchCode === '00000' 
+                                ? (data.toBranchName || 'สำนักงานใหญ่')
+                                : `${data.toBranchName || 'สาขา'} (สาขาที่ ${data.toBranchCode || '00001'})`
+                            }
+                        </p>
+                    )}
                     <p className="text-slate-600 whitespace-pre-wrap">{data.toAddress || 'N/A'}</p>
-                    {data.toEmail && <p className="text-slate-600 text-xs mt-1">{t('company.email')}: {data.toEmail}</p>}
+                    {data.toTaxId && <p className="text-slate-600 text-xs mt-1">{t('company.taxId')}: {data.toTaxId}</p>}
+                    {data.toEmail && <p className="text-slate-600 text-xs">{t('company.email')}: {data.toEmail}</p>}
                 </div>
             </section>
             

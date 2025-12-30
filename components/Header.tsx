@@ -370,6 +370,7 @@ const Header: React.FC = () => {
 
     /**
      * บันทึกข้อมูลบริษัท
+     * รวมถึงข้อมูลสาขาตามประกาศอธิบดีกรมสรรพากร (ฉบับที่ 200)
      */
     const handleSaveCompanyInfo = async (data: {
         name: string;
@@ -378,6 +379,8 @@ const Header: React.FC = () => {
         email?: string;
         website?: string;
         taxId?: string;
+        branchCode?: string;
+        branchName?: string;
     }) => {
         if (!currentCompany?.id) {
             throw new Error('ไม่พบข้อมูลบริษัท');
@@ -391,6 +394,8 @@ const Header: React.FC = () => {
                 email: data.email,
                 website: data.website,
                 taxId: data.taxId,
+                branchCode: data.branchCode || '00000',
+                branchName: data.branchName || 'สำนักงานใหญ่',
             });
             console.log('✅ [Header] บันทึกข้อมูลบริษัทสำเร็จ');
             
@@ -1590,6 +1595,8 @@ const Header: React.FC = () => {
                     companyEmail={currentCompany.email}
                     companyWebsite={currentCompany.website}
                     companyTaxId={currentCompany.taxId}
+                    companyBranchCode={currentCompany.branchCode}
+                    companyBranchName={currentCompany.branchName}
                     onSave={handleSaveCompanyInfo}
                 />
             )}

@@ -439,6 +439,12 @@ export interface Company {
     email?: string;            // อีเมลบริษัท (optional)
     website?: string;         // เว็บไซต์บริษัท (optional)
     taxId?: string;            // เลขประจำตัวผู้เสียภาษี (optional)
+    
+    // ข้อมูลสาขาตามประกาศอธิบดีกรมสรรพากร (ฉบับที่ 200)
+    // Ref: https://www.rd.go.th/27983.html
+    branchCode?: string;       // รหัสสาขา 5 หลัก (เช่น "00000" = สำนักงานใหญ่, "00001" = สาขาที่ 1)
+    branchName?: string;       // ชื่อสาขา (เช่น "สำนักงานใหญ่", "สาขาลาดพร้าว")
+    
     userId: string;            // Admin คนแรก (คนที่สร้างบริษัท)
     logoUrl?: string | null;   // โลโก้เอกสาร (สำหรับพิมพ์ใน PDF)
     logoType?: LogoType;       // ประเภทโลโก้เอกสาร
@@ -463,9 +469,15 @@ export interface DeliveryNoteData extends DocumentVerificationFields {
     fromPhone?: string;           // เบอร์โทรศัพท์ผู้ส่ง (optional)
     fromEmail?: string;            // อีเมลผู้ส่ง (optional)
     fromWebsite?: string;         // เว็บไซต์ผู้ส่ง (optional)
+    fromTaxId?: string;            // เลขประจำตัวผู้เสียภาษีผู้ส่ง (optional)
+    fromBranchCode?: string;       // รหัสสาขาผู้ส่ง (optional) - ตามประกาศอธิบดีกรมสรรพากร ฉบับที่ 200
+    fromBranchName?: string;       // ชื่อสาขาผู้ส่ง (optional)
     toCompany: string;
     toAddress: string;
     toEmail?: string;              // อีเมลผู้รับ (optional)
+    toTaxId?: string;              // เลขประจำตัวผู้เสียภาษีผู้รับ (optional)
+    toBranchCode?: string;         // รหัสสาขาผู้รับ (optional)
+    toBranchName?: string;         // ชื่อสาขาผู้รับ (optional)
     docNumber: string;
     date: Date | null;
     project: string;
@@ -485,6 +497,9 @@ export interface WarrantyData extends DocumentVerificationFields {
     companyPhone: string;          // เบอร์โทรบริษัท
     companyEmail?: string;         // อีเมลบริษัท (optional)
     companyWebsite?: string;      // เว็บไซต์บริษัท (optional)
+    companyTaxId?: string;         // เลขประจำตัวผู้เสียภาษี (optional)
+    companyBranchCode?: string;    // รหัสสาขา (optional) - ตามประกาศอธิบดีกรมสรรพากร ฉบับที่ 200
+    companyBranchName?: string;    // ชื่อสาขา (optional)
     
     // ข้อมูลลูกค้า/โครงการ
     projectName: string;           // ชื่อโครงการ
