@@ -451,11 +451,8 @@ const Header: React.FC = () => {
                             )}
                             <div className="min-w-0 flex-1">
                                 <h1 className="text-lg md:text-2xl font-bold text-slate-800 dark:text-slate-100 truncate">
-                                {t('app.title')}
+                                {currentCompany?.name || t('app.title')}
                             </h1>
-                                <p className="text-slate-500 dark:text-slate-400 text-xs md:text-sm mt-0.5 hidden sm:block truncate">
-                                {t('app.subtitle')}
-                            </p>
                         </div>
                     </div>
 

@@ -492,6 +492,266 @@ const tabIconMap: Record<string, React.ComponentType<{ className?: string }>> = 
     Calendar,
 };
 
+/**
+ * useScrollFadeIndicator Hook
+ * Hook สำหรับตรวจสอบสถานะการ scroll และควบคุม fade indicator
+ * - ซ่อน fade ซ้ายเมื่อ scroll อยู่ที่ตำแหน่งเริ่มต้น (ซ้ายสุด)
+ * - ซ่อน fade ขวาเมื่อ scroll ไปจนสุดขอบขวา
+ * - ไม่แสดง fade เลยถ้า content ไม่ยาวพอที่จะ scroll ได้
+ */
+const useScrollFadeIndicator = (deps: React.DependencyList = []) => {
+    const scrollContainerRef = useRef<HTMLDivElement>(null);
+    const [showLeftFade, setShowLeftFade] = useState(false);
+    const [showRightFade, setShowRightFade] = useState(false);
+    const [canScroll, setCanScroll] = useState(false);
+
+    /**
+     * ตรวจสอบสถานะการ scroll และอัปเดต fade indicator
+     */
+    const checkScrollPosition = useCallback(() => {
+        const container = scrollContainerRef.current;
+        if (!container) return;
+
+        const { scrollLeft, scrollWidth, clientWidth } = container;
+        const threshold = 2; // ค่า tolerance สำหรับการตรวจสอบ (pixels)
+        
+        // ตรวจสอบว่า content ยาวพอที่จะ scroll ได้หรือไม่
+        const hasScroll = scrollWidth > clientWidth + threshold;
+        setCanScroll(hasScroll);
+
+        if (!hasScroll) {
+            // ถ้า content ไม่ยาวพอ ซ่อน fade ทั้งหมด
+            setShowLeftFade(false);
+            setShowRightFade(false);
+            return;
+        }
+
+        // แสดง fade ซ้ายเมื่อ scroll ไปจากจุดเริ่มต้น
+        setShowLeftFade(scrollLeft > threshold);
+        
+        // แสดง fade ขวาเมื่อยังไม่ถึงจุดสิ้นสุด
+        const isAtEnd = scrollLeft >= scrollWidth - clientWidth - threshold;
+        setShowRightFade(!isAtEnd);
+    }, []);
+
+    // ติดตาม scroll events
+    useEffect(() => {
+        const container = scrollContainerRef.current;
+        if (!container) return;
+
+        // ตรวจสอบตำแหน่งเริ่มต้น
+        checkScrollPosition();
+
+        // เพิ่ม event listener
+        container.addEventListener('scroll', checkScrollPosition, { passive: true });
+        
+        // ตรวจสอบอีกครั้งเมื่อ resize
+        window.addEventListener('resize', checkScrollPosition, { passive: true });
+
+        return () => {
+            container.removeEventListener('scroll', checkScrollPosition);
+            window.removeEventListener('resize', checkScrollPosition);
+        };
+    }, [checkScrollPosition]);
+
+    // ตรวจสอบอีกครั้งเมื่อ dependencies เปลี่ยน
+    useEffect(() => {
+        // รอให้ render เสร็จก่อน แล้วเช็คซ้ำหลายครั้งเพื่อให้แน่ใจว่า DOM render เสร็จ
+        const timeout1 = setTimeout(checkScrollPosition, 50);
+        const timeout2 = setTimeout(checkScrollPosition, 200);
+        const timeout3 = setTimeout(checkScrollPosition, 500);
+        return () => {
+            clearTimeout(timeout1);
+            clearTimeout(timeout2);
+            clearTimeout(timeout3);
+        };
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+    }, [...deps, checkScrollPosition]);
+
+    return { scrollContainerRef, showLeftFade, showRightFade, canScroll };
+};
+
+/**
+ * ViewModeTabSelector Component
+ * Tab Menu ด้านบนสำหรับเลือก View Mode พร้อม Fade Indicator ที่ซ่อนเมื่อ scroll ไปจนสุดขอบ
+ */
+interface ViewModeTabSelectorProps {
+    visibleTabs: TabConfig[];
+    viewMode: string;
+    setViewMode: (mode: ViewMode) => void;
+    tabIconMap: Record<string, React.ComponentType<{ className?: string }>>;
+}
+
+const ViewModeTabSelector: React.FC<ViewModeTabSelectorProps> = ({
+    visibleTabs,
+    viewMode,
+    setViewMode,
+    tabIconMap,
+}) => {
+    const { scrollContainerRef, showLeftFade, showRightFade, canScroll } = useScrollFadeIndicator([visibleTabs]);
+
+    // คำนวณ CSS mask สำหรับ fade effect - ใช้ mask แทน overlay gradient
+    // mask จะทำให้ content fade ออกไปที่ขอบแทนที่จะใช้ gradient overlay
+    const getMaskStyle = (): React.CSSProperties => {
+        if (!canScroll) return {};
+        
+        // สร้าง mask gradient ตามสถานะ scroll
+        if (showLeftFade && showRightFade) {
+            // ทั้งซ้ายและขวา fade
+            return {
+                maskImage: 'linear-gradient(to right, transparent, black 24px, black calc(100% - 24px), transparent)',
+                WebkitMaskImage: 'linear-gradient(to right, transparent, black 24px, black calc(100% - 24px), transparent)',
+            };
+        } else if (showLeftFade) {
+            // เฉพาะซ้าย fade
+            return {
+                maskImage: 'linear-gradient(to right, transparent, black 24px)',
+                WebkitMaskImage: 'linear-gradient(to right, transparent, black 24px)',
+            };
+        } else if (showRightFade) {
+            // เฉพาะขวา fade
+            return {
+                maskImage: 'linear-gradient(to right, black calc(100% - 24px), transparent)',
+                WebkitMaskImage: 'linear-gradient(to right, black calc(100% - 24px), transparent)',
+            };
+        }
+        return {};
+    };
+
+    return (
+        <div className="mb-4 sm:mb-6 flex justify-center">
+            <div className="relative w-full sm:w-auto">
+                <div 
+                    ref={scrollContainerRef}
+                    className="overflow-x-auto px-1 sm:mx-0 sm:px-0 scrollbar-hide"
+                    style={getMaskStyle()}
+                >
+                    <div className="inline-flex rounded-md shadow-sm min-w-max" role="group">
+                        {/* Dynamic Tab Rendering - แสดง tabs ตามสิทธิ์ของ user */}
+                        {visibleTabs.map((tab, index) => {
+                            const TabIcon = tabIconMap[tab.icon];
+                            const isFirst = index === 0;
+                            const isLast = index === visibleTabs.length - 1;
+                            const isActive = viewMode === tab.id;
+                            
+                            return (
+                                <button
+                                    key={tab.id}
+                                    onClick={() => setViewMode(tab.id as ViewMode)}
+                                    className={`px-3 sm:px-4 py-2 text-xs sm:text-sm font-medium flex items-center justify-center gap-1.5 ${
+                                        isFirst ? 'rounded-l-lg border' : isLast ? 'rounded-r-lg border' : 'border-t border-b'
+                                    } ${
+                                        isActive
+                                            ? 'bg-indigo-600 text-white border-indigo-600'
+                                            : 'bg-white dark:bg-slate-800 text-gray-700 dark:text-gray-200 border-gray-300 dark:border-slate-600 hover:bg-gray-50 dark:hover:bg-slate-700'
+                                    }`}
+                                >
+                                    {TabIcon && <TabIcon className="w-4 h-4" />}
+                                    <span className="hidden sm:inline">{tab.label}</span>
+                                    <span className="sm:hidden">{tab.shortLabel}</span>
+                                </button>
+                            );
+                        })}
+                    </div>
+                </div>
+            </div>
+        </div>
+    );
+};
+
+/**
+ * DocumentTypeTabMenu Component
+ * Tab Menu สำหรับเลือกประเภทเอกสารพร้อม Fade Indicator ที่ซ่อนเมื่อ scroll ไปจนสุดขอบ
+ */
+interface DocumentTypeTabMenuProps {
+    visibleMenus: MenuItemConfig[];
+    activeTab: DocType;
+    setActiveTab: (tab: DocType) => void;
+    iconMap: Record<string, React.ComponentType<{ className?: string }>>;
+    isAdmin?: boolean;
+    onSettingsClick?: () => void;
+    bgColor?: 'white' | 'slate';
+    showShortLabel?: boolean;
+}
+
+const DocumentTypeTabMenu: React.FC<DocumentTypeTabMenuProps> = ({
+    visibleMenus,
+    activeTab,
+    setActiveTab,
+    iconMap,
+    isAdmin = false,
+    onSettingsClick,
+    bgColor = 'white',
+    showShortLabel = false,
+}) => {
+    const { scrollContainerRef, showLeftFade, showRightFade, canScroll } = useScrollFadeIndicator([visibleMenus]);
+
+    // คำนวณ CSS mask สำหรับ fade effect - ใช้ mask แทน overlay gradient
+    const getMaskStyle = (): React.CSSProperties => {
+        if (!canScroll) return {};
+        
+        // สร้าง mask gradient ตามสถานะ scroll
+        if (showLeftFade && showRightFade) {
+            return {
+                maskImage: 'linear-gradient(to right, transparent, black 24px, black calc(100% - 24px), transparent)',
+                WebkitMaskImage: 'linear-gradient(to right, transparent, black 24px, black calc(100% - 24px), transparent)',
+            };
+        } else if (showLeftFade) {
+            return {
+                maskImage: 'linear-gradient(to right, transparent, black 24px)',
+                WebkitMaskImage: 'linear-gradient(to right, transparent, black 24px)',
+            };
+        } else if (showRightFade) {
+            return {
+                maskImage: 'linear-gradient(to right, black calc(100% - 24px), transparent)',
+                WebkitMaskImage: 'linear-gradient(to right, black calc(100% - 24px), transparent)',
+            };
+        }
+        return {};
+    };
+
+    return (
+        <div className="relative border-b border-gray-200 dark:border-slate-600">
+            {/* Tab Menu */}
+            <div 
+                ref={scrollContainerRef}
+                className="overflow-x-auto sm:mx-0 px-1 sm:px-0 tab-menu-scroll overscroll-x-contain touch-pan-x scrollbar-hide"
+                style={getMaskStyle()}
+            >
+                <nav className="-mb-px flex space-x-1 sm:space-x-2 min-w-max" aria-label="Tabs">
+                    {/* Dynamic Menu Rendering - แสดงเมนูตามการตั้งค่า */}
+                    {visibleMenus.map((menu) => {
+                        const IconComponent = iconMap[menu.icon];
+                        return (
+                            <button
+                                key={menu.id}
+                                onClick={() => setActiveTab(menu.id as DocType)}
+                                className={`${activeTab === menu.id ? 'border-indigo-500 text-indigo-600 dark:text-indigo-400 bg-indigo-50 dark:bg-indigo-900/30' : 'border-transparent text-gray-500 dark:text-gray-400 hover:text-gray-700 dark:hover:text-gray-200 hover:border-gray-300'} whitespace-nowrap py-2.5 sm:py-3 px-3 sm:px-4 border-b-2 font-medium text-xs sm:text-sm transition-all flex-shrink-0 rounded-t-lg flex items-center gap-1.5`}
+                            >
+                                {IconComponent && <IconComponent className="w-4 h-4" />}
+                                <span className={showShortLabel ? 'sm:hidden' : 'hidden sm:inline'}>{showShortLabel ? (menu.shortLabel || menu.label) : menu.label}</span>
+                                {!showShortLabel && <span className="hidden sm:inline">{menu.label}</span>}
+                                {showShortLabel && <span className="hidden sm:inline">{menu.label}</span>}
+                            </button>
+                        );
+                    })}
+                    
+                    {/* ปุ่มตั้งค่าเมนู - แสดงเฉพาะ Admin */}
+                    {isAdmin && onSettingsClick && (
+                        <button
+                            onClick={onSettingsClick}
+                            className="whitespace-nowrap py-2.5 sm:py-3 px-3 sm:px-4 border-b-2 border-transparent text-gray-400 dark:text-gray-500 hover:text-gray-600 dark:hover:text-gray-300 hover:bg-gray-50 dark:hover:bg-slate-700 font-medium text-xs sm:text-sm transition-all flex-shrink-0 rounded-t-lg flex items-center gap-1.5"
+                            title="ตั้งค่าเมนู"
+                        >
+                            <Settings className="w-4 h-4" />
+                        </button>
+                    )}
+                </nav>
+            </div>
+        </div>
+    );
+};
+
 const AppContent: React.FC = () => {
     const { t } = useTranslation(); // ใช้ i18n translations
     const { currentCompany } = useCompany(); // ใช้ CompanyContext
@@ -1131,45 +1391,12 @@ const AppContent: React.FC = () => {
             <Header />
             <main className="p-3 sm:p-4 md:p-8 max-w-7xl mx-auto">
                 {/* View Mode Selector - Dynamic Tab Rendering ตามสิทธิ์ */}
-                <div className="mb-4 sm:mb-6 flex justify-center">
-                    <div className="relative w-full sm:w-auto">
-                        {/* Fade indicator ด้านซ้าย (mobile) */}
-                        <div className="absolute left-0 top-0 bottom-0 w-4 bg-gradient-to-r from-slate-100 dark:from-slate-900 to-transparent z-10 pointer-events-none sm:hidden"></div>
-                        
-                        <div className="overflow-x-auto -mx-3 px-3 sm:mx-0 sm:px-0 scrollbar-hide">
-                            <div className="inline-flex rounded-md shadow-sm min-w-max" role="group">
-                                {/* Dynamic Tab Rendering - แสดง tabs ตามสิทธิ์ของ user */}
-                                {visibleTabs.map((tab, index) => {
-                                    const TabIcon = tabIconMap[tab.icon];
-                                    const isFirst = index === 0;
-                                    const isLast = index === visibleTabs.length - 1;
-                                    const isActive = viewMode === tab.id;
-                                    
-                                    return (
-                                        <button
-                                            key={tab.id}
-                                            onClick={() => setViewMode(tab.id as ViewMode)}
-                                            className={`px-3 sm:px-4 py-2 text-xs sm:text-sm font-medium flex items-center justify-center gap-1.5 ${
-                                                isFirst ? 'rounded-l-lg border' : isLast ? 'rounded-r-lg border' : 'border-t border-b'
-                                            } ${
-                                                isActive
-                                                    ? 'bg-indigo-600 text-white border-indigo-600'
-                                                    : 'bg-white dark:bg-slate-800 text-gray-700 dark:text-gray-200 border-gray-300 dark:border-slate-600 hover:bg-gray-50 dark:hover:bg-slate-700'
-                                            }`}
-                                        >
-                                            {TabIcon && <TabIcon className="w-4 h-4" />}
-                                            <span className="hidden sm:inline">{tab.label}</span>
-                                            <span className="sm:hidden">{tab.shortLabel}</span>
-                                        </button>
-                                    );
-                                })}
-                            </div>
-                        </div>
-                        
-                        {/* Fade indicator ด้านขวา (mobile) */}
-                        <div className="absolute right-0 top-0 bottom-0 w-4 bg-gradient-to-l from-slate-100 dark:from-slate-900 to-transparent z-10 pointer-events-none sm:hidden"></div>
-                    </div>
-                </div>
+                <ViewModeTabSelector 
+                    visibleTabs={visibleTabs}
+                    viewMode={viewMode}
+                    setViewMode={setViewMode}
+                    tabIconMap={tabIconMap}
+                />
 
                 {viewMode === 'dashboard' ? (
                     // Dashboard View
@@ -1222,45 +1449,16 @@ const AppContent: React.FC = () => {
                                 </div>
                             )}
                             
-{/* Tab Menu Container พร้อม Fade Indicator */}
-                                            <div className="relative border-b border-gray-200 dark:border-slate-600">
-                                                {/* Fade indicator ด้านซ้าย */}
-                                                <div className="absolute left-0 top-0 bottom-0 w-6 bg-gradient-to-r from-white dark:from-slate-800 to-transparent z-10 pointer-events-none sm:hidden"></div>
-                                                
-                                                {/* Tab Menu */}
-                                                <div className="overflow-x-auto -mx-4 sm:mx-0 px-4 sm:px-0 tab-menu-scroll overscroll-x-contain touch-pan-x">
-                                                    <nav className="-mb-px flex space-x-1 sm:space-x-2 min-w-max" aria-label="Tabs">
-                                                        {/* Dynamic Menu Rendering - แสดงเมนูตามการตั้งค่า */}
-                                                        {visibleMenus.map((menu) => {
-                                                            const IconComponent = iconMap[menu.icon];
-                                                            return (
-                                                                <button
-                                                                    key={menu.id}
-                                                                    onClick={() => setActiveTab(menu.id as DocType)}
-                                                                    className={`${activeTab === menu.id ? 'border-indigo-500 text-indigo-600 dark:text-indigo-400 bg-indigo-50 dark:bg-indigo-900/30' : 'border-transparent text-gray-500 dark:text-gray-400 hover:text-gray-700 dark:hover:text-gray-200 hover:border-gray-300'} whitespace-nowrap py-2.5 sm:py-3 px-3 sm:px-4 border-b-2 font-medium text-xs sm:text-sm transition-all flex-shrink-0 rounded-t-lg flex items-center gap-1.5`}
-                                                                >
-                                                                    {IconComponent && <IconComponent className="w-4 h-4" />}
-                                                                    <span className="hidden sm:inline">{menu.label}</span>
-                                                                </button>
-                                                            );
-                                                        })}
-                                                        
-                                                        {/* ปุ่มตั้งค่าเมนู - แสดงเฉพาะ Admin */}
-                                                        {isAdmin && (
-                                                            <button
-                                                                onClick={() => setShowMenuSettings(true)}
-                                                                className="whitespace-nowrap py-2.5 sm:py-3 px-3 sm:px-4 border-b-2 border-transparent text-gray-400 dark:text-gray-500 hover:text-gray-600 dark:hover:text-gray-300 hover:bg-gray-50 dark:hover:bg-slate-700 font-medium text-xs sm:text-sm transition-all flex-shrink-0 rounded-t-lg flex items-center gap-1.5"
-                                                                title="ตั้งค่าเมนู"
-                                                            >
-                                                                <Settings className="w-4 h-4" />
-                                                            </button>
-                                                        )}
-                                                    </nav>
-                                                </div>
-                                                
-                                                {/* Fade indicator ด้านขวา */}
-                                                <div className="absolute right-0 top-0 bottom-0 w-8 bg-gradient-to-l from-white to-transparent z-10 pointer-events-none sm:hidden"></div>
-                                            </div>
+{/* Tab Menu Container พร้อม Fade Indicator - ใช้ DocumentTypeTabMenu component */}
+                                            <DocumentTypeTabMenu
+                                                visibleMenus={visibleMenus}
+                                                activeTab={activeTab}
+                                                setActiveTab={setActiveTab}
+                                                iconMap={iconMap}
+                                                isAdmin={isAdmin}
+                                                onSettingsClick={() => setShowMenuSettings(true)}
+                                                bgColor="white"
+                                            />
                                             
                                             {/* Menu Settings Modal */}
                                             <MenuSettingsModal
@@ -1542,34 +1740,16 @@ const AppContent: React.FC = () => {
                 ) : viewMode === 'history' ? (
                     // History View
                     <div className="bg-white dark:bg-slate-800 p-3 sm:p-4 md:p-6 rounded-lg shadow-lg transition-colors">
-                        {/* Tab Menu สำหรับเลือกประเภทเอกสารใน History View */}
-                        <div className="relative border-b border-gray-200 dark:border-slate-600 mb-4">
-                            {/* Fade indicator ด้านซ้าย */}
-                            <div className="absolute left-0 top-0 bottom-0 w-6 bg-gradient-to-r from-white dark:from-slate-800 to-transparent z-10 pointer-events-none sm:hidden"></div>
-                            
-                            {/* Tab Menu */}
-                            <div className="overflow-x-auto -mx-3 sm:mx-0 px-3 sm:px-0 tab-menu-scroll overscroll-x-contain touch-pan-x">
-                                <nav className="-mb-px flex space-x-1 sm:space-x-2 min-w-max" aria-label="Document Type Tabs">
-                                    {/* Dynamic Menu Rendering - แสดงเมนูตามการตั้งค่า */}
-                                    {visibleMenus.map((menu) => {
-                                        const IconComponent = iconMap[menu.icon];
-                                        return (
-                                            <button
-                                                key={menu.id}
-                                                onClick={() => setActiveTab(menu.id as DocType)}
-                                                className={`${activeTab === menu.id ? 'border-indigo-500 text-indigo-600 dark:text-indigo-400 bg-indigo-50 dark:bg-indigo-900/30' : 'border-transparent text-gray-500 dark:text-gray-400 hover:text-gray-700 dark:hover:text-gray-200 hover:border-gray-300'} whitespace-nowrap py-2 sm:py-2.5 px-2.5 sm:px-3 border-b-2 font-medium text-xs sm:text-sm transition-all flex-shrink-0 rounded-t-lg flex items-center gap-1.5`}
-                                            >
-                                                {IconComponent && <IconComponent className="w-3.5 h-3.5 sm:w-4 sm:h-4" />}
-                                                <span className="hidden sm:inline">{menu.label}</span>
-                                                <span className="sm:hidden">{menu.shortLabel || menu.label}</span>
-                                            </button>
-                                        );
-                                    })}
-                                </nav>
-                            </div>
-                            
-                            {/* Fade indicator ด้านขวา */}
-                            <div className="absolute right-0 top-0 bottom-0 w-8 bg-gradient-to-l from-white dark:from-slate-800 to-transparent z-10 pointer-events-none sm:hidden"></div>
+                        {/* Tab Menu สำหรับเลือกประเภทเอกสารใน History View - ใช้ DocumentTypeTabMenu component */}
+                        <div className="mb-4">
+                            <DocumentTypeTabMenu
+                                visibleMenus={visibleMenus}
+                                activeTab={activeTab}
+                                setActiveTab={setActiveTab}
+                                iconMap={iconMap}
+                                bgColor="white"
+                                showShortLabel={true}
+                            />
                         </div>
                         
                         <HistoryList 
