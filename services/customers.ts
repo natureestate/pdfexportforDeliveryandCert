@@ -66,6 +66,22 @@ export interface Customer {
 }
 
 /**
+ * ลบฟิลด์ที่มีค่า undefined ออกจาก object (สำหรับ setDoc)
+ * Firebase ไม่ยอมรับค่า undefined ใน setDoc() และ updateDoc()
+ * @param obj - object ที่ต้องการลบฟิลด์ undefined
+ * @returns object ที่ไม่มีฟิลด์ undefined
+ */
+const cleanUndefinedFields = <T extends Record<string, unknown>>(obj: T): T => {
+    const result = {} as T;
+    for (const key in obj) {
+        if (obj[key] !== undefined) {
+            result[key] = obj[key];
+        }
+    }
+    return result;
+};
+
+/**
  * บันทึกลูกค้าใหม่
  */
 export const saveCustomer = async (
@@ -83,8 +99,11 @@ export const saveCustomer = async (
         const docId = `customer_${Date.now()}_${customer.customerName.replace(/\s+/g, '_').toLowerCase()}`;
         const docRef = doc(db, CUSTOMERS_COLLECTION, docId);
 
+        // ลบฟิลด์ที่มีค่า undefined ออก เพราะ Firebase ไม่ยอมรับค่า undefined
+        const cleanedCustomer = cleanUndefinedFields(customer as Record<string, unknown>);
+
         await setDoc(docRef, {
-            ...customer,
+            ...cleanedCustomer,
             userId: currentUser.uid,
             companyId: companyId || customer.companyId,
             usageCount: 0, // เริ่มต้นที่ 0
@@ -150,6 +169,8 @@ export const getCustomers = async (companyId: string): Promise<Customer[]> => {
                 projectName: data.projectName,
                 houseNumber: data.houseNumber,
                 taxId: data.taxId,
+                branchCode: data.branchCode,
+                branchName: data.branchName,
                 tags: data.tags || [],
                 notes: data.notes,
                 lastUsedAt: data.lastUsedAt?.toDate(),

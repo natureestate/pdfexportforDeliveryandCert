@@ -66,6 +66,22 @@ export interface Contractor {
 }
 
 /**
+ * ลบฟิลด์ที่มีค่า undefined ออกจาก object
+ * Firebase ไม่ยอมรับค่า undefined ใน setDoc() และ updateDoc()
+ * @param obj - object ที่ต้องการลบฟิลด์ undefined
+ * @returns object ที่ไม่มีฟิลด์ undefined
+ */
+const cleanUndefinedFields = <T extends Record<string, unknown>>(obj: T): T => {
+    const result = {} as T;
+    for (const key in obj) {
+        if (obj[key] !== undefined) {
+            result[key] = obj[key];
+        }
+    }
+    return result;
+};
+
+/**
  * บันทึกช่างใหม่
  */
 export const saveContractor = async (
@@ -83,8 +99,11 @@ export const saveContractor = async (
         const docId = `contractor_${Date.now()}_${contractor.contractorName.replace(/\s+/g, '_').toLowerCase()}`;
         const docRef = doc(db, CONTRACTORS_COLLECTION, docId);
 
+        // ลบฟิลด์ที่มีค่า undefined ออก เพราะ Firebase ไม่ยอมรับค่า undefined
+        const cleanedContractor = cleanUndefinedFields(contractor as Record<string, unknown>);
+
         await setDoc(docRef, {
-            ...contractor,
+            ...cleanedContractor,
             userId: currentUser.uid,
             companyId: companyId || contractor.companyId,
             usageCount: 0, // เริ่มต้นที่ 0
@@ -149,6 +168,8 @@ export const getContractors = async (companyId: string): Promise<Contractor[]> =
                 postalCode: data.postalCode,
                 idCard: data.idCard,
                 taxId: data.taxId,
+                branchCode: data.branchCode,
+                branchName: data.branchName,
                 specialties: data.specialties || [],
                 tags: data.tags || [],
                 notes: data.notes,
@@ -200,8 +221,12 @@ export const updateContractor = async (
 ): Promise<void> => {
     try {
         const docRef = doc(db, CONTRACTORS_COLLECTION, id);
+        
+        // ลบฟิลด์ที่มีค่า undefined ออก เพราะ Firebase ไม่ยอมรับค่า undefined
+        const cleanedUpdates = cleanUndefinedFields(updates as Record<string, unknown>);
+        
         await updateDoc(docRef, {
-            ...updates,
+            ...cleanedUpdates,
             updatedAt: Timestamp.now(),
         });
         
