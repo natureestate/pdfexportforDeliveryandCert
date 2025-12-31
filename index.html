@@ -2,7 +2,7 @@
 <html lang="th">
   <head>
     <meta charset="UTF-8" />
-    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no" />
     <meta name="description" content="ระบบสร้างและจัดการเอกสารใบส่งมอบงานและใบรับประกันสินค้า" />
     <meta name="theme-color" content="#4f46e5" />
     <meta name="apple-mobile-web-app-capable" content="yes" />
@@ -121,6 +121,40 @@
         overscroll-behavior-y: none;
         touch-action: pan-x;
         -webkit-overflow-scrolling: touch;
+      }
+
+      /* ป้องกัน auto-zoom เมื่อ focus input ใน iOS/Android */
+      /* กำหนด font-size อย่างน้อย 16px เพื่อไม่ให้ browser zoom อัตโนมัติ */
+      @media screen and (max-width: 768px) {
+        input[type="text"],
+        input[type="email"],
+        input[type="tel"],
+        input[type="number"],
+        input[type="password"],
+        input[type="search"],
+        input[type="url"],
+        input[type="date"],
+        input[type="datetime-local"],
+        textarea,
+        select {
+          font-size: 16px !important;
+          /* ป้องกัน iOS zoom */
+          transform-origin: left top;
+        }
+      }
+
+      /* ป้องกัน double-tap zoom ทั้งหน้า */
+      * {
+        touch-action: manipulation;
+      }
+
+      /* ซ่อน scrollbar แต่ยังคง scroll ได้ */
+      .scrollbar-hide {
+        -ms-overflow-style: none;
+        scrollbar-width: none;
+      }
+      .scrollbar-hide::-webkit-scrollbar {
+        display: none;
       }
     </style>
   <script type="importmap">
