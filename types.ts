@@ -1367,4 +1367,9 @@ export interface SubcontractData extends DocumentVerificationFields {
     // ข้อมูลเพิ่มเติม
     notes?: string;                 // หมายเหตุเพิ่มเติม (optional)
     issuedBy?: string;              // ผู้ออกเอกสาร (optional)
+    
+    // ข้อมูลโครงการลูกค้าปลายทาง (End Customer Project)
+    hasEndCustomerProject?: boolean;           // มีโครงการลูกค้าปลายทางหรือไม่
+    endCustomerProject?: EndCustomerProject;   // ข้อมูลโครงการลูกค้าปลายทาง
+    showEndCustomerInPdf?: boolean;            // แสดงข้อมูลโครงการลูกค้าปลายทางใน PDF หรือไม่
 }

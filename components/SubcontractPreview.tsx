@@ -6,6 +6,7 @@
 import React, { forwardRef, useMemo } from 'react';
 import { SubcontractData } from '../types';
 import QRCodeFooter from './QRCodeFooter';
+import EndCustomerProjectPreview from './EndCustomerProjectPreview';
 import { getDefaultLogoUrl } from '../services/logoStorage';
 
 interface SubcontractPreviewProps {
@@ -138,6 +139,13 @@ const SubcontractPreview = forwardRef<HTMLDivElement, SubcontractPreviewProps>((
                     <p className="mb-1">ผู้ว่าจ้างตกลงจ้างและผู้รับจ้างตกลงรับทำงาน {data.scopeOfWork || '.............................................................................................'}</p>
                     <p className="mb-1">ณ สถานที่ก่อสร้าง (โครงการ/บ้านลูกค้า): <strong>{data.projectName || '...................................'}</strong></p>
                     {data.projectLocation && <p className="mb-1">ที่อยู่: {data.projectLocation}</p>}
+                    
+                    {/* แสดงข้อมูล End Customer ถ้ามีและเลือกให้แสดง */}
+                    <EndCustomerProjectPreview
+                        hasEndCustomerProject={data.hasEndCustomerProject}
+                        endCustomerProject={data.endCustomerProject}
+                        showEndCustomerInPdf={data.showEndCustomerInPdf}
+                    />
                     
                     {/* ตารางรายการงาน */}
                     {data.items.length > 0 && (

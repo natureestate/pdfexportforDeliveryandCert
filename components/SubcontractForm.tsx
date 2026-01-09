@@ -3,12 +3,14 @@
  * ฟอร์มสัญญาจ้างเหมาช่วง (Sub-contractor Agreement)
  */
 import React, { useRef, useState, useEffect } from 'react';
-import { SubcontractData, SubcontractWorkItem, SubcontractPaymentMilestone, LogoType } from '../types';
+import { SubcontractData, SubcontractWorkItem, SubcontractPaymentMilestone, LogoType, EndCustomerProject } from '../types';
 import { formatDateForInput } from '../utils/dateUtils';
 import CustomerSelector from './CustomerSelector';
 import ContractorSelector from './ContractorSelector';
+import EndCustomerSelector from './EndCustomerSelector';
 import { Customer } from '../services/customers';
 import { Contractor } from '../services/contractors';
+import { EndCustomer } from '../services/endCustomers';
 import { generateDocumentNumber, DocumentType } from '../services/documentNumber';
 import { useCompany } from '../contexts/CompanyContext';
 import { numberToThaiText } from '../utils/numberToThaiText';
@@ -51,6 +53,10 @@ const SubcontractForm: React.FC<SubcontractFormProps> = ({
     const [itemToRemove, setItemToRemove] = useState<number | null>(null);
     const [milestoneToRemove, setMilestoneToRemove] = useState<number | null>(null);
     const hasSyncedCompanyRef = useRef<string | undefined>(undefined);
+    
+    // State สำหรับเก็บ Customer ID ที่เลือก (ใช้สำหรับ End Customer)
+    const [selectedCustomerId, setSelectedCustomerId] = useState<string | undefined>(undefined);
+    const [selectedCustomerName, setSelectedCustomerName] = useState<string | undefined>(undefined);
 
     // Handler สำหรับเปลี่ยนค่าใน data
     const handleDataChange = <K extends keyof SubcontractData,>(key: K, value: SubcontractData[K]) => {
@@ -180,10 +186,32 @@ const SubcontractForm: React.FC<SubcontractFormProps> = ({
     
     // Handler สำหรับเลือกลูกค้าจากฐานข้อมูล
     const handleSelectCustomer = (customer: Customer) => {
+        // เก็บ Customer ID และชื่อสำหรับ End Customer Selector
+        setSelectedCustomerId(customer.id);
+        setSelectedCustomerName(customer.customerName);
+        
         setData(prev => ({
             ...prev,
             projectName: customer.projectName || customer.customerName,
             projectLocation: customer.address || '',
+            // ถ้าลูกค้ามี End Customer Project อยู่แล้ว ให้ดึงมาด้วย
+            hasEndCustomerProject: customer.hasEndCustomerProject || false,
+            endCustomerProject: customer.endCustomerProject,
+            showEndCustomerInPdf: customer.hasEndCustomerProject || false,
+        }));
+    };
+    
+    // Handler สำหรับเลือก End Customer จาก EndCustomerSelector
+    const handleSelectEndCustomer = (endCustomer: EndCustomer) => {
+        setData(prev => ({
+            ...prev,
+            hasEndCustomerProject: true,
+            endCustomerProject: {
+                projectName: endCustomer.projectName,
+                projectAddress: endCustomer.projectAddress,
+                contactName: endCustomer.contactName,
+            } as EndCustomerProject,
+            showEndCustomerInPdf: true,
         }));
     };
 
@@ -349,6 +377,116 @@ const SubcontractForm: React.FC<SubcontractFormProps> = ({
                     <div>
                         <label htmlFor="projectLocation" className="block text-xs sm:text-sm font-medium text-slate-700 dark:text-slate-300">สถานที่ก่อสร้าง *</label>
                         <textarea id="projectLocation" value={data.projectLocation} onChange={(e) => handleDataChange('projectLocation', e.target.value)} rows={2} className="mt-1 block w-full rounded-md border-gray-300 dark:border-gray-600 shadow-sm focus:border-indigo-500 focus:ring-indigo-500 text-xs sm:text-sm bg-gray-50 dark:bg-slate-700 dark:text-gray-100 dark:placeholder-gray-400" placeholder="123/45 หมู่บ้าน ABC ถ.พระราม 2 แขวง... เขต... กรุงเทพฯ 10150" />
+                    </div>
+                    
+                    {/* ส่วน End Customer - โครงการลูกค้าปลายทาง */}
+                    <div className="border-t border-gray-200 dark:border-slate-600 pt-4 mt-4">
+                        {/* Checkbox เปิด/ปิด End Customer */}
+                        <div className="flex items-center mb-3">
+                            <input
+                                type="checkbox"
+                                id="hasEndCustomerProject"
+                                checked={data.hasEndCustomerProject || false}
+                                onChange={(e) => {
+                                    handleDataChange('hasEndCustomerProject', e.target.checked);
+                                    if (!e.target.checked) {
+                                        handleDataChange('endCustomerProject', undefined);
+                                        handleDataChange('showEndCustomerInPdf', false);
+                                    } else {
+                                        handleDataChange('endCustomerProject', { projectName: '' });
+                                        handleDataChange('showEndCustomerInPdf', true);
+                                    }
+                                }}
+                                className="h-4 w-4 text-purple-600 focus:ring-purple-500 border-gray-300 dark:border-gray-600 rounded dark:bg-slate-700"
+                            />
+                            <label htmlFor="hasEndCustomerProject" className="ml-2 block text-sm font-medium text-slate-700 dark:text-slate-200">
+                                มีโครงการลูกค้าปลายทาง (End Customer)
+                            </label>
+                        </div>
+                        
+                        {/* แสดง End Customer Selector และฟอร์มเมื่อเปิดใช้งาน */}
+                        {data.hasEndCustomerProject && (
+                            <div className="p-3 bg-purple-50 dark:bg-purple-900/20 rounded-lg border border-purple-200 dark:border-purple-700 space-y-3">
+                                <p className="text-xs font-medium text-purple-700 dark:text-purple-300 mb-2">
+                                    🏠 ข้อมูลโครงการลูกค้าปลายทาง
+                                </p>
+                                
+                                {/* End Customer Selector - เลือกจากฐานข้อมูล */}
+                                <EndCustomerSelector
+                                    label="เลือก End Customer"
+                                    onSelect={handleSelectEndCustomer}
+                                    customerId={selectedCustomerId}
+                                    customerName={selectedCustomerName}
+                                    currentEndCustomer={data.endCustomerProject}
+                                    showSaveButton={true}
+                                />
+                                
+                                {/* ชื่อโครงการลูกค้าปลายทาง */}
+                                <div>
+                                    <label className="block text-xs sm:text-sm font-medium text-slate-700 dark:text-slate-200 mb-1">
+                                        ชื่อโครงการลูกค้าปลายทาง
+                                    </label>
+                                    <input
+                                        type="text"
+                                        value={data.endCustomerProject?.projectName || ''}
+                                        onChange={(e) => handleDataChange('endCustomerProject', {
+                                            ...data.endCustomerProject,
+                                            projectName: e.target.value,
+                                        } as EndCustomerProject)}
+                                        className="w-full rounded-md border-gray-300 dark:border-slate-600 shadow-sm focus:border-purple-500 focus:ring-purple-500 text-xs sm:text-sm px-3 py-2 bg-white dark:bg-slate-700 dark:text-gray-100"
+                                        placeholder="เช่น บ้านคุณสมศักดิ์"
+                                    />
+                                </div>
+                                
+                                {/* ที่ตั้งโครงการ */}
+                                <div>
+                                    <label className="block text-xs sm:text-sm font-medium text-slate-700 dark:text-slate-200 mb-1">
+                                        ที่ตั้งโครงการ
+                                    </label>
+                                    <textarea
+                                        value={data.endCustomerProject?.projectAddress || ''}
+                                        onChange={(e) => handleDataChange('endCustomerProject', {
+                                            ...data.endCustomerProject,
+                                            projectAddress: e.target.value,
+                                        } as EndCustomerProject)}
+                                        rows={2}
+                                        className="w-full rounded-md border-gray-300 dark:border-slate-600 shadow-sm focus:border-purple-500 focus:ring-purple-500 text-xs sm:text-sm px-3 py-2 bg-white dark:bg-slate-700 dark:text-gray-100"
+                                        placeholder="เช่น 123 หมู่ 5 ต.แวง อ.แกดำ จ.มหาสารคาม"
+                                    />
+                                </div>
+                                
+                                {/* ชื่อผู้ติดต่อที่โครงการ */}
+                                <div>
+                                    <label className="block text-xs sm:text-sm font-medium text-slate-700 dark:text-slate-200 mb-1">
+                                        ชื่อผู้ติดต่อที่โครงการ
+                                    </label>
+                                    <input
+                                        type="text"
+                                        value={data.endCustomerProject?.contactName || ''}
+                                        onChange={(e) => handleDataChange('endCustomerProject', {
+                                            ...data.endCustomerProject,
+                                            contactName: e.target.value,
+                                        } as EndCustomerProject)}
+                                        className="w-full rounded-md border-gray-300 dark:border-slate-600 shadow-sm focus:border-purple-500 focus:ring-purple-500 text-xs sm:text-sm px-3 py-2 bg-white dark:bg-slate-700 dark:text-gray-100"
+                                        placeholder="เช่น คุณสมศรี"
+                                    />
+                                </div>
+                                
+                                {/* Checkbox แสดงใน PDF */}
+                                <div className="flex items-center mt-3 pt-3 border-t border-purple-200 dark:border-purple-700">
+                                    <input
+                                        type="checkbox"
+                                        id="showEndCustomerInPdf"
+                                        checked={data.showEndCustomerInPdf || false}
+                                        onChange={(e) => handleDataChange('showEndCustomerInPdf', e.target.checked)}
+                                        className="h-4 w-4 text-purple-600 focus:ring-purple-500 border-gray-300 dark:border-gray-600 rounded dark:bg-slate-700"
+                                    />
+                                    <label htmlFor="showEndCustomerInPdf" className="ml-2 block text-sm font-medium text-purple-700 dark:text-purple-300">
+                                        แสดงข้อมูลโครงการลูกค้าปลายทางในเอกสาร PDF
+                                    </label>
+                                </div>
+                            </div>
+                        )}
                     </div>
                 </div>
 

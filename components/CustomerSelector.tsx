@@ -5,9 +5,10 @@
 
 import React, { useState, useEffect } from 'react';
 import { Customer, EndCustomerProject, getCustomers, saveCustomer, updateCustomer, deleteCustomer, updateCustomerUsage, searchCustomers, getRecentCustomers } from '../services/customers';
+import { EndCustomer, getEndCustomersByCustomer, saveEndCustomer, deleteEndCustomer } from '../services/endCustomers';
 import { useCompany } from '../contexts/CompanyContext';
 import { migrateCustomersLastUsedAt } from '../services/customerMigration';
-import { Users, Save } from 'lucide-react';
+import { Users, Save, Home, Plus, Trash2 } from 'lucide-react';
 
 interface CustomerSelectorProps {
     label?: string;
@@ -43,6 +44,19 @@ const CustomerSelector: React.FC<CustomerSelectorProps> = ({
     
     // State สำหรับแก้ไขลูกค้า
     const [editingCustomer, setEditingCustomer] = useState<Customer | null>(null);
+    
+    // State สำหรับ End Customers
+    const [endCustomersModalOpen, setEndCustomersModalOpen] = useState(false);
+    const [selectedCustomerForEndCustomers, setSelectedCustomerForEndCustomers] = useState<Customer | null>(null);
+    const [endCustomers, setEndCustomers] = useState<EndCustomer[]>([]);
+    const [isLoadingEndCustomers, setIsLoadingEndCustomers] = useState(false);
+    const [newEndCustomerModalOpen, setNewEndCustomerModalOpen] = useState(false);
+    const [newEndCustomer, setNewEndCustomer] = useState<Partial<EndCustomer>>({
+        projectName: '',
+        projectAddress: '',
+        contactName: '',
+        contactPhone: '',
+    });
 
     // โหลดข้อมูลลูกค้า และ migrate ถ้าจำเป็น
     useEffect(() => {
@@ -231,6 +245,88 @@ const CustomerSelector: React.FC<CustomerSelectorProps> = ({
             alert('❌ ไม่สามารถลบข้อมูลลูกค้าได้');
         }
     };
+    
+    // =====================================================
+    // End Customer Management Functions
+    // =====================================================
+    
+    // เปิด Modal แสดง End Customers ของลูกค้า
+    const handleViewEndCustomers = async (customer: Customer, event: React.MouseEvent) => {
+        event.stopPropagation();
+        setSelectedCustomerForEndCustomers(customer);
+        setEndCustomersModalOpen(true);
+        await loadEndCustomers(customer.id!);
+    };
+    
+    // โหลด End Customers ของลูกค้า
+    const loadEndCustomers = async (customerId: string) => {
+        if (!currentCompany?.id || !customerId) return;
+        
+        setIsLoadingEndCustomers(true);
+        try {
+            const data = await getEndCustomersByCustomer(currentCompany.id, customerId);
+            setEndCustomers(data);
+        } catch (error) {
+            console.error('Failed to load end customers:', error);
+            setEndCustomers([]);
+        } finally {
+            setIsLoadingEndCustomers(false);
+        }
+    };
+    
+    // บันทึก End Customer ใหม่
+    const handleSaveNewEndCustomer = async () => {
+        if (!currentCompany?.id || !selectedCustomerForEndCustomers?.id) {
+            alert('กรุณาเลือกลูกค้าก่อน');
+            return;
+        }
+        
+        if (!newEndCustomer.projectName) {
+            alert('กรุณากรอกชื่อโครงการ End Customer');
+            return;
+        }
+        
+        setIsSaving(true);
+        try {
+            await saveEndCustomer({
+                ...newEndCustomer as EndCustomer,
+                customerId: selectedCustomerForEndCustomers.id,
+                companyId: currentCompany.id,
+            }, currentCompany.id);
+            
+            await loadEndCustomers(selectedCustomerForEndCustomers.id);
+            setNewEndCustomerModalOpen(false);
+            setNewEndCustomer({
+                projectName: '',
+                projectAddress: '',
+                contactName: '',
+                contactPhone: '',
+            });
+            
+            alert('✅ บันทึก End Customer สำเร็จ!');
+        } catch (error) {
+            console.error('Failed to save end customer:', error);
+            alert('❌ ไม่สามารถบันทึก End Customer ได้');
+        } finally {
+            setIsSaving(false);
+        }
+    };
+    
+    // ลบ End Customer
+    const handleDeleteEndCustomer = async (endCustomerId: string) => {
+        if (!window.confirm('ต้องการลบ End Customer นี้หรือไม่?')) return;
+        
+        try {
+            await deleteEndCustomer(endCustomerId);
+            if (selectedCustomerForEndCustomers?.id) {
+                await loadEndCustomers(selectedCustomerForEndCustomers.id);
+            }
+            alert('✅ ลบ End Customer สำเร็จ!');
+        } catch (error) {
+            console.error('Failed to delete end customer:', error);
+            alert('❌ ไม่สามารถลบ End Customer ได้');
+        }
+    };
 
     return (
         <div className="space-y-2">
@@ -367,8 +463,16 @@ const CustomerSelector: React.FC<CustomerSelectorProps> = ({
                                             onClick={() => handleSelectCustomer(customer)}
                                             className="relative p-2 sm:p-3 bg-gray-50 border border-gray-200 rounded-md hover:border-indigo-400 hover:bg-indigo-50 cursor-pointer transition-all group"
                                         >
-                                            {/* Edit and Delete Buttons */}
+                                            {/* Edit, End Customers and Delete Buttons */}
                                             <div className="absolute top-1.5 sm:top-2 right-1.5 sm:right-2 flex gap-1 opacity-100 sm:opacity-0 sm:group-hover:opacity-100 transition-opacity">
+                                                {/* ปุ่มจัดการ End Customer */}
+                                                <button
+                                                    onClick={(e) => handleViewEndCustomers(customer, e)}
+                                                    className="p-1 bg-purple-500 text-white rounded-full hover:bg-purple-600"
+                                                    title="จัดการ End Customer"
+                                                >
+                                                    <Home className="w-3 h-3" />
+                                                </button>
                                                 <button
                                                     onClick={(e) => {
                                                         e.stopPropagation();
@@ -980,6 +1084,193 @@ const CustomerSelector: React.FC<CustomerSelectorProps> = ({
                                 className="w-full sm:w-auto px-4 py-2 bg-amber-600 text-white rounded hover:bg-amber-700 focus:outline-none focus:ring-2 focus:ring-amber-500 disabled:bg-amber-300 text-xs sm:text-sm"
                             >
                                 {isSaving ? 'กำลังอัปเดต...' : <><Save className="w-3.5 h-3.5 inline mr-1" />อัปเดต</>}
+                            </button>
+                        </div>
+                    </div>
+                </div>
+            )}
+            
+            {/* Modal แสดง End Customers ของลูกค้า */}
+            {endCustomersModalOpen && selectedCustomerForEndCustomers && (
+                <div className="fixed inset-0 bg-gray-600 bg-opacity-50 overflow-y-auto h-full w-full z-50 flex items-center justify-center p-2 sm:p-4">
+                    <div className="bg-white dark:bg-slate-800 p-3 sm:p-6 rounded-lg shadow-xl max-w-lg w-full max-h-[90vh] overflow-y-auto">
+                        <div className="flex items-center justify-between mb-3 sm:mb-4">
+                            <div>
+                                <h3 className="text-base sm:text-lg font-semibold text-gray-800 dark:text-gray-100">
+                                    <Home className="w-4 h-4 inline mr-1" />End Customers
+                                </h3>
+                                <p className="text-xs text-purple-600 dark:text-purple-400 mt-1">
+                                    ลูกค้า: {selectedCustomerForEndCustomers.customerName}
+                                </p>
+                            </div>
+                            <button
+                                onClick={() => {
+                                    setEndCustomersModalOpen(false);
+                                    setSelectedCustomerForEndCustomers(null);
+                                    setEndCustomers([]);
+                                }}
+                                className="text-gray-500 hover:text-gray-700 dark:text-gray-400 dark:hover:text-gray-200 p-1"
+                            >
+                                <svg className="w-5 h-5 sm:w-6 sm:h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                    <path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M6 18L18 6M6 6l12 12" />
+                                </svg>
+                            </button>
+                        </div>
+                        
+                        {/* ปุ่มเพิ่ม End Customer ใหม่ */}
+                        <button
+                            onClick={() => setNewEndCustomerModalOpen(true)}
+                            className="w-full mb-3 px-3 py-2 bg-purple-600 text-white rounded-md hover:bg-purple-700 text-xs sm:text-sm"
+                        >
+                            <Plus className="w-3.5 h-3.5 inline mr-1" />เพิ่ม End Customer ใหม่
+                        </button>
+                        
+                        {/* รายการ End Customers */}
+                        {isLoadingEndCustomers ? (
+                            <div className="text-center py-6">
+                                <svg className="animate-spin h-6 w-6 mx-auto text-purple-600" xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24">
+                                    <circle className="opacity-25" cx="12" cy="12" r="10" stroke="currentColor" strokeWidth="4"></circle>
+                                    <path className="opacity-75" fill="currentColor" d="M4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4zm2 5.291A7.962 7.962 0 014 12H0c0 3.042 1.135 5.824 3 7.938l3-2.647z"></path>
+                                </svg>
+                                <p className="mt-2 text-xs text-gray-500">กำลังโหลด...</p>
+                            </div>
+                        ) : endCustomers.length === 0 ? (
+                            <div className="text-center py-6 text-gray-500 dark:text-gray-400">
+                                <Home className="w-10 h-10 mx-auto text-gray-300 dark:text-gray-600 mb-2" />
+                                <p className="text-xs sm:text-sm">ยังไม่มี End Customer</p>
+                            </div>
+                        ) : (
+                            <div className="space-y-2 max-h-64 overflow-y-auto">
+                                {endCustomers.map((ec) => (
+                                    <div
+                                        key={ec.id}
+                                        className="p-2 sm:p-3 bg-purple-50 dark:bg-purple-900/20 border border-purple-200 dark:border-purple-700 rounded-md flex justify-between items-start"
+                                    >
+                                        <div className="flex-1 min-w-0">
+                                            <p className="text-xs sm:text-sm font-semibold text-gray-800 dark:text-gray-100 truncate">
+                                                🏠 {ec.projectName}
+                                            </p>
+                                            {ec.projectAddress && (
+                                                <p className="text-xs text-gray-600 dark:text-gray-400 mt-0.5 truncate">
+                                                    📍 {ec.projectAddress}
+                                                </p>
+                                            )}
+                                            {ec.contactName && (
+                                                <p className="text-xs text-gray-600 dark:text-gray-400 mt-0.5">
+                                                    👤 {ec.contactName}
+                                                </p>
+                                            )}
+                                            {ec.contactPhone && (
+                                                <p className="text-xs text-gray-600 dark:text-gray-400 mt-0.5">
+                                                    📞 {ec.contactPhone}
+                                                </p>
+                                            )}
+                                        </div>
+                                        <button
+                                            onClick={() => handleDeleteEndCustomer(ec.id!)}
+                                            className="p-1 text-red-500 hover:text-red-700 dark:text-red-400 dark:hover:text-red-300"
+                                            title="ลบ"
+                                        >
+                                            <Trash2 className="w-4 h-4" />
+                                        </button>
+                                    </div>
+                                ))}
+                            </div>
+                        )}
+                    </div>
+                </div>
+            )}
+            
+            {/* Modal เพิ่ม End Customer ใหม่ */}
+            {newEndCustomerModalOpen && selectedCustomerForEndCustomers && (
+                <div className="fixed inset-0 bg-gray-600 bg-opacity-50 overflow-y-auto h-full w-full z-50 flex items-center justify-center p-2 sm:p-4">
+                    <div className="bg-white dark:bg-slate-800 p-3 sm:p-6 rounded-lg shadow-xl max-w-lg w-full max-h-[90vh] overflow-y-auto">
+                        <h3 className="text-base sm:text-lg font-semibold text-gray-800 dark:text-gray-100 mb-3 sm:mb-4">
+                            <Plus className="w-4 h-4 inline mr-1" />เพิ่ม End Customer ใหม่
+                        </h3>
+                        
+                        <p className="text-xs text-purple-600 dark:text-purple-400 mb-3 bg-purple-50 dark:bg-purple-900/20 p-2 rounded">
+                            ลูกค้า: <strong>{selectedCustomerForEndCustomers.customerName}</strong>
+                        </p>
+                        
+                        <div className="space-y-3">
+                            <div>
+                                <label className="block text-xs sm:text-sm font-medium text-gray-700 dark:text-gray-300 mb-1">
+                                    ชื่อโครงการ <span className="text-red-500">*</span>
+                                </label>
+                                <input
+                                    type="text"
+                                    value={newEndCustomer.projectName || ''}
+                                    onChange={(e) => setNewEndCustomer(prev => ({ ...prev, projectName: e.target.value }))}
+                                    className="w-full rounded-md border-gray-300 dark:border-slate-600 shadow-sm focus:border-purple-500 focus:ring-purple-500 text-xs sm:text-sm px-3 py-2 dark:bg-slate-700 dark:text-gray-100"
+                                    placeholder="เช่น บ้านคุณสมศักดิ์"
+                                />
+                            </div>
+                            
+                            <div>
+                                <label className="block text-xs sm:text-sm font-medium text-gray-700 dark:text-gray-300 mb-1">
+                                    ที่ตั้งโครงการ
+                                </label>
+                                <textarea
+                                    value={newEndCustomer.projectAddress || ''}
+                                    onChange={(e) => setNewEndCustomer(prev => ({ ...prev, projectAddress: e.target.value }))}
+                                    rows={2}
+                                    className="w-full rounded-md border-gray-300 dark:border-slate-600 shadow-sm focus:border-purple-500 focus:ring-purple-500 text-xs sm:text-sm px-3 py-2 dark:bg-slate-700 dark:text-gray-100"
+                                    placeholder="เช่น 123 หมู่ 5 ต.แวง อ.แกดำ จ.มหาสารคาม"
+                                />
+                            </div>
+                            
+                            <div>
+                                <label className="block text-xs sm:text-sm font-medium text-gray-700 dark:text-gray-300 mb-1">
+                                    ชื่อผู้ติดต่อ
+                                </label>
+                                <input
+                                    type="text"
+                                    value={newEndCustomer.contactName || ''}
+                                    onChange={(e) => setNewEndCustomer(prev => ({ ...prev, contactName: e.target.value }))}
+                                    className="w-full rounded-md border-gray-300 dark:border-slate-600 shadow-sm focus:border-purple-500 focus:ring-purple-500 text-xs sm:text-sm px-3 py-2 dark:bg-slate-700 dark:text-gray-100"
+                                    placeholder="เช่น คุณสมศรี"
+                                />
+                            </div>
+                            
+                            <div>
+                                <label className="block text-xs sm:text-sm font-medium text-gray-700 dark:text-gray-300 mb-1">
+                                    เบอร์โทรผู้ติดต่อ
+                                </label>
+                                <input
+                                    type="tel"
+                                    value={newEndCustomer.contactPhone || ''}
+                                    onChange={(e) => setNewEndCustomer(prev => ({ ...prev, contactPhone: e.target.value }))}
+                                    className="w-full rounded-md border-gray-300 dark:border-slate-600 shadow-sm focus:border-purple-500 focus:ring-purple-500 text-xs sm:text-sm px-3 py-2 dark:bg-slate-700 dark:text-gray-100"
+                                    placeholder="08x-xxx-xxxx"
+                                />
+                            </div>
+                        </div>
+                        
+                        <div className="mt-4 flex flex-col sm:flex-row gap-2 justify-end">
+                            <button
+                                type="button"
+                                onClick={() => {
+                                    setNewEndCustomerModalOpen(false);
+                                    setNewEndCustomer({
+                                        projectName: '',
+                                        projectAddress: '',
+                                        contactName: '',
+                                        contactPhone: '',
+                                    });
+                                }}
+                                disabled={isSaving}
+                                className="w-full sm:w-auto px-4 py-2 bg-gray-200 dark:bg-slate-600 text-gray-700 dark:text-gray-200 rounded hover:bg-gray-300 dark:hover:bg-slate-500 focus:outline-none text-xs sm:text-sm"
+                            >
+                                ยกเลิก
+                            </button>
+                            <button
+                                type="button"
+                                onClick={handleSaveNewEndCustomer}
+                                disabled={isSaving}
+                                className="w-full sm:w-auto px-4 py-2 bg-purple-600 text-white rounded hover:bg-purple-700 focus:outline-none disabled:bg-purple-300 text-xs sm:text-sm"
+                            >
+                                {isSaving ? 'กำลังบันทึก...' : <><Save className="w-3.5 h-3.5 inline mr-1" />บันทึก</>}
                             </button>
                         </div>
                     </div>
