@@ -73,9 +73,9 @@ interface FormData {
     // ข้อมูลสาขา (สำหรับนิติบุคคล)
     branchCode: string;
     branchName: string;
-    // ข้อมูลโครงการลูกค้าปลายทาง (End Customer Project)
-    hasEndCustomerProject: boolean;
-    endCustomerProject: EndCustomerProject | undefined;
+    // ข้อมูลโครงการลูกค้าปลายทาง (End Customer Projects) - รองรับหลายโครงการ
+    hasEndCustomerProjects: boolean;
+    endCustomerProjects: EndCustomerProject[];
 }
 
 const initialFormData: FormData = {
@@ -99,8 +99,8 @@ const initialFormData: FormData = {
     specialties: [],
     branchCode: '',
     branchName: '',
-    hasEndCustomerProject: false,
-    endCustomerProject: undefined,
+    hasEndCustomerProjects: false,
+    endCustomerProjects: [],
 };
 
 const CRMPage: React.FC = () => {
@@ -219,9 +219,9 @@ const CRMPage: React.FC = () => {
                     // ข้อมูลสาขา (สำหรับนิติบุคคล)
                     branchCode: customer.branchCode || '',
                     branchName: customer.branchName || '',
-                    // ข้อมูลโครงการลูกค้าปลายทาง
-                    hasEndCustomerProject: customer.hasEndCustomerProject || false,
-                    endCustomerProject: customer.endCustomerProject,
+                    // ข้อมูลโครงการลูกค้าปลายทาง (รองรับหลายโครงการ)
+                    hasEndCustomerProjects: customer.hasEndCustomerProjects || customer.hasEndCustomerProject || false,
+                    endCustomerProjects: customer.endCustomerProjects || (customer.endCustomerProject ? [customer.endCustomerProject] : []),
                 });
             } else {
                 const contractor = item as Contractor;
@@ -248,8 +248,8 @@ const CRMPage: React.FC = () => {
                     branchCode: contractor.branchCode || '',
                     branchName: contractor.branchName || '',
                     // ข้อมูลโครงการลูกค้าปลายทาง (ไม่ใช้สำหรับ contractor)
-                    hasEndCustomerProject: false,
-                    endCustomerProject: undefined,
+                    hasEndCustomerProjects: false,
+                    endCustomerProjects: [],
                 });
             }
         } else {
@@ -291,9 +291,9 @@ const CRMPage: React.FC = () => {
                     // ข้อมูลสาขา (สำหรับนิติบุคคล)
                     branchCode: formData.branchCode || undefined,
                     branchName: formData.branchName || undefined,
-                    // ข้อมูลโครงการลูกค้าปลายทาง
-                    hasEndCustomerProject: formData.hasEndCustomerProject,
-                    endCustomerProject: formData.hasEndCustomerProject ? formData.endCustomerProject : undefined,
+                    // ข้อมูลโครงการลูกค้าปลายทาง (รองรับหลายโครงการ)
+                    hasEndCustomerProjects: formData.hasEndCustomerProjects,
+                    endCustomerProjects: formData.hasEndCustomerProjects ? formData.endCustomerProjects : [],
                 };
 
                 if (editingId) {
@@ -484,8 +484,10 @@ const CRMPage: React.FC = () => {
                         const specialties = !isCustomer ? (item as Contractor).specialties : undefined;
                         const usageCount = item.usageCount || 0;
                         const lastUsed = item.lastUsedAt;
-                        const hasEndCustomer = isCustomer ? (item as Customer).hasEndCustomerProject : false;
-                        const endCustomerProject = isCustomer ? (item as Customer).endCustomerProject : undefined;
+                        // รองรับทั้งแบบเก่า (single) และแบบใหม่ (array)
+                        const customer = item as Customer;
+                        const hasEndCustomers = isCustomer ? (customer.hasEndCustomerProjects || customer.hasEndCustomerProject || false) : false;
+                        const endCustomerProjects = isCustomer ? (customer.endCustomerProjects || (customer.endCustomerProject ? [customer.endCustomerProject] : [])) : [];
 
                         return (
                             <div
@@ -503,10 +505,10 @@ const CRMPage: React.FC = () => {
                                             }`}>
                                                 {type === 'company' ? 'นิติบุคคล' : 'บุคคล'}
                                             </span>
-                                            {hasEndCustomer && (
+                                            {hasEndCustomers && endCustomerProjects.length > 0 && (
                                                 <span className="flex items-center gap-1 px-2 py-0.5 text-xs rounded-full bg-purple-100 dark:bg-purple-900/30 text-purple-700 dark:text-purple-300">
                                                     <Home className="w-3 h-3" />
-                                                    มีลูกค้าปลายทาง
+                                                    ลูกค้าปลายทาง ({endCustomerProjects.length})
                                                 </span>
                                             )}
                                             {usageCount > 0 && (
@@ -575,22 +577,31 @@ const CRMPage: React.FC = () => {
                                             </div>
                                         )}
 
-                                        {/* End Customer Project Info (customers only) */}
-                                        {hasEndCustomer && endCustomerProject && (
+                                        {/* End Customer Projects Info (customers only) - รองรับหลายโครงการ */}
+                                        {hasEndCustomers && endCustomerProjects.length > 0 && (
                                             <div className="mt-2 p-2 bg-purple-50 dark:bg-purple-900/20 rounded-lg border border-purple-200 dark:border-purple-700">
-                                                <div className="flex items-center gap-1 text-xs text-purple-700 dark:text-purple-300 mb-1">
+                                                <div className="flex items-center gap-1 text-xs text-purple-700 dark:text-purple-300 mb-2">
                                                     <Home className="w-3 h-3" />
-                                                    <span className="font-medium">โครงการลูกค้าปลายทาง</span>
+                                                    <span className="font-medium">โครงการลูกค้าปลายทาง ({endCustomerProjects.length} โครงการ)</span>
                                                 </div>
-                                                <div className="text-xs text-gray-600 dark:text-gray-300 space-y-0.5">
-                                                    {endCustomerProject.projectName && (
-                                                        <p><span className="font-medium">โครงการ:</span> {endCustomerProject.projectName}</p>
-                                                    )}
-                                                    {endCustomerProject.projectAddress && (
-                                                        <p className="truncate"><span className="font-medium">ที่ตั้ง:</span> {endCustomerProject.projectAddress}</p>
-                                                    )}
-                                                    {endCustomerProject.contactName && (
-                                                        <p><span className="font-medium">ผู้ติดต่อ:</span> {endCustomerProject.contactName}</p>
+                                                <div className="space-y-2">
+                                                    {endCustomerProjects.slice(0, 3).map((project, idx) => (
+                                                        <div key={project.id || idx} className="text-xs text-gray-600 dark:text-gray-300 pl-2 border-l-2 border-purple-300 dark:border-purple-600">
+                                                            {project.projectName && (
+                                                                <p className="font-medium">{idx + 1}. {project.projectName}</p>
+                                                            )}
+                                                            {project.projectAddress && (
+                                                                <p className="truncate text-gray-500 dark:text-gray-400">📍 {project.projectAddress}</p>
+                                                            )}
+                                                            {project.contactName && (
+                                                                <p className="text-gray-500 dark:text-gray-400">👤 {project.contactName} {project.contactPhone && `(${project.contactPhone})`}</p>
+                                                            )}
+                                                        </div>
+                                                    ))}
+                                                    {endCustomerProjects.length > 3 && (
+                                                        <p className="text-xs text-purple-600 dark:text-purple-400 pl-2">
+                                                            ...และอีก {endCustomerProjects.length - 3} โครงการ
+                                                        </p>
                                                     )}
                                                 </div>
                                             </div>
@@ -895,93 +906,174 @@ const CRMPage: React.FC = () => {
                                 </div>
                             )}
 
-                            {/* End Customer Project (customers only) */}
+                            {/* End Customer Projects (customers only) - รองรับหลายโครงการ */}
                             {activeTab === 'customers' && (
                                 <div className="border-t border-gray-200 dark:border-slate-600 pt-4 mt-4">
-                                    <div className="flex items-center mb-3">
-                                        <input
-                                            type="checkbox"
-                                            id="hasEndCustomerProject"
-                                            checked={formData.hasEndCustomerProject}
-                                            onChange={(e) => {
-                                                const checked = e.target.checked;
-                                                setFormData({
-                                                    ...formData,
-                                                    hasEndCustomerProject: checked,
-                                                    endCustomerProject: checked ? { projectName: '' } : undefined,
-                                                });
-                                            }}
-                                            className="h-4 w-4 text-purple-600 focus:ring-purple-500 border-gray-300 rounded"
-                                        />
-                                        <label
-                                            htmlFor="hasEndCustomerProject"
-                                            className="ml-2 block text-sm font-medium text-slate-700 dark:text-slate-200"
-                                        >
-                                            มีโครงการลูกค้าปลายทาง (End Customer)
-                                        </label>
+                                    <div className="flex items-center justify-between mb-3">
+                                        <div className="flex items-center">
+                                            <input
+                                                type="checkbox"
+                                                id="hasEndCustomerProjects"
+                                                checked={formData.hasEndCustomerProjects}
+                                                onChange={(e) => {
+                                                    const checked = e.target.checked;
+                                                    setFormData({
+                                                        ...formData,
+                                                        hasEndCustomerProjects: checked,
+                                                        endCustomerProjects: checked && formData.endCustomerProjects.length === 0 
+                                                            ? [{ id: `ec_${Date.now()}`, projectName: '' }] 
+                                                            : formData.endCustomerProjects,
+                                                    });
+                                                }}
+                                                className="h-4 w-4 text-purple-600 focus:ring-purple-500 border-gray-300 rounded"
+                                            />
+                                            <label
+                                                htmlFor="hasEndCustomerProjects"
+                                                className="ml-2 block text-sm font-medium text-slate-700 dark:text-slate-200"
+                                            >
+                                                มีโครงการลูกค้าปลายทาง (End Customer)
+                                            </label>
+                                        </div>
+                                        {formData.hasEndCustomerProjects && (
+                                            <span className="text-xs text-purple-600 dark:text-purple-400 bg-purple-100 dark:bg-purple-900/30 px-2 py-1 rounded-full">
+                                                {formData.endCustomerProjects.length} โครงการ
+                                            </span>
+                                        )}
                                     </div>
 
-                                    {formData.hasEndCustomerProject && (
-                                        <div className="p-3 bg-purple-50 dark:bg-purple-900/20 rounded-lg border border-purple-200 dark:border-purple-700 space-y-3">
-                                            <p className="text-xs font-medium text-purple-700 dark:text-purple-300 mb-2">
-                                                🏠 ข้อมูลโครงการลูกค้าปลายทาง
-                                            </p>
-                                            <div>
-                                                <label className="block text-xs sm:text-sm font-medium text-slate-700 dark:text-slate-200 mb-1">
-                                                    ชื่อโครงการลูกค้าปลายทาง
-                                                </label>
-                                                <input
-                                                    type="text"
-                                                    value={formData.endCustomerProject?.projectName || ''}
-                                                    onChange={(e) => setFormData({
+                                    {formData.hasEndCustomerProjects && (
+                                        <div className="space-y-3">
+                                            {/* รายการ End Customer Projects */}
+                                            {formData.endCustomerProjects.map((project, index) => (
+                                                <div 
+                                                    key={project.id || index} 
+                                                    className="p-3 bg-purple-50 dark:bg-purple-900/20 rounded-lg border border-purple-200 dark:border-purple-700 space-y-3"
+                                                >
+                                                    <div className="flex items-center justify-between">
+                                                        <p className="text-xs font-medium text-purple-700 dark:text-purple-300">
+                                                            🏠 โครงการที่ {index + 1}
+                                                        </p>
+                                                        {formData.endCustomerProjects.length > 1 && (
+                                                            <button
+                                                                type="button"
+                                                                onClick={() => {
+                                                                    const updated = formData.endCustomerProjects.filter((_, i) => i !== index);
+                                                                    setFormData({
+                                                                        ...formData,
+                                                                        endCustomerProjects: updated,
+                                                                        hasEndCustomerProjects: updated.length > 0,
+                                                                    });
+                                                                }}
+                                                                className="p-1 text-red-500 hover:text-red-700 hover:bg-red-100 dark:hover:bg-red-900/30 rounded"
+                                                                title="ลบโครงการนี้"
+                                                            >
+                                                                <Trash2 className="w-4 h-4" />
+                                                            </button>
+                                                        )}
+                                                    </div>
+                                                    
+                                                    <div className="grid grid-cols-1 sm:grid-cols-2 gap-3">
+                                                        <div className="sm:col-span-2">
+                                                            <label className="block text-xs font-medium text-slate-700 dark:text-slate-200 mb-1">
+                                                                ชื่อโครงการ *
+                                                            </label>
+                                                            <input
+                                                                type="text"
+                                                                value={project.projectName || ''}
+                                                                onChange={(e) => {
+                                                                    const updated = [...formData.endCustomerProjects];
+                                                                    updated[index] = { ...updated[index], projectName: e.target.value };
+                                                                    setFormData({ ...formData, endCustomerProjects: updated });
+                                                                }}
+                                                                className="w-full rounded-md border-gray-300 dark:border-slate-600 shadow-sm focus:border-purple-500 focus:ring-purple-500 text-xs px-3 py-2 bg-white dark:bg-slate-700 dark:text-gray-100"
+                                                                placeholder="เช่น บ้านคุณสมศักดิ์"
+                                                            />
+                                                        </div>
+                                                        <div className="sm:col-span-2">
+                                                            <label className="block text-xs font-medium text-slate-700 dark:text-slate-200 mb-1">
+                                                                ที่ตั้งโครงการ
+                                                            </label>
+                                                            <input
+                                                                type="text"
+                                                                value={project.projectAddress || ''}
+                                                                onChange={(e) => {
+                                                                    const updated = [...formData.endCustomerProjects];
+                                                                    updated[index] = { ...updated[index], projectAddress: e.target.value };
+                                                                    setFormData({ ...formData, endCustomerProjects: updated });
+                                                                }}
+                                                                className="w-full rounded-md border-gray-300 dark:border-slate-600 shadow-sm focus:border-purple-500 focus:ring-purple-500 text-xs px-3 py-2 bg-white dark:bg-slate-700 dark:text-gray-100"
+                                                                placeholder="เช่น 123 หมู่ 5 ต.แวง อ.แกดำ จ.มหาสารคาม"
+                                                            />
+                                                        </div>
+                                                        <div>
+                                                            <label className="block text-xs font-medium text-slate-700 dark:text-slate-200 mb-1">
+                                                                ชื่อผู้ติดต่อ
+                                                            </label>
+                                                            <input
+                                                                type="text"
+                                                                value={project.contactName || ''}
+                                                                onChange={(e) => {
+                                                                    const updated = [...formData.endCustomerProjects];
+                                                                    updated[index] = { ...updated[index], contactName: e.target.value };
+                                                                    setFormData({ ...formData, endCustomerProjects: updated });
+                                                                }}
+                                                                className="w-full rounded-md border-gray-300 dark:border-slate-600 shadow-sm focus:border-purple-500 focus:ring-purple-500 text-xs px-3 py-2 bg-white dark:bg-slate-700 dark:text-gray-100"
+                                                                placeholder="เช่น คุณสมศรี"
+                                                            />
+                                                        </div>
+                                                        <div>
+                                                            <label className="block text-xs font-medium text-slate-700 dark:text-slate-200 mb-1">
+                                                                เบอร์โทรผู้ติดต่อ
+                                                            </label>
+                                                            <input
+                                                                type="tel"
+                                                                value={project.contactPhone || ''}
+                                                                onChange={(e) => {
+                                                                    const updated = [...formData.endCustomerProjects];
+                                                                    updated[index] = { ...updated[index], contactPhone: e.target.value };
+                                                                    setFormData({ ...formData, endCustomerProjects: updated });
+                                                                }}
+                                                                className="w-full rounded-md border-gray-300 dark:border-slate-600 shadow-sm focus:border-purple-500 focus:ring-purple-500 text-xs px-3 py-2 bg-white dark:bg-slate-700 dark:text-gray-100"
+                                                                placeholder="0XX-XXX-XXXX"
+                                                            />
+                                                        </div>
+                                                        <div className="sm:col-span-2">
+                                                            <label className="block text-xs font-medium text-slate-700 dark:text-slate-200 mb-1">
+                                                                หมายเหตุ
+                                                            </label>
+                                                            <input
+                                                                type="text"
+                                                                value={project.notes || ''}
+                                                                onChange={(e) => {
+                                                                    const updated = [...formData.endCustomerProjects];
+                                                                    updated[index] = { ...updated[index], notes: e.target.value };
+                                                                    setFormData({ ...formData, endCustomerProjects: updated });
+                                                                }}
+                                                                className="w-full rounded-md border-gray-300 dark:border-slate-600 shadow-sm focus:border-purple-500 focus:ring-purple-500 text-xs px-3 py-2 bg-white dark:bg-slate-700 dark:text-gray-100"
+                                                                placeholder="หมายเหตุเพิ่มเติม"
+                                                            />
+                                                        </div>
+                                                    </div>
+                                                </div>
+                                            ))}
+
+                                            {/* ปุ่มเพิ่มโครงการใหม่ */}
+                                            <button
+                                                type="button"
+                                                onClick={() => {
+                                                    setFormData({
                                                         ...formData,
-                                                        endCustomerProject: {
-                                                            ...formData.endCustomerProject,
-                                                            projectName: e.target.value,
-                                                        },
-                                                    })}
-                                                    className="w-full rounded-md border-gray-300 dark:border-slate-600 shadow-sm focus:border-indigo-500 focus:ring-indigo-500 text-xs sm:text-sm px-3 py-2 bg-white dark:bg-slate-700 dark:text-gray-100"
-                                                    placeholder="เช่น บ้านคุณสมศักดิ์"
-                                                />
-                                            </div>
-                                            <div>
-                                                <label className="block text-xs sm:text-sm font-medium text-slate-700 dark:text-slate-200 mb-1">
-                                                    ที่ตั้งโครงการ
-                                                </label>
-                                                <textarea
-                                                    value={formData.endCustomerProject?.projectAddress || ''}
-                                                    onChange={(e) => setFormData({
-                                                        ...formData,
-                                                        endCustomerProject: {
-                                                            ...formData.endCustomerProject,
-                                                            projectName: formData.endCustomerProject?.projectName || '',
-                                                            projectAddress: e.target.value,
-                                                        },
-                                                    })}
-                                                    rows={2}
-                                                    className="w-full rounded-md border-gray-300 dark:border-slate-600 shadow-sm focus:border-indigo-500 focus:ring-indigo-500 text-xs sm:text-sm px-3 py-2 bg-white dark:bg-slate-700 dark:text-gray-100"
-                                                    placeholder="เช่น 123 หมู่ 5 ต.แวง อ.แกดำ จ.มหาสารคาม"
-                                                />
-                                            </div>
-                                            <div>
-                                                <label className="block text-xs sm:text-sm font-medium text-slate-700 dark:text-slate-200 mb-1">
-                                                    ชื่อผู้ติดต่อที่โครงการ
-                                                </label>
-                                                <input
-                                                    type="text"
-                                                    value={formData.endCustomerProject?.contactName || ''}
-                                                    onChange={(e) => setFormData({
-                                                        ...formData,
-                                                        endCustomerProject: {
-                                                            ...formData.endCustomerProject,
-                                                            projectName: formData.endCustomerProject?.projectName || '',
-                                                            contactName: e.target.value,
-                                                        },
-                                                    })}
-                                                    className="w-full rounded-md border-gray-300 dark:border-slate-600 shadow-sm focus:border-indigo-500 focus:ring-indigo-500 text-xs sm:text-sm px-3 py-2 bg-white dark:bg-slate-700 dark:text-gray-100"
-                                                    placeholder="เช่น คุณสมศรี"
-                                                />
-                                            </div>
+                                                        endCustomerProjects: [
+                                                            ...formData.endCustomerProjects,
+                                                            { id: `ec_${Date.now()}`, projectName: '' }
+                                                        ],
+                                                    });
+                                                }}
+                                                className="w-full py-2 px-4 border-2 border-dashed border-purple-300 dark:border-purple-600 rounded-lg text-purple-600 dark:text-purple-400 hover:bg-purple-50 dark:hover:bg-purple-900/20 transition-colors flex items-center justify-center gap-2 text-sm"
+                                            >
+                                                <Plus className="w-4 h-4" />
+                                                เพิ่มโครงการลูกค้าปลายทาง
+                                            </button>
                                         </div>
                                     )}
                                 </div>

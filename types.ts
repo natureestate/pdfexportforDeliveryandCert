@@ -567,11 +567,17 @@ export interface ServiceTemplate {
  * EndCustomerProject - ข้อมูลโครงการของลูกค้าปลายทาง
  * สำหรับกรณีที่ลูกค้าของเรา (Customer) มีลูกค้าปลายทางอีกที
  * ตัวอย่าง: บริษัทของเรา → ลูกค้า (ผู้รับเหมา) → โครงการลูกค้าปลายทาง (เจ้าของบ้าน)
+ * 
+ * หมายเหตุ: ลูกค้า 1 ราย สามารถมีหลาย End Customer Project ได้
  */
 export interface EndCustomerProject {
+    id?: string;                  // ID สำหรับระบุโครงการ (auto-generate)
     projectName: string;          // ชื่อโครงการลูกค้าปลายทาง
     projectAddress?: string;      // ที่ตั้งโครงการ
     contactName?: string;         // ชื่อผู้ติดต่อที่โครงการ
+    contactPhone?: string;        // เบอร์โทรผู้ติดต่อ
+    notes?: string;               // หมายเหตุเพิ่มเติม
+    createdAt?: Date;             // วันที่สร้าง
 }
 
 // Customer - ข้อมูลลูกค้าแบบครบวงจร (ลดการกรอกข้อมูลซ้ำ)
@@ -610,9 +616,13 @@ export interface Customer {
     tags?: string[];               // Tags สำหรับจัดกลุ่ม เช่น ['VIP', 'ลูกค้าประจำ']
     notes?: string;                // หมายเหตุเพิ่มเติม
     
-    // ข้อมูลโครงการลูกค้าปลายทาง (End Customer Project)
-    hasEndCustomerProject?: boolean;           // มีโครงการลูกค้าปลายทางหรือไม่
-    endCustomerProject?: EndCustomerProject;   // ข้อมูลโครงการลูกค้าปลายทาง
+    // ข้อมูลโครงการลูกค้าปลายทาง (End Customer Projects) - รองรับหลายโครงการ
+    hasEndCustomerProjects?: boolean;           // มีโครงการลูกค้าปลายทางหรือไม่
+    endCustomerProjects?: EndCustomerProject[]; // รายการโครงการลูกค้าปลายทาง (หลายโครงการ)
+    
+    // Legacy field - สำหรับ backward compatibility (deprecated)
+    endCustomerProject?: EndCustomerProject;   // @deprecated - ใช้ endCustomerProjects แทน
+    hasEndCustomerProject?: boolean;           // @deprecated - ใช้ hasEndCustomerProjects แทน
     
     // Metadata
     lastUsedAt?: Date;             // ใช้ล่าสุดเมื่อไร (สำหรับ sorting)

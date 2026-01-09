@@ -21,10 +21,15 @@ import {
 const CUSTOMERS_COLLECTION = 'customers';
 
 // Interface สำหรับโครงการลูกค้าปลายทาง (End Customer Project)
+// รองรับหลายโครงการต่อลูกค้า 1 ราย
 export interface EndCustomerProject {
+    id?: string;                  // ID สำหรับระบุโครงการ (auto-generate)
     projectName: string;          // ชื่อโครงการลูกค้าปลายทาง
     projectAddress?: string;      // ที่ตั้งโครงการ
     contactName?: string;         // ชื่อผู้ติดต่อที่โครงการ
+    contactPhone?: string;        // เบอร์โทรผู้ติดต่อ
+    notes?: string;               // หมายเหตุเพิ่มเติม
+    createdAt?: Date;             // วันที่สร้าง
 }
 
 // Interface สำหรับ Customer
@@ -65,9 +70,13 @@ export interface Customer {
     tags?: string[];            // Tags สำหรับจัดกลุ่ม เช่น ['VIP', 'ลูกค้าประจำ']
     notes?: string;             // หมายเหตุเพิ่มเติม
     
-    // ข้อมูลโครงการลูกค้าปลายทาง (End Customer Project)
-    hasEndCustomerProject?: boolean;           // มีโครงการลูกค้าปลายทางหรือไม่
-    endCustomerProject?: EndCustomerProject;   // ข้อมูลโครงการลูกค้าปลายทาง
+    // ข้อมูลโครงการลูกค้าปลายทาง (End Customer Projects) - รองรับหลายโครงการ
+    hasEndCustomerProjects?: boolean;           // มีโครงการลูกค้าปลายทางหรือไม่
+    endCustomerProjects?: EndCustomerProject[]; // รายการโครงการลูกค้าปลายทาง (หลายโครงการ)
+    
+    // Legacy fields - สำหรับ backward compatibility (deprecated)
+    endCustomerProject?: EndCustomerProject;   // @deprecated - ใช้ endCustomerProjects แทน
+    hasEndCustomerProject?: boolean;           // @deprecated - ใช้ hasEndCustomerProjects แทน
     
     // Metadata
     lastUsedAt?: Date;          // ใช้ล่าสุดเมื่อไร (สำหรับ sorting)
@@ -184,6 +193,10 @@ export const getCustomers = async (companyId: string): Promise<Customer[]> => {
                 branchName: data.branchName,
                 tags: data.tags || [],
                 notes: data.notes,
+                // รองรับทั้งแบบเก่า (single) และแบบใหม่ (array)
+                hasEndCustomerProjects: data.hasEndCustomerProjects || data.hasEndCustomerProject || false,
+                endCustomerProjects: data.endCustomerProjects || (data.endCustomerProject ? [data.endCustomerProject] : []),
+                // Legacy fields สำหรับ backward compatibility
                 hasEndCustomerProject: data.hasEndCustomerProject || false,
                 endCustomerProject: data.endCustomerProject || undefined,
                 lastUsedAt: data.lastUsedAt?.toDate(),
