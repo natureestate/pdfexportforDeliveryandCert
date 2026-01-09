@@ -14,6 +14,7 @@ import { EndCustomer } from '../services/endCustomers';
 import { generateDocumentNumber, DocumentType } from '../services/documentNumber';
 import { useCompany } from '../contexts/CompanyContext';
 import { numberToThaiText } from '../utils/numberToThaiText';
+import { INPUT_LIMITS, NUMBER_LIMITS } from '../utils/inputValidation';
 
 export interface SubcontractFormProps {
     data: SubcontractData;
@@ -322,21 +323,21 @@ const SubcontractForm: React.FC<SubcontractFormProps> = ({
                     
                     <div>
                         <label htmlFor="contractorName" className="block text-xs sm:text-sm font-medium text-slate-700 dark:text-slate-300">ชื่อช่าง/หัวหน้าชุดช่าง *</label>
-                        <input type="text" id="contractorName" value={data.contractorName} onChange={(e) => handleDataChange('contractorName', e.target.value)} className="mt-1 block w-full rounded-md border-gray-300 dark:border-gray-600 shadow-sm focus:border-indigo-500 focus:ring-indigo-500 text-xs sm:text-sm bg-gray-50 dark:bg-slate-700 dark:text-gray-100 dark:placeholder-gray-400" placeholder="นายสมชาย ช่างเก่ง" />
+                        <input type="text" id="contractorName" value={data.contractorName} onChange={(e) => handleDataChange('contractorName', e.target.value)} maxLength={INPUT_LIMITS.customerName} className="mt-1 block w-full rounded-md border-gray-300 dark:border-gray-600 shadow-sm focus:border-indigo-500 focus:ring-indigo-500 text-xs sm:text-sm bg-gray-50 dark:bg-slate-700 dark:text-gray-100 dark:placeholder-gray-400" placeholder="นายสมชาย ช่างเก่ง" />
                     </div>
                     <div className="grid grid-cols-1 md:grid-cols-2 gap-3 sm:gap-4">
                         <div>
                             <label htmlFor="contractorIdCard" className="block text-xs sm:text-sm font-medium text-slate-700 dark:text-slate-300">เลขบัตรประชาชน/เลขผู้เสียภาษี</label>
-                            <input type="text" id="contractorIdCard" value={data.contractorIdCard || ''} onChange={(e) => handleDataChange('contractorIdCard', e.target.value)} className="mt-1 block w-full rounded-md border-gray-300 dark:border-gray-600 shadow-sm focus:border-indigo-500 focus:ring-indigo-500 text-xs sm:text-sm bg-gray-50 dark:bg-slate-700 dark:text-gray-100 dark:placeholder-gray-400" placeholder="1-2345-67890-12-3" />
+                            <input type="text" id="contractorIdCard" value={data.contractorIdCard || ''} onChange={(e) => handleDataChange('contractorIdCard', e.target.value)} maxLength={INPUT_LIMITS.taxId} inputMode="numeric" pattern="[0-9]*" className="mt-1 block w-full rounded-md border-gray-300 dark:border-gray-600 shadow-sm focus:border-indigo-500 focus:ring-indigo-500 text-xs sm:text-sm bg-gray-50 dark:bg-slate-700 dark:text-gray-100 dark:placeholder-gray-400" placeholder="1234567890123" />
                         </div>
                         <div>
                             <label htmlFor="contractorPhone" className="block text-xs sm:text-sm font-medium text-slate-700 dark:text-slate-300">เบอร์โทรศัพท์ *</label>
-                            <input type="text" id="contractorPhone" value={data.contractorPhone} onChange={(e) => handleDataChange('contractorPhone', e.target.value)} className="mt-1 block w-full rounded-md border-gray-300 dark:border-gray-600 shadow-sm focus:border-indigo-500 focus:ring-indigo-500 text-xs sm:text-sm bg-gray-50 dark:bg-slate-700 dark:text-gray-100 dark:placeholder-gray-400" placeholder="08X-XXX-XXXX" />
+                            <input type="tel" id="contractorPhone" value={data.contractorPhone} onChange={(e) => handleDataChange('contractorPhone', e.target.value)} maxLength={INPUT_LIMITS.phone} inputMode="tel" className="mt-1 block w-full rounded-md border-gray-300 dark:border-gray-600 shadow-sm focus:border-indigo-500 focus:ring-indigo-500 text-xs sm:text-sm bg-gray-50 dark:bg-slate-700 dark:text-gray-100 dark:placeholder-gray-400" placeholder="08X-XXX-XXXX" />
                         </div>
                     </div>
                     <div>
                         <label htmlFor="contractorAddress" className="block text-xs sm:text-sm font-medium text-slate-700 dark:text-slate-300">ที่อยู่ผู้รับจ้าง</label>
-                        <textarea id="contractorAddress" value={data.contractorAddress || ''} onChange={(e) => handleDataChange('contractorAddress', e.target.value)} rows={2} className="mt-1 block w-full rounded-md border-gray-300 dark:border-gray-600 shadow-sm focus:border-indigo-500 focus:ring-indigo-500 text-xs sm:text-sm bg-gray-50 dark:bg-slate-700 dark:text-gray-100 dark:placeholder-gray-400" placeholder="ที่อยู่ผู้รับจ้าง (ถ้ามี)" />
+                        <textarea id="contractorAddress" value={data.contractorAddress || ''} onChange={(e) => handleDataChange('contractorAddress', e.target.value)} rows={2} maxLength={INPUT_LIMITS.companyAddress} className="mt-1 block w-full rounded-md border-gray-300 dark:border-gray-600 shadow-sm focus:border-indigo-500 focus:ring-indigo-500 text-xs sm:text-sm bg-gray-50 dark:bg-slate-700 dark:text-gray-100 dark:placeholder-gray-400" placeholder="ที่อยู่ผู้รับจ้าง (ถ้ามี)" />
                     </div>
                 </div>
 
@@ -372,11 +373,11 @@ const SubcontractForm: React.FC<SubcontractFormProps> = ({
                     
                     <div>
                         <label htmlFor="projectName" className="block text-xs sm:text-sm font-medium text-slate-700 dark:text-slate-300">ชื่อโครงการ/บ้านลูกค้า *</label>
-                        <input type="text" id="projectName" value={data.projectName} onChange={(e) => handleDataChange('projectName', e.target.value)} className="mt-1 block w-full rounded-md border-gray-300 dark:border-gray-600 shadow-sm focus:border-indigo-500 focus:ring-indigo-500 text-xs sm:text-sm bg-gray-50 dark:bg-slate-700 dark:text-gray-100 dark:placeholder-gray-400" placeholder="บ้านคุณสมศรี โครงการ ABC" />
+                        <input type="text" id="projectName" value={data.projectName} onChange={(e) => handleDataChange('projectName', e.target.value)} maxLength={INPUT_LIMITS.projectName} className="mt-1 block w-full rounded-md border-gray-300 dark:border-gray-600 shadow-sm focus:border-indigo-500 focus:ring-indigo-500 text-xs sm:text-sm bg-gray-50 dark:bg-slate-700 dark:text-gray-100 dark:placeholder-gray-400" placeholder="บ้านคุณสมศรี โครงการ ABC" />
                     </div>
                     <div>
                         <label htmlFor="projectLocation" className="block text-xs sm:text-sm font-medium text-slate-700 dark:text-slate-300">สถานที่ก่อสร้าง *</label>
-                        <textarea id="projectLocation" value={data.projectLocation} onChange={(e) => handleDataChange('projectLocation', e.target.value)} rows={2} className="mt-1 block w-full rounded-md border-gray-300 dark:border-gray-600 shadow-sm focus:border-indigo-500 focus:ring-indigo-500 text-xs sm:text-sm bg-gray-50 dark:bg-slate-700 dark:text-gray-100 dark:placeholder-gray-400" placeholder="123/45 หมู่บ้าน ABC ถ.พระราม 2 แขวง... เขต... กรุงเทพฯ 10150" />
+                        <textarea id="projectLocation" value={data.projectLocation} onChange={(e) => handleDataChange('projectLocation', e.target.value)} rows={2} maxLength={INPUT_LIMITS.projectAddress} className="mt-1 block w-full rounded-md border-gray-300 dark:border-gray-600 shadow-sm focus:border-indigo-500 focus:ring-indigo-500 text-xs sm:text-sm bg-gray-50 dark:bg-slate-700 dark:text-gray-100 dark:placeholder-gray-400" placeholder="123/45 หมู่บ้าน ABC ถ.พระราม 2 แขวง... เขต... กรุงเทพฯ 10150" />
                     </div>
                     
                     {/* ส่วน End Customer - โครงการลูกค้าปลายทาง */}
@@ -433,6 +434,7 @@ const SubcontractForm: React.FC<SubcontractFormProps> = ({
                                             ...data.endCustomerProject,
                                             projectName: e.target.value,
                                         } as EndCustomerProject)}
+                                        maxLength={INPUT_LIMITS.projectName}
                                         className="w-full rounded-md border-gray-300 dark:border-slate-600 shadow-sm focus:border-purple-500 focus:ring-purple-500 text-xs sm:text-sm px-3 py-2 bg-white dark:bg-slate-700 dark:text-gray-100"
                                         placeholder="เช่น บ้านคุณสมศักดิ์"
                                     />
@@ -450,6 +452,7 @@ const SubcontractForm: React.FC<SubcontractFormProps> = ({
                                             projectAddress: e.target.value,
                                         } as EndCustomerProject)}
                                         rows={2}
+                                        maxLength={INPUT_LIMITS.projectAddress}
                                         className="w-full rounded-md border-gray-300 dark:border-slate-600 shadow-sm focus:border-purple-500 focus:ring-purple-500 text-xs sm:text-sm px-3 py-2 bg-white dark:bg-slate-700 dark:text-gray-100"
                                         placeholder="เช่น 123 หมู่ 5 ต.แวง อ.แกดำ จ.มหาสารคาม"
                                     />
@@ -467,6 +470,7 @@ const SubcontractForm: React.FC<SubcontractFormProps> = ({
                                             ...data.endCustomerProject,
                                             contactName: e.target.value,
                                         } as EndCustomerProject)}
+                                        maxLength={INPUT_LIMITS.contactPerson}
                                         className="w-full rounded-md border-gray-300 dark:border-slate-600 shadow-sm focus:border-purple-500 focus:ring-purple-500 text-xs sm:text-sm px-3 py-2 bg-white dark:bg-slate-700 dark:text-gray-100"
                                         placeholder="เช่น คุณสมศรี"
                                     />
@@ -495,7 +499,7 @@ const SubcontractForm: React.FC<SubcontractFormProps> = ({
                 <div className="space-y-4">
                     <div>
                         <label htmlFor="scopeOfWork" className="block text-xs sm:text-sm font-medium text-slate-700 dark:text-slate-300">รายละเอียดงานที่จ้าง *</label>
-                        <textarea id="scopeOfWork" value={data.scopeOfWork} onChange={(e) => handleDataChange('scopeOfWork', e.target.value)} rows={3} className="mt-1 block w-full rounded-md border-gray-300 dark:border-gray-600 shadow-sm focus:border-indigo-500 focus:ring-indigo-500 text-xs sm:text-sm bg-gray-50 dark:bg-slate-700 dark:text-gray-100 dark:placeholder-gray-400" placeholder="เช่น งานปูกระเบื้องห้องน้ำ 2 ห้อง, งานทาสีภายนอก ฯลฯ" />
+                        <textarea id="scopeOfWork" value={data.scopeOfWork} onChange={(e) => handleDataChange('scopeOfWork', e.target.value)} rows={3} maxLength={INPUT_LIMITS.workScope} className="mt-1 block w-full rounded-md border-gray-300 dark:border-gray-600 shadow-sm focus:border-indigo-500 focus:ring-indigo-500 text-xs sm:text-sm bg-gray-50 dark:bg-slate-700 dark:text-gray-100 dark:placeholder-gray-400" placeholder="เช่น งานปูกระเบื้องห้องน้ำ 2 ห้อง, งานทาสีภายนอก ฯลฯ" />
                     </div>
                     
                     {/* ตารางรายการงาน */}
@@ -517,16 +521,16 @@ const SubcontractForm: React.FC<SubcontractFormProps> = ({
                                     <tr key={index}>
                                         <td className="px-2 sm:px-3 py-1 text-center text-gray-500 dark:text-gray-400">{index + 1}</td>
                                         <td className="px-1 sm:px-2 py-1 whitespace-nowrap">
-                                            <textarea value={item.description} onChange={(e) => handleItemChange(index, 'description', e.target.value)} rows={2} className="w-full rounded-md border-gray-300 dark:border-gray-600 shadow-sm focus:border-indigo-300 focus:ring-indigo-200 focus:ring-opacity-50 text-xs sm:text-sm bg-gray-50 dark:bg-slate-700 text-gray-900 dark:text-gray-100 dark:placeholder-gray-400" placeholder="รายละเอียดงาน"></textarea>
+                                            <textarea value={item.description} onChange={(e) => handleItemChange(index, 'description', e.target.value)} rows={2} maxLength={INPUT_LIMITS.itemDescription} className="w-full rounded-md border-gray-300 dark:border-gray-600 shadow-sm focus:border-indigo-300 focus:ring-indigo-200 focus:ring-opacity-50 text-xs sm:text-sm bg-gray-50 dark:bg-slate-700 text-gray-900 dark:text-gray-100 dark:placeholder-gray-400" placeholder="รายละเอียดงาน"></textarea>
                                         </td>
                                         <td className="px-1 sm:px-2 py-1 whitespace-nowrap">
-                                            <input type="number" value={item.quantity} onChange={(e) => handleItemChange(index, 'quantity', parseFloat(e.target.value) || 0)} className="w-full rounded-md border-gray-300 dark:border-gray-600 shadow-sm focus:border-indigo-300 focus:ring-indigo-200 focus:ring-opacity-50 text-xs sm:text-sm bg-gray-50 dark:bg-slate-700 text-gray-900 dark:text-gray-100" />
+                                            <input type="number" value={item.quantity} onChange={(e) => handleItemChange(index, 'quantity', parseFloat(e.target.value) || 0)} inputMode="decimal" min={NUMBER_LIMITS.quantity.min} max={NUMBER_LIMITS.quantity.max} step={NUMBER_LIMITS.quantity.step} className="w-full rounded-md border-gray-300 dark:border-gray-600 shadow-sm focus:border-indigo-300 focus:ring-indigo-200 focus:ring-opacity-50 text-xs sm:text-sm bg-gray-50 dark:bg-slate-700 text-gray-900 dark:text-gray-100" />
                                         </td>
                                         <td className="px-1 sm:px-2 py-1 whitespace-nowrap">
-                                            <input type="text" value={item.unit} onChange={(e) => handleItemChange(index, 'unit', e.target.value)} className="w-full rounded-md border-gray-300 dark:border-gray-600 shadow-sm focus:border-indigo-300 focus:ring-indigo-200 focus:ring-opacity-50 text-xs sm:text-sm bg-gray-50 dark:bg-slate-700 text-gray-900 dark:text-gray-100" />
+                                            <input type="text" value={item.unit} onChange={(e) => handleItemChange(index, 'unit', e.target.value)} maxLength={INPUT_LIMITS.unit} className="w-full rounded-md border-gray-300 dark:border-gray-600 shadow-sm focus:border-indigo-300 focus:ring-indigo-200 focus:ring-opacity-50 text-xs sm:text-sm bg-gray-50 dark:bg-slate-700 text-gray-900 dark:text-gray-100" />
                                         </td>
                                         <td className="px-1 sm:px-2 py-1 whitespace-nowrap">
-                                            <input type="number" step="0.01" value={item.unitPrice} onChange={(e) => handleItemChange(index, 'unitPrice', parseFloat(e.target.value) || 0)} className="w-full rounded-md border-gray-300 dark:border-gray-600 shadow-sm focus:border-indigo-300 focus:ring-indigo-200 focus:ring-opacity-50 text-xs sm:text-sm bg-gray-50 dark:bg-slate-700 text-gray-900 dark:text-gray-100" />
+                                            <input type="number" step="0.01" value={item.unitPrice} onChange={(e) => handleItemChange(index, 'unitPrice', parseFloat(e.target.value) || 0)} inputMode="decimal" min={NUMBER_LIMITS.price.min} max={NUMBER_LIMITS.price.max} className="w-full rounded-md border-gray-300 dark:border-gray-600 shadow-sm focus:border-indigo-300 focus:ring-indigo-200 focus:ring-opacity-50 text-xs sm:text-sm bg-gray-50 dark:bg-slate-700 text-gray-900 dark:text-gray-100" />
                                         </td>
                                         <td className="px-1 sm:px-2 py-1 whitespace-nowrap">
                                             <input type="number" step="0.01" value={item.amount} readOnly className="w-full rounded-md border-gray-300 dark:border-gray-600 shadow-sm text-xs sm:text-sm bg-gray-100 dark:bg-slate-600 text-gray-900 dark:text-gray-100 font-medium" />
@@ -557,7 +561,7 @@ const SubcontractForm: React.FC<SubcontractFormProps> = ({
                     
                     <div>
                         <label htmlFor="materialNote" className="block text-xs sm:text-sm font-medium text-slate-700 dark:text-slate-300">หมายเหตุเรื่องวัสดุ</label>
-                        <input type="text" id="materialNote" value={data.materialNote || ''} onChange={(e) => handleDataChange('materialNote', e.target.value)} className="mt-1 block w-full rounded-md border-gray-300 dark:border-gray-600 shadow-sm focus:border-indigo-500 focus:ring-indigo-500 text-xs sm:text-sm bg-gray-50 dark:bg-slate-700 dark:text-gray-100 dark:placeholder-gray-400" placeholder="เช่น ค่าวัสดุผู้ว่าจ้างเป็นผู้จัดหา" />
+                        <input type="text" id="materialNote" value={data.materialNote || ''} onChange={(e) => handleDataChange('materialNote', e.target.value)} maxLength={INPUT_LIMITS.notes} className="mt-1 block w-full rounded-md border-gray-300 dark:border-gray-600 shadow-sm focus:border-indigo-500 focus:ring-indigo-500 text-xs sm:text-sm bg-gray-50 dark:bg-slate-700 dark:text-gray-100 dark:placeholder-gray-400" placeholder="เช่น ค่าวัสดุผู้ว่าจ้างเป็นผู้จัดหา" />
                     </div>
                 </div>
 
@@ -588,7 +592,7 @@ const SubcontractForm: React.FC<SubcontractFormProps> = ({
                     <div className="grid grid-cols-1 md:grid-cols-2 gap-3 sm:gap-4">
                         <div>
                             <label htmlFor="totalContractAmount" className="block text-xs sm:text-sm font-medium text-slate-700 dark:text-slate-300">ค่าจ้างรวมทั้งสิ้น (บาท)</label>
-                            <input type="number" id="totalContractAmount" value={data.totalContractAmount} onChange={(e) => handleDataChange('totalContractAmount', parseFloat(e.target.value) || 0)} className="mt-1 block w-full rounded-md border-gray-300 dark:border-gray-600 shadow-sm focus:border-indigo-500 focus:ring-indigo-500 text-xs sm:text-sm bg-gray-50 dark:bg-slate-700 dark:text-gray-100" />
+                            <input type="number" id="totalContractAmount" value={data.totalContractAmount} onChange={(e) => handleDataChange('totalContractAmount', parseFloat(e.target.value) || 0)} inputMode="decimal" min={NUMBER_LIMITS.price.min} max={NUMBER_LIMITS.price.max} step={NUMBER_LIMITS.price.step} className="mt-1 block w-full rounded-md border-gray-300 dark:border-gray-600 shadow-sm focus:border-indigo-500 focus:ring-indigo-500 text-xs sm:text-sm bg-gray-50 dark:bg-slate-700 dark:text-gray-100" />
                         </div>
                         <div>
                             <label htmlFor="totalContractAmountText" className="block text-xs sm:text-sm font-medium text-slate-700 dark:text-slate-300">ค่าจ้างเป็นตัวอักษร (คำนวณอัตโนมัติ)</label>
@@ -613,10 +617,10 @@ const SubcontractForm: React.FC<SubcontractFormProps> = ({
                                     <tr key={index}>
                                         <td className="px-2 sm:px-3 py-1 text-center font-medium text-gray-700 dark:text-gray-200">{milestone.milestone}</td>
                                         <td className="px-1 sm:px-2 py-1 whitespace-nowrap">
-                                            <textarea value={milestone.description} onChange={(e) => handleMilestoneChange(index, 'description', e.target.value)} rows={2} className="w-full rounded-md border-gray-300 dark:border-gray-600 shadow-sm focus:border-green-300 focus:ring-green-200 focus:ring-opacity-50 text-xs sm:text-sm bg-gray-50 dark:bg-slate-700 text-gray-900 dark:text-gray-100 dark:placeholder-gray-400" placeholder="เช่น เบิกเงินล่วงหน้า / เมื่อดำเนินการ...เสร็จสิ้น"></textarea>
+                                            <textarea value={milestone.description} onChange={(e) => handleMilestoneChange(index, 'description', e.target.value)} rows={2} maxLength={INPUT_LIMITS.itemDescription} className="w-full rounded-md border-gray-300 dark:border-gray-600 shadow-sm focus:border-green-300 focus:ring-green-200 focus:ring-opacity-50 text-xs sm:text-sm bg-gray-50 dark:bg-slate-700 text-gray-900 dark:text-gray-100 dark:placeholder-gray-400" placeholder="เช่น เบิกเงินล่วงหน้า / เมื่อดำเนินการ...เสร็จสิ้น"></textarea>
                                         </td>
                                         <td className="px-1 sm:px-2 py-1 whitespace-nowrap">
-                                            <input type="number" value={milestone.percentage} onChange={(e) => handleMilestoneChange(index, 'percentage', parseFloat(e.target.value) || 0)} className="w-full rounded-md border-gray-300 dark:border-gray-600 shadow-sm focus:border-green-300 focus:ring-green-200 focus:ring-opacity-50 text-xs sm:text-sm bg-gray-50 dark:bg-slate-700 text-gray-900 dark:text-gray-100" />
+                                            <input type="number" value={milestone.percentage} onChange={(e) => handleMilestoneChange(index, 'percentage', parseFloat(e.target.value) || 0)} inputMode="decimal" min={NUMBER_LIMITS.percentage.min} max={NUMBER_LIMITS.percentage.max} step={NUMBER_LIMITS.percentage.step} className="w-full rounded-md border-gray-300 dark:border-gray-600 shadow-sm focus:border-green-300 focus:ring-green-200 focus:ring-opacity-50 text-xs sm:text-sm bg-gray-50 dark:bg-slate-700 text-gray-900 dark:text-gray-100" />
                                         </td>
                                         <td className="px-1 sm:px-2 py-1 whitespace-nowrap">
                                             <input type="number" step="0.01" value={milestone.amount} readOnly className="w-full rounded-md border-gray-300 dark:border-gray-600 shadow-sm text-xs sm:text-sm bg-gray-100 dark:bg-slate-600 text-gray-900 dark:text-gray-100 font-medium" />
@@ -675,11 +679,11 @@ const SubcontractForm: React.FC<SubcontractFormProps> = ({
                         <div className="grid grid-cols-1 md:grid-cols-2 gap-3 sm:gap-4">
                             <div>
                                 <label htmlFor="defectFixDays" className="block text-xs sm:text-sm font-medium text-slate-700 dark:text-slate-300">แก้ไขงานบกพร่องภายใน (วัน)</label>
-                                <input type="number" id="defectFixDays" value={data.defectFixDays} onChange={(e) => handleDataChange('defectFixDays', parseInt(e.target.value) || 0)} className="mt-1 block w-full rounded-md border-gray-300 dark:border-gray-600 shadow-sm focus:border-indigo-500 focus:ring-indigo-500 text-xs sm:text-sm bg-gray-50 dark:bg-slate-700 dark:text-gray-100" />
+                                <input type="number" id="defectFixDays" value={data.defectFixDays} onChange={(e) => handleDataChange('defectFixDays', parseInt(e.target.value) || 0)} inputMode="numeric" min={NUMBER_LIMITS.days.min} max={NUMBER_LIMITS.days.max} step={NUMBER_LIMITS.days.step} className="mt-1 block w-full rounded-md border-gray-300 dark:border-gray-600 shadow-sm focus:border-indigo-500 focus:ring-indigo-500 text-xs sm:text-sm bg-gray-50 dark:bg-slate-700 dark:text-gray-100" />
                             </div>
                             <div>
                                 <label htmlFor="warrantyMonths" className="block text-xs sm:text-sm font-medium text-slate-700 dark:text-slate-300">รับประกันผลงาน (เดือน)</label>
-                                <input type="number" id="warrantyMonths" value={data.warrantyMonths} onChange={(e) => handleDataChange('warrantyMonths', parseInt(e.target.value) || 0)} className="mt-1 block w-full rounded-md border-gray-300 dark:border-gray-600 shadow-sm focus:border-indigo-500 focus:ring-indigo-500 text-xs sm:text-sm bg-gray-50 dark:bg-slate-700 dark:text-gray-100" />
+                                <input type="number" id="warrantyMonths" value={data.warrantyMonths} onChange={(e) => handleDataChange('warrantyMonths', parseInt(e.target.value) || 0)} inputMode="numeric" min={NUMBER_LIMITS.days.min} max={NUMBER_LIMITS.days.max} step={NUMBER_LIMITS.days.step} className="mt-1 block w-full rounded-md border-gray-300 dark:border-gray-600 shadow-sm focus:border-indigo-500 focus:ring-indigo-500 text-xs sm:text-sm bg-gray-50 dark:bg-slate-700 dark:text-gray-100" />
                             </div>
                         </div>
                     )}
@@ -696,11 +700,11 @@ const SubcontractForm: React.FC<SubcontractFormProps> = ({
                         <div className="grid grid-cols-1 md:grid-cols-2 gap-3 sm:gap-4">
                             <div>
                                 <label htmlFor="abandonDays" className="block text-xs sm:text-sm font-medium text-slate-700 dark:text-slate-300">ไม่เข้าทำงานติดต่อกันเกิน (วัน)</label>
-                                <input type="number" id="abandonDays" value={data.abandonDays} onChange={(e) => handleDataChange('abandonDays', parseInt(e.target.value) || 0)} className="mt-1 block w-full rounded-md border-gray-300 dark:border-gray-600 shadow-sm focus:border-indigo-500 focus:ring-indigo-500 text-xs sm:text-sm bg-gray-50 dark:bg-slate-700 dark:text-gray-100" />
+                                <input type="number" id="abandonDays" value={data.abandonDays} onChange={(e) => handleDataChange('abandonDays', parseInt(e.target.value) || 0)} inputMode="numeric" min={NUMBER_LIMITS.days.min} max={NUMBER_LIMITS.days.max} step={NUMBER_LIMITS.days.step} className="mt-1 block w-full rounded-md border-gray-300 dark:border-gray-600 shadow-sm focus:border-indigo-500 focus:ring-indigo-500 text-xs sm:text-sm bg-gray-50 dark:bg-slate-700 dark:text-gray-100" />
                             </div>
                             <div>
                                 <label htmlFor="penaltyPerDay" className="block text-xs sm:text-sm font-medium text-slate-700 dark:text-slate-300">ปรับเป็นรายวัน วันละ (บาท)</label>
-                                <input type="number" id="penaltyPerDay" value={data.penaltyPerDay} onChange={(e) => handleDataChange('penaltyPerDay', parseInt(e.target.value) || 0)} className="mt-1 block w-full rounded-md border-gray-300 dark:border-gray-600 shadow-sm focus:border-indigo-500 focus:ring-indigo-500 text-xs sm:text-sm bg-gray-50 dark:bg-slate-700 dark:text-gray-100" />
+                                <input type="number" id="penaltyPerDay" value={data.penaltyPerDay} onChange={(e) => handleDataChange('penaltyPerDay', parseInt(e.target.value) || 0)} inputMode="decimal" min={NUMBER_LIMITS.price.min} max={NUMBER_LIMITS.price.max} step={NUMBER_LIMITS.price.step} className="mt-1 block w-full rounded-md border-gray-300 dark:border-gray-600 shadow-sm focus:border-indigo-500 focus:ring-indigo-500 text-xs sm:text-sm bg-gray-50 dark:bg-slate-700 dark:text-gray-100" />
                             </div>
                         </div>
                     )}
@@ -712,15 +716,15 @@ const SubcontractForm: React.FC<SubcontractFormProps> = ({
                     <div className="grid grid-cols-1 md:grid-cols-3 gap-3 sm:gap-4">
                         <div>
                             <label htmlFor="employerSignName" className="block text-xs sm:text-sm font-medium text-slate-700 dark:text-slate-300">ชื่อผู้ว่าจ้าง (ลงนาม)</label>
-                            <input type="text" id="employerSignName" value={data.employerSignName} onChange={(e) => handleDataChange('employerSignName', e.target.value)} className="mt-1 block w-full rounded-md border-gray-300 dark:border-gray-600 shadow-sm focus:border-indigo-500 focus:ring-indigo-500 text-xs sm:text-sm bg-gray-50 dark:bg-slate-700 dark:text-gray-100" />
+                            <input type="text" id="employerSignName" value={data.employerSignName} onChange={(e) => handleDataChange('employerSignName', e.target.value)} maxLength={INPUT_LIMITS.signerName} className="mt-1 block w-full rounded-md border-gray-300 dark:border-gray-600 shadow-sm focus:border-indigo-500 focus:ring-indigo-500 text-xs sm:text-sm bg-gray-50 dark:bg-slate-700 dark:text-gray-100" />
                         </div>
                         <div>
                             <label htmlFor="contractorSignName" className="block text-xs sm:text-sm font-medium text-slate-700 dark:text-slate-300">ชื่อผู้รับจ้าง (ลงนาม)</label>
-                            <input type="text" id="contractorSignName" value={data.contractorSignName} onChange={(e) => handleDataChange('contractorSignName', e.target.value)} className="mt-1 block w-full rounded-md border-gray-300 dark:border-gray-600 shadow-sm focus:border-indigo-500 focus:ring-indigo-500 text-xs sm:text-sm bg-gray-50 dark:bg-slate-700 dark:text-gray-100" />
+                            <input type="text" id="contractorSignName" value={data.contractorSignName} onChange={(e) => handleDataChange('contractorSignName', e.target.value)} maxLength={INPUT_LIMITS.signerName} className="mt-1 block w-full rounded-md border-gray-300 dark:border-gray-600 shadow-sm focus:border-indigo-500 focus:ring-indigo-500 text-xs sm:text-sm bg-gray-50 dark:bg-slate-700 dark:text-gray-100" />
                         </div>
                         <div>
                             <label htmlFor="witnessName" className="block text-xs sm:text-sm font-medium text-slate-700 dark:text-slate-300">ชื่อพยาน (ถ้ามี)</label>
-                            <input type="text" id="witnessName" value={data.witnessName || ''} onChange={(e) => handleDataChange('witnessName', e.target.value)} className="mt-1 block w-full rounded-md border-gray-300 dark:border-gray-600 shadow-sm focus:border-indigo-500 focus:ring-indigo-500 text-xs sm:text-sm bg-gray-50 dark:bg-slate-700 dark:text-gray-100" />
+                            <input type="text" id="witnessName" value={data.witnessName || ''} onChange={(e) => handleDataChange('witnessName', e.target.value)} maxLength={INPUT_LIMITS.witnessName} className="mt-1 block w-full rounded-md border-gray-300 dark:border-gray-600 shadow-sm focus:border-indigo-500 focus:ring-indigo-500 text-xs sm:text-sm bg-gray-50 dark:bg-slate-700 dark:text-gray-100" />
                         </div>
                     </div>
                 </div>
@@ -730,11 +734,11 @@ const SubcontractForm: React.FC<SubcontractFormProps> = ({
                 <div className="space-y-4">
                     <div>
                         <label htmlFor="notes" className="block text-xs sm:text-sm font-medium text-slate-700 dark:text-slate-300">หมายเหตุเพิ่มเติม</label>
-                        <textarea id="notes" value={data.notes || ''} onChange={(e) => handleDataChange('notes', e.target.value)} rows={3} className="mt-1 block w-full rounded-md border-gray-300 dark:border-gray-600 shadow-sm focus:border-indigo-500 focus:ring-indigo-500 text-xs sm:text-sm bg-gray-50 dark:bg-slate-700 dark:text-gray-100 dark:placeholder-gray-400" placeholder="หมายเหตุหรือเงื่อนไขเพิ่มเติม..." />
+                        <textarea id="notes" value={data.notes || ''} onChange={(e) => handleDataChange('notes', e.target.value)} rows={3} maxLength={INPUT_LIMITS.notes} className="mt-1 block w-full rounded-md border-gray-300 dark:border-gray-600 shadow-sm focus:border-indigo-500 focus:ring-indigo-500 text-xs sm:text-sm bg-gray-50 dark:bg-slate-700 dark:text-gray-100 dark:placeholder-gray-400" placeholder="หมายเหตุหรือเงื่อนไขเพิ่มเติม..." />
                     </div>
                     <div>
                         <label htmlFor="issuedBy" className="block text-xs sm:text-sm font-medium text-slate-700 dark:text-slate-300">ผู้ออกเอกสาร</label>
-                        <input type="text" id="issuedBy" value={data.issuedBy || ''} onChange={(e) => handleDataChange('issuedBy', e.target.value)} className="mt-1 block w-full rounded-md border-gray-300 dark:border-gray-600 shadow-sm focus:border-indigo-500 focus:ring-indigo-500 text-xs sm:text-sm bg-gray-50 dark:bg-slate-700 dark:text-gray-100" />
+                        <input type="text" id="issuedBy" value={data.issuedBy || ''} onChange={(e) => handleDataChange('issuedBy', e.target.value)} maxLength={INPUT_LIMITS.signerName} className="mt-1 block w-full rounded-md border-gray-300 dark:border-gray-600 shadow-sm focus:border-indigo-500 focus:ring-indigo-500 text-xs sm:text-sm bg-gray-50 dark:bg-slate-700 dark:text-gray-100" />
                     </div>
                 </div>
             </div>
