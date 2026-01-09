@@ -52,8 +52,51 @@ const PreviewIcon = () => (
     </svg>
 );
 
+// ไอคอนสำหรับฟีเจอร์ใหม่
+const CopyIcon = () => (
+    <svg className="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+        <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M8 16H6a2 2 0 01-2-2V6a2 2 0 012-2h8a2 2 0 012 2v2m-6 12h8a2 2 0 002-2v-8a2 2 0 00-2-2h-8a2 2 0 00-2 2v8a2 2 0 002 2z" />
+    </svg>
+);
+
+const LockIcon = () => (
+    <svg className="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+        <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M12 15v2m-6 4h12a2 2 0 002-2v-6a2 2 0 00-2-2H6a2 2 0 00-2 2v6a2 2 0 002 2zm10-10V7a4 4 0 00-8 0v4h8z" />
+    </svg>
+);
+
+const UnlockIcon = () => (
+    <svg className="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+        <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M8 11V7a4 4 0 118 0m-4 8v2m-6 4h12a2 2 0 002-2v-6a2 2 0 00-2-2H6a2 2 0 00-2 2v6a2 2 0 002 2z" />
+    </svg>
+);
+
+const ArchiveIcon = () => (
+    <svg className="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+        <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M5 8h14M5 8a2 2 0 110-4h14a2 2 0 110 4M5 8v10a2 2 0 002 2h10a2 2 0 002-2V8m-9 4h4" />
+    </svg>
+);
+
+const HistoryIcon = () => (
+    <svg className="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+        <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M12 8v4l3 3m6-3a9 9 0 11-18 0 9 9 0 0118 0z" />
+    </svg>
+);
+
+const ShareIcon = () => (
+    <svg className="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+        <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M8.684 13.342C8.886 12.938 9 12.482 9 12c0-.482-.114-.938-.316-1.342m0 2.684a3 3 0 110-2.684m0 2.684l6.632 3.316m-6.632-6l6.632-3.316m0 0a3 3 0 105.367-2.684 3 3 0 00-5.367 2.684zm0 9.316a3 3 0 105.368 2.684 3 3 0 00-5.368-2.684z" />
+    </svg>
+);
+
+const VersionIcon = () => (
+    <svg className="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+        <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M9 12h6m-6 4h6m2 5H7a2 2 0 01-2-2V5a2 2 0 012-2h5.586a1 1 0 01.707.293l5.414 5.414a1 1 0 01.293.707V19a2 2 0 01-2 2z" />
+    </svg>
+);
+
 interface DocumentActionsProps {
-    // ฟังก์ชัน callbacks
+    // ฟังก์ชัน callbacks - พื้นฐาน
     onEdit: () => void;
     onDownload: () => void;
     onDownloadPng?: () => void;  // ดาวน์โหลด PNG
@@ -62,12 +105,31 @@ interface DocumentActionsProps {
     onDelete: () => void;
     onPreview?: () => void;
     
+    // ฟังก์ชัน callbacks - ฟีเจอร์ใหม่
+    onCopy?: () => void;          // Copy เอกสาร
+    onLock?: () => void;          // Lock เอกสาร
+    onUnlock?: () => void;        // Unlock เอกสาร
+    onArchive?: () => void;       // Archive เอกสาร
+    onUnarchive?: () => void;     // Unarchive เอกสาร
+    onShowHistory?: () => void;   // แสดงประวัติเอกสาร
+    onShare?: () => void;         // Share เอกสาร
+    onShowVersions?: () => void;  // แสดง versions
+    
     // สถานะ
     isCancelled?: boolean;
     isDownloading?: boolean;
     isDownloadingPng?: boolean;  // กำลังดาวน์โหลด PNG
     isCancelling?: boolean;
     isRestoring?: boolean;
+    
+    // สถานะฟีเจอร์ใหม่
+    isLocked?: boolean;           // เอกสารถูก lock หรือไม่
+    isLocking?: boolean;          // กำลัง lock
+    isUnlocking?: boolean;        // กำลัง unlock
+    isArchived?: boolean;         // เอกสารถูก archive หรือไม่
+    isArchiving?: boolean;        // กำลัง archive
+    isUnarchiving?: boolean;      // กำลัง unarchive
+    isCopying?: boolean;          // กำลัง copy
     
     // ตัวเลือกเพิ่มเติม
     showPreview?: boolean;
@@ -78,6 +140,7 @@ interface DocumentActionsProps {
 /**
  * DocumentActions - ปุ่ม actions สำหรับเอกสาร
  * แสดงปุ่มหลัก (แก้ไข, PDF) และ dropdown สำหรับ actions รอง
+ * รองรับฟีเจอร์ใหม่: Copy, Lock, Archive, History, Share, Versions
  */
 const DocumentActions: React.FC<DocumentActionsProps> = ({
     onEdit,
@@ -87,11 +150,30 @@ const DocumentActions: React.FC<DocumentActionsProps> = ({
     onRestore,
     onDelete,
     onPreview,
+    // ฟีเจอร์ใหม่
+    onCopy,
+    onLock,
+    onUnlock,
+    onArchive,
+    onUnarchive,
+    onShowHistory,
+    onShare,
+    onShowVersions,
+    // สถานะ
     isCancelled = false,
     isDownloading = false,
     isDownloadingPng = false,
     isCancelling = false,
     isRestoring = false,
+    // สถานะฟีเจอร์ใหม่
+    isLocked = false,
+    isLocking = false,
+    isUnlocking = false,
+    isArchived = false,
+    isArchiving = false,
+    isUnarchiving = false,
+    isCopying = false,
+    // ตัวเลือก
     showPreview = false,
     compact = false,
     showOnHover = false,
@@ -105,6 +187,60 @@ const DocumentActions: React.FC<DocumentActionsProps> = ({
             onClick: onPreview || (() => {}),
             variant: 'default' as const,
             hidden: !showPreview || !onPreview,
+        },
+        // Copy เอกสาร (ฟีเจอร์ใหม่)
+        {
+            label: 'Copy เอกสาร',
+            icon: <CopyIcon />,
+            onClick: onCopy || (() => {}),
+            variant: 'default' as const,
+            loading: isCopying,
+            loadingText: 'กำลัง copy...',
+            hidden: !onCopy,
+        },
+        // Lock/Unlock เอกสาร (ฟีเจอร์ใหม่)
+        {
+            label: isLocked ? 'Unlock เอกสาร' : 'Lock เอกสาร',
+            icon: isLocked ? <UnlockIcon /> : <LockIcon />,
+            onClick: isLocked ? (onUnlock || (() => {})) : (onLock || (() => {})),
+            variant: 'warning' as const,
+            loading: isLocked ? isUnlocking : isLocking,
+            loadingText: isLocked ? 'กำลัง unlock...' : 'กำลัง lock...',
+            hidden: isLocked ? !onUnlock : !onLock,
+        },
+        // Archive/Unarchive เอกสาร (ฟีเจอร์ใหม่)
+        {
+            label: isArchived ? 'Unarchive เอกสาร' : 'Archive เอกสาร',
+            icon: <ArchiveIcon />,
+            onClick: isArchived ? (onUnarchive || (() => {})) : (onArchive || (() => {})),
+            variant: 'default' as const,
+            loading: isArchived ? isUnarchiving : isArchiving,
+            loadingText: isArchived ? 'กำลัง unarchive...' : 'กำลัง archive...',
+            hidden: isArchived ? !onUnarchive : !onArchive,
+        },
+        // แสดงประวัติ (ฟีเจอร์ใหม่)
+        {
+            label: 'ประวัติเอกสาร',
+            icon: <HistoryIcon />,
+            onClick: onShowHistory || (() => {}),
+            variant: 'default' as const,
+            hidden: !onShowHistory,
+        },
+        // Share เอกสาร (ฟีเจอร์ใหม่)
+        {
+            label: 'แชร์เอกสาร',
+            icon: <ShareIcon />,
+            onClick: onShare || (() => {}),
+            variant: 'success' as const,
+            hidden: !onShare,
+        },
+        // แสดง Versions (ฟีเจอร์ใหม่)
+        {
+            label: 'เวอร์ชันเอกสาร',
+            icon: <VersionIcon />,
+            onClick: onShowVersions || (() => {}),
+            variant: 'default' as const,
+            hidden: !onShowVersions,
         },
         // ยกเลิก/กู้คืน
         {
@@ -132,15 +268,31 @@ const DocumentActions: React.FC<DocumentActionsProps> = ({
 
     return (
         <div className={`flex items-center gap-1 sm:gap-2 ${hoverClasses}`}>
-            {/* ปุ่มแก้ไข - แสดงตลอด */}
+            {/* แสดง badges สถานะ */}
+            {isLocked && (
+                <span className="px-1.5 py-0.5 text-xs bg-orange-100 dark:bg-orange-900/30 text-orange-700 dark:text-orange-300 rounded flex items-center gap-1" title="เอกสารถูก Lock">
+                    <LockIcon />
+                    <span className="hidden sm:inline">Locked</span>
+                </span>
+            )}
+            {isArchived && (
+                <span className="px-1.5 py-0.5 text-xs bg-gray-100 dark:bg-gray-700 text-gray-600 dark:text-gray-300 rounded flex items-center gap-1" title="เอกสารถูก Archive">
+                    <ArchiveIcon />
+                    <span className="hidden sm:inline">Archived</span>
+                </span>
+            )}
+            
+            {/* ปุ่มแก้ไข - แสดงตลอด (แต่ disable ถ้า locked) */}
             <button
                 onClick={onEdit}
+                disabled={isLocked}
                 className={`
                     ${compact ? 'p-1.5' : 'px-2 sm:px-3 py-1.5 sm:py-1'}
                     bg-amber-600 text-white text-xs sm:text-sm rounded hover:bg-amber-700 
                     flex items-center justify-center gap-1 transition-colors
+                    disabled:opacity-50 disabled:cursor-not-allowed disabled:hover:bg-amber-600
                 `}
-                title="แก้ไขเอกสาร"
+                title={isLocked ? "เอกสารถูก Lock ไม่สามารถแก้ไขได้" : "แก้ไขเอกสาร"}
             >
                 <EditIcon />
                 {!compact && <span className="hidden sm:inline">แก้ไข</span>}

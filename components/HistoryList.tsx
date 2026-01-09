@@ -5,6 +5,13 @@ import { generatePdf, generatePng } from '../services/pdfGenerator';
 import { generatePdfFilename as generatePdfFilenameFromRegistry, type DocType, type DocumentDocument } from '../utils/documentRegistry';
 import { useDocumentList } from '../hooks/useDocumentList';
 import { cancelDocument, restoreDocument } from '../services/verification';
+import { 
+    prepareDocumentForCopy, 
+    lockDocument, 
+    unlockDocument, 
+    archiveDocument, 
+    unarchiveDocument 
+} from '../services/documentManagement';
 import DocumentPreview from './DocumentPreview';
 import WarrantyPreview from './WarrantyPreview';
 import InvoicePreview from './InvoicePreview';
@@ -16,6 +23,9 @@ import VariationOrderPreview from './VariationOrderPreview';
 import SubcontractPreview from './SubcontractPreview';
 import DocumentActions from './DocumentActions';
 import TaxInvoicePreview from './TaxInvoicePreview';
+import DocumentHistoryModal from './DocumentHistoryModal';
+import ShareLinkModal from './ShareLinkModal';
+import VersionHistoryModal from './VersionHistoryModal';
 import type { DeliveryNoteData, WarrantyData, InvoiceData, ReceiptData, TaxInvoiceData, QuotationData, PurchaseOrderData, MemoData, VariationOrderData, SubcontractData } from '../types';
 
 // Type alias สำหรับข้อมูลเอกสารทั้งหมด
@@ -25,9 +35,10 @@ type AllDocumentDocument = DeliveryNoteDocument | WarrantyDocument | InvoiceDocu
 interface HistoryListProps {
     activeDocType: DocType;
     onLoadDocument: (doc: DocumentDocument) => void;
+    onCopyDocument?: (copiedData: DocumentDocument, newDocNumber: string) => void; // Callback เมื่อ copy เอกสาร
 }
 
-const HistoryList: React.FC<HistoryListProps> = ({ activeDocType, onLoadDocument }) => {
+const HistoryList: React.FC<HistoryListProps> = ({ activeDocType, onLoadDocument, onCopyDocument }) => {
     const { currentCompany } = useCompany(); // ใช้ CompanyContext
     
     // ใช้ hook สำหรับจัดการ document list
@@ -61,6 +72,29 @@ const HistoryList: React.FC<HistoryListProps> = ({ activeDocType, onLoadDocument
     const [searchTerm, setSearchTerm] = useState<string>(''); // คำค้นหาสำหรับ filter
     const [currentPage, setCurrentPage] = useState<number>(1); // หน้าปัจจุบัน
     const itemsPerPage = 10; // จำนวนรายการต่อหน้า
+    
+    // State สำหรับ Document Management features
+    const [copyingId, setCopyingId] = useState<string | null>(null); // กำลัง copy เอกสาร
+    const [lockingId, setLockingId] = useState<string | null>(null); // กำลัง lock เอกสาร
+    const [unlockingId, setUnlockingId] = useState<string | null>(null); // กำลัง unlock เอกสาร
+    const [archivingId, setArchivingId] = useState<string | null>(null); // กำลัง archive เอกสาร
+    const [unarchivingId, setUnarchivingId] = useState<string | null>(null); // กำลัง unarchive เอกสาร
+    const [showArchived, setShowArchived] = useState<boolean>(false); // แสดงเอกสารที่ archive หรือไม่
+    
+    // State สำหรับ Document History Modal
+    const [showHistoryModal, setShowHistoryModal] = useState<boolean>(false);
+    const [historyDocId, setHistoryDocId] = useState<string>('');
+    const [historyDocNumber, setHistoryDocNumber] = useState<string>('');
+    
+    // State สำหรับ Share Link Modal
+    const [showShareModal, setShowShareModal] = useState<boolean>(false);
+    const [shareDocId, setShareDocId] = useState<string>('');
+    const [shareDocNumber, setShareDocNumber] = useState<string>('');
+    
+    // State สำหรับ Version History Modal
+    const [showVersionModal, setShowVersionModal] = useState<boolean>(false);
+    const [versionDocId, setVersionDocId] = useState<string>('');
+    const [versionDocNumber, setVersionDocNumber] = useState<string>('');
 
     // Reset หน้าเป็น 1 เมื่อเปลี่ยน search term หรือ doc type
     useEffect(() => {
@@ -125,6 +159,165 @@ const HistoryList: React.FC<HistoryListProps> = ({ activeDocType, onLoadDocument
             setRestoringId(null);
         }
     };
+
+    // ============================================================
+    // Document Management Functions - Copy, Lock, Archive
+    // ============================================================
+
+    // ฟังก์ชัน Copy เอกสาร
+    const handleCopyDocument = useCallback(async (docId: string) => {
+        try {
+            setCopyingId(docId);
+            const result = await prepareDocumentForCopy<DocumentDocument>(docId, activeDocType);
+            
+            if (result.success && result.data && result.newDocNumber) {
+                console.log(`✅ เตรียมข้อมูล copy เอกสารสำเร็จ เลขที่ใหม่: ${result.newDocNumber}`);
+                
+                // เรียก callback เพื่อโหลดข้อมูลที่ copy มาลงฟอร์ม
+                if (onCopyDocument) {
+                    onCopyDocument(result.data, result.newDocNumber);
+                } else {
+                    // ถ้าไม่มี callback ให้ใช้ onLoadDocument แทน
+                    onLoadDocument(result.data);
+                }
+                
+                alert(`✅ Copy เอกสารสำเร็จ! เลขที่เอกสารใหม่: ${result.newDocNumber}\nกรุณาตรวจสอบและบันทึกเอกสาร`);
+            } else {
+                alert(`❌ ${result.error || 'ไม่สามารถ copy เอกสารได้'}`);
+            }
+        } catch (err) {
+            console.error('❌ Error copying document:', err);
+            alert('ไม่สามารถ copy เอกสารได้: ' + (err instanceof Error ? err.message : 'Unknown error'));
+        } finally {
+            setCopyingId(null);
+        }
+    }, [activeDocType, onCopyDocument, onLoadDocument]);
+
+    // ฟังก์ชัน Lock เอกสาร
+    const handleLockDocument = useCallback(async (docId: string) => {
+        try {
+            setLockingId(docId);
+            const result = await lockDocument(docId, activeDocType, 'ล็อกโดยผู้ใช้');
+            
+            if (result.success) {
+                console.log(`✅ Lock เอกสารสำเร็จ`);
+                alert('✅ Lock เอกสารสำเร็จ');
+                fetchData(); // รีเฟรชรายการ
+            } else {
+                alert(`❌ ${result.error}`);
+            }
+        } catch (err) {
+            console.error('❌ Error locking document:', err);
+            alert('ไม่สามารถ lock เอกสารได้: ' + (err instanceof Error ? err.message : 'Unknown error'));
+        } finally {
+            setLockingId(null);
+        }
+    }, [activeDocType, fetchData]);
+
+    // ฟังก์ชัน Unlock เอกสาร
+    const handleUnlockDocument = useCallback(async (docId: string) => {
+        try {
+            setUnlockingId(docId);
+            const result = await unlockDocument(docId, activeDocType);
+            
+            if (result.success) {
+                console.log(`✅ Unlock เอกสารสำเร็จ`);
+                alert('✅ Unlock เอกสารสำเร็จ');
+                fetchData(); // รีเฟรชรายการ
+            } else {
+                alert(`❌ ${result.error}`);
+            }
+        } catch (err) {
+            console.error('❌ Error unlocking document:', err);
+            alert('ไม่สามารถ unlock เอกสารได้: ' + (err instanceof Error ? err.message : 'Unknown error'));
+        } finally {
+            setUnlockingId(null);
+        }
+    }, [activeDocType, fetchData]);
+
+    // ฟังก์ชัน Archive เอกสาร
+    const handleArchiveDocument = useCallback(async (docId: string) => {
+        try {
+            setArchivingId(docId);
+            const result = await archiveDocument(docId, activeDocType);
+            
+            if (result.success) {
+                console.log(`✅ Archive เอกสารสำเร็จ`);
+                alert('✅ Archive เอกสารสำเร็จ');
+                fetchData(); // รีเฟรชรายการ
+            } else {
+                alert(`❌ ${result.error}`);
+            }
+        } catch (err) {
+            console.error('❌ Error archiving document:', err);
+            alert('ไม่สามารถ archive เอกสารได้: ' + (err instanceof Error ? err.message : 'Unknown error'));
+        } finally {
+            setArchivingId(null);
+        }
+    }, [activeDocType, fetchData]);
+
+    // ฟังก์ชัน Unarchive เอกสาร
+    const handleUnarchiveDocument = useCallback(async (docId: string) => {
+        try {
+            setUnarchivingId(docId);
+            const result = await unarchiveDocument(docId, activeDocType);
+            
+            if (result.success) {
+                console.log(`✅ Unarchive เอกสารสำเร็จ`);
+                alert('✅ Unarchive เอกสารสำเร็จ');
+                fetchData(); // รีเฟรชรายการ
+            } else {
+                alert(`❌ ${result.error}`);
+            }
+        } catch (err) {
+            console.error('❌ Error unarchiving document:', err);
+            alert('ไม่สามารถ unarchive เอกสารได้: ' + (err instanceof Error ? err.message : 'Unknown error'));
+        } finally {
+            setUnarchivingId(null);
+        }
+    }, [activeDocType, fetchData]);
+
+    // ฟังก์ชันเปิด History Modal
+    const handleShowHistory = useCallback((docId: string, docNumber: string) => {
+        setHistoryDocId(docId);
+        setHistoryDocNumber(docNumber);
+        setShowHistoryModal(true);
+    }, []);
+
+    // ฟังก์ชันปิด History Modal
+    const handleCloseHistoryModal = useCallback(() => {
+        setShowHistoryModal(false);
+        setHistoryDocId('');
+        setHistoryDocNumber('');
+    }, []);
+
+    // ฟังก์ชันเปิด Share Modal
+    const handleShowShare = useCallback((docId: string, docNumber: string) => {
+        setShareDocId(docId);
+        setShareDocNumber(docNumber);
+        setShowShareModal(true);
+    }, []);
+
+    // ฟังก์ชันปิด Share Modal
+    const handleCloseShareModal = useCallback(() => {
+        setShowShareModal(false);
+        setShareDocId('');
+        setShareDocNumber('');
+    }, []);
+
+    // ฟังก์ชันเปิด Version Modal
+    const handleShowVersions = useCallback((docId: string, docNumber: string) => {
+        setVersionDocId(docId);
+        setVersionDocNumber(docNumber);
+        setShowVersionModal(true);
+    }, []);
+
+    // ฟังก์ชันปิด Version Modal
+    const handleCloseVersionModal = useCallback(() => {
+        setShowVersionModal(false);
+        setVersionDocId('');
+        setVersionDocNumber('');
+    }, []);
 
     // ฟอร์แมตวันที่
     const formatDate = (date: Date | undefined) => {
@@ -411,7 +604,17 @@ const HistoryList: React.FC<HistoryListProps> = ({ activeDocType, onLoadDocument
         );
     }
 
-    const currentList = documents;
+    // Filter เอกสารตาม archive status
+    const currentList = documents.filter((item) => {
+        const itemData = item as any;
+        if (showArchived) {
+            // แสดงเฉพาะเอกสารที่ archive
+            return itemData.isArchived === true;
+        } else {
+            // แสดงเฉพาะเอกสารที่ยังไม่ archive
+            return itemData.isArchived !== true;
+        }
+    });
 
     // ฟังก์ชัน filter รายการตาม search term
     const filteredList = currentList.filter((item) => {
@@ -543,6 +746,35 @@ const HistoryList: React.FC<HistoryListProps> = ({ activeDocType, onLoadDocument
 
     return (
         <div className="space-y-4">
+            {/* Document History Modal */}
+            <DocumentHistoryModal
+                isOpen={showHistoryModal}
+                onClose={handleCloseHistoryModal}
+                documentId={historyDocId}
+                documentType={activeDocType}
+                documentNumber={historyDocNumber}
+            />
+
+            {/* Share Link Modal */}
+            <ShareLinkModal
+                isOpen={showShareModal}
+                onClose={handleCloseShareModal}
+                documentId={shareDocId}
+                documentType={activeDocType}
+                documentNumber={shareDocNumber}
+                companyId={currentCompany?.id}
+            />
+
+            {/* Version History Modal */}
+            <VersionHistoryModal
+                isOpen={showVersionModal}
+                onClose={handleCloseVersionModal}
+                documentId={versionDocId}
+                documentType={activeDocType}
+                documentNumber={versionDocNumber}
+                onVersionRestored={fetchData}
+            />
+
             {/* Hidden Preview Component สำหรับสร้าง PDF */}
             <div className="fixed -left-[9999px] -top-[9999px] opacity-0 pointer-events-none">
                 {previewData && !showPreviewModal && (
@@ -771,9 +1003,37 @@ const HistoryList: React.FC<HistoryListProps> = ({ activeDocType, onLoadDocument
 
             {/* Header */}
             <div className="flex flex-col sm:flex-row justify-between items-start sm:items-center gap-3 sm:gap-4 mb-4">
-                <h2 className="text-lg sm:text-xl font-semibold text-slate-700 dark:text-slate-200">
-                    ประวัติ{documentTypeName}
-                </h2>
+                <div className="flex items-center gap-3">
+                    <h2 className="text-lg sm:text-xl font-semibold text-slate-700 dark:text-slate-200">
+                        ประวัติ{documentTypeName}
+                    </h2>
+                    {/* Tab Toggle: ทั้งหมด / Archive */}
+                    <div className="flex items-center bg-gray-100 dark:bg-slate-700 rounded-lg p-0.5">
+                        <button
+                            onClick={() => setShowArchived(false)}
+                            className={`px-3 py-1 text-xs sm:text-sm rounded-md transition-colors ${
+                                !showArchived 
+                                    ? 'bg-white dark:bg-slate-600 text-indigo-600 dark:text-indigo-400 shadow-sm' 
+                                    : 'text-gray-600 dark:text-gray-400 hover:text-gray-800 dark:hover:text-gray-200'
+                            }`}
+                        >
+                            ทั้งหมด
+                        </button>
+                        <button
+                            onClick={() => setShowArchived(true)}
+                            className={`px-3 py-1 text-xs sm:text-sm rounded-md transition-colors flex items-center gap-1 ${
+                                showArchived 
+                                    ? 'bg-white dark:bg-slate-600 text-indigo-600 dark:text-indigo-400 shadow-sm' 
+                                    : 'text-gray-600 dark:text-gray-400 hover:text-gray-800 dark:hover:text-gray-200'
+                            }`}
+                        >
+                            <svg className="w-3 h-3 sm:w-4 sm:h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M5 8h14M5 8a2 2 0 110-4h14a2 2 0 110 4M5 8v10a2 2 0 002 2h10a2 2 0 002-2V8m-9 4h4" />
+                            </svg>
+                            Archive
+                        </button>
+                    </div>
+                </div>
                 <div className="flex items-center gap-2 w-full sm:w-auto">
                     {/* Search/Filter Input */}
                     <div className="flex-1 sm:flex-none relative">
@@ -890,10 +1150,28 @@ const HistoryList: React.FC<HistoryListProps> = ({ activeDocType, onLoadDocument
                                     onRestore={() => handleRestoreDocument(noteItem.id!)}
                                     onDelete={() => setDeleteConfirm({ type: 'delivery', id: noteItem.id! })}
                                     onPreview={() => handleShowPreview(noteItem)}
+                                    // ฟีเจอร์ใหม่: Copy, Lock, Archive
+                                    onCopy={() => handleCopyDocument(noteItem.id!)}
+                                    onLock={() => handleLockDocument(noteItem.id!)}
+                                    onUnlock={() => handleUnlockDocument(noteItem.id!)}
+                                    onArchive={() => handleArchiveDocument(noteItem.id!)}
+                                    onUnarchive={() => handleUnarchiveDocument(noteItem.id!)}
+                                    onShowHistory={() => handleShowHistory(noteItem.id!, noteItem.docNumber)}
+                                    onShare={() => handleShowShare(noteItem.id!, noteItem.docNumber)}
+                                    onShowVersions={() => handleShowVersions(noteItem.id!, noteItem.docNumber)}
+                                    // สถานะ
                                     isCancelled={isCancelled}
                                     isDownloading={downloadingPdfId === noteItem.id}
                                     isCancelling={cancellingId === noteItem.id}
                                     isRestoring={restoringId === noteItem.id}
+                                    // สถานะฟีเจอร์ใหม่
+                                    isCopying={copyingId === noteItem.id}
+                                    isLocked={(noteItem as any).isLocked || false}
+                                    isLocking={lockingId === noteItem.id}
+                                    isUnlocking={unlockingId === noteItem.id}
+                                    isArchived={(noteItem as any).isArchived || false}
+                                    isArchiving={archivingId === noteItem.id}
+                                    isUnarchiving={unarchivingId === noteItem.id}
                                     showPreview={true}
                                     showOnHover={true}
                                 />
@@ -946,6 +1224,23 @@ const HistoryList: React.FC<HistoryListProps> = ({ activeDocType, onLoadDocument
                                     onDownloadPng={() => handleDownloadPng(cardItem)}
                                     onDelete={() => setDeleteConfirm({ type: 'warranty', id: cardItem.id! })}
                                     onPreview={() => handleShowPreview(cardItem)}
+                                    // ฟีเจอร์ใหม่: Copy, Lock, Archive
+                                    onCopy={() => handleCopyDocument(cardItem.id!)}
+                                    onLock={() => handleLockDocument(cardItem.id!)}
+                                    onUnlock={() => handleUnlockDocument(cardItem.id!)}
+                                    onArchive={() => handleArchiveDocument(cardItem.id!)}
+                                    onUnarchive={() => handleUnarchiveDocument(cardItem.id!)}
+                                    onShowHistory={() => handleShowHistory(cardItem.id!, cardItem.warrantyNumber || '')}
+                                    onShare={() => handleShowShare(cardItem.id!, cardItem.warrantyNumber || '')}
+                                    onShowVersions={() => handleShowVersions(cardItem.id!, cardItem.warrantyNumber || '')}
+                                    // สถานะฟีเจอร์ใหม่
+                                    isCopying={copyingId === cardItem.id}
+                                    isLocked={(cardItem as any).isLocked || false}
+                                    isLocking={lockingId === cardItem.id}
+                                    isUnlocking={unlockingId === cardItem.id}
+                                    isArchived={(cardItem as any).isArchived || false}
+                                    isArchiving={archivingId === cardItem.id}
+                                    isUnarchiving={unarchivingId === cardItem.id}
                                     isDownloading={downloadingPdfId === cardItem.id}
                                     showPreview={true}
                                     showOnHover={true}
@@ -1006,10 +1301,26 @@ const HistoryList: React.FC<HistoryListProps> = ({ activeDocType, onLoadDocument
                                     onRestore={() => handleRestoreDocument(invoiceItem.id!)}
                                     onDelete={() => setDeleteConfirm({ type: 'invoice', id: invoiceItem.id! })}
                                     onPreview={() => handleShowPreview(invoiceItem)}
+                                    // ฟีเจอร์ใหม่
+                                    onCopy={() => handleCopyDocument(invoiceItem.id!)}
+                                    onLock={() => handleLockDocument(invoiceItem.id!)}
+                                    onUnlock={() => handleUnlockDocument(invoiceItem.id!)}
+                                    onArchive={() => handleArchiveDocument(invoiceItem.id!)}
+                                    onUnarchive={() => handleUnarchiveDocument(invoiceItem.id!)}
+                                    onShowHistory={() => handleShowHistory(invoiceItem.id!, invoiceItem.invoiceNumber)}
+                                    onShare={() => handleShowShare(invoiceItem.id!, invoiceItem.invoiceNumber)}
+                                    onShowVersions={() => handleShowVersions(invoiceItem.id!, invoiceItem.invoiceNumber)}
                                     isCancelled={isCancelled}
                                     isDownloading={downloadingPdfId === invoiceItem.id}
                                     isCancelling={cancellingId === invoiceItem.id}
                                     isRestoring={restoringId === invoiceItem.id}
+                                    isCopying={copyingId === invoiceItem.id}
+                                    isLocked={(invoiceItem as any).isLocked || false}
+                                    isLocking={lockingId === invoiceItem.id}
+                                    isUnlocking={unlockingId === invoiceItem.id}
+                                    isArchived={(invoiceItem as any).isArchived || false}
+                                    isArchiving={archivingId === invoiceItem.id}
+                                    isUnarchiving={unarchivingId === invoiceItem.id}
                                     showPreview={true}
                                     showOnHover={true}
                                 />
@@ -1063,7 +1374,23 @@ const HistoryList: React.FC<HistoryListProps> = ({ activeDocType, onLoadDocument
                                     onDownloadPng={() => handleDownloadPng(receiptItem)}
                                     onDelete={() => setDeleteConfirm({ type: 'receipt', id: receiptItem.id! })}
                                     onPreview={() => handleShowPreview(receiptItem)}
+                                    // ฟีเจอร์ใหม่
+                                    onCopy={() => handleCopyDocument(receiptItem.id!)}
+                                    onLock={() => handleLockDocument(receiptItem.id!)}
+                                    onUnlock={() => handleUnlockDocument(receiptItem.id!)}
+                                    onArchive={() => handleArchiveDocument(receiptItem.id!)}
+                                    onUnarchive={() => handleUnarchiveDocument(receiptItem.id!)}
+                                    onShowHistory={() => handleShowHistory(receiptItem.id!, receiptItem.receiptNumber)}
+                                    onShare={() => handleShowShare(receiptItem.id!, receiptItem.receiptNumber)}
+                                    onShowVersions={() => handleShowVersions(receiptItem.id!, receiptItem.receiptNumber)}
                                     isDownloading={downloadingPdfId === receiptItem.id}
+                                    isCopying={copyingId === receiptItem.id}
+                                    isLocked={(receiptItem as any).isLocked || false}
+                                    isLocking={lockingId === receiptItem.id}
+                                    isUnlocking={unlockingId === receiptItem.id}
+                                    isArchived={(receiptItem as any).isArchived || false}
+                                    isArchiving={archivingId === receiptItem.id}
+                                    isUnarchiving={unarchivingId === receiptItem.id}
                                     showPreview={true}
                                     showOnHover={true}
                                 />
@@ -1126,10 +1453,26 @@ const HistoryList: React.FC<HistoryListProps> = ({ activeDocType, onLoadDocument
                                     onRestore={() => handleRestoreDocument(taxInvoiceItem.id!)}
                                     onDelete={() => setDeleteConfirm({ type: 'tax-invoice', id: taxInvoiceItem.id! })}
                                     onPreview={() => handleShowPreview(taxInvoiceItem)}
+                                    // ฟีเจอร์ใหม่
+                                    onCopy={() => handleCopyDocument(taxInvoiceItem.id!)}
+                                    onLock={() => handleLockDocument(taxInvoiceItem.id!)}
+                                    onUnlock={() => handleUnlockDocument(taxInvoiceItem.id!)}
+                                    onArchive={() => handleArchiveDocument(taxInvoiceItem.id!)}
+                                    onUnarchive={() => handleUnarchiveDocument(taxInvoiceItem.id!)}
+                                    onShowHistory={() => handleShowHistory(taxInvoiceItem.id!, taxInvoiceItem.taxInvoiceNumber)}
+                                    onShare={() => handleShowShare(taxInvoiceItem.id!, taxInvoiceItem.taxInvoiceNumber)}
+                                    onShowVersions={() => handleShowVersions(taxInvoiceItem.id!, taxInvoiceItem.taxInvoiceNumber)}
                                     isCancelled={isCancelled}
                                     isDownloading={downloadingPdfId === taxInvoiceItem.id}
                                     isCancelling={cancellingId === taxInvoiceItem.id}
                                     isRestoring={restoringId === taxInvoiceItem.id}
+                                    isCopying={copyingId === taxInvoiceItem.id}
+                                    isLocked={(taxInvoiceItem as any).isLocked || false}
+                                    isLocking={lockingId === taxInvoiceItem.id}
+                                    isUnlocking={unlockingId === taxInvoiceItem.id}
+                                    isArchived={(taxInvoiceItem as any).isArchived || false}
+                                    isArchiving={archivingId === taxInvoiceItem.id}
+                                    isUnarchiving={unarchivingId === taxInvoiceItem.id}
                                     showPreview={true}
                                     showOnHover={true}
                                 />
@@ -1183,7 +1526,23 @@ const HistoryList: React.FC<HistoryListProps> = ({ activeDocType, onLoadDocument
                                     onDownloadPng={() => handleDownloadPng(quotationItem)}
                                     onDelete={() => setDeleteConfirm({ type: 'quotation', id: quotationItem.id! })}
                                     onPreview={() => handleShowPreview(quotationItem)}
+                                    // ฟีเจอร์ใหม่
+                                    onCopy={() => handleCopyDocument(quotationItem.id!)}
+                                    onLock={() => handleLockDocument(quotationItem.id!)}
+                                    onUnlock={() => handleUnlockDocument(quotationItem.id!)}
+                                    onArchive={() => handleArchiveDocument(quotationItem.id!)}
+                                    onUnarchive={() => handleUnarchiveDocument(quotationItem.id!)}
+                                    onShowHistory={() => handleShowHistory(quotationItem.id!, quotationItem.quotationNumber)}
+                                    onShare={() => handleShowShare(quotationItem.id!, quotationItem.quotationNumber)}
+                                    onShowVersions={() => handleShowVersions(quotationItem.id!, quotationItem.quotationNumber)}
                                     isDownloading={downloadingPdfId === quotationItem.id}
+                                    isCopying={copyingId === quotationItem.id}
+                                    isLocked={(quotationItem as any).isLocked || false}
+                                    isLocking={lockingId === quotationItem.id}
+                                    isUnlocking={unlockingId === quotationItem.id}
+                                    isArchived={(quotationItem as any).isArchived || false}
+                                    isArchiving={archivingId === quotationItem.id}
+                                    isUnarchiving={unarchivingId === quotationItem.id}
                                     showPreview={true}
                                     showOnHover={true}
                                 />
@@ -1237,7 +1596,23 @@ const HistoryList: React.FC<HistoryListProps> = ({ activeDocType, onLoadDocument
                                     onDownloadPng={() => handleDownloadPng(poItem)}
                                     onDelete={() => setDeleteConfirm({ type: 'purchase-order', id: poItem.id! })}
                                     onPreview={() => handleShowPreview(poItem)}
+                                    // ฟีเจอร์ใหม่
+                                    onCopy={() => handleCopyDocument(poItem.id!)}
+                                    onLock={() => handleLockDocument(poItem.id!)}
+                                    onUnlock={() => handleUnlockDocument(poItem.id!)}
+                                    onArchive={() => handleArchiveDocument(poItem.id!)}
+                                    onUnarchive={() => handleUnarchiveDocument(poItem.id!)}
+                                    onShowHistory={() => handleShowHistory(poItem.id!, poItem.purchaseOrderNumber)}
+                                    onShare={() => handleShowShare(poItem.id!, poItem.purchaseOrderNumber)}
+                                    onShowVersions={() => handleShowVersions(poItem.id!, poItem.purchaseOrderNumber)}
                                     isDownloading={downloadingPdfId === poItem.id}
+                                    isCopying={copyingId === poItem.id}
+                                    isLocked={(poItem as any).isLocked || false}
+                                    isLocking={lockingId === poItem.id}
+                                    isUnlocking={unlockingId === poItem.id}
+                                    isArchived={(poItem as any).isArchived || false}
+                                    isArchiving={archivingId === poItem.id}
+                                    isUnarchiving={unarchivingId === poItem.id}
                                     showPreview={true}
                                     showOnHover={true}
                                 />
@@ -1291,7 +1666,23 @@ const HistoryList: React.FC<HistoryListProps> = ({ activeDocType, onLoadDocument
                                     onDownloadPng={() => handleDownloadPng(memoItem)}
                                     onDelete={() => setDeleteConfirm({ type: 'memo', id: memoItem.id! })}
                                     onPreview={() => handleShowPreview(memoItem)}
+                                    // ฟีเจอร์ใหม่
+                                    onCopy={() => handleCopyDocument(memoItem.id!)}
+                                    onLock={() => handleLockDocument(memoItem.id!)}
+                                    onUnlock={() => handleUnlockDocument(memoItem.id!)}
+                                    onArchive={() => handleArchiveDocument(memoItem.id!)}
+                                    onUnarchive={() => handleUnarchiveDocument(memoItem.id!)}
+                                    onShowHistory={() => handleShowHistory(memoItem.id!, memoItem.memoNumber)}
+                                    onShare={() => handleShowShare(memoItem.id!, memoItem.memoNumber)}
+                                    onShowVersions={() => handleShowVersions(memoItem.id!, memoItem.memoNumber)}
                                     isDownloading={downloadingPdfId === memoItem.id}
+                                    isCopying={copyingId === memoItem.id}
+                                    isLocked={(memoItem as any).isLocked || false}
+                                    isLocking={lockingId === memoItem.id}
+                                    isUnlocking={unlockingId === memoItem.id}
+                                    isArchived={(memoItem as any).isArchived || false}
+                                    isArchiving={archivingId === memoItem.id}
+                                    isUnarchiving={unarchivingId === memoItem.id}
                                     showPreview={true}
                                     showOnHover={true}
                                 />
@@ -1346,7 +1737,23 @@ const HistoryList: React.FC<HistoryListProps> = ({ activeDocType, onLoadDocument
                                     onDownloadPng={() => handleDownloadPng(voItem)}
                                     onDelete={() => setDeleteConfirm({ type: 'variation-order', id: voItem.id! })}
                                     onPreview={() => handleShowPreview(voItem)}
+                                    // ฟีเจอร์ใหม่
+                                    onCopy={() => handleCopyDocument(voItem.id!)}
+                                    onLock={() => handleLockDocument(voItem.id!)}
+                                    onUnlock={() => handleUnlockDocument(voItem.id!)}
+                                    onArchive={() => handleArchiveDocument(voItem.id!)}
+                                    onUnarchive={() => handleUnarchiveDocument(voItem.id!)}
+                                    onShowHistory={() => handleShowHistory(voItem.id!, voItem.voNumber)}
+                                    onShare={() => handleShowShare(voItem.id!, voItem.voNumber)}
+                                    onShowVersions={() => handleShowVersions(voItem.id!, voItem.voNumber)}
                                     isDownloading={downloadingPdfId === voItem.id}
+                                    isCopying={copyingId === voItem.id}
+                                    isLocked={(voItem as any).isLocked || false}
+                                    isLocking={lockingId === voItem.id}
+                                    isUnlocking={unlockingId === voItem.id}
+                                    isArchived={(voItem as any).isArchived || false}
+                                    isArchiving={archivingId === voItem.id}
+                                    isUnarchiving={unarchivingId === voItem.id}
                                     showPreview={true}
                                     showOnHover={true}
                                 />
@@ -1417,10 +1824,26 @@ const HistoryList: React.FC<HistoryListProps> = ({ activeDocType, onLoadDocument
                                     onRestore={() => handleRestoreDocument(contractItem.id!)}
                                     onDelete={() => setDeleteConfirm({ type: 'subcontract', id: contractItem.id! })}
                                     onPreview={() => handleShowPreview(contractItem)}
+                                    // ฟีเจอร์ใหม่
+                                    onCopy={() => handleCopyDocument(contractItem.id!)}
+                                    onLock={() => handleLockDocument(contractItem.id!)}
+                                    onUnlock={() => handleUnlockDocument(contractItem.id!)}
+                                    onArchive={() => handleArchiveDocument(contractItem.id!)}
+                                    onUnarchive={() => handleUnarchiveDocument(contractItem.id!)}
+                                    onShowHistory={() => handleShowHistory(contractItem.id!, contractItem.contractNumber || '')}
+                                    onShare={() => handleShowShare(contractItem.id!, contractItem.contractNumber || '')}
+                                    onShowVersions={() => handleShowVersions(contractItem.id!, contractItem.contractNumber || '')}
                                     isCancelled={isCancelled}
                                     isDownloading={downloadingPdfId === contractItem.id}
                                     isCancelling={cancellingId === contractItem.id}
                                     isRestoring={restoringId === contractItem.id}
+                                    isCopying={copyingId === contractItem.id}
+                                    isLocked={(contractItem as any).isLocked || false}
+                                    isLocking={lockingId === contractItem.id}
+                                    isUnlocking={unlockingId === contractItem.id}
+                                    isArchived={(contractItem as any).isArchived || false}
+                                    isArchiving={archivingId === contractItem.id}
+                                    isUnarchiving={unarchivingId === contractItem.id}
                                     showPreview={true}
                                     showOnHover={true}
                                 />
