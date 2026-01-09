@@ -6,6 +6,7 @@
 import React, { forwardRef, useMemo } from 'react';
 import { SubcontractData } from '../types';
 import QRCodeFooter from './QRCodeFooter';
+import { getDefaultLogoUrl } from '../services/logoStorage';
 
 interface SubcontractPreviewProps {
     data: SubcontractData;
@@ -53,21 +54,23 @@ const SubcontractPreview = forwardRef<HTMLDivElement, SubcontractPreviewProps>((
     // วันที่พิมพ์ (ปัจจุบัน) และวันที่สร้าง
     const printedDate = formatThaiDateShort(new Date());
     const createdDate = formatThaiDateShort(data.contractDate || new Date());
+    
+    // ✅ กำหนดโลโก้ที่จะแสดง - ใช้ logo (Base64) ก่อนเพื่อหลีกเลี่ยงปัญหา CORS
+    // ถ้าไม่มี Base64 ให้ใช้ logoUrl แต่อาจมีปัญหา CORS, fallback ไป default logo
+    const displayLogo = data.logo || data.logoUrl || getDefaultLogoUrl();
 
     return (
         <div ref={ref} className="bg-white p-4 sm:p-5 max-w-4xl mx-auto print:p-3 print:max-w-none" style={{ fontFamily: "'IBM Plex Sans Thai', sans-serif" }}>
             {/* หัวเอกสาร - โลโก้, เลขที่สัญญาและวันที่ */}
             <div className="flex justify-between items-start mb-2 text-xs text-gray-800 border-b pb-1.5">
-                {/* โลโก้บริษัท (ถ้ามี) */}
+                {/* โลโก้บริษัท - แสดงเสมอ (ใช้ default logo ถ้าไม่มี) */}
                 <div className="flex items-center gap-2">
-                    {data.logo && (
-                        <img 
-                            src={data.logo} 
-                            alt="Company Logo" 
-                            className="w-10 h-10 sm:w-12 sm:h-12 object-contain"
-                            crossOrigin="anonymous"
-                        />
-                    )}
+                    <img 
+                        src={displayLogo} 
+                        alt="Company Logo" 
+                        className="w-10 h-10 sm:w-12 sm:h-12 object-contain"
+                        crossOrigin="anonymous"
+                    />
                     <p><strong>เลขที่สัญญา:</strong> <span className="font-semibold text-gray-900">{data.contractNumber || '-'}</span></p>
                 </div>
                 <p><strong>วันที่:</strong> <span className="text-gray-900">{formatThaiDate(data.contractDate)}</span></p>
