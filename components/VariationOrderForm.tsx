@@ -5,6 +5,7 @@ import CustomerSelector from './CustomerSelector';
 import EndCustomerProjectSection from './EndCustomerProjectSection';
 import { generateDocumentNumber } from '../services/documentNumber';
 import { useCompany } from '../contexts/CompanyContext';
+import { INPUT_LIMITS, NUMBER_LIMITS } from '../utils/inputValidation';
 
 export interface VariationOrderFormProps {
     data: VariationOrderData;
@@ -266,24 +267,24 @@ const VariationOrderForm: React.FC<VariationOrderFormProps> = ({
 
                     <div>
                         <label htmlFor="customerName" className="block text-xs sm:text-sm font-medium text-slate-700 dark:text-slate-300">ชื่อลูกค้า/บริษัท</label>
-                        <input type="text" id="customerName" value={data.customerName} onChange={(e) => handleDataChange('customerName', e.target.value)} className="mt-1 block w-full rounded-md border-gray-300 dark:border-slate-600 shadow-sm focus:border-indigo-500 focus:ring-indigo-500 text-xs sm:text-sm bg-gray-50 dark:bg-slate-700 dark:text-gray-100" />
+                        <input type="text" id="customerName" value={data.customerName} onChange={(e) => handleDataChange('customerName', e.target.value)} maxLength={INPUT_LIMITS.customerName} className="mt-1 block w-full rounded-md border-gray-300 dark:border-slate-600 shadow-sm focus:border-indigo-500 focus:ring-indigo-500 text-xs sm:text-sm bg-gray-50 dark:bg-slate-700 dark:text-gray-100" />
                     </div>
                     <div>
                         <label htmlFor="customerAddress" className="block text-xs sm:text-sm font-medium text-slate-700 dark:text-slate-300">ที่อยู่</label>
-                        <textarea id="customerAddress" value={data.customerAddress} onChange={(e) => handleDataChange('customerAddress', e.target.value)} rows={3} className="mt-1 block w-full rounded-md border-gray-300 dark:border-slate-600 shadow-sm focus:border-indigo-500 focus:ring-indigo-500 text-xs sm:text-sm bg-gray-50 dark:bg-slate-700 dark:text-gray-100" />
+                        <textarea id="customerAddress" value={data.customerAddress} onChange={(e) => handleDataChange('customerAddress', e.target.value)} rows={3} maxLength={INPUT_LIMITS.companyAddress} className="mt-1 block w-full rounded-md border-gray-300 dark:border-slate-600 shadow-sm focus:border-indigo-500 focus:ring-indigo-500 text-xs sm:text-sm bg-gray-50 dark:bg-slate-700 dark:text-gray-100" />
                     </div>
                     <div className="grid grid-cols-1 md:grid-cols-3 gap-3 sm:gap-4">
                         <div>
                             <label htmlFor="customerPhone" className="block text-xs sm:text-sm font-medium text-slate-700 dark:text-slate-300">เบอร์โทรศัพท์</label>
-                            <input type="text" id="customerPhone" value={data.customerPhone || ''} onChange={(e) => handleDataChange('customerPhone', e.target.value)} className="mt-1 block w-full rounded-md border-gray-300 dark:border-slate-600 shadow-sm focus:border-indigo-500 focus:ring-indigo-500 text-xs sm:text-sm bg-gray-50 dark:bg-slate-700 dark:text-gray-100" />
+                            <input type="tel" id="customerPhone" value={data.customerPhone || ''} onChange={(e) => handleDataChange('customerPhone', e.target.value)} maxLength={INPUT_LIMITS.phone} inputMode="tel" className="mt-1 block w-full rounded-md border-gray-300 dark:border-slate-600 shadow-sm focus:border-indigo-500 focus:ring-indigo-500 text-xs sm:text-sm bg-gray-50 dark:bg-slate-700 dark:text-gray-100" />
                         </div>
                         <div>
                             <label htmlFor="customerEmail" className="block text-xs sm:text-sm font-medium text-slate-700 dark:text-slate-300">อีเมล</label>
-                            <input type="email" id="customerEmail" value={data.customerEmail || ''} onChange={(e) => handleDataChange('customerEmail', e.target.value)} className="mt-1 block w-full rounded-md border-gray-300 dark:border-slate-600 shadow-sm focus:border-indigo-500 focus:ring-indigo-500 text-xs sm:text-sm bg-gray-50 dark:bg-slate-700 dark:text-gray-100" />
+                            <input type="email" id="customerEmail" value={data.customerEmail || ''} onChange={(e) => handleDataChange('customerEmail', e.target.value)} maxLength={INPUT_LIMITS.email} inputMode="email" className="mt-1 block w-full rounded-md border-gray-300 dark:border-slate-600 shadow-sm focus:border-indigo-500 focus:ring-indigo-500 text-xs sm:text-sm bg-gray-50 dark:bg-slate-700 dark:text-gray-100" />
                         </div>
                         <div>
                             <label htmlFor="customerTaxId" className="block text-xs sm:text-sm font-medium text-slate-700 dark:text-slate-300">เลขประจำตัวผู้เสียภาษี</label>
-                            <input type="text" id="customerTaxId" value={data.customerTaxId || ''} onChange={(e) => handleDataChange('customerTaxId', e.target.value)} className="mt-1 block w-full rounded-md border-gray-300 dark:border-slate-600 shadow-sm focus:border-indigo-500 focus:ring-indigo-500 text-xs sm:text-sm bg-gray-50 dark:bg-slate-700 dark:text-gray-100" />
+                            <input type="text" id="customerTaxId" value={data.customerTaxId || ''} onChange={(e) => handleDataChange('customerTaxId', e.target.value)} maxLength={INPUT_LIMITS.taxId} inputMode="numeric" pattern="[0-9]*" className="mt-1 block w-full rounded-md border-gray-300 dark:border-slate-600 shadow-sm focus:border-indigo-500 focus:ring-indigo-500 text-xs sm:text-sm bg-gray-50 dark:bg-slate-700 dark:text-gray-100" />
                         </div>
                     </div>
                     
@@ -307,15 +308,15 @@ const VariationOrderForm: React.FC<VariationOrderFormProps> = ({
                     </div>
                     <div>
                         <label htmlFor="projectName" className="block text-xs sm:text-sm font-medium text-slate-700 dark:text-slate-300">โครงการ / ลูกค้า</label>
-                        <input type="text" id="projectName" value={data.projectName} onChange={(e) => handleDataChange('projectName', e.target.value)} className="mt-1 block w-full rounded-md border-gray-300 dark:border-slate-600 shadow-sm focus:border-indigo-500 focus:ring-indigo-500 text-xs sm:text-sm bg-gray-50 dark:bg-slate-700 dark:text-gray-100" />
+                        <input type="text" id="projectName" value={data.projectName} onChange={(e) => handleDataChange('projectName', e.target.value)} maxLength={INPUT_LIMITS.projectName} className="mt-1 block w-full rounded-md border-gray-300 dark:border-slate-600 shadow-sm focus:border-indigo-500 focus:ring-indigo-500 text-xs sm:text-sm bg-gray-50 dark:bg-slate-700 dark:text-gray-100" />
                     </div>
                     <div>
                         <label htmlFor="location" className="block text-xs sm:text-sm font-medium text-slate-700 dark:text-slate-300">สถานที่</label>
-                        <input type="text" id="location" value={data.location} onChange={(e) => handleDataChange('location', e.target.value)} className="mt-1 block w-full rounded-md border-gray-300 dark:border-slate-600 shadow-sm focus:border-indigo-500 focus:ring-indigo-500 text-xs sm:text-sm bg-gray-50 dark:bg-slate-700 dark:text-gray-100" />
+                        <input type="text" id="location" value={data.location} onChange={(e) => handleDataChange('location', e.target.value)} maxLength={INPUT_LIMITS.projectAddress} className="mt-1 block w-full rounded-md border-gray-300 dark:border-slate-600 shadow-sm focus:border-indigo-500 focus:ring-indigo-500 text-xs sm:text-sm bg-gray-50 dark:bg-slate-700 dark:text-gray-100" />
                     </div>
                     <div>
                         <label htmlFor="contractNumber" className="block text-xs sm:text-sm font-medium text-slate-700 dark:text-slate-300">อ้างอิงสัญญาเลขที่</label>
-                        <input type="text" id="contractNumber" value={data.contractNumber || ''} onChange={(e) => handleDataChange('contractNumber', e.target.value)} className="mt-1 block w-full rounded-md border-gray-300 dark:border-slate-600 shadow-sm focus:border-indigo-500 focus:ring-indigo-500 text-xs sm:text-sm bg-gray-50 dark:bg-slate-700 dark:text-gray-100" />
+                        <input type="text" id="contractNumber" value={data.contractNumber || ''} onChange={(e) => handleDataChange('contractNumber', e.target.value)} maxLength={INPUT_LIMITS.referenceNumber} className="mt-1 block w-full rounded-md border-gray-300 dark:border-slate-600 shadow-sm focus:border-indigo-500 focus:ring-indigo-500 text-xs sm:text-sm bg-gray-50 dark:bg-slate-700 dark:text-gray-100" />
                     </div>
                     <div>
                         <label htmlFor="requestedBy" className="block text-xs sm:text-sm font-medium text-slate-700 dark:text-slate-300">ผู้ร้องขอ</label>
@@ -332,19 +333,19 @@ const VariationOrderForm: React.FC<VariationOrderFormProps> = ({
                 <div className="space-y-4">
                     <div>
                         <label htmlFor="subject" className="block text-xs sm:text-sm font-medium text-slate-700 dark:text-slate-300">เรื่อง</label>
-                        <input type="text" id="subject" value={data.subject} onChange={(e) => handleDataChange('subject', e.target.value)} className="mt-1 block w-full rounded-md border-gray-300 dark:border-slate-600 shadow-sm focus:border-indigo-500 focus:ring-indigo-500 text-xs sm:text-sm bg-gray-50 dark:bg-slate-700 dark:text-gray-100" placeholder="เช่น ขอเปลี่ยนแปลงสเปคกระเบื้องห้องน้ำชั้น 2" />
+                        <input type="text" id="subject" value={data.subject} onChange={(e) => handleDataChange('subject', e.target.value)} maxLength={INPUT_LIMITS.projectName} className="mt-1 block w-full rounded-md border-gray-300 dark:border-slate-600 shadow-sm focus:border-indigo-500 focus:ring-indigo-500 text-xs sm:text-sm bg-gray-50 dark:bg-slate-700 dark:text-gray-100" placeholder="เช่น ขอเปลี่ยนแปลงสเปคกระเบื้องห้องน้ำชั้น 2" />
                     </div>
                     <div>
                         <label htmlFor="originalScope" className="block text-xs sm:text-sm font-medium text-slate-700 dark:text-slate-300">รายละเอียดงานเดิม (Original Scope / Spec)</label>
-                        <textarea id="originalScope" value={data.originalScope} onChange={(e) => handleDataChange('originalScope', e.target.value)} rows={3} className="mt-1 block w-full rounded-md border-gray-300 dark:border-slate-600 shadow-sm focus:border-indigo-500 focus:ring-indigo-500 text-xs sm:text-sm bg-gray-50 dark:bg-slate-700 dark:text-gray-100" />
+                        <textarea id="originalScope" value={data.originalScope} onChange={(e) => handleDataChange('originalScope', e.target.value)} rows={3} maxLength={INPUT_LIMITS.notes} className="mt-1 block w-full rounded-md border-gray-300 dark:border-slate-600 shadow-sm focus:border-indigo-500 focus:ring-indigo-500 text-xs sm:text-sm bg-gray-50 dark:bg-slate-700 dark:text-gray-100" />
                     </div>
                     <div>
                         <label htmlFor="newScope" className="block text-xs sm:text-sm font-medium text-slate-700 dark:text-slate-300">รายละเอียดงานใหม่ (New Scope / Spec)</label>
-                        <textarea id="newScope" value={data.newScope} onChange={(e) => handleDataChange('newScope', e.target.value)} rows={3} className="mt-1 block w-full rounded-md border-gray-300 dark:border-slate-600 shadow-sm focus:border-indigo-500 focus:ring-indigo-500 text-xs sm:text-sm bg-gray-50 dark:bg-slate-700 dark:text-gray-100" />
+                        <textarea id="newScope" value={data.newScope} onChange={(e) => handleDataChange('newScope', e.target.value)} rows={3} maxLength={INPUT_LIMITS.notes} className="mt-1 block w-full rounded-md border-gray-300 dark:border-slate-600 shadow-sm focus:border-indigo-500 focus:ring-indigo-500 text-xs sm:text-sm bg-gray-50 dark:bg-slate-700 dark:text-gray-100" />
                     </div>
                     <div>
                         <label htmlFor="reasonForChange" className="block text-xs sm:text-sm font-medium text-slate-700 dark:text-slate-300">เหตุผลในการเปลี่ยนแปลง</label>
-                        <textarea id="reasonForChange" value={data.reasonForChange} onChange={(e) => handleDataChange('reasonForChange', e.target.value)} rows={2} className="mt-1 block w-full rounded-md border-gray-300 dark:border-slate-600 shadow-sm focus:border-indigo-500 focus:ring-indigo-500 text-xs sm:text-sm bg-gray-50 dark:bg-slate-700 dark:text-gray-100" />
+                        <textarea id="reasonForChange" value={data.reasonForChange} onChange={(e) => handleDataChange('reasonForChange', e.target.value)} rows={2} maxLength={INPUT_LIMITS.notes} className="mt-1 block w-full rounded-md border-gray-300 dark:border-slate-600 shadow-sm focus:border-indigo-500 focus:ring-indigo-500 text-xs sm:text-sm bg-gray-50 dark:bg-slate-700 dark:text-gray-100" />
                     </div>
                 </div>
 
@@ -386,16 +387,16 @@ const VariationOrderForm: React.FC<VariationOrderFormProps> = ({
                                         </span>
                                     </td>
                                     <td className="px-1 sm:px-2 py-1 whitespace-nowrap">
-                                        <textarea value={item.description} onChange={(e) => handleItemChange(index, 'description', e.target.value)} rows={2} className="w-full rounded-md border-gray-300 dark:border-slate-600 shadow-sm focus:border-indigo-300 focus:ring-indigo-200 focus:ring-opacity-50 text-xs sm:text-sm bg-white dark:bg-slate-700 text-gray-900 dark:text-gray-100"></textarea>
+                                        <textarea value={item.description} onChange={(e) => handleItemChange(index, 'description', e.target.value)} rows={2} maxLength={INPUT_LIMITS.itemDescription} className="w-full rounded-md border-gray-300 dark:border-slate-600 shadow-sm focus:border-indigo-300 focus:ring-indigo-200 focus:ring-opacity-50 text-xs sm:text-sm bg-white dark:bg-slate-700 text-gray-900 dark:text-gray-100"></textarea>
                                     </td>
                                     <td className="px-1 sm:px-2 py-1 whitespace-nowrap">
-                                        <input type="number" value={item.quantity} onChange={(e) => handleItemChange(index, 'quantity', parseFloat(e.target.value) || 0)} className="w-full rounded-md border-gray-300 dark:border-slate-600 shadow-sm focus:border-indigo-300 focus:ring-indigo-200 focus:ring-opacity-50 text-xs sm:text-sm bg-white dark:bg-slate-700 text-gray-900 dark:text-gray-100" />
+                                        <input type="number" value={item.quantity} onChange={(e) => handleItemChange(index, 'quantity', parseFloat(e.target.value) || 0)} inputMode="decimal" min={NUMBER_LIMITS.quantity.min} max={NUMBER_LIMITS.quantity.max} step={NUMBER_LIMITS.quantity.step} className="w-full rounded-md border-gray-300 dark:border-slate-600 shadow-sm focus:border-indigo-300 focus:ring-indigo-200 focus:ring-opacity-50 text-xs sm:text-sm bg-white dark:bg-slate-700 text-gray-900 dark:text-gray-100" />
                                     </td>
                                     <td className="px-1 sm:px-2 py-1 whitespace-nowrap">
-                                        <input type="text" value={item.unit} onChange={(e) => handleItemChange(index, 'unit', e.target.value)} className="w-full rounded-md border-gray-300 dark:border-slate-600 shadow-sm focus:border-indigo-300 focus:ring-indigo-200 focus:ring-opacity-50 text-xs sm:text-sm bg-white dark:bg-slate-700 text-gray-900 dark:text-gray-100" />
+                                        <input type="text" value={item.unit} onChange={(e) => handleItemChange(index, 'unit', e.target.value)} maxLength={INPUT_LIMITS.unit} className="w-full rounded-md border-gray-300 dark:border-slate-600 shadow-sm focus:border-indigo-300 focus:ring-indigo-200 focus:ring-opacity-50 text-xs sm:text-sm bg-white dark:bg-slate-700 text-gray-900 dark:text-gray-100" />
                                     </td>
                                     <td className="px-1 sm:px-2 py-1 whitespace-nowrap">
-                                        <input type="number" step="0.01" value={item.unitPrice} onChange={(e) => handleItemChange(index, 'unitPrice', parseFloat(e.target.value) || 0)} className="w-full rounded-md border-gray-300 dark:border-slate-600 shadow-sm focus:border-indigo-300 focus:ring-indigo-200 focus:ring-opacity-50 text-xs sm:text-sm bg-white dark:bg-slate-700 text-gray-900 dark:text-gray-100" />
+                                        <input type="number" step="0.01" value={item.unitPrice} onChange={(e) => handleItemChange(index, 'unitPrice', parseFloat(e.target.value) || 0)} inputMode="decimal" min={NUMBER_LIMITS.price.min} max={NUMBER_LIMITS.price.max} className="w-full rounded-md border-gray-300 dark:border-slate-600 shadow-sm focus:border-indigo-300 focus:ring-indigo-200 focus:ring-opacity-50 text-xs sm:text-sm bg-white dark:bg-slate-700 text-gray-900 dark:text-gray-100" />
                                     </td>
                                     <td className="px-1 sm:px-2 py-1 whitespace-nowrap">
                                         <input type="number" step="0.01" value={item.amount} readOnly className={`w-full rounded-md border-gray-300 dark:border-slate-600 shadow-sm text-xs sm:text-sm font-medium ${item.itemType === 'new' ? 'bg-green-100 dark:bg-green-900/40 text-green-900 dark:text-green-200' : 'bg-red-100 dark:bg-red-900/40 text-red-900 dark:text-red-200'}`} />
@@ -417,11 +418,11 @@ const VariationOrderForm: React.FC<VariationOrderFormProps> = ({
                     <div className="space-y-3 sm:space-y-4">
                         <div className="flex flex-col sm:flex-row sm:justify-between sm:items-center gap-2">
                             <label htmlFor="taxRate" className="block text-xs sm:text-sm font-medium text-slate-700 dark:text-slate-300">อัตราภาษีมูลค่าเพิ่ม (%)</label>
-                            <input type="number" id="taxRate" value={data.taxRate} onChange={(e) => handleDataChange('taxRate', parseFloat(e.target.value) || 0)} step="0.01" className="w-full sm:w-24 rounded-md border-gray-300 dark:border-slate-600 shadow-sm focus:border-indigo-500 focus:ring-indigo-500 text-xs sm:text-sm bg-gray-50 dark:bg-slate-700 dark:text-gray-100" />
+                            <input type="number" id="taxRate" value={data.taxRate} onChange={(e) => handleDataChange('taxRate', parseFloat(e.target.value) || 0)} inputMode="decimal" min={NUMBER_LIMITS.percentage.min} max={NUMBER_LIMITS.percentage.max} step={NUMBER_LIMITS.percentage.step} className="w-full sm:w-24 rounded-md border-gray-300 dark:border-slate-600 shadow-sm focus:border-indigo-500 focus:ring-indigo-500 text-xs sm:text-sm bg-gray-50 dark:bg-slate-700 dark:text-gray-100" />
                         </div>
                         <div>
                             <label htmlFor="paymentNote" className="block text-xs sm:text-sm font-medium text-slate-700 dark:text-slate-300">หมายเหตุการชำระเงิน</label>
-                            <input type="text" id="paymentNote" value={data.paymentNote || ''} onChange={(e) => handleDataChange('paymentNote', e.target.value)} className="mt-1 block w-full rounded-md border-gray-300 dark:border-slate-600 shadow-sm focus:border-indigo-500 focus:ring-indigo-500 text-xs sm:text-sm bg-gray-50 dark:bg-slate-700 dark:text-gray-100" placeholder="เช่น หักจากงวดที่ 10" />
+                            <input type="text" id="paymentNote" value={data.paymentNote || ''} onChange={(e) => handleDataChange('paymentNote', e.target.value)} maxLength={INPUT_LIMITS.itemNotes} className="mt-1 block w-full rounded-md border-gray-300 dark:border-slate-600 shadow-sm focus:border-indigo-500 focus:ring-indigo-500 text-xs sm:text-sm bg-gray-50 dark:bg-slate-700 dark:text-gray-100" placeholder="เช่น หักจากงวดที่ 10" />
                         </div>
                     </div>
                     <div className="space-y-2 bg-gray-50 dark:bg-slate-700 p-4 rounded-lg">
@@ -463,11 +464,11 @@ const VariationOrderForm: React.FC<VariationOrderFormProps> = ({
                         <>
                             <div>
                                 <label htmlFor="timeImpactDays" className="block text-xs sm:text-sm font-medium text-slate-700 dark:text-slate-300">จำนวนวันที่ขยายออกไป (วันทำการ)</label>
-                                <input type="number" id="timeImpactDays" value={data.timeImpactDays || 0} onChange={(e) => handleDataChange('timeImpactDays', parseFloat(e.target.value) || 0)} className="mt-1 block w-full rounded-md border-gray-300 dark:border-slate-600 shadow-sm focus:border-indigo-500 focus:ring-indigo-500 text-xs sm:text-sm bg-gray-50 dark:bg-slate-700 dark:text-gray-100" />
+                                <input type="number" id="timeImpactDays" value={data.timeImpactDays || 0} onChange={(e) => handleDataChange('timeImpactDays', parseFloat(e.target.value) || 0)} inputMode="numeric" min={0} max={9999} className="mt-1 block w-full rounded-md border-gray-300 dark:border-slate-600 shadow-sm focus:border-indigo-500 focus:ring-indigo-500 text-xs sm:text-sm bg-gray-50 dark:bg-slate-700 dark:text-gray-100" />
                             </div>
                             <div>
                                 <label htmlFor="timeImpactReason" className="block text-xs sm:text-sm font-medium text-slate-700 dark:text-slate-300">เหตุผล</label>
-                                <textarea id="timeImpactReason" value={data.timeImpactReason || ''} onChange={(e) => handleDataChange('timeImpactReason', e.target.value)} rows={2} className="mt-1 block w-full rounded-md border-gray-300 dark:border-slate-600 shadow-sm focus:border-indigo-500 focus:ring-indigo-500 text-xs sm:text-sm bg-gray-50 dark:bg-slate-700 dark:text-gray-100" />
+                                <textarea id="timeImpactReason" value={data.timeImpactReason || ''} onChange={(e) => handleDataChange('timeImpactReason', e.target.value)} rows={2} maxLength={INPUT_LIMITS.notes} className="mt-1 block w-full rounded-md border-gray-300 dark:border-slate-600 shadow-sm focus:border-indigo-500 focus:ring-indigo-500 text-xs sm:text-sm bg-gray-50 dark:bg-slate-700 dark:text-gray-100" />
                             </div>
                         </>
                     )}
@@ -478,12 +479,12 @@ const VariationOrderForm: React.FC<VariationOrderFormProps> = ({
                 <div className="space-y-4">
                     <div>
                         <label htmlFor="terms" className="block text-xs sm:text-sm font-medium text-slate-700 dark:text-slate-300">เงื่อนไข</label>
-                        <textarea id="terms" value={data.terms || ''} onChange={(e) => handleDataChange('terms', e.target.value)} rows={2} className="mt-1 block w-full rounded-md border-gray-300 dark:border-slate-600 shadow-sm focus:border-indigo-500 focus:ring-indigo-500 text-xs sm:text-sm bg-gray-50 dark:bg-slate-700 dark:text-gray-100" placeholder="เช่น ราคานี้มีผลยืนยันภายใน 7 วัน" />
+                        <textarea id="terms" value={data.terms || ''} onChange={(e) => handleDataChange('terms', e.target.value)} rows={2} maxLength={INPUT_LIMITS.terms} className="mt-1 block w-full rounded-md border-gray-300 dark:border-slate-600 shadow-sm focus:border-indigo-500 focus:ring-indigo-500 text-xs sm:text-sm bg-gray-50 dark:bg-slate-700 dark:text-gray-100" placeholder="เช่น ราคานี้มีผลยืนยันภายใน 7 วัน" />
                     </div>
                     <div className="grid grid-cols-1 md:grid-cols-2 gap-3 sm:gap-4">
                         <div>
                             <label htmlFor="customerApproverName" className="block text-xs sm:text-sm font-medium text-slate-700 dark:text-slate-300">ชื่อผู้อนุมัติ (ลูกค้า)</label>
-                            <input type="text" id="customerApproverName" value={data.customerApproverName || ''} onChange={(e) => handleDataChange('customerApproverName', e.target.value)} className="mt-1 block w-full rounded-md border-gray-300 dark:border-slate-600 shadow-sm focus:border-indigo-500 focus:ring-indigo-500 text-xs sm:text-sm bg-gray-50 dark:bg-slate-700 dark:text-gray-100" />
+                            <input type="text" id="customerApproverName" value={data.customerApproverName || ''} onChange={(e) => handleDataChange('customerApproverName', e.target.value)} maxLength={INPUT_LIMITS.signerName} className="mt-1 block w-full rounded-md border-gray-300 dark:border-slate-600 shadow-sm focus:border-indigo-500 focus:ring-indigo-500 text-xs sm:text-sm bg-gray-50 dark:bg-slate-700 dark:text-gray-100" />
                         </div>
                         <div>
                             <label htmlFor="customerApproverDate" className="block text-xs sm:text-sm font-medium text-slate-700 dark:text-slate-300">วันที่อนุมัติ (ลูกค้า)</label>
@@ -491,7 +492,7 @@ const VariationOrderForm: React.FC<VariationOrderFormProps> = ({
                         </div>
                         <div>
                             <label htmlFor="companyApproverName" className="block text-xs sm:text-sm font-medium text-slate-700 dark:text-slate-300">ชื่อผู้เสนอ (บริษัท)</label>
-                            <input type="text" id="companyApproverName" value={data.companyApproverName || ''} onChange={(e) => handleDataChange('companyApproverName', e.target.value)} className="mt-1 block w-full rounded-md border-gray-300 dark:border-slate-600 shadow-sm focus:border-indigo-500 focus:ring-indigo-500 text-xs sm:text-sm bg-gray-50 dark:bg-slate-700 dark:text-gray-100" />
+                            <input type="text" id="companyApproverName" value={data.companyApproverName || ''} onChange={(e) => handleDataChange('companyApproverName', e.target.value)} maxLength={INPUT_LIMITS.signerName} className="mt-1 block w-full rounded-md border-gray-300 dark:border-slate-600 shadow-sm focus:border-indigo-500 focus:ring-indigo-500 text-xs sm:text-sm bg-gray-50 dark:bg-slate-700 dark:text-gray-100" />
                         </div>
                         <div>
                             <label htmlFor="companyApproverDate" className="block text-xs sm:text-sm font-medium text-slate-700 dark:text-slate-300">วันที่เสนอ (บริษัท)</label>
@@ -505,11 +506,11 @@ const VariationOrderForm: React.FC<VariationOrderFormProps> = ({
                 <div className="space-y-3 sm:space-y-4">
                     <div>
                         <label htmlFor="notes" className="block text-xs sm:text-sm font-medium text-slate-700 dark:text-slate-300">หมายเหตุ</label>
-                        <textarea id="notes" value={data.notes || ''} onChange={(e) => handleDataChange('notes', e.target.value)} rows={3} className="mt-1 block w-full rounded-md border-gray-300 dark:border-slate-600 shadow-sm focus:border-indigo-500 focus:ring-indigo-500 text-xs sm:text-sm bg-gray-50 dark:bg-slate-700 dark:text-gray-100" />
+                        <textarea id="notes" value={data.notes || ''} onChange={(e) => handleDataChange('notes', e.target.value)} rows={3} maxLength={INPUT_LIMITS.notes} className="mt-1 block w-full rounded-md border-gray-300 dark:border-slate-600 shadow-sm focus:border-indigo-500 focus:ring-indigo-500 text-xs sm:text-sm bg-gray-50 dark:bg-slate-700 dark:text-gray-100" />
                     </div>
                     <div>
                         <label htmlFor="issuedBy" className="block text-xs sm:text-sm font-medium text-slate-700 dark:text-slate-300">ผู้ออกเอกสาร</label>
-                        <input type="text" id="issuedBy" value={data.issuedBy || ''} onChange={(e) => handleDataChange('issuedBy', e.target.value)} className="mt-1 block w-full rounded-md border-gray-300 dark:border-slate-600 shadow-sm focus:border-indigo-500 focus:ring-indigo-500 text-xs sm:text-sm bg-gray-50 dark:bg-slate-700 dark:text-gray-100" />
+                        <input type="text" id="issuedBy" value={data.issuedBy || ''} onChange={(e) => handleDataChange('issuedBy', e.target.value)} maxLength={INPUT_LIMITS.signerName} className="mt-1 block w-full rounded-md border-gray-300 dark:border-slate-600 shadow-sm focus:border-indigo-500 focus:ring-indigo-500 text-xs sm:text-sm bg-gray-50 dark:bg-slate-700 dark:text-gray-100" />
                     </div>
                 </div>
             </div>

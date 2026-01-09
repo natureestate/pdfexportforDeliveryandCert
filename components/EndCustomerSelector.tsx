@@ -18,6 +18,7 @@ import {
 import { useCompany } from '../contexts/CompanyContext';
 import { EndCustomerProject } from '../types';
 import { Users, Save, Home, Plus } from 'lucide-react';
+import { INPUT_LIMITS } from '../utils/inputValidation';
 
 interface EndCustomerSelectorProps {
     /** Label ที่แสดง */
@@ -491,6 +492,7 @@ const EndCustomerSelector: React.FC<EndCustomerSelectorProps> = ({
                                     type="text"
                                     value={newEndCustomer.projectName || ''}
                                     onChange={(e) => setNewEndCustomer(prev => ({ ...prev, projectName: e.target.value }))}
+                                    maxLength={INPUT_LIMITS.projectName}
                                     className="w-full rounded-md border-gray-300 dark:border-slate-600 shadow-sm focus:border-purple-500 focus:ring-purple-500 text-xs sm:text-sm px-3 py-2 bg-white dark:bg-slate-700 dark:text-gray-100"
                                     placeholder="เช่น บ้านคุณสมศักดิ์"
                                 />
@@ -505,6 +507,7 @@ const EndCustomerSelector: React.FC<EndCustomerSelectorProps> = ({
                                     value={newEndCustomer.projectAddress || ''}
                                     onChange={(e) => setNewEndCustomer(prev => ({ ...prev, projectAddress: e.target.value }))}
                                     rows={2}
+                                    maxLength={INPUT_LIMITS.projectAddress}
                                     className="w-full rounded-md border-gray-300 dark:border-slate-600 shadow-sm focus:border-purple-500 focus:ring-purple-500 text-xs sm:text-sm px-3 py-2 bg-white dark:bg-slate-700 dark:text-gray-100"
                                     placeholder="เช่น 123 หมู่ 5 ต.แวง อ.แกดำ จ.มหาสารคาม"
                                 />
@@ -519,6 +522,7 @@ const EndCustomerSelector: React.FC<EndCustomerSelectorProps> = ({
                                     type="text"
                                     value={newEndCustomer.contactName || ''}
                                     onChange={(e) => setNewEndCustomer(prev => ({ ...prev, contactName: e.target.value }))}
+                                    maxLength={INPUT_LIMITS.contactPerson}
                                     className="w-full rounded-md border-gray-300 dark:border-slate-600 shadow-sm focus:border-purple-500 focus:ring-purple-500 text-xs sm:text-sm px-3 py-2 bg-white dark:bg-slate-700 dark:text-gray-100"
                                     placeholder="เช่น คุณสมศรี"
                                 />
@@ -533,6 +537,8 @@ const EndCustomerSelector: React.FC<EndCustomerSelectorProps> = ({
                                     type="tel"
                                     value={newEndCustomer.contactPhone || ''}
                                     onChange={(e) => setNewEndCustomer(prev => ({ ...prev, contactPhone: e.target.value }))}
+                                    maxLength={INPUT_LIMITS.phone}
+                                    inputMode="tel"
                                     className="w-full rounded-md border-gray-300 dark:border-slate-600 shadow-sm focus:border-purple-500 focus:ring-purple-500 text-xs sm:text-sm px-3 py-2 bg-white dark:bg-slate-700 dark:text-gray-100"
                                     placeholder="08x-xxx-xxxx"
                                 />
@@ -547,6 +553,7 @@ const EndCustomerSelector: React.FC<EndCustomerSelectorProps> = ({
                                     value={newEndCustomer.notes || ''}
                                     onChange={(e) => setNewEndCustomer(prev => ({ ...prev, notes: e.target.value }))}
                                     rows={2}
+                                    maxLength={INPUT_LIMITS.notes}
                                     className="w-full rounded-md border-gray-300 dark:border-slate-600 shadow-sm focus:border-purple-500 focus:ring-purple-500 text-xs sm:text-sm px-3 py-2 bg-white dark:bg-slate-700 dark:text-gray-100"
                                     placeholder="หมายเหตุเพิ่มเติม..."
                                 />

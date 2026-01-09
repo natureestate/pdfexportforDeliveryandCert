@@ -6,6 +6,7 @@ import EndCustomerProjectSection from './EndCustomerProjectSection';
 import ServiceTemplateSelector from './ServiceTemplateSelector';
 import CustomerSelector from './CustomerSelector';
 import { generateDocumentNumber } from '../services/documentNumber';
+import { INPUT_LIMITS } from '../utils/inputValidation';
 
 export interface WarrantyFormProps {
     data: WarrantyData;
@@ -179,25 +180,25 @@ const WarrantyForm: React.FC<WarrantyFormProps> = ({
 
                     <div>
                         <label htmlFor="projectName" className="block text-xs sm:text-sm font-medium text-slate-700 dark:text-slate-300">ชื่อโครงการ</label>
-                        <input type="text" id="projectName" value={data.projectName} onChange={(e) => handleDataChange('projectName', e.target.value)} className="mt-1 block w-full rounded-md border-gray-300 shadow-sm focus:border-indigo-500 focus:ring-indigo-500 text-xs sm:text-sm bg-gray-50 dark:bg-slate-700 dark:text-gray-100 dark:border-slate-600" placeholder="เช่น โครงการบ้านมหาสารคาม" />
+                        <input type="text" id="projectName" value={data.projectName} onChange={(e) => handleDataChange('projectName', e.target.value)} maxLength={INPUT_LIMITS.projectName} className="mt-1 block w-full rounded-md border-gray-300 shadow-sm focus:border-indigo-500 focus:ring-indigo-500 text-xs sm:text-sm bg-gray-50 dark:bg-slate-700 dark:text-gray-100 dark:border-slate-600" placeholder="เช่น โครงการบ้านมหาสารคาม" />
                     </div>
                     <div className="grid grid-cols-1 md:grid-cols-2 gap-3 sm:gap-4">
                         <div>
                             <label htmlFor="customerName" className="block text-xs sm:text-sm font-medium text-slate-700 dark:text-slate-300">ชื่อลูกค้า</label>
-                            <input type="text" id="customerName" value={data.customerName} onChange={(e) => handleDataChange('customerName', e.target.value)} className="mt-1 block w-full rounded-md border-gray-300 shadow-sm focus:border-indigo-500 focus:ring-indigo-500 text-xs sm:text-sm bg-gray-50 dark:bg-slate-700 dark:text-gray-100 dark:border-slate-600" placeholder="เช่น คุณชัยทัต" />
+                            <input type="text" id="customerName" value={data.customerName} onChange={(e) => handleDataChange('customerName', e.target.value)} maxLength={INPUT_LIMITS.customerName} className="mt-1 block w-full rounded-md border-gray-300 shadow-sm focus:border-indigo-500 focus:ring-indigo-500 text-xs sm:text-sm bg-gray-50 dark:bg-slate-700 dark:text-gray-100 dark:border-slate-600" placeholder="เช่น คุณชัยทัต" />
                         </div>
                         <div>
                             <label htmlFor="customerPhone" className="block text-xs sm:text-sm font-medium text-slate-700 dark:text-slate-300">โทรศัพท์ลูกค้า</label>
-                            <input type="tel" id="customerPhone" value={data.customerPhone} onChange={(e) => handleDataChange('customerPhone', e.target.value)} className="mt-1 block w-full rounded-md border-gray-300 shadow-sm focus:border-indigo-500 focus:ring-indigo-500 text-xs sm:text-sm bg-gray-50 dark:bg-slate-700 dark:text-gray-100 dark:border-slate-600" placeholder="เช่น 089-xxx-xxxx" />
+                            <input type="tel" id="customerPhone" value={data.customerPhone} onChange={(e) => handleDataChange('customerPhone', e.target.value)} maxLength={INPUT_LIMITS.phone} inputMode="tel" className="mt-1 block w-full rounded-md border-gray-300 shadow-sm focus:border-indigo-500 focus:ring-indigo-500 text-xs sm:text-sm bg-gray-50 dark:bg-slate-700 dark:text-gray-100 dark:border-slate-600" placeholder="เช่น 089-xxx-xxxx" />
                         </div>
                     </div>
                     <div>
                         <label htmlFor="customerEmail" className="block text-xs sm:text-sm font-medium text-slate-700 dark:text-slate-300">อีเมลลูกค้า</label>
-                        <input type="email" id="customerEmail" value={data.customerEmail || ''} onChange={(e) => handleDataChange('customerEmail', e.target.value)} className="mt-1 block w-full rounded-md border-gray-300 shadow-sm focus:border-indigo-500 focus:ring-indigo-500 text-xs sm:text-sm bg-gray-50 dark:bg-slate-700 dark:text-gray-100 dark:border-slate-600" placeholder="เช่น customer@example.com" />
+                        <input type="email" id="customerEmail" value={data.customerEmail || ''} onChange={(e) => handleDataChange('customerEmail', e.target.value)} maxLength={INPUT_LIMITS.email} inputMode="email" className="mt-1 block w-full rounded-md border-gray-300 shadow-sm focus:border-indigo-500 focus:ring-indigo-500 text-xs sm:text-sm bg-gray-50 dark:bg-slate-700 dark:text-gray-100 dark:border-slate-600" placeholder="เช่น customer@example.com" />
                     </div>
                     <div>
                         <label htmlFor="customerAddress" className="block text-xs sm:text-sm font-medium text-slate-700 dark:text-slate-300">ที่อยู่โครงการ/ลูกค้า</label>
-                        <textarea id="customerAddress" value={data.customerAddress} onChange={(e) => handleDataChange('customerAddress', e.target.value)} rows={2} className="mt-1 block w-full rounded-md border-gray-300 shadow-sm focus:border-indigo-500 focus:ring-indigo-500 text-xs sm:text-sm bg-gray-50 dark:bg-slate-700 dark:text-gray-100 dark:border-slate-600" placeholder="เช่น 123 หมู่ 5 ตำบลแวง อำเภอแกดำ มหาสารคาม" />
+                        <textarea id="customerAddress" value={data.customerAddress} onChange={(e) => handleDataChange('customerAddress', e.target.value)} rows={2} maxLength={INPUT_LIMITS.companyAddress} className="mt-1 block w-full rounded-md border-gray-300 shadow-sm focus:border-indigo-500 focus:ring-indigo-500 text-xs sm:text-sm bg-gray-50 dark:bg-slate-700 dark:text-gray-100 dark:border-slate-600" placeholder="เช่น 123 หมู่ 5 ตำบลแวง อำเภอแกดำ มหาสารคาม" />
                     </div>
                     <div>
                         <label htmlFor="purchaseDate" className="block text-xs sm:text-sm font-medium text-slate-700 dark:text-slate-300">วันที่ส่งมอบสินค้า</label>
@@ -252,6 +253,7 @@ const WarrantyForm: React.FC<WarrantyFormProps> = ({
                             id="serviceName" 
                             value={data.serviceName} 
                             onChange={(e) => handleDataChange('serviceName', e.target.value)} 
+                            maxLength={INPUT_LIMITS.productName}
                             className="mt-1 block w-full rounded-md border-gray-300 shadow-sm focus:border-indigo-500 focus:ring-indigo-500 text-xs sm:text-sm bg-gray-50 dark:bg-slate-700 dark:text-gray-100 dark:border-slate-600" 
                             placeholder="เช่น โครงสร้างสำเร็จระบบ Fully precast concrete"
                         />
@@ -263,6 +265,7 @@ const WarrantyForm: React.FC<WarrantyFormProps> = ({
                             id="productDetail" 
                             value={data.productDetail} 
                             onChange={(e) => handleDataChange('productDetail', e.target.value)} 
+                            maxLength={INPUT_LIMITS.itemDescription}
                             className="mt-1 block w-full rounded-md border-gray-300 shadow-sm focus:border-indigo-500 focus:ring-indigo-500 text-xs sm:text-sm bg-gray-50 dark:bg-slate-700 dark:text-gray-100 dark:border-slate-600" 
                             placeholder="เช่น โครงสร้างสำเร็จรูป"
                         />
@@ -275,6 +278,7 @@ const WarrantyForm: React.FC<WarrantyFormProps> = ({
                                 id="houseModel" 
                                 value={data.houseModel} 
                                 onChange={(e) => handleDataChange('houseModel', e.target.value)} 
+                                maxLength={INPUT_LIMITS.modelNumber}
                                 className="block w-full rounded-md border-gray-300 shadow-sm focus:border-indigo-500 focus:ring-indigo-500 text-xs sm:text-sm bg-gray-50 dark:bg-slate-700 dark:text-gray-100 dark:border-slate-600" 
                                 placeholder="เช่น A01, Modern Loft"
                             />
@@ -286,6 +290,7 @@ const WarrantyForm: React.FC<WarrantyFormProps> = ({
                                 id="batchNo" 
                                 value={data.batchNo} 
                                 onChange={(e) => handleDataChange('batchNo', e.target.value)} 
+                                maxLength={INPUT_LIMITS.serialNumber}
                                 className="block w-full rounded-md border-gray-300 shadow-sm focus:border-indigo-500 focus:ring-indigo-500 text-xs sm:text-sm bg-gray-50 dark:bg-slate-700 dark:text-gray-100 dark:border-slate-600" 
                                 placeholder="เช่น BATCH-2025-08-A01"
                             />
@@ -312,6 +317,7 @@ const WarrantyForm: React.FC<WarrantyFormProps> = ({
                             id="warrantyPeriod" 
                             value={data.warrantyPeriod} 
                             onChange={(e) => handleDataChange('warrantyPeriod', e.target.value)} 
+                            maxLength={INPUT_LIMITS.warrantyPeriod}
                             className="mt-1 block w-full rounded-md border-gray-300 shadow-sm focus:border-indigo-500 focus:ring-indigo-500 text-xs sm:text-sm bg-gray-50 dark:bg-slate-700 dark:text-gray-100 dark:border-slate-600" 
                             placeholder="เช่น 3 ปี, 5 ปี"
                             disabled={data.useMultipleWarrantyTypes}
@@ -426,7 +432,7 @@ const WarrantyForm: React.FC<WarrantyFormProps> = ({
                 {/* ส่วนที่ 4: เงื่อนไขการรับประกัน */}
                 <FormDivider title="ส่วนที่ 4: เงื่อนไขการรับประกัน" />
                 <div>
-                     <textarea id="terms" value={data.terms} onChange={(e) => handleDataChange('terms', e.target.value)} rows={6} className="mt-1 block w-full rounded-md border-gray-300 shadow-sm focus:border-indigo-500 focus:ring-indigo-500 text-xs sm:text-sm bg-gray-50 dark:bg-slate-700 dark:text-gray-100 dark:border-slate-600" placeholder="ระบุเงื่อนไขการรับประกัน ขอบเขต และข้อจำกัดต่างๆ" />
+                     <textarea id="terms" value={data.terms} onChange={(e) => handleDataChange('terms', e.target.value)} rows={6} maxLength={INPUT_LIMITS.terms} className="mt-1 block w-full rounded-md border-gray-300 shadow-sm focus:border-indigo-500 focus:ring-indigo-500 text-xs sm:text-sm bg-gray-50 dark:bg-slate-700 dark:text-gray-100 dark:border-slate-600" placeholder="ระบุเงื่อนไขการรับประกัน ขอบเขต และข้อจำกัดต่างๆ" />
                 </div>
             </div>
         </div>

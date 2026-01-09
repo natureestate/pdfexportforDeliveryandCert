@@ -9,6 +9,7 @@ import { EndCustomer, getEndCustomersByCustomer, saveEndCustomer, deleteEndCusto
 import { useCompany } from '../contexts/CompanyContext';
 import { migrateCustomersLastUsedAt } from '../services/customerMigration';
 import { Users, Save, Home, Plus, Trash2 } from 'lucide-react';
+import { INPUT_LIMITS } from '../utils/inputValidation';
 
 interface CustomerSelectorProps {
     label?: string;
@@ -568,6 +569,7 @@ const CustomerSelector: React.FC<CustomerSelectorProps> = ({
                                         type="text"
                                         value={newCustomer.customerName}
                                         onChange={(e) => setNewCustomer(prev => ({ ...prev, customerName: e.target.value }))}
+                                        maxLength={INPUT_LIMITS.customerName}
                                         className="w-full rounded-md border-gray-300 shadow-sm focus:border-indigo-500 focus:ring-indigo-500 text-xs sm:text-sm px-3 py-2"
                                         placeholder="เช่น คุณสมชาย ใจดี"
                                     />
@@ -595,6 +597,8 @@ const CustomerSelector: React.FC<CustomerSelectorProps> = ({
                                         type="tel"
                                         value={newCustomer.phone}
                                         onChange={(e) => setNewCustomer(prev => ({ ...prev, phone: e.target.value }))}
+                                        maxLength={INPUT_LIMITS.phone}
+                                        inputMode="tel"
                                         className="w-full rounded-md border-gray-300 shadow-sm focus:border-indigo-500 focus:ring-indigo-500 text-xs sm:text-sm px-3 py-2"
                                         placeholder="08x-xxx-xxxx"
                                     />
@@ -608,6 +612,8 @@ const CustomerSelector: React.FC<CustomerSelectorProps> = ({
                                         type="tel"
                                         value={newCustomer.alternatePhone || ''}
                                         onChange={(e) => setNewCustomer(prev => ({ ...prev, alternatePhone: e.target.value }))}
+                                        maxLength={INPUT_LIMITS.phone}
+                                        inputMode="tel"
                                         className="w-full rounded-md border-gray-300 shadow-sm focus:border-indigo-500 focus:ring-indigo-500 text-xs sm:text-sm px-3 py-2"
                                         placeholder="08x-xxx-xxxx"
                                     />
@@ -621,6 +627,8 @@ const CustomerSelector: React.FC<CustomerSelectorProps> = ({
                                         type="email"
                                         value={newCustomer.email || ''}
                                         onChange={(e) => setNewCustomer(prev => ({ ...prev, email: e.target.value }))}
+                                        maxLength={INPUT_LIMITS.email}
+                                        inputMode="email"
                                         className="w-full rounded-md border-gray-300 shadow-sm focus:border-indigo-500 focus:ring-indigo-500 text-xs sm:text-sm px-3 py-2"
                                         placeholder="example@email.com"
                                     />
@@ -636,6 +644,7 @@ const CustomerSelector: React.FC<CustomerSelectorProps> = ({
                                     type="text"
                                     value={newCustomer.projectName || ''}
                                     onChange={(e) => setNewCustomer(prev => ({ ...prev, projectName: e.target.value }))}
+                                    maxLength={INPUT_LIMITS.projectName}
                                     className="w-full rounded-md border-gray-300 shadow-sm focus:border-indigo-500 focus:ring-indigo-500 text-xs sm:text-sm px-3 py-2"
                                     placeholder="เช่น บ้านสวยใจกลางเมือง"
                                 />
@@ -650,6 +659,9 @@ const CustomerSelector: React.FC<CustomerSelectorProps> = ({
                                     type="text"
                                     value={newCustomer.taxId || ''}
                                     onChange={(e) => setNewCustomer(prev => ({ ...prev, taxId: e.target.value }))}
+                                    maxLength={INPUT_LIMITS.taxId}
+                                    inputMode="numeric"
+                                    pattern="[0-9]*"
                                     className="w-full rounded-md border-gray-300 shadow-sm focus:border-indigo-500 focus:ring-indigo-500 text-xs sm:text-sm px-3 py-2"
                                     placeholder="เช่น 0123456789012 (สำหรับนิติบุคคล)"
                                 />
@@ -701,6 +713,7 @@ const CustomerSelector: React.FC<CustomerSelectorProps> = ({
                                     value={newCustomer.address}
                                     onChange={(e) => setNewCustomer(prev => ({ ...prev, address: e.target.value }))}
                                     rows={3}
+                                    maxLength={INPUT_LIMITS.companyAddress}
                                     className="w-full rounded-md border-gray-300 shadow-sm focus:border-indigo-500 focus:ring-indigo-500 text-xs sm:text-sm px-3 py-2"
                                     placeholder="เช่น 123 หมู่ 5 ตำบลแวง อำเภอแกดำ มหาสารคาม"
                                 />
@@ -715,6 +728,7 @@ const CustomerSelector: React.FC<CustomerSelectorProps> = ({
                                     value={newCustomer.notes || ''}
                                     onChange={(e) => setNewCustomer(prev => ({ ...prev, notes: e.target.value }))}
                                     rows={2}
+                                    maxLength={INPUT_LIMITS.notes}
                                     className="w-full rounded-md border-gray-300 shadow-sm focus:border-indigo-500 focus:ring-indigo-500 text-xs sm:text-sm px-3 py-2"
                                     placeholder="บันทึกข้อมูลเพิ่มเติม..."
                                 />

@@ -7,6 +7,7 @@ import React, { useState, useEffect } from 'react';
 import { Contractor, getContractors, saveContractor, updateContractor, deleteContractor, updateContractorUsage, searchContractors, getRecentContractors } from '../services/contractors';
 import { useCompany } from '../contexts/CompanyContext';
 import { Wrench, Save } from 'lucide-react';
+import { INPUT_LIMITS } from '../utils/inputValidation';
 
 interface ContractorSelectorProps {
     label?: string;
@@ -473,6 +474,7 @@ const ContractorSelector: React.FC<ContractorSelectorProps> = ({
                                         type="text"
                                         value={newContractor.contractorName}
                                         onChange={(e) => setNewContractor(prev => ({ ...prev, contractorName: e.target.value }))}
+                                        maxLength={INPUT_LIMITS.customerName}
                                         className="w-full rounded-md border-gray-300 shadow-sm focus:border-orange-500 focus:ring-orange-500 text-xs sm:text-sm px-3 py-2"
                                         placeholder="เช่น นายสมชาย ช่างเก่ง"
                                     />
@@ -500,6 +502,8 @@ const ContractorSelector: React.FC<ContractorSelectorProps> = ({
                                         type="tel"
                                         value={newContractor.phone}
                                         onChange={(e) => setNewContractor(prev => ({ ...prev, phone: e.target.value }))}
+                                        maxLength={INPUT_LIMITS.phone}
+                                        inputMode="tel"
                                         className="w-full rounded-md border-gray-300 shadow-sm focus:border-orange-500 focus:ring-orange-500 text-xs sm:text-sm px-3 py-2"
                                         placeholder="08x-xxx-xxxx"
                                     />
@@ -513,6 +517,8 @@ const ContractorSelector: React.FC<ContractorSelectorProps> = ({
                                         type="tel"
                                         value={newContractor.alternatePhone || ''}
                                         onChange={(e) => setNewContractor(prev => ({ ...prev, alternatePhone: e.target.value }))}
+                                        maxLength={INPUT_LIMITS.phone}
+                                        inputMode="tel"
                                         className="w-full rounded-md border-gray-300 shadow-sm focus:border-orange-500 focus:ring-orange-500 text-xs sm:text-sm px-3 py-2"
                                         placeholder="08x-xxx-xxxx"
                                     />
@@ -526,6 +532,8 @@ const ContractorSelector: React.FC<ContractorSelectorProps> = ({
                                         type="email"
                                         value={newContractor.email || ''}
                                         onChange={(e) => setNewContractor(prev => ({ ...prev, email: e.target.value }))}
+                                        maxLength={INPUT_LIMITS.email}
+                                        inputMode="email"
                                         className="w-full rounded-md border-gray-300 shadow-sm focus:border-orange-500 focus:ring-orange-500 text-xs sm:text-sm px-3 py-2"
                                         placeholder="example@email.com"
                                     />
@@ -541,6 +549,9 @@ const ContractorSelector: React.FC<ContractorSelectorProps> = ({
                                     type="text"
                                     value={newContractor.idCard || ''}
                                     onChange={(e) => setNewContractor(prev => ({ ...prev, idCard: e.target.value }))}
+                                    maxLength={INPUT_LIMITS.taxId}
+                                    inputMode="numeric"
+                                    pattern="[0-9]*"
                                     className="w-full rounded-md border-gray-300 shadow-sm focus:border-orange-500 focus:ring-orange-500 text-xs sm:text-sm px-3 py-2"
                                     placeholder="1-2345-67890-12-3"
                                 />
@@ -606,6 +617,7 @@ const ContractorSelector: React.FC<ContractorSelectorProps> = ({
                                     value={newContractor.address}
                                     onChange={(e) => setNewContractor(prev => ({ ...prev, address: e.target.value }))}
                                     rows={3}
+                                    maxLength={INPUT_LIMITS.companyAddress}
                                     className="w-full rounded-md border-gray-300 shadow-sm focus:border-orange-500 focus:ring-orange-500 text-xs sm:text-sm px-3 py-2"
                                     placeholder="เช่น 123 หมู่ 5 ตำบลแวง อำเภอแกดำ มหาสารคาม"
                                 />
@@ -620,6 +632,7 @@ const ContractorSelector: React.FC<ContractorSelectorProps> = ({
                                     value={newContractor.notes || ''}
                                     onChange={(e) => setNewContractor(prev => ({ ...prev, notes: e.target.value }))}
                                     rows={2}
+                                    maxLength={INPUT_LIMITS.notes}
                                     className="w-full rounded-md border-gray-300 shadow-sm focus:border-orange-500 focus:ring-orange-500 text-xs sm:text-sm px-3 py-2"
                                     placeholder="บันทึกข้อมูลเพิ่มเติม..."
                                 />
