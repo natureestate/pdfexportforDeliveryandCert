@@ -2,6 +2,7 @@ import React, { forwardRef } from 'react';
 import { ReceiptData } from '../types';
 import { getDefaultLogoUrl } from '../services/logoStorage';
 import QRCodeFooter from './QRCodeFooter';
+import EndCustomerProjectPreview from './EndCustomerProjectPreview';
 
 interface ReceiptPreviewProps {
     data: ReceiptData;
@@ -84,9 +85,16 @@ const ReceiptPreview = forwardRef<HTMLDivElement, ReceiptPreviewProps>(({ data }
                     {data.customerTaxId && (
                         <p className="text-slate-600 text-xs mt-1">เลขประจำตัวผู้เสียภาษี: {data.customerTaxId}</p>
                     )}
+                    
+                    {/* แสดงข้อมูลโครงการลูกค้าปลายทาง (End Customer Project) */}
+                    <EndCustomerProjectPreview
+                        hasEndCustomerProject={data.hasEndCustomerProject}
+                        endCustomerProject={data.endCustomerProject}
+                        showEndCustomerInPdf={data.showEndCustomerInPdf}
+                    />
                 </div>
             </section>
-            
+
             <section className="min-h-[300px] mb-6">
                 <table className="w-full text-left text-sm">
                     <thead className="bg-green-700 text-white">

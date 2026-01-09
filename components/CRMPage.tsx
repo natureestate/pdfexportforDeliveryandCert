@@ -24,7 +24,8 @@ import {
     AlertCircle,
     Check,
     Clock,
-    Star
+    Star,
+    Home
 } from 'lucide-react';
 import { useCompany } from '../contexts/CompanyContext';
 import { 
@@ -33,7 +34,8 @@ import {
     saveCustomer, 
     updateCustomer, 
     deleteCustomer,
-    searchCustomers 
+    searchCustomers,
+    EndCustomerProject
 } from '../services/customers';
 import { 
     Contractor, 
@@ -71,6 +73,9 @@ interface FormData {
     // ข้อมูลสาขา (สำหรับนิติบุคคล)
     branchCode: string;
     branchName: string;
+    // ข้อมูลโครงการลูกค้าปลายทาง (End Customer Project)
+    hasEndCustomerProject: boolean;
+    endCustomerProject: EndCustomerProject | undefined;
 }
 
 const initialFormData: FormData = {
@@ -94,6 +99,8 @@ const initialFormData: FormData = {
     specialties: [],
     branchCode: '',
     branchName: '',
+    hasEndCustomerProject: false,
+    endCustomerProject: undefined,
 };
 
 const CRMPage: React.FC = () => {
@@ -212,6 +219,9 @@ const CRMPage: React.FC = () => {
                     // ข้อมูลสาขา (สำหรับนิติบุคคล)
                     branchCode: customer.branchCode || '',
                     branchName: customer.branchName || '',
+                    // ข้อมูลโครงการลูกค้าปลายทาง
+                    hasEndCustomerProject: customer.hasEndCustomerProject || false,
+                    endCustomerProject: customer.endCustomerProject,
                 });
             } else {
                 const contractor = item as Contractor;
@@ -237,6 +247,9 @@ const CRMPage: React.FC = () => {
                     // ข้อมูลสาขา (สำหรับนิติบุคคล)
                     branchCode: contractor.branchCode || '',
                     branchName: contractor.branchName || '',
+                    // ข้อมูลโครงการลูกค้าปลายทาง (ไม่ใช้สำหรับ contractor)
+                    hasEndCustomerProject: false,
+                    endCustomerProject: undefined,
                 });
             }
         } else {
@@ -278,6 +291,9 @@ const CRMPage: React.FC = () => {
                     // ข้อมูลสาขา (สำหรับนิติบุคคล)
                     branchCode: formData.branchCode || undefined,
                     branchName: formData.branchName || undefined,
+                    // ข้อมูลโครงการลูกค้าปลายทาง
+                    hasEndCustomerProject: formData.hasEndCustomerProject,
+                    endCustomerProject: formData.hasEndCustomerProject ? formData.endCustomerProject : undefined,
                 };
 
                 if (editingId) {
@@ -468,6 +484,8 @@ const CRMPage: React.FC = () => {
                         const specialties = !isCustomer ? (item as Contractor).specialties : undefined;
                         const usageCount = item.usageCount || 0;
                         const lastUsed = item.lastUsedAt;
+                        const hasEndCustomer = isCustomer ? (item as Customer).hasEndCustomerProject : false;
+                        const endCustomerProject = isCustomer ? (item as Customer).endCustomerProject : undefined;
 
                         return (
                             <div
@@ -476,7 +494,7 @@ const CRMPage: React.FC = () => {
                             >
                                 <div className="flex items-start justify-between gap-4">
                                     <div className="flex-1 min-w-0">
-                                        <div className="flex items-center gap-2 mb-1">
+                                        <div className="flex items-center gap-2 mb-1 flex-wrap">
                                             <h3 className="font-semibold text-gray-900 dark:text-gray-100 truncate">{name}</h3>
                                             <span className={`px-2 py-0.5 text-xs rounded-full ${
                                                 type === 'company' 
@@ -485,6 +503,12 @@ const CRMPage: React.FC = () => {
                                             }`}>
                                                 {type === 'company' ? 'นิติบุคคล' : 'บุคคล'}
                                             </span>
+                                            {hasEndCustomer && (
+                                                <span className="flex items-center gap-1 px-2 py-0.5 text-xs rounded-full bg-purple-100 dark:bg-purple-900/30 text-purple-700 dark:text-purple-300">
+                                                    <Home className="w-3 h-3" />
+                                                    มีลูกค้าปลายทาง
+                                                </span>
+                                            )}
                                             {usageCount > 0 && (
                                                 <span className="flex items-center gap-1 text-xs text-amber-600 dark:text-amber-400">
                                                     <Star className="w-3 h-3" />
@@ -548,6 +572,27 @@ const CRMPage: React.FC = () => {
                                                         {spec}
                                                     </span>
                                                 ))}
+                                            </div>
+                                        )}
+
+                                        {/* End Customer Project Info (customers only) */}
+                                        {hasEndCustomer && endCustomerProject && (
+                                            <div className="mt-2 p-2 bg-purple-50 dark:bg-purple-900/20 rounded-lg border border-purple-200 dark:border-purple-700">
+                                                <div className="flex items-center gap-1 text-xs text-purple-700 dark:text-purple-300 mb-1">
+                                                    <Home className="w-3 h-3" />
+                                                    <span className="font-medium">โครงการลูกค้าปลายทาง</span>
+                                                </div>
+                                                <div className="text-xs text-gray-600 dark:text-gray-300 space-y-0.5">
+                                                    {endCustomerProject.projectName && (
+                                                        <p><span className="font-medium">โครงการ:</span> {endCustomerProject.projectName}</p>
+                                                    )}
+                                                    {endCustomerProject.projectAddress && (
+                                                        <p className="truncate"><span className="font-medium">ที่ตั้ง:</span> {endCustomerProject.projectAddress}</p>
+                                                    )}
+                                                    {endCustomerProject.contactName && (
+                                                        <p><span className="font-medium">ผู้ติดต่อ:</span> {endCustomerProject.contactName}</p>
+                                                    )}
+                                                </div>
                                             </div>
                                         )}
                                     </div>
@@ -847,6 +892,98 @@ const CRMPage: React.FC = () => {
                                             placeholder="บ้านเลขที่/ห้องเลขที่"
                                         />
                                     </div>
+                                </div>
+                            )}
+
+                            {/* End Customer Project (customers only) */}
+                            {activeTab === 'customers' && (
+                                <div className="border-t border-gray-200 dark:border-slate-600 pt-4 mt-4">
+                                    <div className="flex items-center mb-3">
+                                        <input
+                                            type="checkbox"
+                                            id="hasEndCustomerProject"
+                                            checked={formData.hasEndCustomerProject}
+                                            onChange={(e) => {
+                                                const checked = e.target.checked;
+                                                setFormData({
+                                                    ...formData,
+                                                    hasEndCustomerProject: checked,
+                                                    endCustomerProject: checked ? { projectName: '' } : undefined,
+                                                });
+                                            }}
+                                            className="h-4 w-4 text-purple-600 focus:ring-purple-500 border-gray-300 rounded"
+                                        />
+                                        <label
+                                            htmlFor="hasEndCustomerProject"
+                                            className="ml-2 block text-sm font-medium text-slate-700 dark:text-slate-200"
+                                        >
+                                            มีโครงการลูกค้าปลายทาง (End Customer)
+                                        </label>
+                                    </div>
+
+                                    {formData.hasEndCustomerProject && (
+                                        <div className="p-3 bg-purple-50 dark:bg-purple-900/20 rounded-lg border border-purple-200 dark:border-purple-700 space-y-3">
+                                            <p className="text-xs font-medium text-purple-700 dark:text-purple-300 mb-2">
+                                                🏠 ข้อมูลโครงการลูกค้าปลายทาง
+                                            </p>
+                                            <div>
+                                                <label className="block text-xs sm:text-sm font-medium text-slate-700 dark:text-slate-200 mb-1">
+                                                    ชื่อโครงการลูกค้าปลายทาง
+                                                </label>
+                                                <input
+                                                    type="text"
+                                                    value={formData.endCustomerProject?.projectName || ''}
+                                                    onChange={(e) => setFormData({
+                                                        ...formData,
+                                                        endCustomerProject: {
+                                                            ...formData.endCustomerProject,
+                                                            projectName: e.target.value,
+                                                        },
+                                                    })}
+                                                    className="w-full rounded-md border-gray-300 dark:border-slate-600 shadow-sm focus:border-indigo-500 focus:ring-indigo-500 text-xs sm:text-sm px-3 py-2 bg-white dark:bg-slate-700 dark:text-gray-100"
+                                                    placeholder="เช่น บ้านคุณสมศักดิ์"
+                                                />
+                                            </div>
+                                            <div>
+                                                <label className="block text-xs sm:text-sm font-medium text-slate-700 dark:text-slate-200 mb-1">
+                                                    ที่ตั้งโครงการ
+                                                </label>
+                                                <textarea
+                                                    value={formData.endCustomerProject?.projectAddress || ''}
+                                                    onChange={(e) => setFormData({
+                                                        ...formData,
+                                                        endCustomerProject: {
+                                                            ...formData.endCustomerProject,
+                                                            projectName: formData.endCustomerProject?.projectName || '',
+                                                            projectAddress: e.target.value,
+                                                        },
+                                                    })}
+                                                    rows={2}
+                                                    className="w-full rounded-md border-gray-300 dark:border-slate-600 shadow-sm focus:border-indigo-500 focus:ring-indigo-500 text-xs sm:text-sm px-3 py-2 bg-white dark:bg-slate-700 dark:text-gray-100"
+                                                    placeholder="เช่น 123 หมู่ 5 ต.แวง อ.แกดำ จ.มหาสารคาม"
+                                                />
+                                            </div>
+                                            <div>
+                                                <label className="block text-xs sm:text-sm font-medium text-slate-700 dark:text-slate-200 mb-1">
+                                                    ชื่อผู้ติดต่อที่โครงการ
+                                                </label>
+                                                <input
+                                                    type="text"
+                                                    value={formData.endCustomerProject?.contactName || ''}
+                                                    onChange={(e) => setFormData({
+                                                        ...formData,
+                                                        endCustomerProject: {
+                                                            ...formData.endCustomerProject,
+                                                            projectName: formData.endCustomerProject?.projectName || '',
+                                                            contactName: e.target.value,
+                                                        },
+                                                    })}
+                                                    className="w-full rounded-md border-gray-300 dark:border-slate-600 shadow-sm focus:border-indigo-500 focus:ring-indigo-500 text-xs sm:text-sm px-3 py-2 bg-white dark:bg-slate-700 dark:text-gray-100"
+                                                    placeholder="เช่น คุณสมศรี"
+                                                />
+                                            </div>
+                                        </div>
+                                    )}
                                 </div>
                             )}
 

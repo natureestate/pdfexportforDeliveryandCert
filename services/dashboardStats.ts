@@ -72,6 +72,9 @@ export interface DashboardStats {
     topCustomers: TopCustomer[];      // Top 5 ลูกค้าที่ออกเอกสารบ่อย
     expiringDocuments: ExpiringDocument[]; // เอกสารที่ใกล้หมดอายุ
     pendingPayments: PendingPayment[]; // ใบแจ้งหนี้ค้างชำระ
+    // Customer stats
+    totalCustomers: number;           // จำนวนลูกค้าทั้งหมด
+    customersWithEndProject: number;  // จำนวนลูกค้าที่มีโครงการลูกค้าปลายทาง
 }
 
 // Interface สำหรับกิจกรรมล่าสุด
@@ -687,6 +690,40 @@ const getPendingPayments = async (companyId?: string): Promise<PendingPayment[]>
 };
 
 /**
+ * ดึงสถิติลูกค้าที่มีโครงการลูกค้าปลายทาง (End Customer Project)
+ */
+const getCustomerStats = async (companyId?: string): Promise<{ total: number; withEndProject: number }> => {
+    const currentUser = auth.currentUser;
+    if (!currentUser) return { total: 0, withEndProject: 0 };
+
+    try {
+        const constraints = [
+            where("userId", "==", currentUser.uid),
+        ];
+        if (companyId) constraints.push(where("companyId", "==", companyId));
+
+        const q = query(collection(db, 'customers'), ...constraints);
+        const snapshot = await getDocs(q);
+
+        let total = 0;
+        let withEndProject = 0;
+
+        snapshot.docs.forEach(doc => {
+            const data = doc.data();
+            total++;
+            if (data.hasEndCustomerProject === true) {
+                withEndProject++;
+            }
+        });
+
+        return { total, withEndProject };
+    } catch (error) {
+        console.error('Error getting customer stats:', error);
+        return { total: 0, withEndProject: 0 };
+    }
+};
+
+/**
  * ดึงแนวโน้มรายเดือนแบบละเอียด (12 เดือน)
  */
 const getExtendedMonthlyTrends = async (companyId?: string): Promise<ExtendedMonthlyTrend[]> => {
@@ -778,7 +815,7 @@ export const getDashboardStats = async (companyId?: string): Promise<DashboardSt
     const docTypes: DocType[] = Object.keys(COLLECTIONS) as DocType[];
     const statsPromises = docTypes.map(docType => getDocTypeStats(docType, companyId));
     
-    const [byDocType, recentActivity, monthlyTrend, financialSummary, topCustomers, expiringDocuments, pendingPayments, monthlyTrends] = await Promise.all([
+    const [byDocType, recentActivity, monthlyTrend, financialSummary, topCustomers, expiringDocuments, pendingPayments, monthlyTrends, customerStats] = await Promise.all([
         Promise.all(statsPromises),
         getRecentActivity(companyId),
         getMonthlyTrend(companyId),
@@ -787,6 +824,7 @@ export const getDashboardStats = async (companyId?: string): Promise<DashboardSt
         getExpiringDocuments(companyId),
         getPendingPayments(companyId),
         getExtendedMonthlyTrends(companyId),
+        getCustomerStats(companyId),
     ]);
 
     // คำนวณสถิติรวม
@@ -815,6 +853,8 @@ export const getDashboardStats = async (companyId?: string): Promise<DashboardSt
         topCustomers,
         expiringDocuments,
         pendingPayments,
+        totalCustomers: customerStats.total,
+        customersWithEndProject: customerStats.withEndProject,
     };
 };
 

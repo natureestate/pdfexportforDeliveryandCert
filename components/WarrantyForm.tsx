@@ -1,7 +1,8 @@
 import React, { useRef, useState, useEffect } from 'react';
-import { WarrantyData, LogoType } from '../types';
+import { WarrantyData, LogoType, EndCustomerProject } from '../types';
 import { formatDateForInput } from '../utils/dateUtils';
 import CompanyProfileSelector from './CompanyProfileSelector';
+import EndCustomerProjectSection from './EndCustomerProjectSection';
 import ServiceTemplateSelector from './ServiceTemplateSelector';
 import CustomerSelector from './CustomerSelector';
 import { generateDocumentNumber } from '../services/documentNumber';
@@ -156,6 +157,16 @@ const WarrantyForm: React.FC<WarrantyFormProps> = ({
                             if (customer.branchName) {
                                 handleDataChange('customerBranchName', customer.branchName);
                             }
+                            // ข้อมูลโครงการลูกค้าปลายทาง (End Customer Project)
+                            if (customer.hasEndCustomerProject && customer.endCustomerProject) {
+                                handleDataChange('hasEndCustomerProject', true);
+                                handleDataChange('endCustomerProject', customer.endCustomerProject);
+                                handleDataChange('showEndCustomerInPdf', true);
+                            } else {
+                                handleDataChange('hasEndCustomerProject', false);
+                                handleDataChange('endCustomerProject', undefined);
+                                handleDataChange('showEndCustomerInPdf', false);
+                            }
                         }}
                         currentCustomer={{
                             customerName: data.customerName,
@@ -192,6 +203,16 @@ const WarrantyForm: React.FC<WarrantyFormProps> = ({
                         <label htmlFor="purchaseDate" className="block text-xs sm:text-sm font-medium text-slate-700 dark:text-slate-300">วันที่ส่งมอบสินค้า</label>
                         <input type="date" id="purchaseDate" value={formatDateForInput(data.purchaseDate)} onChange={(e) => handleDataChange('purchaseDate', e.target.value ? new Date(e.target.value) : null)} className="mt-1 block w-full rounded-md border-gray-300 shadow-sm focus:border-indigo-500 focus:ring-indigo-500 text-xs sm:text-sm bg-gray-50 dark:bg-slate-700 dark:text-gray-100 dark:border-slate-600" />
                     </div>
+                    
+                    {/* ส่วนโครงการลูกค้าปลายทาง (End Customer Project) */}
+                    <EndCustomerProjectSection
+                        hasEndCustomerProject={data.hasEndCustomerProject || false}
+                        endCustomerProject={data.endCustomerProject}
+                        showEndCustomerInPdf={data.showEndCustomerInPdf || false}
+                        onHasEndCustomerChange={(value) => handleDataChange('hasEndCustomerProject', value)}
+                        onEndCustomerProjectChange={(value) => handleDataChange('endCustomerProject', value)}
+                        onShowEndCustomerInPdfChange={(value) => handleDataChange('showEndCustomerInPdf', value)}
+                    />
                 </div>
 
                 {/* ส่วนที่ 2: ข้อมูลสินค้า/บริการ */}

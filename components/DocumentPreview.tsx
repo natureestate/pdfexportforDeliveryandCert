@@ -4,6 +4,7 @@ import { DeliveryNoteData } from '../types';
 import { getDefaultLogoUrl } from '../services/logoStorage';
 import QRCodeFooter from './QRCodeFooter';
 import QRCodeFooterSign from './QRCodeFooterSign';
+import EndCustomerProjectPreview from './EndCustomerProjectPreview';
 
 interface DocumentPreviewProps {
     data: DeliveryNoteData;
@@ -111,6 +112,13 @@ const DocumentPreview = forwardRef<HTMLDivElement, DocumentPreviewProps>(({ data
                     <p className="text-slate-600 whitespace-pre-wrap">{data.toAddress || 'N/A'}</p>
                     {data.toTaxId && <p className="text-slate-600 text-xs mt-1">{t('company.taxId')}: {data.toTaxId}</p>}
                     {data.toEmail && <p className="text-slate-600 text-xs">{t('company.email')}: {data.toEmail}</p>}
+                    
+                    {/* แสดงข้อมูลโครงการลูกค้าปลายทาง (End Customer Project) */}
+                    <EndCustomerProjectPreview
+                        hasEndCustomerProject={data.hasEndCustomerProject}
+                        endCustomerProject={data.endCustomerProject}
+                        showEndCustomerInPdf={data.showEndCustomerInPdf}
+                    />
                 </div>
             </section>
             

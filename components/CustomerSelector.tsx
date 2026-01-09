@@ -4,7 +4,7 @@
  */
 
 import React, { useState, useEffect } from 'react';
-import { Customer, getCustomers, saveCustomer, updateCustomer, deleteCustomer, updateCustomerUsage, searchCustomers, getRecentCustomers } from '../services/customers';
+import { Customer, EndCustomerProject, getCustomers, saveCustomer, updateCustomer, deleteCustomer, updateCustomerUsage, searchCustomers, getRecentCustomers } from '../services/customers';
 import { useCompany } from '../contexts/CompanyContext';
 import { migrateCustomersLastUsedAt } from '../services/customerMigration';
 import { Users, Save } from 'lucide-react';
@@ -200,6 +200,8 @@ const CustomerSelector: React.FC<CustomerSelectorProps> = ({
                 address: editingCustomer.address,
                 projectName: editingCustomer.projectName,
                 taxId: editingCustomer.taxId,
+                hasEndCustomerProject: editingCustomer.hasEndCustomerProject,
+                endCustomerProject: editingCustomer.endCustomerProject,
             });
             
             await loadCustomers();
@@ -402,6 +404,11 @@ const CustomerSelector: React.FC<CustomerSelectorProps> = ({
                                                         {customer.projectName && (
                                                             <p className="text-xs sm:text-sm text-indigo-600 mt-0.5 truncate">
                                                                 🏗️ {customer.projectName}
+                                                            </p>
+                                                        )}
+                                                        {customer.hasEndCustomerProject && customer.endCustomerProject && (
+                                                            <p className="text-xs sm:text-sm text-purple-600 mt-0.5 truncate">
+                                                                🏠 ลูกค้าปลายทาง: {customer.endCustomerProject.projectName}
                                                             </p>
                                                         )}
                                                     </div>
@@ -608,6 +615,88 @@ const CustomerSelector: React.FC<CustomerSelectorProps> = ({
                                     placeholder="บันทึกข้อมูลเพิ่มเติม..."
                                 />
                             </div>
+                            
+                            {/* ส่วนโครงการลูกค้าปลายทาง (End Customer Project) */}
+                            <div className="border-t border-gray-200 pt-4 mt-4">
+                                <div className="flex items-center mb-3">
+                                    <input
+                                        type="checkbox"
+                                        id="hasEndCustomerProject"
+                                        checked={newCustomer.hasEndCustomerProject || false}
+                                        onChange={(e) => setNewCustomer(prev => ({ 
+                                            ...prev, 
+                                            hasEndCustomerProject: e.target.checked,
+                                            endCustomerProject: e.target.checked ? prev.endCustomerProject || { projectName: '' } : undefined
+                                        }))}
+                                        className="h-4 w-4 text-indigo-600 focus:ring-indigo-500 border-gray-300 rounded"
+                                    />
+                                    <label htmlFor="hasEndCustomerProject" className="ml-2 block text-sm font-medium text-gray-700">
+                                        มีโครงการลูกค้าปลายทาง (End Customer)
+                                    </label>
+                                </div>
+                                
+                                {newCustomer.hasEndCustomerProject && (
+                                    <div className="p-3 bg-purple-50 rounded-lg border border-purple-200 space-y-3">
+                                        <p className="text-xs font-medium text-purple-700 mb-2">
+                                            🏠 ข้อมูลโครงการลูกค้าปลายทาง
+                                        </p>
+                                        <div>
+                                            <label className="block text-xs sm:text-sm font-medium text-gray-700 mb-1">
+                                                ชื่อโครงการลูกค้าปลายทาง
+                                            </label>
+                                            <input
+                                                type="text"
+                                                value={newCustomer.endCustomerProject?.projectName || ''}
+                                                onChange={(e) => setNewCustomer(prev => ({ 
+                                                    ...prev, 
+                                                    endCustomerProject: {
+                                                        ...prev.endCustomerProject,
+                                                        projectName: e.target.value
+                                                    } as EndCustomerProject
+                                                }))}
+                                                className="w-full rounded-md border-gray-300 shadow-sm focus:border-indigo-500 focus:ring-indigo-500 text-xs sm:text-sm px-3 py-2"
+                                                placeholder="เช่น บ้านคุณสมศักดิ์"
+                                            />
+                                        </div>
+                                        <div>
+                                            <label className="block text-xs sm:text-sm font-medium text-gray-700 mb-1">
+                                                ที่ตั้งโครงการ
+                                            </label>
+                                            <textarea
+                                                value={newCustomer.endCustomerProject?.projectAddress || ''}
+                                                onChange={(e) => setNewCustomer(prev => ({ 
+                                                    ...prev, 
+                                                    endCustomerProject: {
+                                                        ...prev.endCustomerProject,
+                                                        projectAddress: e.target.value
+                                                    } as EndCustomerProject
+                                                }))}
+                                                rows={2}
+                                                className="w-full rounded-md border-gray-300 shadow-sm focus:border-indigo-500 focus:ring-indigo-500 text-xs sm:text-sm px-3 py-2"
+                                                placeholder="เช่น 123 หมู่ 5 ต.แวง อ.แกดำ จ.มหาสารคาม"
+                                            />
+                                        </div>
+                                        <div>
+                                            <label className="block text-xs sm:text-sm font-medium text-gray-700 mb-1">
+                                                ชื่อผู้ติดต่อที่โครงการ
+                                            </label>
+                                            <input
+                                                type="text"
+                                                value={newCustomer.endCustomerProject?.contactName || ''}
+                                                onChange={(e) => setNewCustomer(prev => ({ 
+                                                    ...prev, 
+                                                    endCustomerProject: {
+                                                        ...prev.endCustomerProject,
+                                                        contactName: e.target.value
+                                                    } as EndCustomerProject
+                                                }))}
+                                                className="w-full rounded-md border-gray-300 shadow-sm focus:border-indigo-500 focus:ring-indigo-500 text-xs sm:text-sm px-3 py-2"
+                                                placeholder="เช่น คุณสมศรี"
+                                            />
+                                        </div>
+                                    </div>
+                                )}
+                            </div>
                         </div>
 
                         <div className="mt-4 sm:mt-6 flex flex-col sm:flex-row gap-2 justify-end">
@@ -622,6 +711,8 @@ const CustomerSelector: React.FC<CustomerSelectorProps> = ({
                                         address: '',
                                         projectName: '',
                                         taxId: '',
+                                        hasEndCustomerProject: false,
+                                        endCustomerProject: undefined,
                                     });
                                 }}
                                 disabled={isSaving}
@@ -785,6 +876,88 @@ const CustomerSelector: React.FC<CustomerSelectorProps> = ({
                                     className="w-full rounded-md border-gray-300 shadow-sm focus:border-indigo-500 focus:ring-indigo-500 text-xs sm:text-sm px-3 py-2"
                                     placeholder="เช่น 123 หมู่ 5 ตำบลแวง อำเภอแกดำ มหาสารคาม"
                                 />
+                            </div>
+                            
+                            {/* ส่วนโครงการลูกค้าปลายทาง (End Customer Project) */}
+                            <div className="border-t border-gray-200 pt-4 mt-4">
+                                <div className="flex items-center mb-3">
+                                    <input
+                                        type="checkbox"
+                                        id="editHasEndCustomerProject"
+                                        checked={editingCustomer.hasEndCustomerProject || false}
+                                        onChange={(e) => setEditingCustomer(prev => prev ? ({ 
+                                            ...prev, 
+                                            hasEndCustomerProject: e.target.checked,
+                                            endCustomerProject: e.target.checked ? prev.endCustomerProject || { projectName: '' } : undefined
+                                        }) : null)}
+                                        className="h-4 w-4 text-indigo-600 focus:ring-indigo-500 border-gray-300 rounded"
+                                    />
+                                    <label htmlFor="editHasEndCustomerProject" className="ml-2 block text-sm font-medium text-gray-700">
+                                        มีโครงการลูกค้าปลายทาง (End Customer)
+                                    </label>
+                                </div>
+                                
+                                {editingCustomer.hasEndCustomerProject && (
+                                    <div className="p-3 bg-purple-50 rounded-lg border border-purple-200 space-y-3">
+                                        <p className="text-xs font-medium text-purple-700 mb-2">
+                                            🏠 ข้อมูลโครงการลูกค้าปลายทาง
+                                        </p>
+                                        <div>
+                                            <label className="block text-xs sm:text-sm font-medium text-gray-700 mb-1">
+                                                ชื่อโครงการลูกค้าปลายทาง
+                                            </label>
+                                            <input
+                                                type="text"
+                                                value={editingCustomer.endCustomerProject?.projectName || ''}
+                                                onChange={(e) => setEditingCustomer(prev => prev ? ({ 
+                                                    ...prev, 
+                                                    endCustomerProject: {
+                                                        ...prev.endCustomerProject,
+                                                        projectName: e.target.value
+                                                    } as EndCustomerProject
+                                                }) : null)}
+                                                className="w-full rounded-md border-gray-300 shadow-sm focus:border-indigo-500 focus:ring-indigo-500 text-xs sm:text-sm px-3 py-2"
+                                                placeholder="เช่น บ้านคุณสมศักดิ์"
+                                            />
+                                        </div>
+                                        <div>
+                                            <label className="block text-xs sm:text-sm font-medium text-gray-700 mb-1">
+                                                ที่ตั้งโครงการ
+                                            </label>
+                                            <textarea
+                                                value={editingCustomer.endCustomerProject?.projectAddress || ''}
+                                                onChange={(e) => setEditingCustomer(prev => prev ? ({ 
+                                                    ...prev, 
+                                                    endCustomerProject: {
+                                                        ...prev.endCustomerProject,
+                                                        projectAddress: e.target.value
+                                                    } as EndCustomerProject
+                                                }) : null)}
+                                                rows={2}
+                                                className="w-full rounded-md border-gray-300 shadow-sm focus:border-indigo-500 focus:ring-indigo-500 text-xs sm:text-sm px-3 py-2"
+                                                placeholder="เช่น 123 หมู่ 5 ต.แวง อ.แกดำ จ.มหาสารคาม"
+                                            />
+                                        </div>
+                                        <div>
+                                            <label className="block text-xs sm:text-sm font-medium text-gray-700 mb-1">
+                                                ชื่อผู้ติดต่อที่โครงการ
+                                            </label>
+                                            <input
+                                                type="text"
+                                                value={editingCustomer.endCustomerProject?.contactName || ''}
+                                                onChange={(e) => setEditingCustomer(prev => prev ? ({ 
+                                                    ...prev, 
+                                                    endCustomerProject: {
+                                                        ...prev.endCustomerProject,
+                                                        contactName: e.target.value
+                                                    } as EndCustomerProject
+                                                }) : null)}
+                                                className="w-full rounded-md border-gray-300 shadow-sm focus:border-indigo-500 focus:ring-indigo-500 text-xs sm:text-sm px-3 py-2"
+                                                placeholder="เช่น คุณสมศรี"
+                                            />
+                                        </div>
+                                    </div>
+                                )}
                             </div>
                         </div>
 

@@ -32,7 +32,8 @@ import {
     Shield,
     Package,
     Receipt,
-    FileCheck
+    FileCheck,
+    Home
 } from 'lucide-react';
 import { useCompany } from '../contexts/CompanyContext';
 import { 
@@ -518,6 +519,36 @@ const Dashboard: React.FC<DashboardProps> = ({ onNavigateToDocType, onQuickActio
                     </div>
                 </div>
             </div>
+
+            {/* Customer Stats with End Customer Project */}
+            {stats.totalCustomers !== undefined && stats.totalCustomers > 0 && (
+                <div className="bg-gradient-to-r from-purple-50 to-indigo-50 dark:from-purple-900/30 dark:to-indigo-900/30 rounded-xl p-5 border border-purple-200 dark:border-purple-700">
+                    <div className="flex items-center gap-2 mb-4">
+                        <Home className="w-5 h-5 text-purple-600 dark:text-purple-400" />
+                        <h3 className="text-lg font-semibold text-gray-800 dark:text-gray-100">สถิติลูกค้า & โครงการลูกค้าปลายทาง</h3>
+                    </div>
+                    <div className="grid grid-cols-2 md:grid-cols-4 gap-4">
+                        <div className="bg-white dark:bg-slate-700 rounded-lg p-4 text-center shadow-sm">
+                            <p className="text-2xl font-bold text-indigo-600 dark:text-indigo-400">{stats.totalCustomers}</p>
+                            <p className="text-sm text-gray-500 dark:text-gray-400">ลูกค้าทั้งหมด</p>
+                        </div>
+                        <div className="bg-white dark:bg-slate-700 rounded-lg p-4 text-center shadow-sm">
+                            <p className="text-2xl font-bold text-purple-600 dark:text-purple-400">{stats.customersWithEndProject || 0}</p>
+                            <p className="text-sm text-gray-500 dark:text-gray-400">มีโครงการลูกค้าปลายทาง</p>
+                        </div>
+                        <div className="bg-white dark:bg-slate-700 rounded-lg p-4 text-center shadow-sm">
+                            <p className="text-2xl font-bold text-green-600 dark:text-green-400">
+                                {stats.totalCustomers > 0 ? Math.round((stats.customersWithEndProject || 0) / stats.totalCustomers * 100) : 0}%
+                            </p>
+                            <p className="text-sm text-gray-500 dark:text-gray-400">สัดส่วนลูกค้าปลายทาง</p>
+                        </div>
+                        <div className="bg-white dark:bg-slate-700 rounded-lg p-4 text-center shadow-sm">
+                            <p className="text-2xl font-bold text-amber-600 dark:text-amber-400">{stats.totalCustomers - (stats.customersWithEndProject || 0)}</p>
+                            <p className="text-sm text-gray-500 dark:text-gray-400">ลูกค้าทั่วไป</p>
+                        </div>
+                    </div>
+                </div>
+            )}
 
             {/* New Features Grid */}
             <div className="grid grid-cols-1 lg:grid-cols-2 gap-6">

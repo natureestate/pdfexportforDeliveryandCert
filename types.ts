@@ -484,6 +484,11 @@ export interface DeliveryNoteData extends DocumentVerificationFields {
     items: WorkItem[];
     senderName: string;
     receiverName: string;
+    
+    // ข้อมูลโครงการลูกค้าปลายทาง (End Customer Project)
+    hasEndCustomerProject?: boolean;           // มีโครงการลูกค้าปลายทางหรือไม่
+    endCustomerProject?: EndCustomerProject;   // ข้อมูลโครงการลูกค้าปลายทาง
+    showEndCustomerInPdf?: boolean;            // แสดงข้อมูลโครงการลูกค้าปลายทางใน PDF หรือไม่
 }
 
 export interface WarrantyData extends DocumentVerificationFields {
@@ -533,6 +538,11 @@ export interface WarrantyData extends DocumentVerificationFields {
     warrantyNumber: string;        // เลขที่ใบรับประกัน
     issueDate: Date | null;        // วันที่ออกเอกสาร
     issuedBy: string;              // ผู้ออกเอกสาร
+    
+    // ข้อมูลโครงการลูกค้าปลายทาง (End Customer Project)
+    hasEndCustomerProject?: boolean;           // มีโครงการลูกค้าปลายทางหรือไม่
+    endCustomerProject?: EndCustomerProject;   // ข้อมูลโครงการลูกค้าปลายทาง
+    showEndCustomerInPdf?: boolean;            // แสดงข้อมูลโครงการลูกค้าปลายทางใน PDF หรือไม่
 }
 
 // Template สำหรับข้อมูลสินค้า/บริการที่ใช้บ่อย
@@ -547,6 +557,21 @@ export interface ServiceTemplate {
     userId: string;                // ผู้สร้าง template
     createdAt?: Date;
     updatedAt?: Date;
+}
+
+// ============================================================
+// End Customer Project Types (โครงการลูกค้าปลายทาง)
+// ============================================================
+
+/**
+ * EndCustomerProject - ข้อมูลโครงการของลูกค้าปลายทาง
+ * สำหรับกรณีที่ลูกค้าของเรา (Customer) มีลูกค้าปลายทางอีกที
+ * ตัวอย่าง: บริษัทของเรา → ลูกค้า (ผู้รับเหมา) → โครงการลูกค้าปลายทาง (เจ้าของบ้าน)
+ */
+export interface EndCustomerProject {
+    projectName: string;          // ชื่อโครงการลูกค้าปลายทาง
+    projectAddress?: string;      // ที่ตั้งโครงการ
+    contactName?: string;         // ชื่อผู้ติดต่อที่โครงการ
 }
 
 // Customer - ข้อมูลลูกค้าแบบครบวงจร (ลดการกรอกข้อมูลซ้ำ)
@@ -584,6 +609,10 @@ export interface Customer {
     // Tags และหมายเหตุ
     tags?: string[];               // Tags สำหรับจัดกลุ่ม เช่น ['VIP', 'ลูกค้าประจำ']
     notes?: string;                // หมายเหตุเพิ่มเติม
+    
+    // ข้อมูลโครงการลูกค้าปลายทาง (End Customer Project)
+    hasEndCustomerProject?: boolean;           // มีโครงการลูกค้าปลายทางหรือไม่
+    endCustomerProject?: EndCustomerProject;   // ข้อมูลโครงการลูกค้าปลายทาง
     
     // Metadata
     lastUsedAt?: Date;             // ใช้ล่าสุดเมื่อไร (สำหรับ sorting)
@@ -647,6 +676,11 @@ export interface InvoiceData extends DocumentVerificationFields {
     paymentTerms?: string;          // เงื่อนไขการชำระเงิน (optional)
     notes?: string;                 // หมายเหตุเพิ่มเติม (optional)
     issuedBy?: string;             // ผู้ออกเอกสาร (optional)
+    
+    // ข้อมูลโครงการลูกค้าปลายทาง (End Customer Project)
+    hasEndCustomerProject?: boolean;           // มีโครงการลูกค้าปลายทางหรือไม่
+    endCustomerProject?: EndCustomerProject;   // ข้อมูลโครงการลูกค้าปลายทาง
+    showEndCustomerInPdf?: boolean;            // แสดงข้อมูลโครงการลูกค้าปลายทางใน PDF หรือไม่
 }
 
 // Receipt Item - รายการสินค้า/บริการในใบเสร็จ
@@ -707,6 +741,11 @@ export interface ReceiptData extends DocumentVerificationFields {
     // ข้อมูลเพิ่มเติม
     notes?: string;                 // หมายเหตุเพิ่มเติม (optional)
     issuedBy?: string;             // ผู้ออกเอกสาร (optional)
+    
+    // ข้อมูลโครงการลูกค้าปลายทาง (End Customer Project)
+    hasEndCustomerProject?: boolean;           // มีโครงการลูกค้าปลายทางหรือไม่
+    endCustomerProject?: EndCustomerProject;   // ข้อมูลโครงการลูกค้าปลายทาง
+    showEndCustomerInPdf?: boolean;            // แสดงข้อมูลโครงการลูกค้าปลายทางใน PDF หรือไม่
 }
 
 // Tax Invoice Item - รายการสินค้า/บริการในใบกำกับภาษี
@@ -767,6 +806,11 @@ export interface TaxInvoiceData extends DocumentVerificationFields {
     // ข้อมูลเพิ่มเติม
     notes?: string;                 // หมายเหตุเพิ่มเติม (optional)
     issuedBy?: string;             // ผู้ออกเอกสาร (optional)
+    
+    // ข้อมูลโครงการลูกค้าปลายทาง (End Customer Project)
+    hasEndCustomerProject?: boolean;           // มีโครงการลูกค้าปลายทางหรือไม่
+    endCustomerProject?: EndCustomerProject;   // ข้อมูลโครงการลูกค้าปลายทาง
+    showEndCustomerInPdf?: boolean;            // แสดงข้อมูลโครงการลูกค้าปลายทางใน PDF หรือไม่
 }
 
 // Quotation Item - รายการสินค้า/บริการในใบเสนอราคา
@@ -825,6 +869,11 @@ export interface QuotationData extends DocumentVerificationFields {
     deliveryTerms?: string;          // เงื่อนไขการส่งมอบ (optional)
     notes?: string;                 // หมายเหตุเพิ่มเติม (optional)
     issuedBy?: string;             // ผู้ออกเอกสาร (optional)
+    
+    // ข้อมูลโครงการลูกค้าปลายทาง (End Customer Project)
+    hasEndCustomerProject?: boolean;           // มีโครงการลูกค้าปลายทางหรือไม่
+    endCustomerProject?: EndCustomerProject;   // ข้อมูลโครงการลูกค้าปลายทาง
+    showEndCustomerInPdf?: boolean;            // แสดงข้อมูลโครงการลูกค้าปลายทางใน PDF หรือไม่
 }
 
 // Purchase Order Item - รายการสินค้า/บริการในใบสั่งซื้อ
@@ -883,6 +932,11 @@ export interface PurchaseOrderData extends DocumentVerificationFields {
     deliveryTerms?: string;          // เงื่อนไขการส่งมอบ (optional)
     notes?: string;                 // หมายเหตุเพิ่มเติม (optional)
     issuedBy?: string;             // ผู้ออกเอกสาร (optional)
+    
+    // ข้อมูลโครงการลูกค้าปลายทาง (End Customer Project)
+    hasEndCustomerProject?: boolean;           // มีโครงการลูกค้าปลายทางหรือไม่
+    endCustomerProject?: EndCustomerProject;   // ข้อมูลโครงการลูกค้าปลายทาง
+    showEndCustomerInPdf?: boolean;            // แสดงข้อมูลโครงการลูกค้าปลายทางใน PDF หรือไม่
 }
 
 // Memo Data - ข้อมูลใบบันทึก (Memo)
@@ -1014,6 +1068,11 @@ export interface VariationOrderData extends DocumentVerificationFields {
     // ข้อมูลเพิ่มเติม
     notes?: string;                 // หมายเหตุเพิ่มเติม (optional)
     issuedBy?: string;              // ผู้ออกเอกสาร (optional)
+    
+    // ข้อมูลโครงการลูกค้าปลายทาง (End Customer Project)
+    hasEndCustomerProject?: boolean;           // มีโครงการลูกค้าปลายทางหรือไม่
+    endCustomerProject?: EndCustomerProject;   // ข้อมูลโครงการลูกค้าปลายทาง
+    showEndCustomerInPdf?: boolean;            // แสดงข้อมูลโครงการลูกค้าปลายทางใน PDF หรือไม่
 }
 
 // ============================================================

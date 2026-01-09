@@ -198,6 +198,18 @@
     "email": "Email",
     "taxId": "Tax ID"
   },
+  "endCustomer": {
+    "title": "End Customer Project",
+    "hasEndCustomerProject": "Has End Customer Project",
+    "projectName": "End Customer Project Name",
+    "projectAddress": "Project Location",
+    "contactName": "Contact Person at Project",
+    "showInPdf": "Show End Customer Project in PDF Document",
+    "infoTitle": "🏠 End Customer Project Information",
+    "project": "Project",
+    "location": "Location",
+    "contact": "Contact"
+  },
   "items": {
     "itemList": "Item List",
     "description": "Description",

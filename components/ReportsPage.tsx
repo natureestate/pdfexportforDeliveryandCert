@@ -20,7 +20,9 @@ import {
     AlertCircle,
     ArrowUpRight,
     ArrowDownRight,
-    Minus
+    Minus,
+    Home,
+    Users
 } from 'lucide-react';
 import { useCompany } from '../contexts/CompanyContext';
 import { getDashboardStats, DashboardStats, DOC_TYPE_NAMES } from '../services/dashboardStats';
@@ -228,6 +230,13 @@ const ReportsPage: React.FC = () => {
             ['รายจ่ายรวม', periodData.totalExpense.toString()],
             ['กำไร/ขาดทุน', periodData.profit.toString()],
             [''],
+            ['สถิติลูกค้า'],
+            ['จำนวนลูกค้าทั้งหมด', (stats.totalCustomers || 0).toString()],
+            ['ลูกค้าที่มีโครงการลูกค้าปลายทาง', (stats.customersWithEndProject || 0).toString()],
+            ['สัดส่วนลูกค้าปลายทาง (%)', stats.totalCustomers && stats.totalCustomers > 0 
+                ? Math.round((stats.customersWithEndProject || 0) / stats.totalCustomers * 100).toString() 
+                : '0'],
+            [''],
             ['จำนวนเอกสารตามประเภท'],
             ...Object.entries(periodData.byDocType).map(([type, count]) => [
                 DOC_TYPE_NAMES[type as DocType] || type,
@@ -397,6 +406,42 @@ const ReportsPage: React.FC = () => {
                             </p>
                         </div>
                     </div>
+
+                    {/* Customer & End Customer Project Stats */}
+                    {stats && stats.totalCustomers !== undefined && stats.totalCustomers > 0 && (
+                        <div className="bg-gradient-to-r from-purple-50 to-indigo-50 dark:from-purple-900/30 dark:to-indigo-900/30 rounded-lg p-4 border border-purple-200 dark:border-purple-700">
+                            <div className="flex items-center gap-2 mb-3">
+                                <Home className="w-5 h-5 text-purple-600 dark:text-purple-400" />
+                                <h3 className="text-base font-semibold text-gray-800 dark:text-gray-100">สถิติลูกค้า & โครงการลูกค้าปลายทาง</h3>
+                            </div>
+                            <div className="grid grid-cols-2 md:grid-cols-4 gap-3">
+                                <div className="bg-white dark:bg-slate-700 rounded-lg p-3 text-center shadow-sm">
+                                    <div className="flex items-center justify-center mb-1">
+                                        <Users className="w-4 h-4 text-indigo-500 mr-1" />
+                                    </div>
+                                    <p className="text-xl font-bold text-indigo-600 dark:text-indigo-400">{stats.totalCustomers}</p>
+                                    <p className="text-xs text-gray-500 dark:text-gray-400">ลูกค้าทั้งหมด</p>
+                                </div>
+                                <div className="bg-white dark:bg-slate-700 rounded-lg p-3 text-center shadow-sm">
+                                    <div className="flex items-center justify-center mb-1">
+                                        <Home className="w-4 h-4 text-purple-500 mr-1" />
+                                    </div>
+                                    <p className="text-xl font-bold text-purple-600 dark:text-purple-400">{stats.customersWithEndProject || 0}</p>
+                                    <p className="text-xs text-gray-500 dark:text-gray-400">มีลูกค้าปลายทาง</p>
+                                </div>
+                                <div className="bg-white dark:bg-slate-700 rounded-lg p-3 text-center shadow-sm">
+                                    <p className="text-xl font-bold text-green-600 dark:text-green-400">
+                                        {Math.round((stats.customersWithEndProject || 0) / stats.totalCustomers * 100)}%
+                                    </p>
+                                    <p className="text-xs text-gray-500 dark:text-gray-400">สัดส่วน</p>
+                                </div>
+                                <div className="bg-white dark:bg-slate-700 rounded-lg p-3 text-center shadow-sm">
+                                    <p className="text-xl font-bold text-amber-600 dark:text-amber-400">{stats.totalCustomers - (stats.customersWithEndProject || 0)}</p>
+                                    <p className="text-xs text-gray-500 dark:text-gray-400">ลูกค้าทั่วไป</p>
+                                </div>
+                            </div>
+                        </div>
+                    )}
 
                     {/* Document Types Breakdown */}
                     <div className="bg-white dark:bg-slate-800 border border-gray-200 dark:border-slate-700 rounded-lg p-6">

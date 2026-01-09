@@ -1,5 +1,6 @@
 import React, { useRef, useState, useEffect } from 'react';
-import { InvoiceData, InvoiceItem, LogoType } from '../types';
+import { InvoiceData, InvoiceItem, LogoType, EndCustomerProject } from '../types';
+import EndCustomerProjectSection from './EndCustomerProjectSection';
 import { formatDateForInput } from '../utils/dateUtils';
 import CustomerSelector from './CustomerSelector';
 import { generateDocumentNumber } from '../services/documentNumber';
@@ -235,6 +236,16 @@ const InvoiceForm: React.FC<InvoiceFormProps> = ({
                             if (customer.branchName) {
                                 handleDataChange('customerBranchName', customer.branchName);
                             }
+                            // ข้อมูลโครงการลูกค้าปลายทาง (End Customer Project)
+                            if (customer.hasEndCustomerProject && customer.endCustomerProject) {
+                                handleDataChange('hasEndCustomerProject', true);
+                                handleDataChange('endCustomerProject', customer.endCustomerProject);
+                                handleDataChange('showEndCustomerInPdf', true);
+                            } else {
+                                handleDataChange('hasEndCustomerProject', false);
+                                handleDataChange('endCustomerProject', undefined);
+                                handleDataChange('showEndCustomerInPdf', false);
+                            }
                         }}
                         currentCustomer={{
                             customerName: data.customerName,
@@ -267,6 +278,16 @@ const InvoiceForm: React.FC<InvoiceFormProps> = ({
                             <input type="text" id="customerTaxId" value={data.customerTaxId || ''} onChange={(e) => handleDataChange('customerTaxId', e.target.value)} className="mt-1 block w-full rounded-md border-gray-300 shadow-sm focus:border-indigo-500 focus:ring-indigo-500 text-xs sm:text-sm bg-gray-50 dark:bg-slate-700 dark:text-gray-100 dark:border-slate-600" />
                         </div>
                     </div>
+                    
+                    {/* ส่วนโครงการลูกค้าปลายทาง (End Customer Project) */}
+                    <EndCustomerProjectSection
+                        hasEndCustomerProject={data.hasEndCustomerProject || false}
+                        endCustomerProject={data.endCustomerProject}
+                        showEndCustomerInPdf={data.showEndCustomerInPdf || false}
+                        onHasEndCustomerChange={(value) => handleDataChange('hasEndCustomerProject', value)}
+                        onEndCustomerProjectChange={(value) => handleDataChange('endCustomerProject', value)}
+                        onShowEndCustomerInPdfChange={(value) => handleDataChange('showEndCustomerInPdf', value)}
+                    />
                 </div>
 
                 {/* ส่วนที่ 2: รายละเอียดเอกสาร */}

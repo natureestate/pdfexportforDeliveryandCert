@@ -1,5 +1,5 @@
 import React, { useRef, useState, useEffect } from 'react';
-import { QuotationData, QuotationItem, LogoType } from '../types';
+import { QuotationData, QuotationItem, LogoType, EndCustomerProject } from '../types';
 import { formatDateForInput } from '../utils/dateUtils';
 import CustomerSelector from './CustomerSelector';
 import { generateDocumentNumber } from '../services/documentNumber';
@@ -235,6 +235,16 @@ const QuotationForm: React.FC<QuotationFormProps> = ({
                             if (customer.branchName) {
                                 handleDataChange('customerBranchName', customer.branchName);
                             }
+                            // ข้อมูลโครงการลูกค้าปลายทาง (End Customer Project)
+                            if (customer.hasEndCustomerProject && customer.endCustomerProject) {
+                                handleDataChange('hasEndCustomerProject', true);
+                                handleDataChange('endCustomerProject', customer.endCustomerProject);
+                                handleDataChange('showEndCustomerInPdf', true);
+                            } else {
+                                handleDataChange('hasEndCustomerProject', false);
+                                handleDataChange('endCustomerProject', undefined);
+                                handleDataChange('showEndCustomerInPdf', false);
+                            }
                         }}
                         currentCustomer={{
                             customerName: data.customerName,
@@ -266,6 +276,98 @@ const QuotationForm: React.FC<QuotationFormProps> = ({
                             <label htmlFor="customerTaxId" className="block text-xs sm:text-sm font-medium text-slate-700 dark:text-slate-300">เลขประจำตัวผู้เสียภาษี</label>
                             <input type="text" id="customerTaxId" value={data.customerTaxId || ''} onChange={(e) => handleDataChange('customerTaxId', e.target.value)} className="mt-1 block w-full rounded-md border-gray-300 shadow-sm focus:border-indigo-500 focus:ring-indigo-500 text-xs sm:text-sm bg-gray-50 dark:bg-slate-700 dark:text-gray-100 dark:border-slate-600" />
                         </div>
+                    </div>
+                    
+                    {/* ส่วนโครงการลูกค้าปลายทาง (End Customer Project) */}
+                    <div className="border-t border-gray-200 dark:border-slate-600 pt-4 mt-4">
+                        <div className="flex items-center mb-3">
+                            <input
+                                type="checkbox"
+                                id="hasEndCustomerProject"
+                                checked={data.hasEndCustomerProject || false}
+                                onChange={(e) => {
+                                    handleDataChange('hasEndCustomerProject', e.target.checked);
+                                    if (!e.target.checked) {
+                                        handleDataChange('endCustomerProject', undefined);
+                                        handleDataChange('showEndCustomerInPdf', false);
+                                    } else {
+                                        handleDataChange('endCustomerProject', { projectName: '' });
+                                        handleDataChange('showEndCustomerInPdf', true);
+                                    }
+                                }}
+                                className="h-4 w-4 text-indigo-600 focus:ring-indigo-500 border-gray-300 rounded"
+                            />
+                            <label htmlFor="hasEndCustomerProject" className="ml-2 block text-sm font-medium text-slate-700 dark:text-slate-200">
+                                มีโครงการลูกค้าปลายทาง (End Customer)
+                            </label>
+                        </div>
+                        
+                        {data.hasEndCustomerProject && (
+                            <div className="p-3 bg-purple-50 dark:bg-purple-900/20 rounded-lg border border-purple-200 dark:border-purple-700 space-y-3">
+                                <p className="text-xs font-medium text-purple-700 dark:text-purple-300 mb-2">
+                                    🏠 ข้อมูลโครงการลูกค้าปลายทาง
+                                </p>
+                                <div>
+                                    <label className="block text-xs sm:text-sm font-medium text-slate-700 dark:text-slate-200 mb-1">
+                                        ชื่อโครงการลูกค้าปลายทาง
+                                    </label>
+                                    <input
+                                        type="text"
+                                        value={data.endCustomerProject?.projectName || ''}
+                                        onChange={(e) => handleDataChange('endCustomerProject', {
+                                            ...data.endCustomerProject,
+                                            projectName: e.target.value
+                                        } as EndCustomerProject)}
+                                        className="w-full rounded-md border-gray-300 dark:border-slate-600 shadow-sm focus:border-indigo-500 focus:ring-indigo-500 text-xs sm:text-sm px-3 py-2 bg-white dark:bg-slate-700 dark:text-gray-100"
+                                        placeholder="เช่น บ้านคุณสมศักดิ์"
+                                    />
+                                </div>
+                                <div>
+                                    <label className="block text-xs sm:text-sm font-medium text-slate-700 dark:text-slate-200 mb-1">
+                                        ที่ตั้งโครงการ
+                                    </label>
+                                    <textarea
+                                        value={data.endCustomerProject?.projectAddress || ''}
+                                        onChange={(e) => handleDataChange('endCustomerProject', {
+                                            ...data.endCustomerProject,
+                                            projectAddress: e.target.value
+                                        } as EndCustomerProject)}
+                                        rows={2}
+                                        className="w-full rounded-md border-gray-300 dark:border-slate-600 shadow-sm focus:border-indigo-500 focus:ring-indigo-500 text-xs sm:text-sm px-3 py-2 bg-white dark:bg-slate-700 dark:text-gray-100"
+                                        placeholder="เช่น 123 หมู่ 5 ต.แวง อ.แกดำ จ.มหาสารคาม"
+                                    />
+                                </div>
+                                <div>
+                                    <label className="block text-xs sm:text-sm font-medium text-slate-700 dark:text-slate-200 mb-1">
+                                        ชื่อผู้ติดต่อที่โครงการ
+                                    </label>
+                                    <input
+                                        type="text"
+                                        value={data.endCustomerProject?.contactName || ''}
+                                        onChange={(e) => handleDataChange('endCustomerProject', {
+                                            ...data.endCustomerProject,
+                                            contactName: e.target.value
+                                        } as EndCustomerProject)}
+                                        className="w-full rounded-md border-gray-300 dark:border-slate-600 shadow-sm focus:border-indigo-500 focus:ring-indigo-500 text-xs sm:text-sm px-3 py-2 bg-white dark:bg-slate-700 dark:text-gray-100"
+                                        placeholder="เช่น คุณสมศรี"
+                                    />
+                                </div>
+                                
+                                {/* Checkbox แสดงใน PDF */}
+                                <div className="flex items-center mt-3 pt-3 border-t border-purple-200 dark:border-purple-700">
+                                    <input
+                                        type="checkbox"
+                                        id="showEndCustomerInPdf"
+                                        checked={data.showEndCustomerInPdf || false}
+                                        onChange={(e) => handleDataChange('showEndCustomerInPdf', e.target.checked)}
+                                        className="h-4 w-4 text-purple-600 focus:ring-purple-500 border-gray-300 rounded"
+                                    />
+                                    <label htmlFor="showEndCustomerInPdf" className="ml-2 block text-sm font-medium text-purple-700 dark:text-purple-300">
+                                        แสดงข้อมูลโครงการลูกค้าปลายทางในเอกสาร PDF
+                                    </label>
+                                </div>
+                            </div>
+                        )}
                     </div>
                 </div>
 

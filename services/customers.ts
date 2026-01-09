@@ -20,6 +20,13 @@ import {
 // Collection name
 const CUSTOMERS_COLLECTION = 'customers';
 
+// Interface สำหรับโครงการลูกค้าปลายทาง (End Customer Project)
+export interface EndCustomerProject {
+    projectName: string;          // ชื่อโครงการลูกค้าปลายทาง
+    projectAddress?: string;      // ที่ตั้งโครงการ
+    contactName?: string;         // ชื่อผู้ติดต่อที่โครงการ
+}
+
 // Interface สำหรับ Customer
 export interface Customer {
     id?: string;
@@ -57,6 +64,10 @@ export interface Customer {
     // Tags และหมายเหตุ
     tags?: string[];            // Tags สำหรับจัดกลุ่ม เช่น ['VIP', 'ลูกค้าประจำ']
     notes?: string;             // หมายเหตุเพิ่มเติม
+    
+    // ข้อมูลโครงการลูกค้าปลายทาง (End Customer Project)
+    hasEndCustomerProject?: boolean;           // มีโครงการลูกค้าปลายทางหรือไม่
+    endCustomerProject?: EndCustomerProject;   // ข้อมูลโครงการลูกค้าปลายทาง
     
     // Metadata
     lastUsedAt?: Date;          // ใช้ล่าสุดเมื่อไร (สำหรับ sorting)
@@ -173,6 +184,8 @@ export const getCustomers = async (companyId: string): Promise<Customer[]> => {
                 branchName: data.branchName,
                 tags: data.tags || [],
                 notes: data.notes,
+                hasEndCustomerProject: data.hasEndCustomerProject || false,
+                endCustomerProject: data.endCustomerProject || undefined,
                 lastUsedAt: data.lastUsedAt?.toDate(),
                 usageCount: data.usageCount || 0,
                 createdAt: data.createdAt?.toDate(),

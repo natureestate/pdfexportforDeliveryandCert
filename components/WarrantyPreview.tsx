@@ -2,6 +2,7 @@ import React, { forwardRef } from 'react';
 import { WarrantyData } from '../types';
 import { getDefaultLogoUrl } from '../services/logoStorage';
 import QRCodeFooter from './QRCodeFooter';
+import EndCustomerProjectPreview from './EndCustomerProjectPreview';
 
 interface WarrantyPreviewProps {
     data: WarrantyData;
@@ -109,6 +110,13 @@ const WarrantyPreview = forwardRef<HTMLDivElement, WarrantyPreviewProps>(({ data
                             <DetailRow label="อีเมล" value={data.customerEmail} />
                             <DetailRow label="ที่อยู่โครงการ/ลูกค้า" value={data.customerAddress} isFullWidth={true} />
                         </div>
+                        
+                        {/* แสดงข้อมูลโครงการลูกค้าปลายทาง (End Customer Project) */}
+                        <EndCustomerProjectPreview
+                            hasEndCustomerProject={data.hasEndCustomerProject}
+                            endCustomerProject={data.endCustomerProject}
+                            showEndCustomerInPdf={data.showEndCustomerInPdf}
+                        />
                     </section>
 
                     {/* ข้อมูลสินค้า */}

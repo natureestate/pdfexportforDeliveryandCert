@@ -2,6 +2,7 @@ import React, { forwardRef } from 'react';
 import { VariationOrderData } from '../types';
 import { getDefaultLogoUrl } from '../services/logoStorage';
 import QRCodeFooter from './QRCodeFooter';
+import EndCustomerProjectPreview from './EndCustomerProjectPreview';
 
 interface VariationOrderPreviewProps {
     data: VariationOrderData;
@@ -105,6 +106,13 @@ const VariationOrderPreview = forwardRef<HTMLDivElement, VariationOrderPreviewPr
                     {data.customerTaxId && (
                         <p className="text-slate-600 text-xs mt-1">เลขประจำตัวผู้เสียภาษี: {data.customerTaxId}</p>
                     )}
+                    
+                    {/* แสดงข้อมูลโครงการลูกค้าปลายทาง (End Customer Project) */}
+                    <EndCustomerProjectPreview
+                        hasEndCustomerProject={data.hasEndCustomerProject}
+                        endCustomerProject={data.endCustomerProject}
+                        showEndCustomerInPdf={data.showEndCustomerInPdf}
+                    />
                 </div>
             </section>
 
