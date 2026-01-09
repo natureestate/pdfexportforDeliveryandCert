@@ -729,9 +729,9 @@ const DocumentTypeTabMenu: React.FC<DocumentTypeTabMenuProps> = ({
                                 className={`${activeTab === menu.id ? 'border-indigo-500 text-indigo-600 dark:text-indigo-400 bg-indigo-50 dark:bg-indigo-900/30' : 'border-transparent text-gray-500 dark:text-gray-400 hover:text-gray-700 dark:hover:text-gray-200 hover:border-gray-300'} whitespace-nowrap py-2.5 sm:py-3 px-3 sm:px-4 border-b-2 font-medium text-xs sm:text-sm transition-all flex-shrink-0 rounded-t-lg flex items-center gap-1.5`}
                             >
                                 {IconComponent && <IconComponent className="w-4 h-4" />}
-                                <span className={showShortLabel ? 'sm:hidden' : 'hidden sm:inline'}>{showShortLabel ? (menu.shortLabel || menu.label) : menu.label}</span>
-                                {!showShortLabel && <span className="hidden sm:inline">{menu.label}</span>}
-                                {showShortLabel && <span className="hidden sm:inline">{menu.label}</span>}
+                                {/* แสดง shortLabel บนมือถือ, label เต็มบนหน้าจอใหญ่ */}
+                                <span className="sm:hidden">{menu.shortLabel || menu.label}</span>
+                                <span className="hidden sm:inline">{menu.label}</span>
                             </button>
                         );
                     })}
