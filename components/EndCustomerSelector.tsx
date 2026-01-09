@@ -13,7 +13,11 @@ import {
     deleteEndCustomer, 
     updateEndCustomerUsage,
     searchEndCustomers,
-    getRecentEndCustomers
+    getRecentEndCustomers,
+    getAllEndCustomersForCustomer,
+    saveEndCustomerWithSync,
+    deleteEndCustomerWithSync,
+    syncEndCustomersFromEmbedded
 } from '../services/endCustomers';
 import { useCompany } from '../contexts/CompanyContext';
 import { EndCustomerProject } from '../types';
@@ -77,6 +81,7 @@ const EndCustomerSelector: React.FC<EndCustomerSelectorProps> = ({
     }, [isModalOpen, currentCompany, customerId]);
 
     // โหลดรายการ End Customer (ตาม Customer ถ้ามี)
+    // ใช้ getAllEndCustomersForCustomer เพื่อดึงจากทั้ง collection และ Customer.endCustomerProjects
     const loadEndCustomers = async () => {
         if (!currentCompany?.id) return;
         
@@ -84,8 +89,16 @@ const EndCustomerSelector: React.FC<EndCustomerSelectorProps> = ({
         try {
             let data: EndCustomer[];
             if (customerId) {
-                // ดึงเฉพาะ End Customer ของ Customer ที่ระบุ
-                data = await getEndCustomersByCustomer(currentCompany.id, customerId);
+                // ดึง End Customer ของ Customer ที่ระบุ (รวมจาก 2 แหล่ง)
+                data = await getAllEndCustomersForCustomer(currentCompany.id, customerId);
+                
+                // Auto-sync: ถ้ามีข้อมูลจาก Customer.endCustomerProjects ที่ยังไม่ได้ sync
+                // จะ sync ไปยัง collection โดยอัตโนมัติ
+                try {
+                    await syncEndCustomersFromEmbedded(currentCompany.id, customerId);
+                } catch (syncError) {
+                    console.warn('Auto-sync warning:', syncError);
+                }
             } else {
                 // ดึงทั้งหมดของบริษัท (สำหรับ fallback)
                 const { getEndCustomers } = await import('../services/endCustomers');
@@ -146,7 +159,7 @@ const EndCustomerSelector: React.FC<EndCustomerSelectorProps> = ({
         }
     };
 
-    // บันทึก End Customer ใหม่
+    // บันทึก End Customer ใหม่ (พร้อม sync ไปยัง Customer.endCustomerProjects)
     const handleSaveNewEndCustomer = async () => {
         if (!currentCompany?.id) {
             alert('กรุณาเลือกบริษัทก่อน');
@@ -165,7 +178,8 @@ const EndCustomerSelector: React.FC<EndCustomerSelectorProps> = ({
 
         setIsSaving(true);
         try {
-            await saveEndCustomer({
+            // ใช้ saveEndCustomerWithSync เพื่อบันทึกและ sync ไปยัง Customer.endCustomerProjects
+            await saveEndCustomerWithSync({
                 ...newEndCustomer as EndCustomer,
                 customerId: customerId,
                 companyId: currentCompany.id,
@@ -183,7 +197,7 @@ const EndCustomerSelector: React.FC<EndCustomerSelectorProps> = ({
                 notes: '',
             });
             
-            alert('✅ บันทึกข้อมูล End Customer สำเร็จ!');
+            alert('✅ บันทึกข้อมูล End Customer สำเร็จ! (Sync กับ CRM แล้ว)');
         } catch (error) {
             console.error('Failed to save end customer:', error);
             alert('❌ ไม่สามารถบันทึกข้อมูล End Customer ได้');
@@ -246,16 +260,17 @@ const EndCustomerSelector: React.FC<EndCustomerSelectorProps> = ({
         }
     };
 
-    // ลบ End Customer
+    // ลบ End Customer (พร้อม sync การลบไปยัง Customer.endCustomerProjects)
     const handleDeleteEndCustomer = async (id: string, event: React.MouseEvent) => {
         event.stopPropagation();
         
-        if (!window.confirm('ต้องการลบข้อมูล End Customer นี้หรือไม่?')) return;
+        if (!window.confirm('ต้องการลบข้อมูล End Customer นี้หรือไม่?\n(จะลบจากทั้ง CRM และรายการเลือกด้วย)')) return;
 
         try {
-            await deleteEndCustomer(id);
+            // ใช้ deleteEndCustomerWithSync เพื่อลบและ sync ไปยัง Customer.endCustomerProjects
+            await deleteEndCustomerWithSync(id, customerId, currentCompany?.id);
             await loadEndCustomers();
-            alert('✅ ลบข้อมูล End Customer สำเร็จ!');
+            alert('✅ ลบข้อมูล End Customer สำเร็จ! (Sync กับ CRM แล้ว)');
         } catch (error) {
             console.error('Failed to delete end customer:', error);
             alert('❌ ไม่สามารถลบข้อมูล End Customer ได้');

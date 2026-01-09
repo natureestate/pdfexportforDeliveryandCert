@@ -45,6 +45,10 @@ import {
     deleteContractor,
     searchContractors 
 } from '../services/contractors';
+import { 
+    saveEndCustomerWithSync, 
+    deleteEndCustomerWithSync 
+} from '../services/endCustomers';
 
 type TabType = 'customers' | 'contractors';
 
@@ -296,10 +300,35 @@ const CRMPage: React.FC = () => {
                     endCustomerProjects: formData.hasEndCustomerProjects ? formData.endCustomerProjects : [],
                 };
 
+                let customerId: string;
                 if (editingId) {
                     await updateCustomer(editingId, customerData);
+                    customerId = editingId;
                 } else {
-                    await saveCustomer(customerData, currentCompany.id);
+                    customerId = await saveCustomer(customerData, currentCompany.id);
+                }
+
+                // Sync End Customer Projects ไปยัง endCustomers collection
+                if (formData.hasEndCustomerProjects && formData.endCustomerProjects.length > 0) {
+                    console.log('🔄 Syncing End Customer Projects to collection...');
+                    for (const project of formData.endCustomerProjects) {
+                        // ตรวจสอบว่ามี ID หรือยัง (ถ้าไม่มี = โครงการใหม่)
+                        if (!project.id || project.id.startsWith('ec_')) {
+                            try {
+                                await saveEndCustomerWithSync({
+                                    customerId: customerId,
+                                    companyId: currentCompany.id,
+                                    projectName: project.projectName,
+                                    projectAddress: project.projectAddress,
+                                    contactName: project.contactName,
+                                    contactPhone: project.contactPhone,
+                                    notes: project.notes,
+                                }, currentCompany.id);
+                            } catch (syncErr) {
+                                console.warn('Sync warning:', syncErr);
+                            }
+                        }
+                    }
                 }
             } else {
                 const contractorData = {
