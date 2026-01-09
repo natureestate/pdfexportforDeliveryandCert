@@ -46,6 +46,7 @@ import Dashboard from './components/Dashboard';
 import CRMPage from './components/CRMPage';
 import ReportsPage from './components/ReportsPage';
 import CalendarPage from './components/CalendarPage';
+import UserGuidePage from './components/UserGuidePage';
 import { generatePdf, generatePng } from './services/pdfGenerator';
 import { saveDeliveryNote, saveWarrantyCard, saveInvoice, saveReceipt, saveTaxInvoice, saveQuotation, savePurchaseOrder } from './services/firestore';
 import type { DeliveryNoteDocument, WarrantyDocument, InvoiceDocument, ReceiptDocument, TaxInvoiceDocument, QuotationDocument, PurchaseOrderDocument, MemoDocument, VariationOrderDocument, SubcontractDocument } from './services/firestore';
@@ -1882,6 +1883,22 @@ const App: React.FC = () => {
                                 <TabProvider>
                                     <ProtectedRoute>
                                         <SubscriptionManager />
+                                    </ProtectedRoute>
+                                </TabProvider>
+                            </MenuProvider>
+                        </CompanyProvider>
+                    }
+                />
+                
+                {/* หน้าคู่มือการใช้งาน - ต้อง login */}
+                <Route
+                    path="/guide"
+                    element={
+                        <CompanyProvider>
+                            <MenuProvider>
+                                <TabProvider>
+                                    <ProtectedRoute>
+                                        <UserGuidePage />
                                     </ProtectedRoute>
                                 </TabProvider>
                             </MenuProvider>
