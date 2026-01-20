@@ -176,13 +176,41 @@ export async function createShareLink(
             note: options?.note,
         };
 
+        // สร้างข้อมูลสำหรับบันทึก (ลบ undefined fields)
+        const dataToSave: Record<string, any> = {
+            documentId,
+            documentType,
+            documentNumber,
+            shareToken,
+            createdAt: Timestamp.fromDate(shareLinkData.createdAt),
+            createdBy: currentUser.uid,
+            expiresAt: expiresAt ? Timestamp.fromDate(expiresAt) : null,
+            isActive: true,
+            accessCount: 0,
+            lastAccessedAt: null,
+            permissions: {
+                canView: true,
+                canDownload: options?.canDownload ?? true,
+            },
+        };
+
+        // เพิ่ม optional fields เฉพาะที่มีค่า (ไม่ใช่ undefined)
+        if (currentUser.displayName) {
+            dataToSave.creatorName = currentUser.displayName;
+        }
+        if (currentUser.email) {
+            dataToSave.creatorEmail = currentUser.email;
+        }
+        if (options?.companyId) {
+            dataToSave.companyId = options.companyId;
+        }
+        if (options?.note) {
+            dataToSave.note = options.note;
+        }
+
         // บันทึกลง Firestore
         const docRef = doc(db, SHARE_LINKS_COLLECTION, shareId);
-        await setDoc(docRef, {
-            ...shareLinkData,
-            createdAt: Timestamp.fromDate(shareLinkData.createdAt),
-            expiresAt: expiresAt ? Timestamp.fromDate(expiresAt) : null,
-        });
+        await setDoc(docRef, dataToSave);
 
         // สร้าง URL
         const shareUrl = `${SHARE_BASE_URL}/share/${shareToken}`;

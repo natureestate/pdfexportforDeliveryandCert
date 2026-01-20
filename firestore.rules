@@ -719,6 +719,104 @@ service cloud.firestore {
     }
     
     // ============================================================
+    // ระบบ Share Link (Share Link System)
+    // ============================================================
+    
+    // Share Links (ลิงก์แชร์เอกสาร)
+    match /shareLinks/{shareLinkId} {
+      // อ่าน: 
+      // 1. Public - สำหรับดึงข้อมูลจาก shareToken (ไม่ต้อง Login)
+      // 2. เจ้าของ หรือ สมาชิกบริษัท หรือ Super Admin
+      allow read: if true;
+      
+      // สร้าง: ต้อง Login
+      allow create: if isAuthenticated();
+      
+      // แก้ไข: เจ้าของ หรือ สมาชิกบริษัท หรือ Super Admin
+      allow update: if isAuthenticated() && (
+        isSuperAdmin() ||
+        resource.data.createdBy == request.auth.uid ||
+        (resource.data.companyId != null && isMemberOfCompany(resource.data.companyId))
+      );
+      
+      // ลบ: เจ้าของ หรือ สมาชิกบริษัท หรือ Super Admin
+      allow delete: if isAuthenticated() && (
+        isSuperAdmin() ||
+        resource.data.createdBy == request.auth.uid ||
+        (resource.data.companyId != null && isMemberOfCompany(resource.data.companyId))
+      );
+    }
+    
+    // ============================================================
+    // ระบบ Document Version (Document Version System)
+    // ============================================================
+    
+    // Document Versions (เวอร์ชันเอกสาร)
+    match /documentVersions/{versionId} {
+      // อ่าน: เจ้าของ หรือ สมาชิกบริษัท หรือ Super Admin
+      allow read: if isAuthenticated() && (
+        isSuperAdmin() ||
+        resource.data.createdBy == request.auth.uid ||
+        (resource.data.companyId != null && isMemberOfCompany(resource.data.companyId))
+      );
+      
+      // สร้าง: ต้อง Login
+      allow create: if isAuthenticated();
+      
+      // แก้ไข: เจ้าของ หรือ สมาชิกบริษัท หรือ Super Admin
+      allow update: if isAuthenticated() && (
+        isSuperAdmin() ||
+        resource.data.createdBy == request.auth.uid ||
+        (resource.data.companyId != null && isMemberOfCompany(resource.data.companyId))
+      );
+      
+      // ลบ: ไม่อนุญาต (เพื่อรักษาประวัติ)
+      allow delete: if false;
+    }
+    
+    // ============================================================
+    // ระบบ Document History (Document History System)
+    // ============================================================
+    
+    // Document History (ประวัติการเปลี่ยนแปลงเอกสาร)
+    match /documentHistory/{historyId} {
+      // อ่าน: เจ้าของ หรือ สมาชิกบริษัท หรือ Super Admin
+      allow read: if isAuthenticated() && (
+        isSuperAdmin() ||
+        resource.data.userId == request.auth.uid ||
+        (resource.data.companyId != null && isMemberOfCompany(resource.data.companyId))
+      );
+      
+      // สร้าง: ต้อง Login
+      allow create: if isAuthenticated();
+      
+      // แก้ไข/ลบ: ไม่อนุญาต (เพื่อรักษาประวัติ)
+      allow update, delete: if false;
+    }
+    
+    // ============================================================
+    // ระบบ End Customers (End Customer System)
+    // ============================================================
+    
+    // End Customers (ลูกค้าปลายทาง)
+    match /endCustomers/{endCustomerId} {
+      // อ่าน: เจ้าของ หรือ สมาชิกบริษัทเดียวกัน หรือ Super Admin
+      allow read: if isAuthenticated() && (
+        isSuperAdmin() ||
+        isOwner(resource.data.userId) ||
+        (resource.data.companyId != null && isMemberOfCompany(resource.data.companyId))
+      );
+      
+      allow create: if isAuthenticated() && request.resource.data.userId == request.auth.uid;
+      
+      allow update, delete: if isAuthenticated() && (
+        isSuperAdmin() ||
+        isOwner(resource.data.userId) ||
+        (resource.data.companyId != null && isMemberOfCompany(resource.data.companyId))
+      );
+    }
+    
+    // ============================================================
     // Default Rule - ปฏิเสธทุก collection อื่นๆ
     // ============================================================
     match /{document=**} {

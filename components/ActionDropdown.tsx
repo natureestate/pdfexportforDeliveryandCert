@@ -54,17 +54,17 @@ const ActionDropdown: React.FC<ActionDropdownProps> = ({ actions, buttonLabel })
 
     if (visibleActions.length === 0) return null;
 
-    // กำหนดสีตาม variant
+    // กำหนดสีตาม variant (รองรับ Dark Mode)
     const getVariantClasses = (variant?: ActionItem['variant']) => {
         switch (variant) {
             case 'danger':
-                return 'text-red-600 hover:bg-red-50';
+                return 'text-red-600 dark:text-red-400 hover:bg-red-50 dark:hover:bg-red-900/30';
             case 'success':
-                return 'text-green-600 hover:bg-green-50';
+                return 'text-green-600 dark:text-green-400 hover:bg-green-50 dark:hover:bg-green-900/30';
             case 'warning':
-                return 'text-amber-600 hover:bg-amber-50';
+                return 'text-amber-600 dark:text-amber-400 hover:bg-amber-50 dark:hover:bg-amber-900/30';
             default:
-                return 'text-gray-700 hover:bg-gray-100';
+                return 'text-gray-700 dark:text-gray-200 hover:bg-gray-100 dark:hover:bg-slate-700';
         }
     };
 
@@ -73,7 +73,7 @@ const ActionDropdown: React.FC<ActionDropdownProps> = ({ actions, buttonLabel })
             {/* ปุ่มเปิด dropdown */}
             <button
                 onClick={() => setIsOpen(!isOpen)}
-                className="p-1.5 sm:p-2 text-gray-500 hover:text-gray-700 hover:bg-gray-100 rounded-lg transition-colors"
+                className="p-1.5 sm:p-2 text-gray-500 dark:text-gray-400 hover:text-gray-700 dark:hover:text-gray-200 hover:bg-gray-100 dark:hover:bg-slate-700 rounded-lg transition-colors"
                 title="ตัวเลือกเพิ่มเติม"
                 aria-label="เปิดเมนูตัวเลือก"
                 aria-expanded={isOpen}
@@ -85,9 +85,9 @@ const ActionDropdown: React.FC<ActionDropdownProps> = ({ actions, buttonLabel })
                 )}
             </button>
 
-            {/* Dropdown menu */}
+            {/* Dropdown menu - รองรับ Dark Mode */}
             {isOpen && (
-                <div className="absolute right-0 mt-1 w-48 bg-white rounded-lg shadow-lg border border-gray-200 py-1 z-50">
+                <div className="absolute right-0 mt-1 w-48 bg-white dark:bg-slate-800 rounded-lg shadow-lg border border-gray-200 dark:border-slate-700 py-1 z-50">
                     {visibleActions.map((action, index) => (
                         <button
                             key={index}
