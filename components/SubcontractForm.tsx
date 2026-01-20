@@ -173,12 +173,21 @@ const SubcontractForm: React.FC<SubcontractFormProps> = ({
     
     // Handler สำหรับเลือกช่างจากฐานข้อมูล
     const handleSelectContractor = (contractor: Contractor) => {
+        // รวมที่อยู่ทั้งหมด: ที่อยู่หลัก + ตำบล/แขวง + อำเภอ/เขต + จังหวัด + รหัสไปรษณีย์
+        const fullAddress = [
+            contractor.address,
+            contractor.district ? `ต.${contractor.district}` : '',
+            contractor.amphoe ? `อ.${contractor.amphoe}` : '',
+            contractor.province,
+            contractor.postalCode
+        ].filter(Boolean).join(' ');
+        
         setData(prev => ({
             ...prev,
             contractorName: contractor.contractorName,
             contractorPhone: contractor.phone,
             contractorIdCard: contractor.idCard || contractor.taxId || '',
-            contractorAddress: contractor.address || '',
+            contractorAddress: fullAddress || '',
             // ข้อมูลสาขา (สำหรับนิติบุคคล)
             contractorBranchCode: contractor.branchCode || '',
             contractorBranchName: contractor.branchName || '',

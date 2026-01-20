@@ -171,7 +171,15 @@ const DeliveryForm: React.FC<DeliveryFormProps> = ({
                         label={t('customer.customerName')}
                         onSelect={(customer) => {
                             handleDataChange('toCompany', customer.customerName);
-                            handleDataChange('toAddress', customer.address);
+                            // รวมที่อยู่ทั้งหมด: ที่อยู่หลัก + ตำบล/แขวง + อำเภอ/เขต + จังหวัด + รหัสไปรษณีย์
+                            const fullAddress = [
+                                customer.address,
+                                customer.district ? `ต.${customer.district}` : '',
+                                customer.amphoe ? `อ.${customer.amphoe}` : '',
+                                customer.province,
+                                customer.postalCode
+                            ].filter(Boolean).join(' ');
+                            handleDataChange('toAddress', fullAddress);
                             if (customer.projectName) {
                                 handleDataChange('project', customer.projectName);
                             }

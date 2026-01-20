@@ -218,7 +218,15 @@ const PurchaseOrderForm: React.FC<PurchaseOrderFormProps> = ({
                         label="เลือกข้อมูลผู้ขาย"
                         onSelect={(customer) => {
                             handleDataChange('supplierName', customer.customerName);
-                            handleDataChange('supplierAddress', customer.address);
+                            // รวมที่อยู่ทั้งหมด: ที่อยู่หลัก + ตำบล/แขวง + อำเภอ/เขต + จังหวัด + รหัสไปรษณีย์
+                            const fullAddress = [
+                                customer.address,
+                                customer.district ? `ต.${customer.district}` : '',
+                                customer.amphoe ? `อ.${customer.amphoe}` : '',
+                                customer.province,
+                                customer.postalCode
+                            ].filter(Boolean).join(' ');
+                            handleDataChange('supplierAddress', fullAddress);
                             if (customer.phone) {
                                 handleDataChange('supplierPhone', customer.phone);
                             }

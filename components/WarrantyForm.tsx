@@ -144,7 +144,15 @@ const WarrantyForm: React.FC<WarrantyFormProps> = ({
                         onSelect={(customer) => {
                             handleDataChange('customerName', customer.customerName);
                             handleDataChange('customerPhone', customer.phone);
-                            handleDataChange('customerAddress', customer.address);
+                            // รวมที่อยู่ทั้งหมด: ที่อยู่หลัก + ตำบล/แขวง + อำเภอ/เขต + จังหวัด + รหัสไปรษณีย์
+                            const fullAddress = [
+                                customer.address,
+                                customer.district ? `ต.${customer.district}` : '',
+                                customer.amphoe ? `อ.${customer.amphoe}` : '',
+                                customer.province,
+                                customer.postalCode
+                            ].filter(Boolean).join(' ');
+                            handleDataChange('customerAddress', fullAddress);
                             if (customer.projectName) {
                                 handleDataChange('projectName', customer.projectName);
                             }
