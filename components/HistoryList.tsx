@@ -729,17 +729,83 @@ const HistoryList: React.FC<HistoryListProps> = ({ activeDocType, onLoadDocument
     const endIndex = startIndex + itemsPerPage;
     const paginatedList = filteredList.slice(startIndex, endIndex);
 
-    // แสดงเมื่อไม่มีข้อมูล
+    // แสดงเมื่อไม่มีข้อมูล - แยก empty state สำหรับ tab ทั้งหมด และ Archive
     if (currentList.length === 0) {
         return (
-            <div className="bg-gray-50 dark:bg-slate-700 border border-gray-200 dark:border-slate-600 rounded-lg p-8 text-center">
-                <svg className="mx-auto h-12 w-12 text-gray-400 dark:text-gray-500" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                    <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M9 12h6m-6 4h6m2 5H7a2 2 0 01-2-2V5a2 2 0 012-2h5.586a1 1 0 01.707.293l5.414 5.414a1 1 0 01.293.707V19a2 2 0 01-2 2z" />
-                </svg>
-                <h3 className="mt-2 text-sm font-medium text-gray-900 dark:text-gray-100">ไม่มีเอกสาร</h3>
-                <p className="mt-1 text-sm text-gray-500 dark:text-gray-400">
-                    เริ่มต้นโดยการสร้าง{documentTypeName}ใหม่
-                </p>
+            <div className="space-y-4">
+                {/* Header พร้อม Tab Toggle แม้ไม่มีเอกสาร */}
+                <div className="flex flex-col sm:flex-row justify-between items-start sm:items-center gap-3 sm:gap-4 mb-4">
+                    <div className="flex items-center gap-3">
+                        <h2 className="text-lg sm:text-xl font-semibold text-slate-700 dark:text-slate-200">
+                            ประวัติ{documentTypeName}
+                        </h2>
+                        {/* Tab Toggle: ทั้งหมด / Archive */}
+                        <div className="flex items-center bg-gray-100 dark:bg-slate-700 rounded-lg p-0.5">
+                            <button
+                                onClick={() => setShowArchived(false)}
+                                className={`px-3 py-1 text-xs sm:text-sm rounded-md transition-colors ${
+                                    !showArchived 
+                                        ? 'bg-white dark:bg-slate-600 text-indigo-600 dark:text-indigo-400 shadow-sm' 
+                                        : 'text-gray-600 dark:text-gray-400 hover:text-gray-800 dark:hover:text-gray-200'
+                                }`}
+                            >
+                                ทั้งหมด
+                            </button>
+                            <button
+                                onClick={() => setShowArchived(true)}
+                                className={`px-3 py-1 text-xs sm:text-sm rounded-md transition-colors flex items-center gap-1 ${
+                                    showArchived 
+                                        ? 'bg-white dark:bg-slate-600 text-indigo-600 dark:text-indigo-400 shadow-sm' 
+                                        : 'text-gray-600 dark:text-gray-400 hover:text-gray-800 dark:hover:text-gray-200'
+                                }`}
+                            >
+                                <svg className="w-3 h-3 sm:w-4 sm:h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                    <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M5 8h14M5 8a2 2 0 110-4h14a2 2 0 110 4M5 8v10a2 2 0 002 2h10a2 2 0 002-2V8m-9 4h4" />
+                                </svg>
+                                Archive
+                            </button>
+                        </div>
+                    </div>
+                </div>
+                
+                {/* Empty State - แยกตาม tab ที่เลือก */}
+                <div className="bg-gray-50 dark:bg-slate-700 border border-gray-200 dark:border-slate-600 rounded-lg p-8 text-center">
+                    {showArchived ? (
+                        // Empty state สำหรับ Archive tab
+                        <>
+                            <svg className="mx-auto h-12 w-12 text-gray-400 dark:text-gray-500" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M5 8h14M5 8a2 2 0 110-4h14a2 2 0 110 4M5 8v10a2 2 0 002 2h10a2 2 0 002-2V8m-9 4h4" />
+                            </svg>
+                            <h3 className="mt-2 text-sm font-medium text-gray-900 dark:text-gray-100">ไม่มีเอกสารที่ Archive</h3>
+                            <p className="mt-1 text-sm text-gray-500 dark:text-gray-400">
+                                เอกสารที่คุณ Archive จะแสดงที่นี่
+                            </p>
+                            <p className="mt-2 text-xs text-gray-400 dark:text-gray-500">
+                                💡 คุณสามารถ Archive เอกสารได้โดยกดปุ่ม "Archive" ที่เมนูของเอกสารใน tab "ทั้งหมด"
+                            </p>
+                            <button
+                                onClick={() => setShowArchived(false)}
+                                className="mt-4 inline-flex items-center gap-2 px-4 py-2 text-sm font-medium text-indigo-600 dark:text-indigo-400 bg-indigo-50 dark:bg-indigo-900/30 rounded-lg hover:bg-indigo-100 dark:hover:bg-indigo-900/50 transition-colors"
+                            >
+                                <svg className="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                    <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M10 19l-7-7m0 0l7-7m-7 7h18" />
+                                </svg>
+                                กลับไปดูเอกสารทั้งหมด
+                            </button>
+                        </>
+                    ) : (
+                        // Empty state สำหรับ tab ทั้งหมด
+                        <>
+                            <svg className="mx-auto h-12 w-12 text-gray-400 dark:text-gray-500" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M9 12h6m-6 4h6m2 5H7a2 2 0 01-2-2V5a2 2 0 012-2h5.586a1 1 0 01.707.293l5.414 5.414a1 1 0 01.293.707V19a2 2 0 01-2 2z" />
+                            </svg>
+                            <h3 className="mt-2 text-sm font-medium text-gray-900 dark:text-gray-100">ไม่มีเอกสาร</h3>
+                            <p className="mt-1 text-sm text-gray-500 dark:text-gray-400">
+                                เริ่มต้นโดยการสร้าง{documentTypeName}ใหม่
+                            </p>
+                        </>
+                    )}
+                </div>
             </div>
         );
     }

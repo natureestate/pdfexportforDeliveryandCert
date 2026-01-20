@@ -47,6 +47,7 @@ import CRMPage from './components/CRMPage';
 import ReportsPage from './components/ReportsPage';
 import CalendarPage from './components/CalendarPage';
 import UserGuidePage from './components/UserGuidePage';
+import SharedDocumentPage from './components/SharedDocumentPage';
 import { generatePdf, generatePng } from './services/pdfGenerator';
 import { saveDeliveryNote, saveWarrantyCard, saveInvoice, saveReceipt, saveTaxInvoice, saveQuotation, savePurchaseOrder } from './services/firestore';
 import type { DeliveryNoteDocument, WarrantyDocument, InvoiceDocument, ReceiptDocument, TaxInvoiceDocument, QuotationDocument, PurchaseOrderDocument, MemoDocument, VariationOrderDocument, SubcontractDocument } from './services/firestore';
@@ -1864,6 +1865,9 @@ const App: React.FC = () => {
                 
                 {/* หน้าเซ็นชื่อยืนยันรับมอบ - Public Access (ไม่ต้อง login, ต้อง verify OTP) */}
                 <Route path="/sign/:docType/:token" element={<SignApprovalPage />} />
+                
+                {/* หน้าแชร์เอกสาร - Public Access (ไม่ต้อง login, แสดง preview เอกสาร) */}
+                <Route path="/share/:token" element={<SharedDocumentPage />} />
                 
                 {/* หน้า Super Admin - ต้อง login และเป็น Super Admin (ไม่ต้องมี CompanyProvider) */}
                 <Route 
