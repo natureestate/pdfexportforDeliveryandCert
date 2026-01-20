@@ -466,7 +466,7 @@ const initialSubcontractData: SubcontractData = {
 };
 
 type ViewMode = 'form' | 'history' | 'dashboard' | 'crm' | 'reports' | 'calendar';
-type Notification = { show: boolean; message: string; type: 'success' | 'info' | 'error' };
+type Notification = { show: boolean; message: string; type: 'success' | 'info' | 'error' | 'warning' };
 
 // Icon mapping สำหรับ dynamic menu rendering
 const iconMap: Record<string, React.ComponentType<{ className?: string }>> = {
@@ -1026,7 +1026,7 @@ const AppContent: React.FC = () => {
         }
     }, [notification]);
 
-    const showToast = (message: string, type: 'success' | 'info' | 'error') => {
+    const showToast = (message: string, type: 'success' | 'info' | 'error' | 'warning') => {
         setNotification({ show: true, message, type });
     };
 
@@ -1376,17 +1376,34 @@ const AppContent: React.FC = () => {
         showToast(t('notifications.newFormCreated'), 'success');
     }, [activeTab, sharedLogo, sharedLogoUrl, sharedLogoType, t]);
     
-    const notificationColors = {
+    const notificationColors: Record<Notification['type'], string> = {
         info: 'bg-blue-500',
         success: 'bg-green-500',
         error: 'bg-red-500',
+        warning: 'bg-amber-500',
+    };
+    
+    // Icons สำหรับ Toast
+    const notificationIcons: Record<Notification['type'], string> = {
+        info: 'ℹ️',
+        success: '✅',
+        error: '❌',
+        warning: '⚠️',
     };
 
     return (
         <div className="bg-slate-100 dark:bg-slate-900 min-h-screen text-slate-800 dark:text-slate-100 transition-colors duration-300">
+            {/* Toast Notification - ปรับปรุงให้สวยงามและชัดเจนขึ้น */}
             {notification.show && (
-                <div className={`fixed top-5 right-2 sm:right-5 ${notificationColors[notification.type]} text-white py-2 px-3 sm:px-4 rounded-lg shadow-lg z-50 animate-fade-in-down text-sm sm:text-base max-w-[calc(100vw-1rem)] sm:max-w-none`}>
-                    {notification.message}
+                <div className={`fixed top-5 right-2 sm:right-5 ${notificationColors[notification.type]} text-white py-3 px-4 sm:px-5 rounded-xl shadow-2xl z-[9999] animate-fade-in-down text-sm sm:text-base max-w-[calc(100vw-1rem)] sm:max-w-md flex items-center gap-3 border border-white/20`}>
+                    <span className="text-xl">{notificationIcons[notification.type]}</span>
+                    <span className="flex-1">{notification.message}</span>
+                    <button 
+                        onClick={() => setNotification({ ...notification, show: false })}
+                        className="text-white/80 hover:text-white transition-colors ml-2"
+                    >
+                        ✕
+                    </button>
                 </div>
             )}
             <Header />

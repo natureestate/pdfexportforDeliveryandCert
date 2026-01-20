@@ -90,6 +90,33 @@ const convertDatesToTimestamps = <T extends DocumentDataWithLogo>(
 };
 
 /**
+ * ลบ fields ที่มีค่า undefined ออกจาก object
+ * Firebase ไม่รองรับค่า undefined ใน setDoc() และ updateDoc()
+ */
+const removeUndefinedFields = (obj: Record<string, any>): Record<string, any> => {
+    const result: Record<string, any> = {};
+    for (const key in obj) {
+        if (obj[key] !== undefined) {
+            // ถ้าเป็น object (แต่ไม่ใช่ Date, Timestamp, หรือ null) ให้ recursive
+            if (obj[key] !== null && typeof obj[key] === 'object' && !(obj[key] instanceof Date) && !obj[key].toDate) {
+                if (Array.isArray(obj[key])) {
+                    // ถ้าเป็น array ให้ filter และ map
+                    result[key] = obj[key].map((item: any) => 
+                        typeof item === 'object' && item !== null ? removeUndefinedFields(item) : item
+                    );
+                } else {
+                    // ถ้าเป็น object ให้ recursive
+                    result[key] = removeUndefinedFields(obj[key]);
+                }
+            } else {
+                result[key] = obj[key];
+            }
+        }
+    }
+    return result;
+};
+
+/**
  * แปลง Timestamp fields เป็น Date สำหรับ JavaScript
  */
 const convertTimestampsToDates = <T extends DocumentDataWithLogo>(
@@ -152,7 +179,7 @@ export const createDocumentService = <T extends DocumentDataWithLogo>(
             const verificationToken = (data as any).verificationToken || generateVerificationToken();
             
             // เตรียมข้อมูลสำหรับบันทึก
-            const dataToSave = {
+            const rawDataToSave = {
                 ...convertDatesToTimestamps(data, config.dateFields),
                 // ถ้ามี logoUrl (อัปโหลดไปยัง Storage แล้ว) ให้ลบ Base64 ออก
                 logo: data.logoUrl ? null : data.logo,
@@ -165,6 +192,9 @@ export const createDocumentService = <T extends DocumentDataWithLogo>(
                 createdAt: Timestamp.now(),
                 updatedAt: Timestamp.now(),
             };
+            
+            // ลบ fields ที่มีค่า undefined ออก (Firebase ไม่รองรับ undefined)
+            const dataToSave = removeUndefinedFields(rawDataToSave);
             
             await setDoc(docRef, dataToSave);
             console.log(`✅ [DocumentService] Saved with verification token: ${verificationToken.substring(0, 8)}...`);
@@ -270,15 +300,18 @@ export const createDocumentService = <T extends DocumentDataWithLogo>(
             }
 
             // เตรียมข้อมูลสำหรับอัปเดต
-            const dataToUpdate: any = {
+            const rawDataToUpdate: any = {
                 ...convertDatesToTimestamps(data, config.dateFields),
                 updatedAt: Timestamp.now(),
             };
 
             // จัดการ logo: ถ้ามี logoUrl ให้ลบ Base64 ออก
             if (data.logoUrl !== undefined) {
-                dataToUpdate.logo = data.logoUrl ? null : data.logo;
+                rawDataToUpdate.logo = data.logoUrl ? null : data.logo;
             }
+            
+            // ลบ fields ที่มีค่า undefined ออก (Firebase ไม่รองรับ undefined)
+            const dataToUpdate = removeUndefinedFields(rawDataToUpdate);
 
             await updateDoc(docRef, dataToUpdate);
         } catch (error) {
