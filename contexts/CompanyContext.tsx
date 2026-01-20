@@ -9,6 +9,9 @@ import { getUserCompanies } from '../services/companies';
 import { useAuth } from './AuthContext';
 import { checkNeedMigration, migrateOldCompanies } from '../services/migration';
 
+// Key สำหรับเก็บ last selected company ใน localStorage
+const LAST_COMPANY_KEY = 'lastSelectedCompanyId';
+
 interface CompanyContextType {
     // บริษัทที่เลือกปัจจุบัน
     currentCompany: Company | null;
@@ -34,6 +37,35 @@ const CompanyContext = createContext<CompanyContextType | undefined>(undefined);
 interface CompanyProviderProps {
     children: ReactNode;
 }
+
+/**
+ * บันทึก last selected company ID ลง localStorage
+ */
+const saveLastCompanyId = (companyId: string, userId: string) => {
+    try {
+        // เก็บแยกตาม userId เพื่อรองรับหลาย user ใน browser เดียวกัน
+        const key = `${LAST_COMPANY_KEY}_${userId}`;
+        localStorage.setItem(key, companyId);
+        console.log('💾 [CompanyContext] บันทึก last company:', companyId);
+    } catch (error) {
+        console.error('❌ [CompanyContext] ไม่สามารถบันทึก last company:', error);
+    }
+};
+
+/**
+ * โหลด last selected company ID จาก localStorage
+ */
+const getLastCompanyId = (userId: string): string | null => {
+    try {
+        const key = `${LAST_COMPANY_KEY}_${userId}`;
+        const companyId = localStorage.getItem(key);
+        console.log('📂 [CompanyContext] โหลด last company:', companyId);
+        return companyId;
+    } catch (error) {
+        console.error('❌ [CompanyContext] ไม่สามารถโหลด last company:', error);
+        return null;
+    }
+};
 
 export const CompanyProvider: React.FC<CompanyProviderProps> = ({ children }) => {
     const { user } = useAuth();
@@ -83,14 +115,29 @@ export const CompanyProvider: React.FC<CompanyProviderProps> = ({ children }) =>
             console.log('📋 [CompanyContext] ดึงบริษัทได้:', companiesList.length, 'องค์กร', companiesList);
             setCompanies(companiesList);
 
-            // ตั้งค่าบริษัทแรกเป็น current (ถ้ามีและยังไม่มี current)
+            // ตั้งค่าบริษัทเป็น current
             if (companiesList.length > 0) {
                 // ถ้ามี currentCompany แล้ว ตรวจสอบว่ายังอยู่ใน list หรือไม่
                 const existingCompany = currentCompany && companiesList.find(c => c.id === currentCompany.id);
                 
                 if (!currentCompany || !existingCompany) {
-                    setCurrentCompany(companiesList[0]);
-                    console.log('✅ [CompanyContext] เลือกบริษัทแรก:', companiesList[0].name);
+                    // ลองโหลด last selected company จาก localStorage
+                    const lastCompanyId = getLastCompanyId(user.uid);
+                    const lastCompany = lastCompanyId ? companiesList.find(c => c.id === lastCompanyId) : null;
+                    
+                    if (lastCompany) {
+                        // ใช้ last selected company
+                        setCurrentCompany(lastCompany);
+                        console.log('✅ [CompanyContext] ใช้ last selected company:', lastCompany.name);
+                    } else {
+                        // ใช้บริษัทแรก
+                        setCurrentCompany(companiesList[0]);
+                        // บันทึกลง localStorage
+                        if (companiesList[0].id) {
+                            saveLastCompanyId(companiesList[0].id, user.uid);
+                        }
+                        console.log('✅ [CompanyContext] เลือกบริษัทแรก:', companiesList[0].name);
+                    }
                 } else {
                     // อัปเดต currentCompany ด้วยข้อมูลใหม่ (เช่น organizationLogoUrl ที่เพิ่งอัปเดต)
                     setCurrentCompany(existingCompany);
@@ -129,6 +176,12 @@ export const CompanyProvider: React.FC<CompanyProviderProps> = ({ children }) =>
      */
     const selectCompany = (company: Company) => {
         setCurrentCompany(company);
+        
+        // บันทึก last selected company ลง localStorage
+        if (user && company.id) {
+            saveLastCompanyId(company.id, user.uid);
+        }
+        
         console.log('📌 เลือกบริษัท:', company.name);
     };
 
