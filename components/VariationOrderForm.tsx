@@ -16,6 +16,8 @@ export interface VariationOrderFormProps {
     companyDefaultLogoUrl?: string | null;
     onLogoChange?: (logo: string | null, logoUrl: string | null, logoType: LogoType) => void;
     onSetDefaultLogo?: (logoUrl: string) => Promise<void>;
+    /** true = กำลังแก้ไขเอกสารเดิม หรือ copy เอกสาร (ไม่ต้อง auto-generate เลขใหม่) */
+    isEditing?: boolean;
 }
 
 const FormDivider: React.FC<{ title: string }> = ({ title }) => (
@@ -37,12 +39,15 @@ const VariationOrderForm: React.FC<VariationOrderFormProps> = ({
     sharedLogoType,
     companyDefaultLogoUrl,
     onLogoChange,
-    onSetDefaultLogo
+    onSetDefaultLogo,
+    isEditing = false
 }) => {
     const { currentCompany } = useCompany(); // ดึงข้อมูลบริษัทจาก context
     const [isConfirmModalOpen, setIsConfirmModalOpen] = useState(false);
     const [itemToRemove, setItemToRemove] = useState<number | null>(null);
+    const [isGeneratingNumber, setIsGeneratingNumber] = useState(false); // สถานะกำลังสร้างเลขเอกสาร
     const hasSyncedCompanyRef = useRef<string | undefined>(undefined); // Track ว่า sync แล้วหรือยัง
+    const hasGeneratedNumberRef = useRef(false); // Track ว่า generate เลขแล้วหรือยัง (ป้องกัน double generate)
 
     const handleDataChange = <K extends keyof VariationOrderData,>(key: K, value: VariationOrderData[K]) => {
         setData(prev => ({ ...prev, [key]: value }));
@@ -115,29 +120,70 @@ const VariationOrderForm: React.FC<VariationOrderFormProps> = ({
 
     /**
      * สร้างเลขที่เอกสารอัตโนมัติ
+     * @param force - บังคับสร้างเลขใหม่แม้จะมีเลขอยู่แล้ว (สำหรับปุ่ม manual)
      */
-    const handleGenerateVoNumber = async () => {
+    const handleGenerateVoNumber = async (force: boolean = false) => {
+        // ป้องกัน double generate
+        if (hasGeneratedNumberRef.current && !force) {
+            console.log('⏭️ [VO] Skip generate - already generated');
+            return;
+        }
+        
         try {
+            setIsGeneratingNumber(true);
             const newVoNumber = await generateDocumentNumber('variation-order');
             handleDataChange('voNumber', newVoNumber);
+            hasGeneratedNumberRef.current = true;
+            console.log('✅ [VO] Generated new document number:', newVoNumber);
         } catch (error) {
-            console.error('Error generating VO number:', error);
+            console.error('❌ [VO] Error generating VO number:', error);
             alert('ไม่สามารถสร้างเลขที่เอกสารได้ กรุณาลองใหม่อีกครั้ง');
+        } finally {
+            setIsGeneratingNumber(false);
         }
     };
 
     /**
      * Auto-generate เลขที่เอกสารเมื่อฟอร์มว่างหรือเป็นค่า default
+     * - ข้าม generate ถ้ากำลังแก้ไขเอกสารเดิม (isEditing = true)
+     * - ข้าม generate ถ้ามีเลขเอกสารที่ valid อยู่แล้ว (จาก copy หรือ load)
      */
     useEffect(() => {
+        // ถ้ากำลังแก้ไขเอกสารเดิม ไม่ต้อง generate เลขใหม่
+        if (isEditing) {
+            console.log('⏭️ [VO] Skip auto-generate - isEditing mode');
+            hasGeneratedNumberRef.current = true; // mark ว่าไม่ต้อง generate
+            return;
+        }
+        
+        // ตรวจสอบว่ามีเลขเอกสารที่ valid อยู่แล้วหรือไม่
+        // รูปแบบใหม่: VO-YYMMDDXX (เช่น VO-26012301)
+        const hasValidNumber = data.voNumber && 
+                               data.voNumber.match(/^VO-\d{6}\d{2}$/);
+        
+        if (hasValidNumber) {
+            console.log('⏭️ [VO] Skip auto-generate - already has valid number:', data.voNumber);
+            hasGeneratedNumberRef.current = true;
+            return;
+        }
+        
+        // ตรวจสอบว่าเลขเอกสารว่างหรือเป็นรูปแบบเก่า
         const isDefaultOrEmpty = !data.voNumber || 
                                   data.voNumber.match(/^VO-\d{4}-\d{3}$/) || // รูปแบบเก่า
                                   data.voNumber === '';
         
-        if (isDefaultOrEmpty) {
+        if (isDefaultOrEmpty && !hasGeneratedNumberRef.current) {
+            console.log('🔄 [VO] Auto-generating new document number...');
             handleGenerateVoNumber();
         }
-    }, []); // เรียกครั้งเดียวตอน mount
+    }, [isEditing]); // เรียกเมื่อ isEditing เปลี่ยน หรือตอน mount
+    
+    // Reset ref เมื่อ component unmount เพื่อให้ครั้งถัดไปสามารถ generate ได้
+    useEffect(() => {
+        return () => {
+            hasGeneratedNumberRef.current = false;
+        };
+    }, []);
 
     /**
      * Sync ข้อมูลบริษัทจาก currentCompany ไปยัง form data
@@ -217,7 +263,12 @@ const VariationOrderForm: React.FC<VariationOrderFormProps> = ({
             <div className="space-y-6">
                 {/* เลขที่เอกสาร */}
                 <div className="text-xs sm:text-sm text-gray-600 dark:text-gray-400">
-                    <span className="font-medium">เลขที่ใบส่วนต่าง:</span> <span className="font-mono">{data.voNumber || 'กำลังสร้าง...'}</span>
+                    <span className="font-medium">เลขที่ใบส่วนต่าง:</span>{' '}
+                    {isGeneratingNumber ? (
+                        <span className="font-mono text-amber-600 dark:text-amber-400 animate-pulse">กำลังสร้างเลขที่...</span>
+                    ) : (
+                        <span className="font-mono">{data.voNumber || 'ยังไม่มีเลขที่'}</span>
+                    )}
                 </div>
                 
                 {/* ส่วนที่ 1: ข้อมูลลูกค้า */}

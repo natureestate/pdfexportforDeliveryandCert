@@ -15,6 +15,8 @@ export interface PurchaseOrderFormProps {
     companyDefaultLogoUrl?: string | null;
     onLogoChange?: (logo: string | null, logoUrl: string | null, logoType: LogoType) => void;
     onSetDefaultLogo?: (logoUrl: string) => Promise<void>;
+    /** true = กำลังแก้ไขเอกสารเดิม หรือ copy เอกสาร (ไม่ต้อง auto-generate เลขใหม่) */
+    isEditing?: boolean;
 }
 
 const FormDivider: React.FC<{ title: string }> = ({ title }) => (
@@ -36,12 +38,15 @@ const PurchaseOrderForm: React.FC<PurchaseOrderFormProps> = ({
     sharedLogoType,
     companyDefaultLogoUrl,
     onLogoChange,
-    onSetDefaultLogo
+    onSetDefaultLogo,
+    isEditing = false
 }) => {
     const { currentCompany } = useCompany(); // ดึงข้อมูลบริษัทจาก context
     const [isConfirmModalOpen, setIsConfirmModalOpen] = useState(false);
     const [itemToRemove, setItemToRemove] = useState<number | null>(null);
+    const [isGeneratingNumber, setIsGeneratingNumber] = useState(false);
     const hasSyncedCompanyRef = useRef<string | undefined>(undefined); // Track ว่า sync แล้วหรือยัง
+    const hasGeneratedNumberRef = useRef(false);
 
     const handleDataChange = <K extends keyof PurchaseOrderData,>(key: K, value: PurchaseOrderData[K]) => {
         setData(prev => ({ ...prev, [key]: value }));
@@ -106,13 +111,23 @@ const PurchaseOrderForm: React.FC<PurchaseOrderFormProps> = ({
     /**
      * สร้างเลขที่เอกสารอัตโนมัติ
      */
-    const handleGeneratePurchaseOrderNumber = async () => {
+    const handleGeneratePurchaseOrderNumber = async (force: boolean = false) => {
+        if (hasGeneratedNumberRef.current && !force) {
+            console.log('⏭️ [PO] Skip generate - already generated');
+            return;
+        }
+        
         try {
+            setIsGeneratingNumber(true);
             const newPurchaseOrderNumber = await generateDocumentNumber('purchase-order');
             handleDataChange('purchaseOrderNumber', newPurchaseOrderNumber);
+            hasGeneratedNumberRef.current = true;
+            console.log('✅ [PO] Generated new document number:', newPurchaseOrderNumber);
         } catch (error) {
-            console.error('Error generating purchase order number:', error);
+            console.error('❌ [PO] Error generating purchase order number:', error);
             alert('ไม่สามารถสร้างเลขที่เอกสารได้ กรุณาลองใหม่อีกครั้ง');
+        } finally {
+            setIsGeneratingNumber(false);
         }
     };
 
@@ -120,14 +135,32 @@ const PurchaseOrderForm: React.FC<PurchaseOrderFormProps> = ({
      * Auto-generate เลขที่เอกสารเมื่อฟอร์มว่างหรือเป็นค่า default
      */
     useEffect(() => {
+        if (isEditing) {
+            console.log('⏭️ [PO] Skip auto-generate - isEditing mode');
+            hasGeneratedNumberRef.current = true;
+            return;
+        }
+        
+        const hasValidNumber = data.purchaseOrderNumber && data.purchaseOrderNumber.match(/^PO-\d{6}\d{2}$/);
+        if (hasValidNumber) {
+            console.log('⏭️ [PO] Skip auto-generate - already has valid number:', data.purchaseOrderNumber);
+            hasGeneratedNumberRef.current = true;
+            return;
+        }
+        
         const isDefaultOrEmpty = !data.purchaseOrderNumber || 
                                   data.purchaseOrderNumber.match(/^PO-\d{4}-\d{3}$/) || // รูปแบบเก่า
                                   data.purchaseOrderNumber === '';
         
-        if (isDefaultOrEmpty) {
+        if (isDefaultOrEmpty && !hasGeneratedNumberRef.current) {
+            console.log('🔄 [PO] Auto-generating new document number...');
             handleGeneratePurchaseOrderNumber();
         }
-    }, []); // เรียกครั้งเดียวตอน mount
+    }, [isEditing]);
+    
+    useEffect(() => {
+        return () => { hasGeneratedNumberRef.current = false; };
+    }, []);
 
     /**
      * Sync ข้อมูลบริษัทจาก currentCompany ไปยัง form data

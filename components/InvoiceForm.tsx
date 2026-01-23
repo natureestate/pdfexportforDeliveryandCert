@@ -17,6 +17,8 @@ export interface InvoiceFormProps {
     companyDefaultLogoUrl?: string | null;
     onLogoChange?: (logo: string | null, logoUrl: string | null, logoType: LogoType) => void;
     onSetDefaultLogo?: (logoUrl: string) => Promise<void>;
+    /** true = กำลังแก้ไขเอกสารเดิม หรือ copy เอกสาร (ไม่ต้อง auto-generate เลขใหม่) */
+    isEditing?: boolean;
 }
 
 const FormDivider: React.FC<{ title: string }> = ({ title }) => (
@@ -38,12 +40,15 @@ const InvoiceForm: React.FC<InvoiceFormProps> = ({
     sharedLogoType,
     companyDefaultLogoUrl,
     onLogoChange,
-    onSetDefaultLogo
+    onSetDefaultLogo,
+    isEditing = false
 }) => {
     const { currentCompany } = useCompany(); // ดึงข้อมูลบริษัทจาก context
     const [isConfirmModalOpen, setIsConfirmModalOpen] = useState(false);
     const [itemToRemove, setItemToRemove] = useState<number | null>(null);
+    const [isGeneratingNumber, setIsGeneratingNumber] = useState(false); // สถานะกำลังสร้างเลขเอกสาร
     const hasSyncedCompanyRef = useRef<string | undefined>(undefined); // Track ว่า sync แล้วหรือยัง
+    const hasGeneratedNumberRef = useRef(false); // Track ว่า generate เลขแล้วหรือยัง
 
     const handleDataChange = <K extends keyof InvoiceData,>(key: K, value: InvoiceData[K]) => {
         setData(prev => ({ ...prev, [key]: value }));
@@ -108,13 +113,23 @@ const InvoiceForm: React.FC<InvoiceFormProps> = ({
     /**
      * สร้างเลขที่เอกสารอัตโนมัติ
      */
-    const handleGenerateInvoiceNumber = async () => {
+    const handleGenerateInvoiceNumber = async (force: boolean = false) => {
+        if (hasGeneratedNumberRef.current && !force) {
+            console.log('⏭️ [IN] Skip generate - already generated');
+            return;
+        }
+        
         try {
+            setIsGeneratingNumber(true);
             const newInvoiceNumber = await generateDocumentNumber('invoice');
             handleDataChange('invoiceNumber', newInvoiceNumber);
+            hasGeneratedNumberRef.current = true;
+            console.log('✅ [IN] Generated new document number:', newInvoiceNumber);
         } catch (error) {
-            console.error('Error generating invoice number:', error);
+            console.error('❌ [IN] Error generating invoice number:', error);
             alert('ไม่สามารถสร้างเลขที่เอกสารได้ กรุณาลองใหม่อีกครั้ง');
+        } finally {
+            setIsGeneratingNumber(false);
         }
     };
 
@@ -122,14 +137,32 @@ const InvoiceForm: React.FC<InvoiceFormProps> = ({
      * Auto-generate เลขที่เอกสารเมื่อฟอร์มว่างหรือเป็นค่า default
      */
     useEffect(() => {
+        if (isEditing) {
+            console.log('⏭️ [IN] Skip auto-generate - isEditing mode');
+            hasGeneratedNumberRef.current = true;
+            return;
+        }
+        
+        const hasValidNumber = data.invoiceNumber && data.invoiceNumber.match(/^IN-\d{6}\d{2}$/);
+        if (hasValidNumber) {
+            console.log('⏭️ [IN] Skip auto-generate - already has valid number:', data.invoiceNumber);
+            hasGeneratedNumberRef.current = true;
+            return;
+        }
+        
         const isDefaultOrEmpty = !data.invoiceNumber || 
                                   data.invoiceNumber.match(/^IN-\d{4}-\d{3}$/) || // รูปแบบเก่า
                                   data.invoiceNumber === '';
         
-        if (isDefaultOrEmpty) {
+        if (isDefaultOrEmpty && !hasGeneratedNumberRef.current) {
+            console.log('🔄 [IN] Auto-generating new document number...');
             handleGenerateInvoiceNumber();
         }
-    }, []); // เรียกครั้งเดียวตอน mount
+    }, [isEditing]);
+    
+    useEffect(() => {
+        return () => { hasGeneratedNumberRef.current = false; };
+    }, []);
 
     /**
      * Sync ข้อมูลบริษัทจาก currentCompany ไปยัง form data

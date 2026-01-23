@@ -15,6 +15,8 @@ export interface DeliveryFormProps {
     companyDefaultLogoUrl?: string | null;
     onLogoChange?: (logo: string | null, logoUrl: string | null, logoType: LogoType) => void;
     onSetDefaultLogo?: (logoUrl: string) => Promise<void>;
+    /** true = กำลังแก้ไขเอกสารเดิม หรือ copy เอกสาร (ไม่ต้อง auto-generate เลขใหม่) */
+    isEditing?: boolean;
 }
 
 const FormDivider: React.FC<{ title: string }> = ({ title }) => (
@@ -36,12 +38,15 @@ const DeliveryForm: React.FC<DeliveryFormProps> = ({
     sharedLogoType,
     companyDefaultLogoUrl,
     onLogoChange,
-    onSetDefaultLogo
+    onSetDefaultLogo,
+    isEditing = false
 }) => {
     const { t } = useTranslation();
     const fileInputRef = useRef<HTMLInputElement>(null);
     const [isConfirmModalOpen, setIsConfirmModalOpen] = useState(false);
     const [itemToRemove, setItemToRemove] = useState<number | null>(null);
+    const [isGeneratingNumber, setIsGeneratingNumber] = useState(false); // สถานะกำลังสร้างเลขเอกสาร
+    const hasGeneratedNumberRef = useRef(false); // Track ว่า generate เลขแล้วหรือยัง
 
     const handleDataChange = <K extends keyof DeliveryNoteData,>(key: K, value: DeliveryNoteData[K]) => {
         setData(prev => ({ ...prev, [key]: value }));
@@ -94,30 +99,68 @@ const DeliveryForm: React.FC<DeliveryFormProps> = ({
 
     /**
      * สร้างเลขที่เอกสารอัตโนมัติ
+     * @param force - บังคับสร้างเลขใหม่แม้จะมีเลขอยู่แล้ว
      */
-    const handleGenerateDocNumber = async () => {
+    const handleGenerateDocNumber = async (force: boolean = false) => {
+        // ป้องกัน double generate
+        if (hasGeneratedNumberRef.current && !force) {
+            console.log('⏭️ [DN] Skip generate - already generated');
+            return;
+        }
+        
         try {
+            setIsGeneratingNumber(true);
             const newDocNumber = await generateDocumentNumber('delivery');
             handleDataChange('docNumber', newDocNumber);
+            hasGeneratedNumberRef.current = true;
+            console.log('✅ [DN] Generated new document number:', newDocNumber);
         } catch (error) {
-            console.error('Error generating document number:', error);
+            console.error('❌ [DN] Error generating document number:', error);
             alert(t('form.cannotGenerateDocNumber'));
+        } finally {
+            setIsGeneratingNumber(false);
         }
     };
 
     /**
      * Auto-generate เลขที่เอกสารเมื่อฟอร์มว่างหรือเป็นค่า default
+     * - ข้าม generate ถ้ากำลังแก้ไขเอกสารเดิม (isEditing = true)
+     * - ข้าม generate ถ้ามีเลขเอกสารที่ valid อยู่แล้ว
      */
     useEffect(() => {
+        // ถ้ากำลังแก้ไขเอกสารเดิม ไม่ต้อง generate เลขใหม่
+        if (isEditing) {
+            console.log('⏭️ [DN] Skip auto-generate - isEditing mode');
+            hasGeneratedNumberRef.current = true;
+            return;
+        }
+        
+        // ตรวจสอบว่ามีเลขเอกสารที่ valid อยู่แล้วหรือไม่ (รูปแบบใหม่: DN-YYMMDDXX)
+        const hasValidNumber = data.docNumber && data.docNumber.match(/^DN-\d{6}\d{2}$/);
+        
+        if (hasValidNumber) {
+            console.log('⏭️ [DN] Skip auto-generate - already has valid number:', data.docNumber);
+            hasGeneratedNumberRef.current = true;
+            return;
+        }
+        
         // ตรวจสอบว่าเลขที่เอกสารเป็นค่า default หรือว่าง
         const isDefaultOrEmpty = !data.docNumber || 
                                   data.docNumber.match(/^DN-\d{4}-\d{3}$/) || // รูปแบบเก่า: DN-2025-001
                                   data.docNumber === '';
         
-        if (isDefaultOrEmpty) {
+        if (isDefaultOrEmpty && !hasGeneratedNumberRef.current) {
+            console.log('🔄 [DN] Auto-generating new document number...');
             handleGenerateDocNumber();
         }
-    }, []); // เรียกครั้งเดียวตอน mount
+    }, [isEditing]);
+    
+    // Reset ref เมื่อ component unmount
+    useEffect(() => {
+        return () => {
+            hasGeneratedNumberRef.current = false;
+        };
+    }, []);
     
     return (
         <div className="space-y-8 pt-4">

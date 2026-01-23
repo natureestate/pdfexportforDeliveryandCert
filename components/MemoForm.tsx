@@ -14,6 +14,8 @@ export interface MemoFormProps {
     companyDefaultLogoUrl?: string | null;
     onLogoChange?: (logo: string | null, logoUrl: string | null, logoType: LogoType) => void;
     onSetDefaultLogo?: (logoUrl: string) => Promise<void>;
+    /** true = กำลังแก้ไขเอกสารเดิม หรือ copy เอกสาร (ไม่ต้อง auto-generate เลขใหม่) */
+    isEditing?: boolean;
 }
 
 const FormDivider: React.FC<{ title: string }> = ({ title }) => (
@@ -35,10 +37,13 @@ const MemoForm: React.FC<MemoFormProps> = ({
     sharedLogoType,
     companyDefaultLogoUrl,
     onLogoChange,
-    onSetDefaultLogo
+    onSetDefaultLogo,
+    isEditing = false
 }) => {
     const { currentCompany } = useCompany();
     const hasSyncedCompanyRef = useRef<string | undefined>(undefined);
+    const [isGeneratingNumber, setIsGeneratingNumber] = useState(false);
+    const hasGeneratedNumberRef = useRef(false);
 
     const handleDataChange = <K extends keyof MemoData,>(key: K, value: MemoData[K]) => {
         setData(prev => ({ ...prev, [key]: value }));
@@ -47,13 +52,23 @@ const MemoForm: React.FC<MemoFormProps> = ({
     /**
      * สร้างเลขที่เอกสารอัตโนมัติ
      */
-    const handleGenerateMemoNumber = async () => {
+    const handleGenerateMemoNumber = async (force: boolean = false) => {
+        if (hasGeneratedNumberRef.current && !force) {
+            console.log('⏭️ [MEMO] Skip generate - already generated');
+            return;
+        }
+        
         try {
+            setIsGeneratingNumber(true);
             const newMemoNumber = await generateDocumentNumber('memo');
             handleDataChange('memoNumber', newMemoNumber);
+            hasGeneratedNumberRef.current = true;
+            console.log('✅ [MEMO] Generated new document number:', newMemoNumber);
         } catch (error) {
-            console.error('Error generating memo number:', error);
+            console.error('❌ [MEMO] Error generating memo number:', error);
             alert('ไม่สามารถสร้างเลขที่เอกสารได้ กรุณาลองใหม่อีกครั้ง');
+        } finally {
+            setIsGeneratingNumber(false);
         }
     };
 
@@ -61,14 +76,32 @@ const MemoForm: React.FC<MemoFormProps> = ({
      * Auto-generate เลขที่เอกสารเมื่อฟอร์มว่างหรือเป็นค่า default
      */
     useEffect(() => {
+        if (isEditing) {
+            console.log('⏭️ [MEMO] Skip auto-generate - isEditing mode');
+            hasGeneratedNumberRef.current = true;
+            return;
+        }
+        
+        const hasValidNumber = data.memoNumber && data.memoNumber.match(/^MEMO-\d{6}\d{2}$/);
+        if (hasValidNumber) {
+            console.log('⏭️ [MEMO] Skip auto-generate - already has valid number:', data.memoNumber);
+            hasGeneratedNumberRef.current = true;
+            return;
+        }
+        
         const isDefaultOrEmpty = !data.memoNumber || 
                                   data.memoNumber.match(/^MEMO-\d{4}-\d{3}$/) || 
                                   data.memoNumber === '';
         
-        if (isDefaultOrEmpty) {
+        if (isDefaultOrEmpty && !hasGeneratedNumberRef.current) {
+            console.log('🔄 [MEMO] Auto-generating new document number...');
             handleGenerateMemoNumber();
         }
-    }, []); // เรียกครั้งเดียวตอน mount
+    }, [isEditing]);
+    
+    useEffect(() => {
+        return () => { hasGeneratedNumberRef.current = false; };
+    }, []);
 
     /**
      * Sync ข้อมูลบริษัทจาก currentCompany ไปยัง form data

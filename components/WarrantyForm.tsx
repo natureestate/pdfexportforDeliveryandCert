@@ -17,6 +17,8 @@ export interface WarrantyFormProps {
     companyDefaultLogoUrl?: string | null;
     onLogoChange?: (logo: string | null, logoUrl: string | null, logoType: LogoType) => void;
     onSetDefaultLogo?: (logoUrl: string) => Promise<void>;
+    /** true = กำลังแก้ไขเอกสารเดิม หรือ copy เอกสาร (ไม่ต้อง auto-generate เลขใหม่) */
+    isEditing?: boolean;
 }
 
 const FormDivider: React.FC<{ title: string }> = ({ title }) => (
@@ -38,11 +40,14 @@ const WarrantyForm: React.FC<WarrantyFormProps> = ({
     sharedLogoType,
     companyDefaultLogoUrl,
     onLogoChange,
-    onSetDefaultLogo
+    onSetDefaultLogo,
+    isEditing = false
 }) => {
     const fileInputRef = useRef<HTMLInputElement>(null);
     const [showCompanySelector, setShowCompanySelector] = useState(false);
     const [showServiceSelector, setShowServiceSelector] = useState(false);
+    const [isGeneratingNumber, setIsGeneratingNumber] = useState(false);
+    const hasGeneratedNumberRef = useRef(false);
 
     const handleDataChange = <K extends keyof WarrantyData,>(key: K, value: WarrantyData[K]) => {
         setData(prev => ({ ...prev, [key]: value }));
@@ -68,13 +73,23 @@ const WarrantyForm: React.FC<WarrantyFormProps> = ({
     /**
      * สร้าง Warranty Number อัตโนมัติ (รูปแบบ: WR-YYMMDDXX)
      */
-    const handleGenerateWarrantyNumber = async () => {
+    const handleGenerateWarrantyNumber = async (force: boolean = false) => {
+        if (hasGeneratedNumberRef.current && !force) {
+            console.log('⏭️ [WR] Skip generate - already generated');
+            return;
+        }
+        
         try {
+            setIsGeneratingNumber(true);
             const newWarrantyNumber = await generateDocumentNumber('warranty');
             handleDataChange('warrantyNumber', newWarrantyNumber);
+            hasGeneratedNumberRef.current = true;
+            console.log('✅ [WR] Generated new document number:', newWarrantyNumber);
         } catch (error) {
-            console.error('Error generating warranty number:', error);
+            console.error('❌ [WR] Error generating warranty number:', error);
             alert('ไม่สามารถสร้างเลขที่ใบรับประกันได้ กรุณาลองใหม่อีกครั้ง');
+        } finally {
+            setIsGeneratingNumber(false);
         }
     };
 
@@ -121,9 +136,27 @@ const WarrantyForm: React.FC<WarrantyFormProps> = ({
      * Auto-generate warranty number เมื่อ component mount (ถ้ายังไม่มี)
      */
     useEffect(() => {
-        if (!data.warrantyNumber) {
+        if (isEditing) {
+            console.log('⏭️ [WR] Skip auto-generate - isEditing mode');
+            hasGeneratedNumberRef.current = true;
+            return;
+        }
+        
+        const hasValidNumber = data.warrantyNumber && data.warrantyNumber.match(/^WR-\d{6}\d{2}$/);
+        if (hasValidNumber) {
+            console.log('⏭️ [WR] Skip auto-generate - already has valid number:', data.warrantyNumber);
+            hasGeneratedNumberRef.current = true;
+            return;
+        }
+        
+        if (!data.warrantyNumber && !hasGeneratedNumberRef.current) {
+            console.log('🔄 [WR] Auto-generating new document number...');
             handleGenerateWarrantyNumber();
         }
+    }, [isEditing]);
+    
+    useEffect(() => {
+        return () => { hasGeneratedNumberRef.current = false; };
     }, []);
 
 

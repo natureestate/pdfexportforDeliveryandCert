@@ -25,6 +25,8 @@ export interface SubcontractFormProps {
     companyDefaultLogoUrl?: string | null;
     onLogoChange?: (logo: string | null, logoUrl: string | null, logoType: LogoType) => void;
     onSetDefaultLogo?: (logoUrl: string) => Promise<void>;
+    /** true = กำลังแก้ไขเอกสารเดิม หรือ copy เอกสาร (ไม่ต้อง auto-generate เลขใหม่) */
+    isEditing?: boolean;
 }
 
 // FormDivider Component - แบ่งส่วนของฟอร์ม
@@ -47,13 +49,16 @@ const SubcontractForm: React.FC<SubcontractFormProps> = ({
     sharedLogoType,
     companyDefaultLogoUrl,
     onLogoChange,
-    onSetDefaultLogo
+    onSetDefaultLogo,
+    isEditing = false
 }) => {
     const { currentCompany } = useCompany();
     const [isConfirmModalOpen, setIsConfirmModalOpen] = useState(false);
     const [itemToRemove, setItemToRemove] = useState<number | null>(null);
     const [milestoneToRemove, setMilestoneToRemove] = useState<number | null>(null);
+    const [isGeneratingNumber, setIsGeneratingNumber] = useState(false);
     const hasSyncedCompanyRef = useRef<string | undefined>(undefined);
+    const hasGeneratedNumberRef = useRef(false);
     
     // State สำหรับเก็บ Customer ID ที่เลือก (ใช้สำหรับ End Customer)
     const [selectedCustomerId, setSelectedCustomerId] = useState<string | undefined>(undefined);
@@ -228,17 +233,42 @@ const SubcontractForm: React.FC<SubcontractFormProps> = ({
     // สร้างเลขที่สัญญาอัตโนมัติ
     useEffect(() => {
         const generateNumber = async () => {
-            if (!data.contractNumber && currentCompany?.id) {
+            // ถ้ากำลังแก้ไขเอกสารเดิม ไม่ต้อง generate เลขใหม่
+            if (isEditing) {
+                console.log('⏭️ [SC] Skip auto-generate - isEditing mode');
+                hasGeneratedNumberRef.current = true;
+                return;
+            }
+            
+            // ตรวจสอบว่ามีเลขเอกสารที่ valid อยู่แล้วหรือไม่
+            const hasValidNumber = data.contractNumber && data.contractNumber.match(/^SC-\d{6}\d{2}$/);
+            if (hasValidNumber) {
+                console.log('⏭️ [SC] Skip auto-generate - already has valid number:', data.contractNumber);
+                hasGeneratedNumberRef.current = true;
+                return;
+            }
+            
+            if (!data.contractNumber && currentCompany?.id && !hasGeneratedNumberRef.current) {
                 try {
+                    setIsGeneratingNumber(true);
+                    console.log('🔄 [SC] Auto-generating new document number...');
                     const docNumber = await generateDocumentNumber('subcontract' as DocumentType);
                     handleDataChange('contractNumber', docNumber);
+                    hasGeneratedNumberRef.current = true;
+                    console.log('✅ [SC] Generated new document number:', docNumber);
                 } catch (error) {
-                    console.error('❌ สร้างเลขที่สัญญาล้มเหลว:', error);
+                    console.error('❌ [SC] สร้างเลขที่สัญญาล้มเหลว:', error);
+                } finally {
+                    setIsGeneratingNumber(false);
                 }
             }
         };
         generateNumber();
-    }, [currentCompany?.id]);
+    }, [currentCompany?.id, isEditing]);
+    
+    useEffect(() => {
+        return () => { hasGeneratedNumberRef.current = false; };
+    }, []);
 
     // คำนวณ amount ของงวดงานเมื่อ totalContractAmount เปลี่ยน
     // และแปลงตัวเลขเป็นตัวอักษรภาษาไทยอัตโนมัติ

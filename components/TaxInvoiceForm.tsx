@@ -17,6 +17,8 @@ export interface TaxInvoiceFormProps {
     companyDefaultLogoUrl?: string | null;
     onLogoChange?: (logo: string | null, logoUrl: string | null, logoType: LogoType) => void;
     onSetDefaultLogo?: (logoUrl: string) => Promise<void>;
+    /** true = กำลังแก้ไขเอกสารเดิม หรือ copy เอกสาร (ไม่ต้อง auto-generate เลขใหม่) */
+    isEditing?: boolean;
 }
 
 const FormDivider: React.FC<{ title: string }> = ({ title }) => (
@@ -38,12 +40,15 @@ const TaxInvoiceForm: React.FC<TaxInvoiceFormProps> = ({
     sharedLogoType,
     companyDefaultLogoUrl,
     onLogoChange,
-    onSetDefaultLogo
+    onSetDefaultLogo,
+    isEditing = false
 }) => {
     const { currentCompany } = useCompany(); // ดึงข้อมูลบริษัทจาก context
     const [isConfirmModalOpen, setIsConfirmModalOpen] = useState(false);
     const [itemToRemove, setItemToRemove] = useState<number | null>(null);
+    const [isGeneratingNumber, setIsGeneratingNumber] = useState(false);
     const hasSyncedCompanyRef = useRef<string | undefined>(undefined); // Track ว่า sync แล้วหรือยัง
+    const hasGeneratedNumberRef = useRef(false);
 
     const handleDataChange = <K extends keyof TaxInvoiceData,>(key: K, value: TaxInvoiceData[K]) => {
         setData(prev => ({ ...prev, [key]: value }));
@@ -110,13 +115,23 @@ const TaxInvoiceForm: React.FC<TaxInvoiceFormProps> = ({
     /**
      * สร้างเลขที่เอกสารอัตโนมัติ
      */
-    const handleGenerateTaxInvoiceNumber = async () => {
+    const handleGenerateTaxInvoiceNumber = async (force: boolean = false) => {
+        if (hasGeneratedNumberRef.current && !force) {
+            console.log('⏭️ [TI] Skip generate - already generated');
+            return;
+        }
+        
         try {
+            setIsGeneratingNumber(true);
             const newTaxInvoiceNumber = await generateDocumentNumber('tax-invoice');
             handleDataChange('taxInvoiceNumber', newTaxInvoiceNumber);
+            hasGeneratedNumberRef.current = true;
+            console.log('✅ [TI] Generated new document number:', newTaxInvoiceNumber);
         } catch (error) {
-            console.error('Error generating tax invoice number:', error);
+            console.error('❌ [TI] Error generating tax invoice number:', error);
             alert('ไม่สามารถสร้างเลขที่เอกสารได้ กรุณาลองใหม่อีกครั้ง');
+        } finally {
+            setIsGeneratingNumber(false);
         }
     };
 
@@ -124,14 +139,32 @@ const TaxInvoiceForm: React.FC<TaxInvoiceFormProps> = ({
      * Auto-generate เลขที่เอกสารเมื่อฟอร์มว่างหรือเป็นค่า default
      */
     useEffect(() => {
+        if (isEditing) {
+            console.log('⏭️ [TI] Skip auto-generate - isEditing mode');
+            hasGeneratedNumberRef.current = true;
+            return;
+        }
+        
+        const hasValidNumber = data.taxInvoiceNumber && data.taxInvoiceNumber.match(/^TI-\d{6}\d{2}$/);
+        if (hasValidNumber) {
+            console.log('⏭️ [TI] Skip auto-generate - already has valid number:', data.taxInvoiceNumber);
+            hasGeneratedNumberRef.current = true;
+            return;
+        }
+        
         const isDefaultOrEmpty = !data.taxInvoiceNumber || 
                                   data.taxInvoiceNumber.match(/^TI-\d{4}-\d{3}$/) || // รูปแบบเก่า
                                   data.taxInvoiceNumber === '';
         
-        if (isDefaultOrEmpty) {
+        if (isDefaultOrEmpty && !hasGeneratedNumberRef.current) {
+            console.log('🔄 [TI] Auto-generating new document number...');
             handleGenerateTaxInvoiceNumber();
         }
-    }, []); // เรียกครั้งเดียวตอน mount
+    }, [isEditing]);
+    
+    useEffect(() => {
+        return () => { hasGeneratedNumberRef.current = false; };
+    }, []);
 
     /**
      * Sync ข้อมูลบริษัทจาก currentCompany ไปยัง form data

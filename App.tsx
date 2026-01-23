@@ -779,6 +779,9 @@ const AppContent: React.FC = () => {
     // Edit Mode - track ว่ากำลัง edit document เดิมหรือสร้างใหม่
     const [editingDocumentId, setEditingDocumentId] = useState<string | null>(null);
     
+    // Confirmation Dialog สำหรับยืนยันการออกจากโหมดแก้ไข
+    const [showExitEditConfirm, setShowExitEditConfirm] = useState(false);
+    
     // ตรวจสอบว่าเอกสารปัจจุบันถูกเซ็นแล้วหรือยัง (สำหรับ Lock Edit)
     const isCurrentDocumentSigned = activeTab === 'delivery' && deliveryData.signatureStatus === 'signed';
     
@@ -1083,53 +1086,62 @@ const AppContent: React.FC = () => {
             const result = await saveOrUpdateDocument(activeTab, data, editingDocumentId, companyId);
             showToast(result.message, 'success');
             
-            // ถ้าเป็น create mode ให้ set editingDocumentId และอัปเดต form state ด้วย verificationToken
-            if (!isEditMode) {
-                setEditingDocumentId(result.id);
+            // หลังบันทึกสำเร็จ: ออกจากโหมดแก้ไขและ reset form อัตโนมัติ
+            // เพื่อให้ผู้ใช้พร้อมสร้างเอกสารใหม่ทันที
+            setTimeout(() => {
+                setEditingDocumentId(null);
+                // Reset form ด้วย initial data พร้อม logo
+                const withLogo = <T extends { logo?: string | null; logoUrl?: string | null; logoType?: LogoType }>(initialData: T): T => ({
+                    ...initialData,
+                    logo: sharedLogo,
+                    logoUrl: sharedLogoUrl,
+                    logoType: sharedLogoType,
+                });
                 
-                // อัปเดต form state ด้วย verificationToken เพื่อให้ QR Code แสดงทันที
-                if (newToken) {
-                    switch (activeTab) {
-                        case 'delivery':
-                            setDeliveryData(prev => ({ ...prev, verificationToken: newToken! }));
-                            break;
-                        case 'warranty':
-                            setWarrantyData(prev => ({ ...prev, verificationToken: newToken! }));
-                            break;
-                        case 'invoice':
-                            setInvoiceData(prev => ({ ...prev, verificationToken: newToken! }));
-                            break;
-                        case 'receipt':
-                            setReceiptData(prev => ({ ...prev, verificationToken: newToken! }));
-                            break;
-                        case 'tax-invoice':
-                            setTaxInvoiceData(prev => ({ ...prev, verificationToken: newToken! }));
-                            break;
-                        case 'quotation':
-                            setQuotationData(prev => ({ ...prev, verificationToken: newToken! }));
-                            break;
-                        case 'purchase-order':
-                            setPurchaseOrderData(prev => ({ ...prev, verificationToken: newToken! }));
-                            break;
-                        case 'memo':
-                            setMemoData(prev => ({ ...prev, verificationToken: newToken! }));
-                            break;
-                        case 'variation-order':
-                            setVariationOrderData(prev => ({ ...prev, verificationToken: newToken! }));
-                            break;
-                        case 'subcontract':
-                            setSubcontractData(prev => ({ ...prev, verificationToken: newToken! }));
-                            break;
-                    }
+                switch (activeTab) {
+                    case 'delivery':
+                        setDeliveryData(getInitialDeliveryData());
+                        break;
+                    case 'warranty':
+                        setWarrantyData({ ...initialWarrantyData, ...withLogo({}) });
+                        break;
+                    case 'invoice':
+                        setInvoiceData(withLogo(initialInvoiceData));
+                        break;
+                    case 'receipt':
+                        setReceiptData(withLogo(initialReceiptData));
+                        break;
+                    case 'tax-invoice':
+                        setTaxInvoiceData(withLogo(initialTaxInvoiceData));
+                        break;
+                    case 'quotation':
+                        setQuotationData(withLogo(initialQuotationData));
+                        break;
+                    case 'purchase-order':
+                        setPurchaseOrderData(withLogo(initialPurchaseOrderData));
+                        break;
+                    case 'memo':
+                        setMemoData(withLogo(initialMemoData));
+                        break;
+                    case 'variation-order':
+                        setVariationOrderData(withLogo(initialVariationOrderData));
+                        break;
+                    case 'subcontract':
+                        setSubcontractData(withLogo(initialSubcontractData));
+                        break;
                 }
-            }
+                
+                // แสดง toast แจ้งว่าพร้อมสร้างเอกสารใหม่
+                showToast(t('notifications.readyForNewDocument'), 'info');
+            }, 500); // delay เล็กน้อยเพื่อให้ผู้ใช้เห็น toast บันทึกสำเร็จก่อน
+            
         } catch (error) {
             console.error('Failed to save to Firestore:', error);
             showToast(t('notifications.saveError'), 'error');
         } finally {
             setIsSaving(false);
         }
-    }, [activeTab, getCurrentData, currentCompany, editingDocumentId, t]);
+    }, [activeTab, getCurrentData, currentCompany, editingDocumentId, t, sharedLogo, sharedLogoUrl, sharedLogoType]);
 
     /**
      * สร้างชื่อไฟล์ PDF ตามรูปแบบ: prefix + ลูกค้า + Create date (YYMMDD) + UUID
@@ -1325,11 +1337,11 @@ const AppContent: React.FC = () => {
         showToast(t('history.documentLoaded'), 'info');
     }, [t]);
 
-    // ฟังก์ชันสร้างฟอร์มใหม่
-    // Refactored: ลด code duplication โดยใช้ helper function
-    const handleCreateNewForm = useCallback(() => {
+    // ฟังก์ชันสร้างฟอร์มใหม่ (ใช้ภายในหลังยืนยัน)
+    const doCreateNewForm = useCallback(() => {
         // Clear edit mode
         setEditingDocumentId(null);
+        setShowExitEditConfirm(false);
         
         // Helper function สำหรับเพิ่ม logo ให้กับ initial data
         const withLogo = <T extends { logo?: string | null; logoUrl?: string | null; logoType?: LogoType }>(data: T): T => ({
@@ -1376,6 +1388,23 @@ const AppContent: React.FC = () => {
         }
         showToast(t('notifications.newFormCreated'), 'success');
     }, [activeTab, sharedLogo, sharedLogoUrl, sharedLogoType, t]);
+    
+    // ฟังก์ชันสร้างฟอร์มใหม่ (แสดง confirmation ถ้าอยู่ในโหมดแก้ไข)
+    const handleCreateNewForm = useCallback(() => {
+        // ถ้าอยู่ในโหมดแก้ไข ให้แสดง confirmation dialog
+        if (editingDocumentId) {
+            setShowExitEditConfirm(true);
+        } else {
+            // ถ้าไม่ได้อยู่ในโหมดแก้ไข ให้สร้างฟอร์มใหม่เลย
+            doCreateNewForm();
+        }
+    }, [editingDocumentId, doCreateNewForm]);
+    
+    // ฟังก์ชันยกเลิกการแก้ไข (ออกจากโหมดแก้ไขโดยไม่สร้างฟอร์มใหม่)
+    const handleCancelEdit = useCallback(() => {
+        setEditingDocumentId(null);
+        showToast(t('notifications.exitedEditMode'), 'info');
+    }, [t]);
     
     const notificationColors: Record<Notification['type'], string> = {
         info: 'bg-blue-500',
@@ -1452,19 +1481,68 @@ const AppContent: React.FC = () => {
                                 </div>
                             )}
                             
-                            {/* Edit Mode Indicator */}
+                            {/* Edit Mode Indicator - ปรับปรุงให้ชัดเจนขึ้น */}
                             {editingDocumentId && !isCurrentDocumentSigned && (
-                                <div className="mb-3 sm:mb-4 p-2 sm:p-3 bg-amber-50 dark:bg-amber-900/30 border border-amber-200 dark:border-amber-700 rounded-lg flex flex-col sm:flex-row sm:items-center sm:justify-between gap-2">
-                                    <div className="flex flex-col sm:flex-row sm:items-center min-w-0">
-                                        <span className="text-amber-700 dark:text-amber-400 font-medium text-sm">✏️ {t('form.editMode')}</span>
-                                        <span className="ml-0 sm:ml-2 text-xs sm:text-sm text-amber-600 dark:text-amber-300 truncate">{t('form.editingDocument')}: {editingDocumentId}</span>
+                                <div className="mb-3 sm:mb-4 p-3 sm:p-4 bg-amber-50 dark:bg-amber-900/30 border-2 border-amber-400 dark:border-amber-600 rounded-lg shadow-md">
+                                    <div className="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-3">
+                                        <div className="flex items-center gap-2">
+                                            <div className="flex items-center justify-center w-10 h-10 rounded-full bg-amber-200 dark:bg-amber-800">
+                                                <span className="text-xl">✏️</span>
+                                            </div>
+                                            <div>
+                                                <span className="text-amber-800 dark:text-amber-300 font-semibold text-base block">{t('form.editMode')}</span>
+                                                <span className="text-xs sm:text-sm text-amber-600 dark:text-amber-400 truncate block max-w-[200px] sm:max-w-none">{editingDocumentId}</span>
+                                            </div>
+                                        </div>
+                                        <div className="flex gap-2 flex-wrap">
+                                            <button
+                                                onClick={handleCancelEdit}
+                                                className="flex-1 sm:flex-none text-xs sm:text-sm px-3 py-2 bg-white dark:bg-slate-700 border border-gray-300 dark:border-gray-600 rounded-md hover:bg-gray-50 dark:hover:bg-slate-600 text-gray-700 dark:text-gray-300 whitespace-nowrap transition-colors"
+                                            >
+                                                ❌ {t('form.cancelEdit')}
+                                            </button>
+                                            <button
+                                                onClick={handleCreateNewForm}
+                                                className="flex-1 sm:flex-none text-xs sm:text-sm px-3 py-2 bg-green-500 hover:bg-green-600 text-white rounded-md whitespace-nowrap transition-colors shadow-sm"
+                                            >
+                                                🆕 {t('form.createNewDocument')}
+                                            </button>
+                                        </div>
                                     </div>
-                                    <button
-                                        onClick={handleCreateNewForm}
-                                        className="text-xs sm:text-sm px-2 sm:px-3 py-1 bg-white dark:bg-slate-700 border border-amber-300 dark:border-amber-600 rounded hover:bg-amber-50 dark:hover:bg-amber-900/50 text-amber-700 dark:text-amber-400 whitespace-nowrap"
-                                    >
-                                        🆕 {t('form.createNewDocument')}
-                                    </button>
+                                    <p className="mt-2 text-xs text-amber-600 dark:text-amber-400">
+                                        💡 {t('form.editModeHint')}
+                                    </p>
+                                </div>
+                            )}
+                            
+                            {/* Confirmation Dialog สำหรับออกจากโหมดแก้ไข */}
+                            {showExitEditConfirm && (
+                                <div className="fixed inset-0 bg-black/50 dark:bg-black/70 z-50 flex items-center justify-center p-4">
+                                    <div className="bg-white dark:bg-slate-800 rounded-lg shadow-xl max-w-md w-full p-6 animate-in fade-in zoom-in duration-200">
+                                        <div className="flex items-center gap-3 mb-4">
+                                            <div className="flex items-center justify-center w-12 h-12 rounded-full bg-amber-100 dark:bg-amber-900/50">
+                                                <span className="text-2xl">⚠️</span>
+                                            </div>
+                                            <div>
+                                                <h3 className="text-lg font-semibold text-gray-900 dark:text-gray-100">{t('form.exitEditConfirmTitle')}</h3>
+                                                <p className="text-sm text-gray-500 dark:text-gray-400">{t('form.exitEditConfirmMessage')}</p>
+                                            </div>
+                                        </div>
+                                        <div className="flex gap-3 justify-end">
+                                            <button
+                                                onClick={() => setShowExitEditConfirm(false)}
+                                                className="px-4 py-2 text-sm font-medium text-gray-700 dark:text-gray-300 bg-gray-100 dark:bg-slate-700 hover:bg-gray-200 dark:hover:bg-slate-600 rounded-md transition-colors"
+                                            >
+                                                {t('app.cancel')}
+                                            </button>
+                                            <button
+                                                onClick={doCreateNewForm}
+                                                className="px-4 py-2 text-sm font-medium text-white bg-amber-500 hover:bg-amber-600 rounded-md transition-colors"
+                                            >
+                                                {t('form.exitAndCreateNew')}
+                                            </button>
+                                        </div>
+                                    </div>
                                 </div>
                             )}
                             
@@ -1513,6 +1591,7 @@ const AppContent: React.FC = () => {
                                         setSharedLogoType(logoType);
                                     }}
                                     onSetDefaultLogo={handleSetDefaultLogo}
+                                    isEditing={!!editingDocumentId}
                                 />
                             ) : activeTab === 'warranty' ? (
                                 <WarrantyForm
@@ -1528,6 +1607,7 @@ const AppContent: React.FC = () => {
                                         setSharedLogoType(logoType);
                                     }}
                                     onSetDefaultLogo={handleSetDefaultLogo}
+                                    isEditing={!!editingDocumentId}
                                 />
                             ) : activeTab === 'invoice' ? (
                                 <InvoiceForm
@@ -1543,6 +1623,7 @@ const AppContent: React.FC = () => {
                                         setSharedLogoType(logoType);
                                     }}
                                     onSetDefaultLogo={handleSetDefaultLogo}
+                                    isEditing={!!editingDocumentId}
                                 />
                             ) : activeTab === 'receipt' ? (
                                 <ReceiptForm
@@ -1558,6 +1639,7 @@ const AppContent: React.FC = () => {
                                         setSharedLogoType(logoType);
                                     }}
                                     onSetDefaultLogo={handleSetDefaultLogo}
+                                    isEditing={!!editingDocumentId}
                                 />
                             ) : activeTab === 'tax-invoice' ? (
                                 <TaxInvoiceForm
@@ -1573,6 +1655,7 @@ const AppContent: React.FC = () => {
                                         setSharedLogoType(logoType);
                                     }}
                                     onSetDefaultLogo={handleSetDefaultLogo}
+                                    isEditing={!!editingDocumentId}
                                 />
                             ) : activeTab === 'quotation' ? (
                                 <QuotationForm
@@ -1588,6 +1671,7 @@ const AppContent: React.FC = () => {
                                         setSharedLogoType(logoType);
                                     }}
                                     onSetDefaultLogo={handleSetDefaultLogo}
+                                    isEditing={!!editingDocumentId}
                                 />
                             ) : activeTab === 'purchase-order' ? (
                                 <PurchaseOrderForm
@@ -1603,6 +1687,7 @@ const AppContent: React.FC = () => {
                                         setSharedLogoType(logoType);
                                     }}
                                     onSetDefaultLogo={handleSetDefaultLogo}
+                                    isEditing={!!editingDocumentId}
                                 />
                             ) : activeTab === 'memo' ? (
                                 <MemoForm
@@ -1618,6 +1703,7 @@ const AppContent: React.FC = () => {
                                         setSharedLogoType(logoType);
                                     }}
                                     onSetDefaultLogo={handleSetDefaultLogo}
+                                    isEditing={!!editingDocumentId}
                                 />
                             ) : activeTab === 'variation-order' ? (
                                 <VariationOrderForm
@@ -1633,6 +1719,7 @@ const AppContent: React.FC = () => {
                                         setSharedLogoType(logoType);
                                     }}
                                     onSetDefaultLogo={handleSetDefaultLogo}
+                                    isEditing={!!editingDocumentId}
                                 />
                             ) : (
                                 <SubcontractForm
@@ -1648,6 +1735,7 @@ const AppContent: React.FC = () => {
                                         setSharedLogoType(logoType);
                                     }}
                                     onSetDefaultLogo={handleSetDefaultLogo}
+                                    isEditing={!!editingDocumentId}
                                 />
                             )}
                         </div>

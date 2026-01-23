@@ -17,6 +17,8 @@ export interface ReceiptFormProps {
     companyDefaultLogoUrl?: string | null;
     onLogoChange?: (logo: string | null, logoUrl: string | null, logoType: LogoType) => void;
     onSetDefaultLogo?: (logoUrl: string) => Promise<void>;
+    /** true = กำลังแก้ไขเอกสารเดิม หรือ copy เอกสาร (ไม่ต้อง auto-generate เลขใหม่) */
+    isEditing?: boolean;
 }
 
 const FormDivider: React.FC<{ title: string }> = ({ title }) => (
@@ -38,12 +40,15 @@ const ReceiptForm: React.FC<ReceiptFormProps> = ({
     sharedLogoType,
     companyDefaultLogoUrl,
     onLogoChange,
-    onSetDefaultLogo
+    onSetDefaultLogo,
+    isEditing = false
 }) => {
     const { currentCompany } = useCompany(); // ดึงข้อมูลบริษัทจาก context
     const [isConfirmModalOpen, setIsConfirmModalOpen] = useState(false);
     const [itemToRemove, setItemToRemove] = useState<number | null>(null);
+    const [isGeneratingNumber, setIsGeneratingNumber] = useState(false);
     const hasSyncedCompanyRef = useRef<string | undefined>(undefined); // Track ว่า sync แล้วหรือยัง
+    const hasGeneratedNumberRef = useRef(false);
 
     const handleDataChange = <K extends keyof ReceiptData,>(key: K, value: ReceiptData[K]) => {
         setData(prev => ({ ...prev, [key]: value }));
@@ -110,13 +115,23 @@ const ReceiptForm: React.FC<ReceiptFormProps> = ({
     /**
      * สร้างเลขที่เอกสารอัตโนมัติ
      */
-    const handleGenerateReceiptNumber = async () => {
+    const handleGenerateReceiptNumber = async (force: boolean = false) => {
+        if (hasGeneratedNumberRef.current && !force) {
+            console.log('⏭️ [RC] Skip generate - already generated');
+            return;
+        }
+        
         try {
+            setIsGeneratingNumber(true);
             const newReceiptNumber = await generateDocumentNumber('receipt');
             handleDataChange('receiptNumber', newReceiptNumber);
+            hasGeneratedNumberRef.current = true;
+            console.log('✅ [RC] Generated new document number:', newReceiptNumber);
         } catch (error) {
-            console.error('Error generating receipt number:', error);
+            console.error('❌ [RC] Error generating receipt number:', error);
             alert('ไม่สามารถสร้างเลขที่เอกสารได้ กรุณาลองใหม่อีกครั้ง');
+        } finally {
+            setIsGeneratingNumber(false);
         }
     };
 
@@ -124,14 +139,32 @@ const ReceiptForm: React.FC<ReceiptFormProps> = ({
      * Auto-generate เลขที่เอกสารเมื่อฟอร์มว่างหรือเป็นค่า default
      */
     useEffect(() => {
+        if (isEditing) {
+            console.log('⏭️ [RC] Skip auto-generate - isEditing mode');
+            hasGeneratedNumberRef.current = true;
+            return;
+        }
+        
+        const hasValidNumber = data.receiptNumber && data.receiptNumber.match(/^RC-\d{6}\d{2}$/);
+        if (hasValidNumber) {
+            console.log('⏭️ [RC] Skip auto-generate - already has valid number:', data.receiptNumber);
+            hasGeneratedNumberRef.current = true;
+            return;
+        }
+        
         const isDefaultOrEmpty = !data.receiptNumber || 
                                   data.receiptNumber.match(/^RC-\d{4}-\d{3}$/) || // รูปแบบเก่า
                                   data.receiptNumber === '';
         
-        if (isDefaultOrEmpty) {
+        if (isDefaultOrEmpty && !hasGeneratedNumberRef.current) {
+            console.log('🔄 [RC] Auto-generating new document number...');
             handleGenerateReceiptNumber();
         }
-    }, []); // เรียกครั้งเดียวตอน mount
+    }, [isEditing]);
+    
+    useEffect(() => {
+        return () => { hasGeneratedNumberRef.current = false; };
+    }, []);
 
     /**
      * Sync ข้อมูลบริษัทจาก currentCompany ไปยัง form data
