@@ -93,15 +93,16 @@ const MemoForm: React.FC<MemoFormProps> = ({
                                   data.memoNumber.match(/^MEMO-\d{4}-\d{3}$/) || 
                                   data.memoNumber === '';
         
-        if (isDefaultOrEmpty && !hasGeneratedNumberRef.current) {
+        // ถ้า memoNumber ว่างเปล่า ให้ reset flag เพื่อให้สามารถสร้างเลขใหม่ได้
+        if (isDefaultOrEmpty) {
+            hasGeneratedNumberRef.current = false;
+        }
+        
+        if (isDefaultOrEmpty && !hasGeneratedNumberRef.current && !isGeneratingNumber) {
             console.log('🔄 [MEMO] Auto-generating new document number...');
             handleGenerateMemoNumber();
         }
-    }, [isEditing]);
-    
-    useEffect(() => {
-        return () => { hasGeneratedNumberRef.current = false; };
-    }, []);
+    }, [isEditing, data.memoNumber]);
 
     /**
      * Sync ข้อมูลบริษัทจาก currentCompany ไปยัง form data
@@ -135,7 +136,12 @@ const MemoForm: React.FC<MemoFormProps> = ({
             <div className="space-y-6">
                 {/* เลขที่เอกสาร - แสดงด้านบนสุด */}
                 <div className="text-xs sm:text-sm text-gray-600 dark:text-gray-400">
-                    <span className="font-medium">เลขที่เอกสาร:</span> <span className="font-mono">{data.memoNumber || 'กำลังสร้าง...'}</span>
+                    <span className="font-medium">เลขที่เอกสาร:</span>{' '}
+                    {isGeneratingNumber ? (
+                        <span className="font-mono text-amber-600 dark:text-amber-400 animate-pulse">กำลังสร้างเลขที่...</span>
+                    ) : (
+                        <span className="font-mono">{data.memoNumber || 'รอสร้างเลขที่...'}</span>
+                    )}
                 </div>
                 
                 {/* ส่วนที่ 1: หัวกระดาษ (Header) */}

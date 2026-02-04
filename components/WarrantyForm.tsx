@@ -149,15 +149,16 @@ const WarrantyForm: React.FC<WarrantyFormProps> = ({
             return;
         }
         
-        if (!data.warrantyNumber && !hasGeneratedNumberRef.current) {
+        // ถ้า warrantyNumber ว่างเปล่า ให้ reset flag เพื่อให้สามารถสร้างเลขใหม่ได้
+        if (!data.warrantyNumber) {
+            hasGeneratedNumberRef.current = false;
+        }
+        
+        if (!data.warrantyNumber && !hasGeneratedNumberRef.current && !isGeneratingNumber) {
             console.log('🔄 [WR] Auto-generating new document number...');
             handleGenerateWarrantyNumber();
         }
-    }, [isEditing]);
-    
-    useEffect(() => {
-        return () => { hasGeneratedNumberRef.current = false; };
-    }, []);
+    }, [isEditing, data.warrantyNumber]);
 
 
     return (

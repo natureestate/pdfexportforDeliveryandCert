@@ -149,18 +149,16 @@ const DeliveryForm: React.FC<DeliveryFormProps> = ({
                                   data.docNumber.match(/^DN-\d{4}-\d{3}$/) || // รูปแบบเก่า: DN-2025-001
                                   data.docNumber === '';
         
-        if (isDefaultOrEmpty && !hasGeneratedNumberRef.current) {
+        // ถ้า docNumber ว่างเปล่า ให้ reset flag เพื่อให้สามารถสร้างเลขใหม่ได้
+        if (isDefaultOrEmpty) {
+            hasGeneratedNumberRef.current = false;
+        }
+        
+        if (isDefaultOrEmpty && !hasGeneratedNumberRef.current && !isGeneratingNumber) {
             console.log('🔄 [DN] Auto-generating new document number...');
             handleGenerateDocNumber();
         }
-    }, [isEditing]);
-    
-    // Reset ref เมื่อ component unmount
-    useEffect(() => {
-        return () => {
-            hasGeneratedNumberRef.current = false;
-        };
-    }, []);
+    }, [isEditing, data.docNumber]);
     
     return (
         <div className="space-y-8 pt-4">

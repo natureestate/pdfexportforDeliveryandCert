@@ -154,15 +154,16 @@ const InvoiceForm: React.FC<InvoiceFormProps> = ({
                                   data.invoiceNumber.match(/^IN-\d{4}-\d{3}$/) || // รูปแบบเก่า
                                   data.invoiceNumber === '';
         
-        if (isDefaultOrEmpty && !hasGeneratedNumberRef.current) {
+        // ถ้า invoiceNumber ว่างเปล่า ให้ reset flag เพื่อให้สามารถสร้างเลขใหม่ได้
+        if (isDefaultOrEmpty) {
+            hasGeneratedNumberRef.current = false;
+        }
+        
+        if (isDefaultOrEmpty && !hasGeneratedNumberRef.current && !isGeneratingNumber) {
             console.log('🔄 [IN] Auto-generating new document number...');
             handleGenerateInvoiceNumber();
         }
-    }, [isEditing]);
-    
-    useEffect(() => {
-        return () => { hasGeneratedNumberRef.current = false; };
-    }, []);
+    }, [isEditing, data.invoiceNumber]);
 
     /**
      * Sync ข้อมูลบริษัทจาก currentCompany ไปยัง form data

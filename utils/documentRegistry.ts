@@ -13,6 +13,8 @@ import {
     VariationOrderData,
     SubcontractData
 } from '../types';
+import { logDocumentCreated, logDocumentUpdated } from '../services/documentHistory';
+import { createDocumentVersion } from '../services/documentVersion';
 import {
     saveDeliveryNote,
     updateDeliveryNote,
@@ -329,8 +331,23 @@ export const generatePdfFilename = (
     return `${parts.join('_')}.pdf`;
 };
 
+// Mapping ระหว่าง DocType และ Document Number Field (สำหรับ history logging)
+const DOC_TYPE_TO_NUMBER_FIELD: Record<DocType, string> = {
+    'delivery': 'docNumber',
+    'warranty': 'warrantyNumber',
+    'invoice': 'invoiceNumber',
+    'receipt': 'receiptNumber',
+    'tax-invoice': 'taxInvoiceNumber',
+    'quotation': 'quotationNumber',
+    'purchase-order': 'purchaseOrderNumber',
+    'memo': 'memoNumber',
+    'variation-order': 'voNumber',
+    'subcontract': 'contractNumber',
+};
+
 /**
  * Helper function สำหรับ save หรือ update document
+ * พร้อมบันทึก history อัตโนมัติ
  */
 export const saveOrUpdateDocument = async (
     type: DocType,
@@ -340,10 +357,34 @@ export const saveOrUpdateDocument = async (
 ): Promise<{ id: string; message: string }> => {
     const config = DOCUMENT_REGISTRY[type];
     const isEditMode = !!documentId;
+    
+    // ดึงเลขที่เอกสารจาก data
+    const numberField = DOC_TYPE_TO_NUMBER_FIELD[type];
+    const documentNumber = (data as any)[numberField] || '';
 
     if (isEditMode) {
         // ใช้ type assertion เพราะ TypeScript ไม่สามารถ infer ได้ว่า data ตรงกับ config
         await (config.updateFn as (id: string, data: unknown) => Promise<void>)(documentId, data);
+        
+        // บันทึก history สำหรับการ update
+        try {
+            await logDocumentUpdated(documentId, type, documentNumber, undefined, companyId);
+            console.log('✅ [History] Logged document update:', documentId);
+        } catch (historyError) {
+            console.error('⚠️ [History] Failed to log update:', historyError);
+        }
+        
+        // บันทึก version สำหรับการ update
+        try {
+            await createDocumentVersion(documentId, type, documentNumber, data, {
+                note: 'อัปเดตเอกสาร',
+                companyId,
+            });
+            console.log('✅ [Version] Created version for update:', documentId);
+        } catch (versionError) {
+            console.error('⚠️ [Version] Failed to create version:', versionError);
+        }
+        
         return {
             id: documentId,
             message: config.successMessages.update,
@@ -351,6 +392,26 @@ export const saveOrUpdateDocument = async (
     } else {
         // ใช้ type assertion เพราะ TypeScript ไม่สามารถ infer ได้ว่า data ตรงกับ config
         const id = await (config.saveFn as (data: unknown, companyId?: string) => Promise<string>)(data, companyId);
+        
+        // บันทึก history สำหรับการ create
+        try {
+            await logDocumentCreated(id, type, documentNumber, companyId);
+            console.log('✅ [History] Logged document creation:', id);
+        } catch (historyError) {
+            console.error('⚠️ [History] Failed to log creation:', historyError);
+        }
+        
+        // บันทึก version แรกสำหรับเอกสารใหม่
+        try {
+            await createDocumentVersion(id, type, documentNumber, data, {
+                note: 'สร้างเอกสารใหม่',
+                companyId,
+            });
+            console.log('✅ [Version] Created initial version:', id);
+        } catch (versionError) {
+            console.error('⚠️ [Version] Failed to create initial version:', versionError);
+        }
+        
         return {
             id,
             message: `${config.successMessages.save} (ID: ${id})`,

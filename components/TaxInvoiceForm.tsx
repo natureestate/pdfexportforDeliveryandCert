@@ -156,15 +156,16 @@ const TaxInvoiceForm: React.FC<TaxInvoiceFormProps> = ({
                                   data.taxInvoiceNumber.match(/^TI-\d{4}-\d{3}$/) || // รูปแบบเก่า
                                   data.taxInvoiceNumber === '';
         
-        if (isDefaultOrEmpty && !hasGeneratedNumberRef.current) {
+        // ถ้า taxInvoiceNumber ว่างเปล่า ให้ reset flag เพื่อให้สามารถสร้างเลขใหม่ได้
+        if (isDefaultOrEmpty) {
+            hasGeneratedNumberRef.current = false;
+        }
+        
+        if (isDefaultOrEmpty && !hasGeneratedNumberRef.current && !isGeneratingNumber) {
             console.log('🔄 [TI] Auto-generating new document number...');
             handleGenerateTaxInvoiceNumber();
         }
-    }, [isEditing]);
-    
-    useEffect(() => {
-        return () => { hasGeneratedNumberRef.current = false; };
-    }, []);
+    }, [isEditing, data.taxInvoiceNumber]);
 
     /**
      * Sync ข้อมูลบริษัทจาก currentCompany ไปยัง form data

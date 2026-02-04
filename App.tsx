@@ -959,24 +959,33 @@ const AppContent: React.FC = () => {
     }, [currentCompany]);
 
     // 🔥 Sync logo จาก currentCompany เมื่อเปลี่ยนบริษัท
+    // ใช้ logoBase64 ก่อน (ใหม่), fallback ไป logoUrl (เก่า - backwards compatibility)
     useEffect(() => {
         const loadCompanyLogo = async () => {
             if (currentCompany) {
                 console.log('🎨 [App] Loading company logo:', {
+                    logoBase64: currentCompany.logoBase64 ? 'มี Base64' : 'ไม่มี',
                     logoUrl: currentCompany.logoUrl,
                     logoType: currentCompany.logoType,
                     defaultLogoUrl: currentCompany.defaultLogoUrl
                 });
 
-                // ถ้าบริษัทมี logo ที่อัปโหลดไว้ ให้โหลดมาใช้
-                if (currentCompany.logoUrl && currentCompany.logoType === 'uploaded') {
+                // ✅ ใช้ logoBase64 ก่อน (ใหม่ - เก็บใน Firestore โดยตรง)
+                if (currentCompany.logoBase64) {
+                    console.log('✅ [App] ใช้ logoBase64 จาก Firestore');
+                    setSharedLogo(currentCompany.logoBase64);
+                    setSharedLogoUrl(null);
+                    setSharedLogoType(currentCompany.logoType || 'custom');
+                }
+                // 🔄 Fallback: ถ้าไม่มี logoBase64 แต่มี logoUrl (ข้อมูลเก่า)
+                else if (currentCompany.logoUrl && currentCompany.logoType === 'uploaded') {
                     try {
                         // แปลง Storage URL เป็น Base64 เพื่อหลีกเลี่ยงปัญหา CORS
                         const { convertStorageUrlToBase64 } = await import('./services/logoStorage');
                         const base64Logo = await convertStorageUrlToBase64(currentCompany.logoUrl);
                         
                         if (base64Logo) {
-                            console.log('✅ [App] โหลด logo จาก Storage สำเร็จ');
+                            console.log('✅ [App] โหลด logo จาก Storage สำเร็จ (backwards compatibility)');
                             setSharedLogo(base64Logo);
                             setSharedLogoUrl(currentCompany.logoUrl);
                             setSharedLogoType('uploaded');

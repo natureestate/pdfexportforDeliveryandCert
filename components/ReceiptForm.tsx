@@ -156,15 +156,16 @@ const ReceiptForm: React.FC<ReceiptFormProps> = ({
                                   data.receiptNumber.match(/^RC-\d{4}-\d{3}$/) || // รูปแบบเก่า
                                   data.receiptNumber === '';
         
-        if (isDefaultOrEmpty && !hasGeneratedNumberRef.current) {
+        // ถ้า receiptNumber ว่างเปล่า ให้ reset flag เพื่อให้สามารถสร้างเลขใหม่ได้
+        if (isDefaultOrEmpty) {
+            hasGeneratedNumberRef.current = false;
+        }
+        
+        if (isDefaultOrEmpty && !hasGeneratedNumberRef.current && !isGeneratingNumber) {
             console.log('🔄 [RC] Auto-generating new document number...');
             handleGenerateReceiptNumber();
         }
-    }, [isEditing]);
-    
-    useEffect(() => {
-        return () => { hasGeneratedNumberRef.current = false; };
-    }, []);
+    }, [isEditing, data.receiptNumber]);
 
     /**
      * Sync ข้อมูลบริษัทจาก currentCompany ไปยัง form data

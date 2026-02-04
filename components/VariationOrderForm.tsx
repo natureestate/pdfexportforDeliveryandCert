@@ -172,18 +172,16 @@ const VariationOrderForm: React.FC<VariationOrderFormProps> = ({
                                   data.voNumber.match(/^VO-\d{4}-\d{3}$/) || // รูปแบบเก่า
                                   data.voNumber === '';
         
-        if (isDefaultOrEmpty && !hasGeneratedNumberRef.current) {
+        // ถ้า voNumber ว่างเปล่า ให้ reset flag เพื่อให้สามารถสร้างเลขใหม่ได้
+        if (isDefaultOrEmpty) {
+            hasGeneratedNumberRef.current = false;
+        }
+        
+        if (isDefaultOrEmpty && !hasGeneratedNumberRef.current && !isGeneratingNumber) {
             console.log('🔄 [VO] Auto-generating new document number...');
             handleGenerateVoNumber();
         }
-    }, [isEditing]); // เรียกเมื่อ isEditing เปลี่ยน หรือตอน mount
-    
-    // Reset ref เมื่อ component unmount เพื่อให้ครั้งถัดไปสามารถ generate ได้
-    useEffect(() => {
-        return () => {
-            hasGeneratedNumberRef.current = false;
-        };
-    }, []);
+    }, [isEditing, data.voNumber]); // เรียกเมื่อ isEditing หรือ voNumber เปลี่ยน
 
     /**
      * Sync ข้อมูลบริษัทจาก currentCompany ไปยัง form data

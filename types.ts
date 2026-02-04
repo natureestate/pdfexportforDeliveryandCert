@@ -446,7 +446,8 @@ export interface Company {
     branchName?: string;       // ชื่อสาขา (เช่น "สำนักงานใหญ่", "สาขาลาดพร้าว")
     
     userId: string;            // Admin คนแรก (คนที่สร้างบริษัท)
-    logoUrl?: string | null;   // โลโก้เอกสาร (สำหรับพิมพ์ใน PDF)
+    logoUrl?: string | null;   // โลโก้เอกสาร (สำหรับพิมพ์ใน PDF) - URL จาก Storage (backwards compatibility)
+    logoBase64?: string | null; // โลโก้เอกสาร (Base64) - เก็บใน Firestore โดยตรง (ใหม่)
     logoType?: LogoType;       // ประเภทโลโก้เอกสาร
     defaultLogoUrl?: string | null;  // โลโก้ default ของแต่ละองค์กร (URL จาก Storage)
     organizationLogoUrl?: string | null;  // โลโก้องค์กร (แสดงใน Header)

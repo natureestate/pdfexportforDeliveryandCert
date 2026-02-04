@@ -146,9 +146,12 @@ const Header: React.FC = () => {
     }, [showMobileMenu]);
 
     // โหลดข้อมูลโลโก้จาก currentCompany
+    // ใช้ logoBase64 ก่อน, fallback ไป logoUrl (backwards compatibility)
     useEffect(() => {
         if (currentCompany) {
-            setCompanyLogo(currentCompany.logoUrl || null);
+            // ใช้ logoBase64 ก่อน (ใหม่), ถ้าไม่มีใช้ logoUrl (เก่า)
+            const logo = currentCompany.logoBase64 || currentCompany.logoUrl || null;
+            setCompanyLogo(logo);
             setCompanyLogoUrl(currentCompany.logoUrl || null);
             setCompanyLogoType(currentCompany.logoType || 'default');
         } else {
@@ -315,23 +318,30 @@ const Header: React.FC = () => {
 
     /**
      * จัดการการเปลี่ยนแปลงโลโก้
+     * เก็บ Base64 ใน Firestore โดยตรง (ไม่ผ่าน Firebase Storage)
      */
     const handleLogoChange = async (logo: string | null, logoUrl: string | null, logoType: LogoType) => {
-        console.log('🎨 [Header] เปลี่ยนโลโก้:', { logo, logoUrl, logoType });
+        console.log('🎨 [Header] เปลี่ยนโลโก้:', { logoType, hasLogo: !!logo });
         
         // อัปเดต state ใน Header
         setCompanyLogo(logo);
         setCompanyLogoUrl(logoUrl);
         setCompanyLogoType(logoType);
 
-        // บันทึกลง Firebase
+        // บันทึกลง Firebase - เก็บ Base64 โดยตรงใน logoBase64 field
         if (currentCompany?.id) {
             try {
                 await updateCompany(currentCompany.id, {
-                    logoUrl: logoUrl,
+                    logoBase64: logo,  // เก็บ Base64 โดยตรง (ใหม่)
+                    logoUrl: logoUrl,  // เก็บไว้เพื่อ backwards compatibility
                     logoType: logoType,
                 });
-                console.log('✅ [Header] บันทึกโลโก้สำเร็จ');
+                console.log('✅ [Header] บันทึกโลโก้ Base64 สำเร็จ');
+                
+                // รีเฟรชข้อมูลบริษัท
+                if (refreshCompanies) {
+                    await refreshCompanies();
+                }
             } catch (error) {
                 console.error('❌ [Header] บันทึกโลโก้ล้มเหลว:', error);
                 alert('❌ ไม่สามารถบันทึกโลโก้ได้');

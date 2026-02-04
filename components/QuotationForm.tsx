@@ -153,15 +153,16 @@ const QuotationForm: React.FC<QuotationFormProps> = ({
                                   data.quotationNumber.match(/^QT-\d{4}-\d{3}$/) || // รูปแบบเก่า
                                   data.quotationNumber === '';
         
-        if (isDefaultOrEmpty && !hasGeneratedNumberRef.current) {
+        // ถ้า quotationNumber ว่างเปล่า ให้ reset flag เพื่อให้สามารถสร้างเลขใหม่ได้
+        if (isDefaultOrEmpty) {
+            hasGeneratedNumberRef.current = false;
+        }
+        
+        if (isDefaultOrEmpty && !hasGeneratedNumberRef.current && !isGeneratingNumber) {
             console.log('🔄 [QT] Auto-generating new document number...');
             handleGenerateQuotationNumber();
         }
-    }, [isEditing]);
-    
-    useEffect(() => {
-        return () => { hasGeneratedNumberRef.current = false; };
-    }, []);
+    }, [isEditing, data.quotationNumber]);
 
     /**
      * Sync ข้อมูลบริษัทจาก currentCompany ไปยัง form data

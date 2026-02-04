@@ -248,7 +248,12 @@ const SubcontractForm: React.FC<SubcontractFormProps> = ({
                 return;
             }
             
-            if (!data.contractNumber && currentCompany?.id && !hasGeneratedNumberRef.current) {
+            // ถ้า contractNumber ว่างเปล่า ให้ reset flag เพื่อให้สามารถสร้างเลขใหม่ได้
+            if (!data.contractNumber) {
+                hasGeneratedNumberRef.current = false;
+            }
+            
+            if (!data.contractNumber && currentCompany?.id && !hasGeneratedNumberRef.current && !isGeneratingNumber) {
                 try {
                     setIsGeneratingNumber(true);
                     console.log('🔄 [SC] Auto-generating new document number...');
@@ -264,11 +269,7 @@ const SubcontractForm: React.FC<SubcontractFormProps> = ({
             }
         };
         generateNumber();
-    }, [currentCompany?.id, isEditing]);
-    
-    useEffect(() => {
-        return () => { hasGeneratedNumberRef.current = false; };
-    }, []);
+    }, [currentCompany?.id, isEditing, data.contractNumber]);
 
     // คำนวณ amount ของงวดงานเมื่อ totalContractAmount เปลี่ยน
     // และแปลงตัวเลขเป็นตัวอักษรภาษาไทยอัตโนมัติ
