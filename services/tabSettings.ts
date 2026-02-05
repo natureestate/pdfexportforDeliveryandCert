@@ -45,8 +45,7 @@ export const getTabSettings = async (companyId: string): Promise<CompanyTabSetti
             };
         }
         return null;
-    } catch (error) {
-        console.error('❌ ดึงการตั้งค่า Tab ล้มเหลว:', error);
+    } catch {
         return null;
     }
 };
@@ -77,8 +76,7 @@ export const getTabsForRole = async (
         return roleSettings.tabs
             .filter(tab => tab.visible)
             .sort((a, b) => a.order - b.order);
-    } catch (error) {
-        console.error('❌ ดึง Tab สำหรับ role ล้มเหลว:', error);
+    } catch {
         return getDefaultTabsForRole(role);
     }
 };
@@ -104,8 +102,7 @@ export const getAllTabsForRole = async (
         }
 
         return roleSettings.tabs.sort((a, b) => a.order - b.order);
-    } catch (error) {
-        console.error('❌ ดึง Tab ทั้งหมดสำหรับ role ล้มเหลว:', error);
+    } catch {
         return getDefaultTabsForRole(role, true);
     }
 };
@@ -177,10 +174,7 @@ export const saveTabSettingsForRole = async (
             updatedAt: Timestamp.now(),
             updatedBy: currentUser.uid,
         }, { merge: true });
-
-        console.log('✅ บันทึกการตั้งค่า Tab สำเร็จ');
     } catch (error) {
-        console.error('❌ บันทึกการตั้งค่า Tab ล้มเหลว:', error);
         throw error;
     }
 };
@@ -211,8 +205,7 @@ export const getUserTabSettings = async (
             };
         }
         return null;
-    } catch (error) {
-        console.error('❌ ดึงการตั้งค่า Tab ของ user ล้มเหลว:', error);
+    } catch {
         return null;
     }
 };
@@ -249,10 +242,7 @@ export const saveUserTabSettings = async (
             updatedAt: Timestamp.now(),
             updatedBy: currentUser.uid,
         }, { merge: true });
-
-        console.log('✅ บันทึกการตั้งค่า Tab ของ user สำเร็จ');
     } catch (error) {
-        console.error('❌ บันทึกการตั้งค่า Tab ของ user ล้มเหลว:', error);
         throw error;
     }
 };
@@ -272,17 +262,14 @@ export const getTabsForUser = async (
 
         if (userSettings && userSettings.useCustomSettings && userSettings.tabs.length > 0) {
             // ใช้การตั้งค่าเฉพาะ user
-            console.log('📋 [TabSettings] ใช้การตั้งค่าเฉพาะ user:', userId);
             return userSettings.tabs
                 .filter(tab => tab.visible)
                 .sort((a, b) => a.order - b.order);
         }
 
         // 2. ถ้าไม่มีการตั้งค่าเฉพาะ user ใช้ค่าจาก role
-        console.log('📋 [TabSettings] ใช้การตั้งค่าจาก role:', role);
         return await getTabsForRole(companyId, role);
-    } catch (error) {
-        console.error('❌ ดึง Tab สำหรับ user ล้มเหลว:', error);
+    } catch {
         return getDefaultTabsForRole(role);
     }
 };
@@ -303,8 +290,7 @@ export const getAllTabsForUser = async (
         }
 
         return await getAllTabsForRole(companyId, role);
-    } catch (error) {
-        console.error('❌ ดึง Tab ทั้งหมดสำหรับ user ล้มเหลว:', error);
+    } catch {
         return getDefaultTabsForRole(role, true);
     }
 };
@@ -321,8 +307,7 @@ export const canAccessTab = async (
     try {
         const visibleTabs = await getTabsForUser(companyId, userId, role);
         return visibleTabs.some(tab => tab.id === tabId && tab.visible);
-    } catch (error) {
-        console.error('❌ ตรวจสอบสิทธิ์ Tab ล้มเหลว:', error);
+    } catch {
         // Default: ให้เข้าถึงได้เฉพาะ tabs พื้นฐาน
         const basicTabs: TabType[] = ['dashboard', 'form', 'history'];
         return basicTabs.includes(tabId);

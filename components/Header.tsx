@@ -88,6 +88,13 @@ const Header: React.FC = () => {
         hasPhone: boolean;
     }>({ hasGoogle: false, hasEmail: false, hasPhone: false });
 
+    // Toast Notification
+    const [notification, setNotification] = useState<{
+        show: boolean;
+        message: string;
+        type: 'success' | 'info' | 'error' | 'warning';
+    }>({ show: false, message: '', type: 'info' });
+
     // ตรวจสอบว่ามี Password หรือไม่ และ providers ที่ link แล้ว
     useEffect(() => {
         if (user) {
@@ -106,16 +113,10 @@ const Header: React.FC = () => {
     // ตรวจสอบสิทธิ์ Admin เมื่อเปลี่ยนองค์กร
     useEffect(() => {
         const checkAdminStatus = async () => {
-            console.log('👑 [Header] ตรวจสอบสิทธิ์ Admin');
-            console.log('👑 [Header] User:', user?.email);
-            console.log('👑 [Header] Current Company:', currentCompany?.name, currentCompany?.id);
-            
             if (user && currentCompany?.id) {
                 const adminStatus = await checkIsAdmin(currentCompany.id, user.uid);
-                console.log('👑 [Header] Admin Status:', adminStatus);
                 setIsAdmin(adminStatus);
             } else {
-                console.log('👑 [Header] ไม่มี User หรือ Company, ตั้งเป็น false');
                 setIsAdmin(false);
             }
         };
@@ -132,6 +133,21 @@ const Header: React.FC = () => {
         window.addEventListener('resize', handleResize);
         return () => window.removeEventListener('resize', handleResize);
     }, []);
+
+    // Auto-hide toast notification
+    useEffect(() => {
+        if (notification.show) {
+            const timer = setTimeout(() => {
+                setNotification({ ...notification, show: false });
+            }, 3000);
+            return () => clearTimeout(timer);
+        }
+    }, [notification]);
+
+    // Toast notification function
+    const showToast = (message: string, type: 'success' | 'info' | 'error' | 'warning') => {
+        setNotification({ show: true, message, type });
+    };
 
     // ป้องกันการ scroll เมื่อเปิด mobile menu
     useEffect(() => {
@@ -168,8 +184,8 @@ const Header: React.FC = () => {
                 try {
                     const base64 = await convertStorageUrlToBase64(currentCompany.organizationLogoUrl);
                     setOrganizationLogo(base64);
-                } catch (error) {
-                    console.error('Error loading organization logo:', error);
+                } catch {
+                    // ถ้าแปลงไม่ได้ ใช้ URL โดยตรง
                     setOrganizationLogo(currentCompany.organizationLogoUrl);
                 }
             } else {
@@ -184,9 +200,8 @@ const Header: React.FC = () => {
         try {
             await signOut();
             setShowDropdown(false);
-        } catch (error) {
-            console.error('Logout error:', error);
-            alert('เกิดข้อผิดพลาดในการ Logout');
+        } catch {
+            showToast('เกิดข้อผิดพลาดในการ Logout', 'error');
         } finally {
             setIsLoggingOut(false);
         }
@@ -218,7 +233,7 @@ const Header: React.FC = () => {
         try {
             setLinkLoading(true);
             await linkWithEmailPassword(user?.email || '', password);
-            alert('✅ เพิ่มรหัสผ่านสำเร็จ! ตอนนี้คุณสามารถ Login ด้วย Email/Password ได้แล้ว');
+            showToast('เพิ่มรหัสผ่านสำเร็จ! ตอนนี้คุณสามารถ Login ด้วย Email/Password ได้แล้ว', 'success');
             setShowPasswordModal(false);
             setPassword('');
             setConfirmPassword('');
@@ -261,7 +276,7 @@ const Header: React.FC = () => {
         try {
             setChangePasswordLoading(true);
             await changePassword(currentPassword, newPassword);
-            alert('✅ เปลี่ยนรหัสผ่านสำเร็จ!');
+            showToast('เปลี่ยนรหัสผ่านสำเร็จ!', 'success');
             setShowChangePasswordModal(false);
             setCurrentPassword('');
             setNewPassword('');
@@ -278,16 +293,16 @@ const Header: React.FC = () => {
      */
     const handleSendResetEmail = async () => {
         if (!user?.email) {
-            alert('❌ ไม่พบอีเมลของผู้ใช้');
+            showToast('ไม่พบอีเมลของผู้ใช้', 'error');
             return;
         }
 
         try {
             await sendPasswordReset(user.email);
-            alert(`✅ ส่งอีเมลรีเซ็ตรหัสผ่านไปที่ ${user.email} แล้ว\n\nกรุณาตรวจสอบอีเมลของคุณ`);
+            showToast(`ส่งอีเมลรีเซ็ตรหัสผ่านไปที่ ${user.email} แล้ว กรุณาตรวจสอบอีเมลของคุณ`, 'success');
             setShowChangePasswordModal(false);
         } catch (err: any) {
-            alert(`❌ ${err.message || 'ไม่สามารถส่งอีเมลได้'}`);
+            showToast(err.message || 'ไม่สามารถส่งอีเมลได้', 'error');
         }
     };
 
@@ -296,7 +311,7 @@ const Header: React.FC = () => {
      */
     const handleShowQuota = async () => {
         if (!currentCompany?.id) {
-            alert('❌ ไม่พบข้อมูลบริษัท');
+            showToast('ไม่พบข้อมูลบริษัท', 'error');
             return;
         }
 
@@ -308,9 +323,8 @@ const Header: React.FC = () => {
         try {
             const quotaData = await getQuota(currentCompany.id);
             setQuota(quotaData);
-        } catch (error) {
-            console.error('❌ โหลดข้อมูล Quota ล้มเหลว:', error);
-            alert('❌ ไม่สามารถโหลดข้อมูล Quota ได้');
+        } catch {
+            showToast('ไม่สามารถโหลดข้อมูล Quota ได้', 'error');
         } finally {
             setQuotaLoading(false);
         }
@@ -321,8 +335,6 @@ const Header: React.FC = () => {
      * เก็บ Base64 ใน Firestore โดยตรง (ไม่ผ่าน Firebase Storage)
      */
     const handleLogoChange = async (logo: string | null, logoUrl: string | null, logoType: LogoType) => {
-        console.log('🎨 [Header] เปลี่ยนโลโก้:', { logoType, hasLogo: !!logo });
-        
         // อัปเดต state ใน Header
         setCompanyLogo(logo);
         setCompanyLogoUrl(logoUrl);
@@ -336,15 +348,13 @@ const Header: React.FC = () => {
                     logoUrl: logoUrl,  // เก็บไว้เพื่อ backwards compatibility
                     logoType: logoType,
                 });
-                console.log('✅ [Header] บันทึกโลโก้ Base64 สำเร็จ');
                 
                 // รีเฟรชข้อมูลบริษัท
                 if (refreshCompanies) {
                     await refreshCompanies();
                 }
-            } catch (error) {
-                console.error('❌ [Header] บันทึกโลโก้ล้มเหลว:', error);
-                alert('❌ ไม่สามารถบันทึกโลโก้ได้');
+            } catch {
+                showToast('ไม่สามารถบันทึกโลโก้ได้', 'error');
             }
         }
     };
@@ -361,10 +371,8 @@ const Header: React.FC = () => {
             await updateCompany(currentCompany.id, {
                 defaultLogoUrl: logoUrl,
             });
-            console.log('✅ [Header] ตั้งค่า default logo สำเร็จ');
-            alert('✅ ตั้งค่า default logo สำเร็จ');
+            showToast('ตั้งค่า default logo สำเร็จ', 'success');
         } catch (error) {
-            console.error('❌ [Header] ตั้งค่า default logo ล้มเหลว:', error);
             throw error;
         }
     };
@@ -407,16 +415,14 @@ const Header: React.FC = () => {
                 branchCode: data.branchCode || '00000',
                 branchName: data.branchName || 'สำนักงานใหญ่',
             });
-            console.log('✅ [Header] บันทึกข้อมูลบริษัทสำเร็จ');
             
             // รีเฟรชข้อมูลบริษัทจาก Context
             if (refreshCompanies) {
                 await refreshCompanies();
             }
             
-            alert('✅ บันทึกข้อมูลบริษัทสำเร็จ');
+            showToast('บันทึกข้อมูลบริษัทสำเร็จ', 'success');
         } catch (error) {
-            console.error('❌ [Header] บันทึกข้อมูลบริษัทล้มเหลว:', error);
             throw error;
         }
     };
@@ -439,8 +445,55 @@ const Header: React.FC = () => {
         setShowMobileMenu(false);
     };
 
+    // Toast notification colors and icons
+    const notificationColors: Record<typeof notification.type, string> = {
+        info: 'bg-blue-500',
+        success: 'bg-green-500',
+        error: 'bg-red-500',
+        warning: 'bg-amber-500',
+    };
+    
+    const notificationIcons: Record<typeof notification.type, string> = {
+        info: 'ℹ️',
+        success: '✅',
+        error: '❌',
+        warning: '⚠️',
+    };
+
     return (
         <>
+            {/* Toast Notification */}
+            {notification.show && (
+                <>
+                    <div className={`fixed top-5 right-2 sm:right-5 ${notificationColors[notification.type]} text-white py-3 px-4 sm:px-5 rounded-xl shadow-2xl z-[9999] text-sm sm:text-base max-w-[calc(100vw-1rem)] sm:max-w-md flex items-center gap-3 border border-white/20 animate-fade-in-down`}>
+                        <span className="text-xl">{notificationIcons[notification.type]}</span>
+                        <span className="flex-1">{notification.message}</span>
+                        <button 
+                            onClick={() => setNotification({ ...notification, show: false })}
+                            className="text-white/80 hover:text-white transition-colors ml-2"
+                            aria-label="Close notification"
+                        >
+                            ✕
+                        </button>
+                    </div>
+                    {/* CSS Animation for toast */}
+                    <style>{`
+                        @keyframes fade-in-down {
+                            from {
+                                opacity: 0;
+                                transform: translateY(-20px);
+                            }
+                            to {
+                                opacity: 1;
+                                transform: translateY(0);
+                            }
+                        }
+                        .animate-fade-in-down {
+                            animation: fade-in-down 0.3s ease-out forwards;
+                        }
+                    `}</style>
+                </>
+            )}
             <header className="bg-white dark:bg-slate-800 shadow-md sticky top-0 z-30 transition-colors">
                 <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-3 md:py-4">
                 <div className="flex items-center justify-between">
@@ -538,13 +591,13 @@ const Header: React.FC = () => {
                                                     {/* แสดง providers ที่ link แล้ว */}
                                                     <div className="flex flex-wrap gap-1 mt-2">
                                                         {linkedProviders.hasGoogle && (
-                                                            <span className="px-2 py-0.5 bg-blue-100 text-blue-700 rounded-full text-xs">Google</span>
+                                                            <span className="px-2 py-0.5 bg-blue-100 dark:bg-blue-900/30 text-blue-700 dark:text-blue-300 rounded-full text-xs">Google</span>
                                                         )}
                                                         {linkedProviders.hasEmail && (
-                                                            <span className="px-2 py-0.5 bg-purple-100 text-purple-700 rounded-full text-xs">Email</span>
+                                                            <span className="px-2 py-0.5 bg-purple-100 dark:bg-purple-900/30 text-purple-700 dark:text-purple-300 rounded-full text-xs">Email</span>
                                                         )}
                                                         {linkedProviders.hasPhone && (
-                                                            <span className="px-2 py-0.5 bg-green-100 text-green-700 rounded-full text-xs">Phone</span>
+                                                            <span className="px-2 py-0.5 bg-green-100 dark:bg-green-900/30 text-green-700 dark:text-green-300 rounded-full text-xs">Phone</span>
                                                         )}
                                                     </div>
                                                 </div>
@@ -561,8 +614,8 @@ const Header: React.FC = () => {
                                                             <p className="text-xs text-gray-500 dark:text-gray-400 font-medium">{t('header.currentOrganization')}</p>
                                                             <div className={`px-2 py-1 rounded text-xs font-medium ${
                                                                 isAdmin 
-                                                                    ? 'bg-amber-100 text-amber-800 border border-amber-200' 
-                                                                    : 'bg-blue-100 text-blue-800 border border-blue-200'
+                                                                    ? 'bg-amber-100 dark:bg-amber-900/30 text-amber-800 dark:text-amber-300 border border-amber-200 dark:border-amber-700' 
+                                                                    : 'bg-blue-100 dark:bg-blue-900/30 text-blue-800 dark:text-blue-300 border border-blue-200 dark:border-blue-700'
                                                             }`}>
                                                                 {isAdmin ? <><Crown className="w-3 h-3 inline mr-0.5" /> {t('header.admin')}</> : <><User className="w-3 h-3 inline mr-0.5" /> {t('header.member')}</>}
                                                             </div>
@@ -585,7 +638,7 @@ const Header: React.FC = () => {
                                                         <Link2 className="w-5 h-5" />
                                                         <span className="font-medium">{t('auth.accountLinking')}</span>
                                                     </div>
-                                                    <span className="text-xs px-2 py-0.5 bg-cyan-100 text-cyan-700 rounded-full">
+                                                    <span className="text-xs px-2 py-0.5 bg-cyan-100 dark:bg-cyan-900/30 text-cyan-700 dark:text-cyan-300 rounded-full">
                                                         {[linkedProviders.hasGoogle, linkedProviders.hasEmail, linkedProviders.hasPhone].filter(Boolean).length}/3
                                                     </span>
                                                 </button>
@@ -753,7 +806,7 @@ const Header: React.FC = () => {
                                                 <button
                                                     onClick={handleLogout}
                                                     disabled={isLoggingOut}
-                                                    className="w-full px-4 py-3 text-left text-sm text-red-600 hover:bg-red-50 transition-colors duration-200 flex items-center gap-3 disabled:opacity-50 disabled:cursor-not-allowed"
+                                                    className="w-full px-4 py-3 text-left text-sm text-red-600 dark:text-red-400 hover:bg-red-50 dark:hover:bg-red-900/30 transition-colors duration-200 flex items-center gap-3 disabled:opacity-50 disabled:cursor-not-allowed"
                                                 >
                                                     {isLoggingOut ? (
                                                         <>
@@ -780,11 +833,11 @@ const Header: React.FC = () => {
                                 {/* Mobile Hamburger Button */}
                                 <button
                                     onClick={() => setShowMobileMenu(!showMobileMenu)}
-                                    className="md:hidden p-2 rounded-lg hover:bg-gray-100 transition-colors duration-200 flex-shrink-0"
+                                    className="md:hidden p-2 rounded-lg hover:bg-gray-100 dark:hover:bg-slate-700 transition-colors duration-200 flex-shrink-0"
                                     aria-label="Menu"
                                 >
                                     <svg 
-                                        className="w-6 h-6 text-gray-700" 
+                                        className="w-6 h-6 text-gray-700 dark:text-gray-300" 
                                         fill="none" 
                                         stroke="currentColor" 
                                         viewBox="0 0 24 24"
@@ -1183,10 +1236,10 @@ const Header: React.FC = () => {
             {/* Password Modal - เพิ่มรหัสผ่าน */}
             {showPasswordModal && (
                 <div className="fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center z-50 p-4">
-                    <div className="bg-white rounded-2xl shadow-2xl max-w-md w-full p-6">
+                    <div className="bg-white dark:bg-slate-800 rounded-2xl shadow-2xl max-w-md w-full p-6">
                         {/* Header */}
                         <div className="flex items-center justify-between mb-4">
-                            <h3 className="text-xl font-bold text-gray-800">
+                            <h3 className="text-xl font-bold text-gray-800 dark:text-gray-100">
                                 เพิ่มรหัสผ่าน
                             </h3>
                             <button
@@ -1196,7 +1249,7 @@ const Header: React.FC = () => {
                                     setConfirmPassword('');
                                     setLinkError(null);
                                 }}
-                                className="text-gray-400 hover:text-gray-600 transition-colors"
+                                className="text-gray-400 hover:text-gray-600 dark:hover:text-gray-300 transition-colors"
                             >
                                 <svg className="w-6 h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                                     <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M6 18L18 6M6 6l12 12" />
@@ -1207,11 +1260,11 @@ const Header: React.FC = () => {
                         {/* Content */}
                         <div className="space-y-4">
                             {/* ข้อความแจ้งเตือน */}
-                            <div className="bg-blue-50 border border-blue-200 rounded-lg p-4">
-                                <p className="text-sm text-blue-800">
+                            <div className="bg-blue-50 dark:bg-blue-900/30 border border-blue-200 dark:border-blue-800 rounded-lg p-4">
+                                <p className="text-sm text-blue-800 dark:text-blue-300">
                                     <strong>อีเมล:</strong> {user?.email}
                                 </p>
-                                <p className="text-sm text-blue-800 mt-2">
+                                <p className="text-sm text-blue-800 dark:text-blue-300 mt-2">
                                     ตั้งรหัสผ่านเพื่อให้สามารถ Login ด้วย Email/Password ได้
                                 </p>
                             </div>
@@ -1220,7 +1273,7 @@ const Header: React.FC = () => {
                             <form onSubmit={handleLinkPassword} className="space-y-4">
                                 {/* Password Input */}
                                 <div>
-                                    <label className="block text-sm font-medium text-gray-700 mb-1">
+                                    <label className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-1">
                                         รหัสผ่าน
                                     </label>
                                     <input
@@ -1228,7 +1281,7 @@ const Header: React.FC = () => {
                                         value={password}
                                         onChange={(e) => setPassword(e.target.value)}
                                         placeholder="อย่างน้อย 6 ตัวอักษร"
-                                        className="w-full px-4 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent"
+                                        className="w-full px-4 py-2 border border-gray-300 dark:border-slate-600 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent bg-white dark:bg-slate-700 text-gray-900 dark:text-gray-100"
                                         disabled={linkLoading}
                                         required
                                         minLength={6}
@@ -1237,7 +1290,7 @@ const Header: React.FC = () => {
 
                                 {/* Confirm Password Input */}
                                 <div>
-                                    <label className="block text-sm font-medium text-gray-700 mb-1">
+                                    <label className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-1">
                                         ยืนยันรหัสผ่าน
                                     </label>
                                     <input
@@ -1245,7 +1298,7 @@ const Header: React.FC = () => {
                                         value={confirmPassword}
                                         onChange={(e) => setConfirmPassword(e.target.value)}
                                         placeholder="กรอกรหัสผ่านอีกครั้ง"
-                                        className="w-full px-4 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent"
+                                        className="w-full px-4 py-2 border border-gray-300 dark:border-slate-600 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent bg-white dark:bg-slate-700 text-gray-900 dark:text-gray-100"
                                         disabled={linkLoading}
                                         required
                                         minLength={6}
@@ -1254,8 +1307,8 @@ const Header: React.FC = () => {
 
                                 {/* Error Message */}
                                 {linkError && (
-                                    <div className="p-3 bg-red-50 border border-red-200 rounded-lg">
-                                        <p className="text-sm text-red-600">{linkError}</p>
+                                    <div className="p-3 bg-red-50 dark:bg-red-900/30 border border-red-200 dark:border-red-800 rounded-lg">
+                                        <p className="text-sm text-red-600 dark:text-red-400">{linkError}</p>
                                     </div>
                                 )}
 
@@ -1270,8 +1323,8 @@ const Header: React.FC = () => {
                             </form>
 
                             {/* ข้อมูลเพิ่มเติม */}
-                            <div className="bg-gray-50 rounded-lg p-3">
-                                <p className="text-xs text-gray-600">
+                            <div className="bg-gray-50 dark:bg-slate-700 rounded-lg p-3">
+                                <p className="text-xs text-gray-600 dark:text-gray-400">
                                     <Lightbulb className="w-4 h-4 inline text-amber-500" /> <strong>หลังจากเพิ่มรหัสผ่านแล้ว</strong>
                                     <br />
                                     คุณสามารถ Login ได้ทั้ง Google และ Email/Password
@@ -1285,10 +1338,10 @@ const Header: React.FC = () => {
             {/* Change Password Modal - เปลี่ยนรหัสผ่าน */}
             {showChangePasswordModal && (
                 <div className="fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center z-50 p-4">
-                    <div className="bg-white rounded-2xl shadow-2xl max-w-md w-full p-6">
+                    <div className="bg-white dark:bg-slate-800 rounded-2xl shadow-2xl max-w-md w-full p-6">
                         {/* Header */}
                         <div className="flex items-center justify-between mb-4">
-                            <h3 className="text-xl font-bold text-gray-800">
+                            <h3 className="text-xl font-bold text-gray-800 dark:text-gray-100">
                                 เปลี่ยนรหัสผ่าน
                             </h3>
                             <button
@@ -1299,7 +1352,7 @@ const Header: React.FC = () => {
                                     setConfirmNewPassword('');
                                     setChangePasswordError(null);
                                 }}
-                                className="text-gray-400 hover:text-gray-600 transition-colors"
+                                className="text-gray-400 hover:text-gray-600 dark:hover:text-gray-300 transition-colors"
                             >
                                 <svg className="w-6 h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                                     <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M6 18L18 6M6 6l12 12" />
@@ -1310,11 +1363,11 @@ const Header: React.FC = () => {
                         {/* Content */}
                         <div className="space-y-4">
                             {/* ข้อความแจ้งเตือน */}
-                            <div className="bg-amber-50 border border-amber-200 rounded-lg p-4">
-                                <p className="text-sm text-amber-800">
+                            <div className="bg-amber-50 dark:bg-amber-900/30 border border-amber-200 dark:border-amber-800 rounded-lg p-4">
+                                <p className="text-sm text-amber-800 dark:text-amber-300">
                                     <strong>อีเมล:</strong> {user?.email}
                                 </p>
-                                <p className="text-sm text-amber-800 mt-2">
+                                <p className="text-sm text-amber-800 dark:text-amber-300 mt-2">
                                     กรุณากรอกรหัสผ่านปัจจุบันและรหัสผ่านใหม่
                                 </p>
                             </div>
@@ -1323,7 +1376,7 @@ const Header: React.FC = () => {
                             <form onSubmit={handleChangePassword} className="space-y-4">
                                 {/* Current Password Input */}
                                 <div>
-                                    <label className="block text-sm font-medium text-gray-700 mb-1">
+                                    <label className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-1">
                                         รหัสผ่านปัจจุบัน
                                     </label>
                                     <input
@@ -1331,7 +1384,7 @@ const Header: React.FC = () => {
                                         value={currentPassword}
                                         onChange={(e) => setCurrentPassword(e.target.value)}
                                         placeholder="กรอกรหัสผ่านเดิม"
-                                        className="w-full px-4 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-amber-500 focus:border-transparent"
+                                        className="w-full px-4 py-2 border border-gray-300 dark:border-slate-600 rounded-lg focus:ring-2 focus:ring-amber-500 focus:border-transparent bg-white dark:bg-slate-700 text-gray-900 dark:text-gray-100"
                                         disabled={changePasswordLoading}
                                         required
                                     />
@@ -1339,7 +1392,7 @@ const Header: React.FC = () => {
 
                                 {/* New Password Input */}
                                 <div>
-                                    <label className="block text-sm font-medium text-gray-700 mb-1">
+                                    <label className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-1">
                                         รหัสผ่านใหม่
                                     </label>
                                     <input
@@ -1347,7 +1400,7 @@ const Header: React.FC = () => {
                                         value={newPassword}
                                         onChange={(e) => setNewPassword(e.target.value)}
                                         placeholder="อย่างน้อย 6 ตัวอักษร"
-                                        className="w-full px-4 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-amber-500 focus:border-transparent"
+                                        className="w-full px-4 py-2 border border-gray-300 dark:border-slate-600 rounded-lg focus:ring-2 focus:ring-amber-500 focus:border-transparent bg-white dark:bg-slate-700 text-gray-900 dark:text-gray-100"
                                         disabled={changePasswordLoading}
                                         required
                                         minLength={6}
@@ -1356,7 +1409,7 @@ const Header: React.FC = () => {
 
                                 {/* Confirm New Password Input */}
                                 <div>
-                                    <label className="block text-sm font-medium text-gray-700 mb-1">
+                                    <label className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-1">
                                         ยืนยันรหัสผ่านใหม่
                                     </label>
                                     <input
@@ -1364,7 +1417,7 @@ const Header: React.FC = () => {
                                         value={confirmNewPassword}
                                         onChange={(e) => setConfirmNewPassword(e.target.value)}
                                         placeholder="กรอกรหัสผ่านใหม่อีกครั้ง"
-                                        className="w-full px-4 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-amber-500 focus:border-transparent"
+                                        className="w-full px-4 py-2 border border-gray-300 dark:border-slate-600 rounded-lg focus:ring-2 focus:ring-amber-500 focus:border-transparent bg-white dark:bg-slate-700 text-gray-900 dark:text-gray-100"
                                         disabled={changePasswordLoading}
                                         required
                                         minLength={6}
@@ -1373,8 +1426,8 @@ const Header: React.FC = () => {
 
                                 {/* Error Message */}
                                 {changePasswordError && (
-                                    <div className="p-3 bg-red-50 border border-red-200 rounded-lg">
-                                        <p className="text-sm text-red-600">{changePasswordError}</p>
+                                    <div className="p-3 bg-red-50 dark:bg-red-900/30 border border-red-200 dark:border-red-800 rounded-lg">
+                                        <p className="text-sm text-red-600 dark:text-red-400">{changePasswordError}</p>
                                     </div>
                                 )}
 
@@ -1383,7 +1436,7 @@ const Header: React.FC = () => {
                                     <button
                                         type="button"
                                         onClick={handleSendResetEmail}
-                                        className="text-sm text-blue-600 hover:text-blue-800 underline"
+                                        className="text-sm text-blue-600 dark:text-blue-400 hover:text-blue-800 dark:hover:text-blue-300 underline"
                                     >
                                         ลืมรหัสผ่าน? ส่งอีเมลรีเซ็ต
                                     </button>
@@ -1400,8 +1453,8 @@ const Header: React.FC = () => {
                             </form>
 
                             {/* ข้อมูลเพิ่มเติม */}
-                            <div className="bg-gray-50 rounded-lg p-3">
-                                <p className="text-xs text-gray-600">
+                            <div className="bg-gray-50 dark:bg-slate-700 rounded-lg p-3">
+                                <p className="text-xs text-gray-600 dark:text-gray-400">
                                     <Lightbulb className="w-4 h-4 inline text-amber-500" /> <strong>หมายเหตุ</strong>
                                     <br />
                                     หลังเปลี่ยนรหัสผ่านแล้ว ให้ใช้รหัสผ่านใหม่ในการ Login ครั้งต่อไป
@@ -1415,15 +1468,15 @@ const Header: React.FC = () => {
             {/* Quota Modal - แสดงข้อมูล Quota */}
             {showQuotaModal && (
                 <div className="fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center z-50 p-4">
-                    <div className="bg-white rounded-2xl shadow-2xl max-w-2xl w-full p-6 max-h-[90vh] overflow-y-auto">
+                    <div className="bg-white dark:bg-slate-800 rounded-2xl shadow-2xl max-w-2xl w-full p-6 max-h-[90vh] overflow-y-auto">
                         {/* Header */}
                         <div className="flex items-center justify-between mb-6">
-                            <h3 className="text-2xl font-bold text-gray-800">
+                            <h3 className="text-2xl font-bold text-gray-800 dark:text-gray-100">
                                 ข้อมูลโควตาของบริษัท
                             </h3>
                             <button
                                 onClick={() => setShowQuotaModal(false)}
-                                className="text-gray-400 hover:text-gray-600 transition-colors"
+                                className="text-gray-400 hover:text-gray-600 dark:hover:text-gray-300 transition-colors"
                             >
                                 <svg className="w-6 h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                                     <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M6 18L18 6M6 6l12 12" />
@@ -1438,28 +1491,28 @@ const Header: React.FC = () => {
                                     <circle className="opacity-25" cx="12" cy="12" r="10" stroke="currentColor" strokeWidth="4"></circle>
                                     <path className="opacity-75" fill="currentColor" d="M4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4zm2 5.291A7.962 7.962 0 014 12H0c0 3.042 1.135 5.824 3 7.938l3-2.647z"></path>
                                 </svg>
-                                <p className="text-gray-600">กำลังโหลดข้อมูล...</p>
+                                <p className="text-gray-600 dark:text-gray-400">กำลังโหลดข้อมูล...</p>
                             </div>
                         ) : quota ? (
                             <div className="space-y-6">
                                 {/* ข้อมูลบริษัท */}
-                                <div className="bg-gradient-to-br from-purple-50 to-indigo-50 rounded-lg p-4 border border-purple-200">
-                                    <p className="text-sm text-purple-600 font-medium mb-1">บริษัท</p>
-                                    <p className="text-lg font-bold text-gray-800">{currentCompany?.name}</p>
+                                <div className="bg-gradient-to-br from-purple-50 to-indigo-50 dark:from-purple-900/30 dark:to-indigo-900/30 rounded-lg p-4 border border-purple-200 dark:border-purple-800">
+                                    <p className="text-sm text-purple-600 dark:text-purple-400 font-medium mb-1">บริษัท</p>
+                                    <p className="text-lg font-bold text-gray-800 dark:text-gray-100">{currentCompany?.name}</p>
                                 </div>
 
                                 {/* แผนปัจจุบัน */}
-                                <div className="bg-gradient-to-r from-amber-50 to-orange-50 rounded-lg p-4 border border-amber-200">
+                                <div className="bg-gradient-to-r from-amber-50 to-orange-50 dark:from-amber-900/30 dark:to-orange-900/30 rounded-lg p-4 border border-amber-200 dark:border-amber-800">
                                     <div className="flex items-center justify-between">
                                         <div>
-                                            <p className="text-sm text-amber-600 font-medium mb-1">แผนปัจจุบัน</p>
-                                            <p className="text-2xl font-bold text-gray-800 capitalize">{quota.plan}</p>
+                                            <p className="text-sm text-amber-600 dark:text-amber-400 font-medium mb-1">แผนปัจจุบัน</p>
+                                            <p className="text-2xl font-bold text-gray-800 dark:text-gray-100 capitalize">{quota.plan}</p>
                                         </div>
                                         <div className={`px-4 py-2 rounded-full text-sm font-bold flex items-center gap-1.5 ${
-                                            quota.status === 'active' ? 'bg-green-100 text-green-700' :
-                                            quota.status === 'trial' ? 'bg-blue-100 text-blue-700' :
-                                            quota.status === 'expired' ? 'bg-red-100 text-red-700' :
-                                            'bg-gray-100 text-gray-700'
+                                            quota.status === 'active' ? 'bg-green-100 dark:bg-green-900/30 text-green-700 dark:text-green-300' :
+                                            quota.status === 'trial' ? 'bg-blue-100 dark:bg-blue-900/30 text-blue-700 dark:text-blue-300' :
+                                            quota.status === 'expired' ? 'bg-red-100 dark:bg-red-900/30 text-red-700 dark:text-red-300' :
+                                            'bg-gray-100 dark:bg-gray-700 text-gray-700 dark:text-gray-300'
                                         }`}>
                                             {quota.status === 'active' ? <><Check className="w-4 h-4" /> Active</> :
                                              quota.status === 'trial' ? <><RefreshCw className="w-4 h-4" /> Trial</> :
@@ -1471,19 +1524,19 @@ const Header: React.FC = () => {
 
                                 {/* โควตาการใช้งาน */}
                                 <div className="space-y-4">
-                                    <h4 className="text-lg font-bold text-gray-800 flex items-center gap-2">
+                                    <h4 className="text-lg font-bold text-gray-800 dark:text-gray-100 flex items-center gap-2">
                                         <TrendingUp className="w-5 h-5 text-blue-600" /> การใช้งาน
                                     </h4>
 
                                     {/* ผู้ใช้ */}
-                                    <div className="bg-white border border-gray-200 rounded-lg p-4">
+                                    <div className="bg-white dark:bg-slate-700 border border-gray-200 dark:border-slate-600 rounded-lg p-4">
                                         <div className="flex items-center justify-between mb-2">
-                                            <span className="text-sm font-medium text-gray-600 flex items-center gap-1"><Users className="w-4 h-4" /> ผู้ใช้</span>
-                                            <span className={`text-sm font-bold ${quota.currentUsers >= quota.maxUsers && quota.maxUsers !== -1 ? 'text-red-600' : 'text-gray-800'}`}>
+                                            <span className="text-sm font-medium text-gray-600 dark:text-gray-400 flex items-center gap-1"><Users className="w-4 h-4" /> ผู้ใช้</span>
+                                            <span className={`text-sm font-bold ${quota.currentUsers >= quota.maxUsers && quota.maxUsers !== -1 ? 'text-red-600 dark:text-red-400' : 'text-gray-800 dark:text-gray-200'}`}>
                                                 {quota.currentUsers} / {quota.maxUsers === -1 ? '∞' : quota.maxUsers}
                                             </span>
                                         </div>
-                                        <div className="w-full bg-gray-200 rounded-full h-2.5">
+                                        <div className="w-full bg-gray-200 dark:bg-slate-600 rounded-full h-2.5">
                                             <div 
                                                 className={`h-2.5 rounded-full ${quota.currentUsers >= quota.maxUsers && quota.maxUsers !== -1 ? 'bg-red-500' : 'bg-blue-500'}`}
                                                 style={{ width: quota.maxUsers === -1 ? '0%' : `${Math.min((quota.currentUsers / quota.maxUsers) * 100, 100)}%` }}
@@ -1492,14 +1545,14 @@ const Header: React.FC = () => {
                                     </div>
 
                                     {/* เอกสาร/เดือน */}
-                                    <div className="bg-white border border-gray-200 rounded-lg p-4">
+                                    <div className="bg-white dark:bg-slate-700 border border-gray-200 dark:border-slate-600 rounded-lg p-4">
                                         <div className="flex items-center justify-between mb-2">
-                                            <span className="text-sm font-medium text-gray-600 flex items-center gap-1"><FileText className="w-4 h-4" /> เอกสาร/เดือน</span>
-                                            <span className={`text-sm font-bold ${quota.currentDocuments >= quota.maxDocuments && quota.maxDocuments !== -1 ? 'text-red-600' : 'text-gray-800'}`}>
+                                            <span className="text-sm font-medium text-gray-600 dark:text-gray-400 flex items-center gap-1"><FileText className="w-4 h-4" /> เอกสาร/เดือน</span>
+                                            <span className={`text-sm font-bold ${quota.currentDocuments >= quota.maxDocuments && quota.maxDocuments !== -1 ? 'text-red-600 dark:text-red-400' : 'text-gray-800 dark:text-gray-200'}`}>
                                                 {quota.currentDocuments} / {quota.maxDocuments === -1 ? '∞' : quota.maxDocuments}
                                             </span>
                                         </div>
-                                        <div className="w-full bg-gray-200 rounded-full h-2.5">
+                                        <div className="w-full bg-gray-200 dark:bg-slate-600 rounded-full h-2.5">
                                             <div 
                                                 className={`h-2.5 rounded-full ${quota.currentDocuments >= quota.maxDocuments && quota.maxDocuments !== -1 ? 'bg-red-500' : 'bg-green-500'}`}
                                                 style={{ width: quota.maxDocuments === -1 ? '0%' : `${Math.min((quota.currentDocuments / quota.maxDocuments) * 100, 100)}%` }}
@@ -1508,14 +1561,14 @@ const Header: React.FC = () => {
                                     </div>
 
                                     {/* โลโก้ */}
-                                    <div className="bg-white border border-gray-200 rounded-lg p-4">
+                                    <div className="bg-white dark:bg-slate-700 border border-gray-200 dark:border-slate-600 rounded-lg p-4">
                                         <div className="flex items-center justify-between mb-2">
-                                            <span className="text-sm font-medium text-gray-600 flex items-center gap-1"><Palette className="w-4 h-4" /> โลโก้</span>
-                                            <span className={`text-sm font-bold ${quota.currentLogos >= quota.maxLogos && quota.maxLogos !== -1 ? 'text-red-600' : 'text-gray-800'}`}>
+                                            <span className="text-sm font-medium text-gray-600 dark:text-gray-400 flex items-center gap-1"><Palette className="w-4 h-4" /> โลโก้</span>
+                                            <span className={`text-sm font-bold ${quota.currentLogos >= quota.maxLogos && quota.maxLogos !== -1 ? 'text-red-600 dark:text-red-400' : 'text-gray-800 dark:text-gray-200'}`}>
                                                 {quota.currentLogos} / {quota.maxLogos === -1 ? '∞' : quota.maxLogos}
                                             </span>
                                         </div>
-                                        <div className="w-full bg-gray-200 rounded-full h-2.5">
+                                        <div className="w-full bg-gray-200 dark:bg-slate-600 rounded-full h-2.5">
                                             <div 
                                                 className={`h-2.5 rounded-full ${quota.currentLogos >= quota.maxLogos && quota.maxLogos !== -1 ? 'bg-red-500' : 'bg-purple-500'}`}
                                                 style={{ width: quota.maxLogos === -1 ? '0%' : `${Math.min((quota.currentLogos / quota.maxLogos) * 100, 100)}%` }}
@@ -1524,14 +1577,14 @@ const Header: React.FC = () => {
                                     </div>
 
                                     {/* Storage */}
-                                    <div className="bg-white border border-gray-200 rounded-lg p-4">
+                                    <div className="bg-white dark:bg-slate-700 border border-gray-200 dark:border-slate-600 rounded-lg p-4">
                                         <div className="flex items-center justify-between mb-2">
-                                            <span className="text-sm font-medium text-gray-600 flex items-center gap-1"><HardDrive className="w-4 h-4" /> พื้นที่จัดเก็บ</span>
-                                            <span className={`text-sm font-bold ${quota.currentStorageMB >= quota.maxStorageMB && quota.maxStorageMB !== -1 ? 'text-red-600' : 'text-gray-800'}`}>
+                                            <span className="text-sm font-medium text-gray-600 dark:text-gray-400 flex items-center gap-1"><HardDrive className="w-4 h-4" /> พื้นที่จัดเก็บ</span>
+                                            <span className={`text-sm font-bold ${quota.currentStorageMB >= quota.maxStorageMB && quota.maxStorageMB !== -1 ? 'text-red-600 dark:text-red-400' : 'text-gray-800 dark:text-gray-200'}`}>
                                                 {quota.currentStorageMB.toFixed(1)} MB / {quota.maxStorageMB === -1 ? '∞' : `${quota.maxStorageMB} MB`}
                                             </span>
                                         </div>
-                                        <div className="w-full bg-gray-200 rounded-full h-2.5">
+                                        <div className="w-full bg-gray-200 dark:bg-slate-600 rounded-full h-2.5">
                                             <div 
                                                 className={`h-2.5 rounded-full ${quota.currentStorageMB >= quota.maxStorageMB && quota.maxStorageMB !== -1 ? 'bg-red-500' : 'bg-indigo-500'}`}
                                                 style={{ width: quota.maxStorageMB === -1 ? '0%' : `${Math.min((quota.currentStorageMB / quota.maxStorageMB) * 100, 100)}%` }}
@@ -1542,47 +1595,47 @@ const Header: React.FC = () => {
 
                                 {/* Features */}
                                 <div className="space-y-3">
-                                    <h4 className="text-lg font-bold text-gray-800 flex items-center gap-2">
+                                    <h4 className="text-lg font-bold text-gray-800 dark:text-gray-100 flex items-center gap-2">
                                         <Zap className="w-5 h-5 text-amber-500" /> ฟีเจอร์
                                     </h4>
                                     <div className="grid grid-cols-2 gap-3">
                                         {quota.features.multipleProfiles && (
-                                            <div className="flex items-center gap-2 text-sm text-gray-700">
+                                            <div className="flex items-center gap-2 text-sm text-gray-700 dark:text-gray-300">
                                                 <Check className="w-4 h-4 text-green-500" /> Multiple Profiles
                                             </div>
                                         )}
                                         {quota.features.apiAccess && (
-                                            <div className="flex items-center gap-2 text-sm text-gray-700">
+                                            <div className="flex items-center gap-2 text-sm text-gray-700 dark:text-gray-300">
                                                 <Check className="w-4 h-4 text-green-500" /> API Access
                                             </div>
                                         )}
                                         {quota.features.customDomain && (
-                                            <div className="flex items-center gap-2 text-sm text-gray-700">
+                                            <div className="flex items-center gap-2 text-sm text-gray-700 dark:text-gray-300">
                                                 <Check className="w-4 h-4 text-green-500" /> Custom Domain
                                             </div>
                                         )}
                                         {quota.features.prioritySupport && (
-                                            <div className="flex items-center gap-2 text-sm text-gray-700">
+                                            <div className="flex items-center gap-2 text-sm text-gray-700 dark:text-gray-300">
                                                 <Check className="w-4 h-4 text-green-500" /> Priority Support
                                             </div>
                                         )}
                                         {quota.features.exportPDF && (
-                                            <div className="flex items-center gap-2 text-sm text-gray-700">
+                                            <div className="flex items-center gap-2 text-sm text-gray-700 dark:text-gray-300">
                                                 <Check className="w-4 h-4 text-green-500" /> Export PDF
                                             </div>
                                         )}
                                         {quota.features.exportExcel && (
-                                            <div className="flex items-center gap-2 text-sm text-gray-700">
+                                            <div className="flex items-center gap-2 text-sm text-gray-700 dark:text-gray-300">
                                                 <Check className="w-4 h-4 text-green-500" /> Export Excel
                                             </div>
                                         )}
                                         {quota.features.advancedReports && (
-                                            <div className="flex items-center gap-2 text-sm text-gray-700">
+                                            <div className="flex items-center gap-2 text-sm text-gray-700 dark:text-gray-300">
                                                 <Check className="w-4 h-4 text-green-500" /> Advanced Reports
                                             </div>
                                         )}
                                         {quota.features.customTemplates && (
-                                            <div className="flex items-center gap-2 text-sm text-gray-700">
+                                            <div className="flex items-center gap-2 text-sm text-gray-700 dark:text-gray-300">
                                                 <Check className="w-4 h-4 text-green-500" /> Custom Templates
                                             </div>
                                         )}

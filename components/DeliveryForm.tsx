@@ -1,10 +1,11 @@
 import React, { useRef, useState, useEffect } from 'react';
 import { useTranslation } from 'react-i18next';
 import { DeliveryNoteData, WorkItem, LogoType, EndCustomerProject } from '../types';
-import { formatDateForInput } from '../utils/dateUtils';
 import CustomerSelector from './CustomerSelector';
+import DatePicker from './DatePicker';
 import { generateDocumentNumber } from '../services/documentNumber';
 import { INPUT_LIMITS, NUMBER_LIMITS } from '../utils/inputValidation';
+import { parseNumberInput } from '../utils/numberInput';
 
 export interface DeliveryFormProps {
     data: DeliveryNoteData;
@@ -104,7 +105,6 @@ const DeliveryForm: React.FC<DeliveryFormProps> = ({
     const handleGenerateDocNumber = async (force: boolean = false) => {
         // ป้องกัน double generate
         if (hasGeneratedNumberRef.current && !force) {
-            console.log('⏭️ [DN] Skip generate - already generated');
             return;
         }
         
@@ -113,10 +113,8 @@ const DeliveryForm: React.FC<DeliveryFormProps> = ({
             const newDocNumber = await generateDocumentNumber('delivery');
             handleDataChange('docNumber', newDocNumber);
             hasGeneratedNumberRef.current = true;
-            console.log('✅ [DN] Generated new document number:', newDocNumber);
         } catch (error) {
-            console.error('❌ [DN] Error generating document number:', error);
-            alert(t('form.cannotGenerateDocNumber'));
+            console.error('Error generating document number:', error);
         } finally {
             setIsGeneratingNumber(false);
         }
@@ -126,12 +124,16 @@ const DeliveryForm: React.FC<DeliveryFormProps> = ({
      * Auto-generate เลขที่เอกสารเมื่อฟอร์มว่างหรือเป็นค่า default
      * - ข้าม generate ถ้ากำลังแก้ไขเอกสารเดิม (isEditing = true)
      * - ข้าม generate ถ้ามีเลขเอกสารที่ valid อยู่แล้ว
+     * - ใช้ sessionStorage เก็บเลขที่ generate ไว้ป้องกันการ generate ซ้ำเมื่อ refresh
      */
     useEffect(() => {
+        const SESSION_KEY = 'delivery_docNumber';
+        
         // ถ้ากำลังแก้ไขเอกสารเดิม ไม่ต้อง generate เลขใหม่
         if (isEditing) {
-            console.log('⏭️ [DN] Skip auto-generate - isEditing mode');
             hasGeneratedNumberRef.current = true;
+            // ล้าง sessionStorage เมื่อเข้า edit mode
+            sessionStorage.removeItem(SESSION_KEY);
             return;
         }
         
@@ -139,7 +141,17 @@ const DeliveryForm: React.FC<DeliveryFormProps> = ({
         const hasValidNumber = data.docNumber && data.docNumber.match(/^DN-\d{6}\d{2}$/);
         
         if (hasValidNumber) {
-            console.log('⏭️ [DN] Skip auto-generate - already has valid number:', data.docNumber);
+            hasGeneratedNumberRef.current = true;
+            // บันทึกเลขที่ valid ลง sessionStorage
+            sessionStorage.setItem(SESSION_KEY, data.docNumber);
+            return;
+        }
+        
+        // ตรวจสอบ sessionStorage ว่ามีเลขที่ generate ไว้แล้วหรือไม่
+        const savedDocNumber = sessionStorage.getItem(SESSION_KEY);
+        if (savedDocNumber && savedDocNumber.match(/^DN-\d{6}\d{2}$/)) {
+            // ใช้เลขที่บันทึกไว้
+            handleDataChange('docNumber', savedDocNumber);
             hasGeneratedNumberRef.current = true;
             return;
         }
@@ -149,13 +161,7 @@ const DeliveryForm: React.FC<DeliveryFormProps> = ({
                                   data.docNumber.match(/^DN-\d{4}-\d{3}$/) || // รูปแบบเก่า: DN-2025-001
                                   data.docNumber === '';
         
-        // ถ้า docNumber ว่างเปล่า ให้ reset flag เพื่อให้สามารถสร้างเลขใหม่ได้
-        if (isDefaultOrEmpty) {
-            hasGeneratedNumberRef.current = false;
-        }
-        
         if (isDefaultOrEmpty && !hasGeneratedNumberRef.current && !isGeneratingNumber) {
-            console.log('🔄 [DN] Auto-generating new document number...');
             handleGenerateDocNumber();
         }
     }, [isEditing, data.docNumber]);
@@ -367,7 +373,13 @@ const DeliveryForm: React.FC<DeliveryFormProps> = ({
                 <div className="grid grid-cols-1 md:grid-cols-2 gap-3 sm:gap-4">
                     <div>
                         <label htmlFor="date" className="block text-xs sm:text-sm font-medium text-slate-700 dark:text-slate-200">วันที่</label>
-                        <input type="date" id="date" value={formatDateForInput(data.date)} onChange={(e) => handleDataChange('date', e.target.value ? new Date(e.target.value) : null)} className="mt-1 block w-full rounded-md border-gray-300 shadow-sm focus:border-indigo-500 focus:ring-indigo-500 text-xs sm:text-sm bg-gray-50 dark:bg-slate-700 dark:text-gray-100 dark:border-slate-600" />
+                        <DatePicker
+                            id="date"
+                            value={data.date}
+                            onChange={(date) => handleDataChange('date', date)}
+                            placeholder="เลือกวันที่"
+                            className="mt-1"
+                        />
                     </div>
                     <div>
                         <label htmlFor="project" className="block text-xs sm:text-sm font-medium text-slate-700 dark:text-slate-200">โครงการ/เรื่อง</label>
@@ -395,7 +407,7 @@ const DeliveryForm: React.FC<DeliveryFormProps> = ({
                                         <textarea value={item.description} onChange={(e) => handleItemChange(index, 'description', e.target.value)} rows={2} maxLength={INPUT_LIMITS.itemDescription} className="w-full rounded-md border-gray-300 dark:border-slate-600 shadow-sm focus:border-indigo-300 focus:ring-indigo-200 focus:ring-opacity-50 text-xs sm:text-sm bg-gray-50 dark:bg-slate-700 text-gray-900 dark:text-gray-100"></textarea>
                                     </td>
                                     <td className="px-1 sm:px-2 py-1 whitespace-nowrap">
-                                        <input type="number" value={item.quantity} onChange={(e) => handleItemChange(index, 'quantity', parseFloat(e.target.value) || 0)} inputMode="decimal" min={NUMBER_LIMITS.quantity.min} max={NUMBER_LIMITS.quantity.max} step={NUMBER_LIMITS.quantity.step} className="w-full rounded-md border-gray-300 dark:border-slate-600 shadow-sm focus:border-indigo-300 focus:ring-indigo-200 focus:ring-opacity-50 text-xs sm:text-sm bg-gray-50 dark:bg-slate-700 text-gray-900 dark:text-gray-100" />
+                                        <input type="number" value={item.quantity} onChange={(e) => handleItemChange(index, 'quantity', parseNumberInput(e.target.value))} inputMode="decimal" min={NUMBER_LIMITS.quantity.min} max={NUMBER_LIMITS.quantity.max} step={NUMBER_LIMITS.quantity.step} className="w-full rounded-md border-gray-300 dark:border-slate-600 shadow-sm focus:border-indigo-300 focus:ring-indigo-200 focus:ring-opacity-50 text-xs sm:text-sm bg-gray-50 dark:bg-slate-700 text-gray-900 dark:text-gray-100" />
                                     </td>
                                     <td className="px-1 sm:px-2 py-1 whitespace-nowrap">
                                         <input type="text" value={item.unit} onChange={(e) => handleItemChange(index, 'unit', e.target.value)} maxLength={INPUT_LIMITS.unit} className="w-full rounded-md border-gray-300 dark:border-slate-600 shadow-sm focus:border-indigo-300 focus:ring-indigo-200 focus:ring-opacity-50 text-xs sm:text-sm bg-gray-50 dark:bg-slate-700 text-gray-900 dark:text-gray-100" />

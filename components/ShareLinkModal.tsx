@@ -110,7 +110,7 @@ const ShareLinkModal: React.FC<ShareLinkModalProps> = ({
                     setTimeout(() => setCopiedId(null), 3000);
                 }
                 
-                alert('✅ สร้างลิงก์แชร์สำเร็จ! ลิงก์ถูก copy ไว้แล้ว');
+                console.log('✅ สร้างลิงก์แชร์สำเร็จ! ลิงก์ถูก copy ไว้แล้ว');
             } else {
                 setError(result.error || 'ไม่สามารถสร้างลิงก์แชร์ได้');
             }
@@ -136,7 +136,7 @@ const ShareLinkModal: React.FC<ShareLinkModalProps> = ({
             setCopiedId(shareLinkId);
             setTimeout(() => setCopiedId(null), 3000);
         } catch (err) {
-            alert('ไม่สามารถ copy ลิงก์ได้');
+            console.error('ไม่สามารถ copy ลิงก์ได้', err);
         }
     };
 
@@ -150,7 +150,7 @@ const ShareLinkModal: React.FC<ShareLinkModalProps> = ({
             }
             fetchShareLinks();
         } catch (err) {
-            alert('เกิดข้อผิดพลาด');
+            console.error('เกิดข้อผิดพลาด', err);
         }
     };
 
@@ -162,7 +162,7 @@ const ShareLinkModal: React.FC<ShareLinkModalProps> = ({
             await deleteShareLink(shareLinkId);
             setShareLinks(shareLinks.filter(sl => sl.id !== shareLinkId));
         } catch (err) {
-            alert('ไม่สามารถลบลิงก์แชร์ได้');
+            console.error('ไม่สามารถลบลิงก์แชร์ได้', err);
         }
     };
 

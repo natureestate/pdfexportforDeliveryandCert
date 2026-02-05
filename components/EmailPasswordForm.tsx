@@ -142,17 +142,16 @@ export const EmailPasswordForm: React.FC<EmailPasswordFormProps> = ({ onSuccess 
      */
     const handleForgotPassword = async () => {
         if (!resetEmail) {
-            alert('❌ กรุณากรอกอีเมล');
+            console.warn('กรุณากรอกอีเมล');
             return;
         }
 
         try {
             await sendPasswordReset(resetEmail);
-            alert(`✅ ส่งอีเมลรีเซ็ตรหัสผ่านไปที่ ${resetEmail} แล้ว\n\nกรุณาตรวจสอบอีเมลของคุณ`);
             setShowForgotPassword(false);
             setResetEmail('');
         } catch (err: any) {
-            alert(`❌ ${err.message || 'ไม่สามารถส่งอีเมลได้'}`);
+            console.error('ไม่สามารถส่งอีเมลได้:', err.message || err);
         }
     };
 

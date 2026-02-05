@@ -100,7 +100,6 @@ const TabSettingsModal: React.FC<TabSettingsModalProps> = ({
             await saveTabSettingsForRole(companyId, selectedRole, tabs);
             setHasChanges(false);
             onSaved?.();
-            alert('บันทึกการตั้งค่าสำเร็จ');
         } catch (err) {
             console.error('Error saving tabs:', err);
             setError(err instanceof Error ? err.message : 'ไม่สามารถบันทึกการตั้งค่าได้');
@@ -113,35 +112,35 @@ const TabSettingsModal: React.FC<TabSettingsModalProps> = ({
 
     return (
         <div className="fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center z-50 p-4">
-            <div className="bg-white rounded-xl shadow-2xl max-w-2xl w-full max-h-[90vh] overflow-hidden">
+            <div className="bg-white dark:bg-slate-800 rounded-xl shadow-2xl max-w-2xl w-full max-h-[90vh] overflow-hidden">
                 {/* Header */}
-                <div className="flex items-center justify-between p-4 border-b border-gray-200">
+                <div className="flex items-center justify-between p-4 border-b border-gray-200 dark:border-slate-600">
                     <div className="flex items-center gap-3">
                         <div className="p-2 bg-indigo-100 rounded-lg">
                             <LayoutDashboard className="w-5 h-5 text-indigo-600" />
                         </div>
                         <div>
-                            <h2 className="text-lg font-semibold text-gray-800">ตั้งค่า Tab Menu</h2>
-                            <p className="text-sm text-gray-500">กำหนดสิทธิ์การเข้าถึง Tab สำหรับแต่ละ Role</p>
+                            <h2 className="text-lg font-semibold text-gray-800 dark:text-gray-100">ตั้งค่า Tab Menu</h2>
+                            <p className="text-sm text-gray-500 dark:text-gray-400">กำหนดสิทธิ์การเข้าถึง Tab สำหรับแต่ละ Role</p>
                         </div>
                     </div>
                     <button
                         onClick={onClose}
-                        className="p-2 hover:bg-gray-100 rounded-lg transition-colors"
+                        className="p-2 hover:bg-gray-100 dark:hover:bg-slate-700 rounded-lg transition-colors"
                     >
-                        <X className="w-5 h-5 text-gray-500" />
+                        <X className="w-5 h-5 text-gray-500 dark:text-gray-400" />
                     </button>
                 </div>
 
                 {/* Role Selector */}
-                <div className="p-4 bg-gray-50 border-b border-gray-200">
+                <div className="p-4 bg-gray-50 dark:bg-slate-700 border-b border-gray-200 dark:border-slate-600">
                     <div className="flex gap-2">
                         <button
                             onClick={() => setSelectedRole('admin')}
                             className={`flex items-center gap-2 px-4 py-2 rounded-lg transition-colors ${
                                 selectedRole === 'admin'
                                     ? 'bg-indigo-600 text-white'
-                                    : 'bg-white text-gray-700 border border-gray-300 hover:bg-gray-50'
+                                    : 'bg-white dark:bg-slate-800 text-gray-700 dark:text-gray-300 border border-gray-300 dark:border-slate-600 hover:bg-gray-50 dark:hover:bg-slate-700'
                             }`}
                         >
                             <Shield className="w-4 h-4" />
@@ -152,14 +151,14 @@ const TabSettingsModal: React.FC<TabSettingsModalProps> = ({
                             className={`flex items-center gap-2 px-4 py-2 rounded-lg transition-colors ${
                                 selectedRole === 'member'
                                     ? 'bg-indigo-600 text-white'
-                                    : 'bg-white text-gray-700 border border-gray-300 hover:bg-gray-50'
+                                    : 'bg-white dark:bg-slate-800 text-gray-700 dark:text-gray-300 border border-gray-300 dark:border-slate-600 hover:bg-gray-50 dark:hover:bg-slate-700'
                             }`}
                         >
                             <User className="w-4 h-4" />
                             Member
                         </button>
                     </div>
-                    <p className="mt-2 text-xs text-gray-500">
+                    <p className="mt-2 text-xs text-gray-500 dark:text-gray-400">
                         {selectedRole === 'admin' 
                             ? 'Admin สามารถเข้าถึง Tab ทั้งหมดได้ตาม default'
                             : 'Member จะเห็นเฉพาะ Tab ที่เปิดใช้งาน'
@@ -172,14 +171,14 @@ const TabSettingsModal: React.FC<TabSettingsModalProps> = ({
                     {loading ? (
                         <div className="flex items-center justify-center py-8">
                             <RefreshCw className="w-6 h-6 text-indigo-600 animate-spin" />
-                            <span className="ml-2 text-gray-600">กำลังโหลด...</span>
+                            <span className="ml-2 text-gray-600 dark:text-gray-400">กำลังโหลด...</span>
                         </div>
                     ) : error ? (
                         <div className="text-center py-8">
                             <p className="text-red-500">{error}</p>
                             <button
                                 onClick={loadTabs}
-                                className="mt-2 px-4 py-2 text-sm bg-gray-100 hover:bg-gray-200 rounded-lg"
+                                className="mt-2 px-4 py-2 text-sm bg-gray-100 dark:bg-slate-700 hover:bg-gray-200 dark:hover:bg-slate-600 rounded-lg"
                             >
                                 ลองใหม่
                             </button>
@@ -193,15 +192,15 @@ const TabSettingsModal: React.FC<TabSettingsModalProps> = ({
                                         key={tab.id}
                                         className={`flex items-center justify-between p-3 rounded-lg border transition-colors ${
                                             tab.visible
-                                                ? 'bg-white border-gray-200'
-                                                : 'bg-gray-50 border-gray-100 opacity-60'
+                                                ? 'bg-white dark:bg-slate-800 border-gray-200 dark:border-slate-600'
+                                                : 'bg-gray-50 dark:bg-slate-700 border-gray-100 dark:border-slate-600 opacity-60'
                                         }`}
                                     >
                                         <div className="flex items-center gap-3">
-                                            <GripVertical className="w-4 h-4 text-gray-300" />
+                                            <GripVertical className="w-4 h-4 text-gray-300 dark:text-gray-600" />
                                             {TabIcon && (
                                                 <div className={`p-2 rounded-lg ${
-                                                    tab.visible ? 'bg-indigo-100' : 'bg-gray-100'
+                                                    tab.visible ? 'bg-indigo-100' : 'bg-gray-100 dark:bg-slate-600'
                                                 }`}>
                                                     <TabIcon className={`w-4 h-4 ${
                                                         tab.visible ? 'text-indigo-600' : 'text-gray-400'
@@ -209,8 +208,8 @@ const TabSettingsModal: React.FC<TabSettingsModalProps> = ({
                                                 </div>
                                             )}
                                             <div>
-                                                <p className="font-medium text-gray-800">{tab.label}</p>
-                                                <p className="text-xs text-gray-500">
+                                                <p className="font-medium text-gray-800 dark:text-gray-100">{tab.label}</p>
+                                                <p className="text-xs text-gray-500 dark:text-gray-400">
                                                     {tab.shortLabel}
                                                     {tab.adminOnly && (
                                                         <span className="ml-2 px-1.5 py-0.5 bg-amber-100 text-amber-700 rounded text-xs">
@@ -225,7 +224,7 @@ const TabSettingsModal: React.FC<TabSettingsModalProps> = ({
                                             className={`p-2 rounded-lg transition-colors ${
                                                 tab.visible
                                                     ? 'bg-green-100 text-green-600 hover:bg-green-200'
-                                                    : 'bg-gray-100 text-gray-400 hover:bg-gray-200'
+                                                    : 'bg-gray-100 dark:bg-slate-600 text-gray-400 hover:bg-gray-200 dark:hover:bg-slate-500'
                                             }`}
                                             title={tab.visible ? 'ซ่อน Tab นี้' : 'แสดง Tab นี้'}
                                         >
@@ -243,10 +242,10 @@ const TabSettingsModal: React.FC<TabSettingsModalProps> = ({
                 </div>
 
                 {/* Footer */}
-                <div className="flex items-center justify-between p-4 border-t border-gray-200 bg-gray-50">
+                <div className="flex items-center justify-between p-4 border-t border-gray-200 dark:border-slate-600 bg-gray-50 dark:bg-slate-700">
                     <button
                         onClick={handleReset}
-                        className="px-4 py-2 text-sm text-gray-600 hover:text-gray-800 hover:bg-gray-100 rounded-lg transition-colors"
+                        className="px-4 py-2 text-sm text-gray-600 dark:text-gray-400 hover:text-gray-800 dark:hover:text-gray-300 hover:bg-gray-100 dark:hover:bg-slate-600 rounded-lg transition-colors"
                     >
                         <RefreshCw className="w-4 h-4 inline mr-1" />
                         รีเซ็ตเป็นค่าเริ่มต้น
@@ -254,7 +253,7 @@ const TabSettingsModal: React.FC<TabSettingsModalProps> = ({
                     <div className="flex gap-2">
                         <button
                             onClick={onClose}
-                            className="px-4 py-2 text-sm bg-gray-200 text-gray-700 rounded-lg hover:bg-gray-300 transition-colors"
+                            className="px-4 py-2 text-sm bg-gray-200 dark:bg-slate-600 text-gray-700 dark:text-gray-300 rounded-lg hover:bg-gray-300 dark:hover:bg-slate-500 transition-colors"
                         >
                             ยกเลิก
                         </button>
@@ -264,7 +263,7 @@ const TabSettingsModal: React.FC<TabSettingsModalProps> = ({
                             className={`flex items-center gap-2 px-4 py-2 text-sm rounded-lg transition-colors ${
                                 hasChanges && !saving
                                     ? 'bg-indigo-600 text-white hover:bg-indigo-700'
-                                    : 'bg-gray-300 text-gray-500 cursor-not-allowed'
+                                    : 'bg-gray-300 dark:bg-slate-600 text-gray-500 dark:text-gray-400 cursor-not-allowed'
                             }`}
                         >
                             {saving ? (

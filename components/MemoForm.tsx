@@ -66,7 +66,6 @@ const MemoForm: React.FC<MemoFormProps> = ({
             console.log('✅ [MEMO] Generated new document number:', newMemoNumber);
         } catch (error) {
             console.error('❌ [MEMO] Error generating memo number:', error);
-            alert('ไม่สามารถสร้างเลขที่เอกสารได้ กรุณาลองใหม่อีกครั้ง');
         } finally {
             setIsGeneratingNumber(false);
         }
@@ -74,11 +73,15 @@ const MemoForm: React.FC<MemoFormProps> = ({
 
     /**
      * Auto-generate เลขที่เอกสารเมื่อฟอร์มว่างหรือเป็นค่า default
+     * ใช้ sessionStorage เก็บเลขที่ generate ไว้ป้องกันการ generate ซ้ำเมื่อ refresh
      */
     useEffect(() => {
+        const SESSION_KEY = 'memo_docNumber';
+        
         if (isEditing) {
             console.log('⏭️ [MEMO] Skip auto-generate - isEditing mode');
             hasGeneratedNumberRef.current = true;
+            sessionStorage.removeItem(SESSION_KEY);
             return;
         }
         
@@ -86,17 +89,21 @@ const MemoForm: React.FC<MemoFormProps> = ({
         if (hasValidNumber) {
             console.log('⏭️ [MEMO] Skip auto-generate - already has valid number:', data.memoNumber);
             hasGeneratedNumberRef.current = true;
+            sessionStorage.setItem(SESSION_KEY, data.memoNumber);
+            return;
+        }
+        
+        // ตรวจสอบ sessionStorage ว่ามีเลขที่ generate ไว้แล้วหรือไม่
+        const savedDocNumber = sessionStorage.getItem(SESSION_KEY);
+        if (savedDocNumber && savedDocNumber.match(/^MEMO-\d{6}\d{2}$/)) {
+            handleDataChange('memoNumber', savedDocNumber);
+            hasGeneratedNumberRef.current = true;
             return;
         }
         
         const isDefaultOrEmpty = !data.memoNumber || 
                                   data.memoNumber.match(/^MEMO-\d{4}-\d{3}$/) || 
                                   data.memoNumber === '';
-        
-        // ถ้า memoNumber ว่างเปล่า ให้ reset flag เพื่อให้สามารถสร้างเลขใหม่ได้
-        if (isDefaultOrEmpty) {
-            hasGeneratedNumberRef.current = false;
-        }
         
         if (isDefaultOrEmpty && !hasGeneratedNumberRef.current && !isGeneratingNumber) {
             console.log('🔄 [MEMO] Auto-generating new document number...');
@@ -150,12 +157,12 @@ const MemoForm: React.FC<MemoFormProps> = ({
                     <div className="grid grid-cols-1 md:grid-cols-2 gap-3 sm:gap-4">
                         <div>
                             <label htmlFor="date" className="block text-xs sm:text-sm font-medium text-slate-700 dark:text-slate-300">วันที่ออกเอกสาร *</label>
-                            <input 
-                                type="date" 
-                                id="date" 
-                                value={formatDateForInput(data.date)} 
-                                onChange={(e) => handleDataChange('date', e.target.value ? new Date(e.target.value) : null)} 
-                                className="mt-1 block w-full rounded-md border-gray-300 dark:border-slate-600 shadow-sm focus:border-indigo-500 focus:ring-indigo-500 text-xs sm:text-sm bg-gray-50 dark:bg-slate-700 dark:text-gray-100" 
+                            <DatePicker
+                                id="date"
+                                value={data.date}
+                                onChange={(date) => handleDataChange('date', date)}
+                                placeholder="เลือกวันที่"
+                                className="mt-1"
                             />
                         </div>
                         <div>
@@ -346,12 +353,12 @@ const MemoForm: React.FC<MemoFormProps> = ({
                     <div className="grid grid-cols-1 md:grid-cols-2 gap-3 sm:gap-4">
                         <div>
                             <label htmlFor="deadline" className="block text-xs sm:text-sm font-medium text-slate-700 dark:text-slate-300">กำหนดเสร็จ</label>
-                            <input 
-                                type="date" 
-                                id="deadline" 
-                                value={formatDateForInput(data.deadline)} 
-                                onChange={(e) => handleDataChange('deadline', e.target.value ? new Date(e.target.value) : null)} 
-                                className="mt-1 block w-full rounded-md border-gray-300 dark:border-slate-600 shadow-sm focus:border-indigo-500 focus:ring-indigo-500 text-xs sm:text-sm bg-gray-50 dark:bg-slate-700 dark:text-gray-100" 
+                            <DatePicker
+                                id="deadline"
+                                value={data.deadline}
+                                onChange={(date) => handleDataChange('deadline', date)}
+                                placeholder="เลือกวันที่"
+                                className="mt-1"
                             />
                         </div>
                         <div>

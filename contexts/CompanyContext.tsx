@@ -46,9 +46,8 @@ const saveLastCompanyId = (companyId: string, userId: string) => {
         // เก็บแยกตาม userId เพื่อรองรับหลาย user ใน browser เดียวกัน
         const key = `${LAST_COMPANY_KEY}_${userId}`;
         localStorage.setItem(key, companyId);
-        console.log('💾 [CompanyContext] บันทึก last company:', companyId);
-    } catch (error) {
-        console.error('❌ [CompanyContext] ไม่สามารถบันทึก last company:', error);
+    } catch {
+        // ไม่ต้องทำอะไร - localStorage อาจไม่พร้อมใช้งาน
     }
 };
 
@@ -58,11 +57,8 @@ const saveLastCompanyId = (companyId: string, userId: string) => {
 const getLastCompanyId = (userId: string): string | null => {
     try {
         const key = `${LAST_COMPANY_KEY}_${userId}`;
-        const companyId = localStorage.getItem(key);
-        console.log('📂 [CompanyContext] โหลด last company:', companyId);
-        return companyId;
-    } catch (error) {
-        console.error('❌ [CompanyContext] ไม่สามารถโหลด last company:', error);
+        return localStorage.getItem(key);
+    } catch {
         return null;
     }
 };
@@ -78,10 +74,7 @@ export const CompanyProvider: React.FC<CompanyProviderProps> = ({ children }) =>
      * โหลดรายการบริษัททั้งหมด
      */
     const loadCompanies = async () => {
-        console.log('🔄 [CompanyContext] เริ่มโหลดบริษัท, User:', user?.email);
-        
         if (!user) {
-            console.log('⚠️ [CompanyContext] ไม่มี User, ล้างข้อมูล');
             setCurrentCompany(null);
             setCompanies([]);
             setNeedsOnboarding(false);
@@ -91,28 +84,23 @@ export const CompanyProvider: React.FC<CompanyProviderProps> = ({ children }) =>
 
         try {
             setLoading(true);
-            console.log('⏳ [CompanyContext] กำลังโหลด...');
             
             // ตรวจสอบว่าต้อง Migrate หรือไม่ (wrap ใน try-catch แยก เพื่อไม่ให้ error migration หยุดการทำงาน)
             try {
                 const needMigration = await checkNeedMigration();
                 if (needMigration) {
-                    console.log('🔄 พบองค์กรเก่าที่ต้อง Migrate...');
                     try {
                         await migrateOldCompanies();
-                        console.log('✅ Migration สำเร็จ');
-                    } catch (migrationError) {
-                        console.error('❌ Migration ล้มเหลว:', migrationError);
+                    } catch {
+                        // Migration ล้มเหลว - ไม่เป็นไร ดำเนินการต่อ
                     }
                 }
-            } catch (checkMigrationError) {
+            } catch {
                 // User ใหม่อาจไม่มีสิทธิ์เข้าถึง collection เก่า - ไม่เป็นไร ข้ามไป
-                console.log('ℹ️ [CompanyContext] ข้าม Migration check (user ใหม่หรือไม่มีสิทธิ์)');
             }
             
             // ดึงรายการบริษัททั้งหมด
             const companiesList = await getUserCompanies();
-            console.log('📋 [CompanyContext] ดึงบริษัทได้:', companiesList.length, 'องค์กร', companiesList);
             setCompanies(companiesList);
 
             // ตั้งค่าบริษัทเป็น current
@@ -128,7 +116,6 @@ export const CompanyProvider: React.FC<CompanyProviderProps> = ({ children }) =>
                     if (lastCompany) {
                         // ใช้ last selected company
                         setCurrentCompany(lastCompany);
-                        console.log('✅ [CompanyContext] ใช้ last selected company:', lastCompany.name);
                     } else {
                         // ใช้บริษัทแรก
                         setCurrentCompany(companiesList[0]);
@@ -136,31 +123,23 @@ export const CompanyProvider: React.FC<CompanyProviderProps> = ({ children }) =>
                         if (companiesList[0].id) {
                             saveLastCompanyId(companiesList[0].id, user.uid);
                         }
-                        console.log('✅ [CompanyContext] เลือกบริษัทแรก:', companiesList[0].name);
                     }
                 } else {
                     // อัปเดต currentCompany ด้วยข้อมูลใหม่ (เช่น organizationLogoUrl ที่เพิ่งอัปเดต)
                     setCurrentCompany(existingCompany);
-                    console.log('🔄 [CompanyContext] อัปเดตบริษัทปัจจุบัน:', existingCompany.name, 'orgLogo:', existingCompany.organizationLogoUrl);
                 }
                 setNeedsOnboarding(false);
-                console.log('✅ [CompanyContext] needsOnboarding = false (มีบริษัท)');
             } else {
-                console.log('⚠️ [CompanyContext] ไม่มีบริษัทเลย - ต้องไปหน้า Onboarding');
                 setCurrentCompany(null);
                 setNeedsOnboarding(true); // User login แล้วแต่ยังไม่มีองค์กร
-                console.log('🚀 [CompanyContext] needsOnboarding = true (ไม่มีบริษัท)');
             }
-        } catch (error) {
-            console.error('❌ [CompanyContext] โหลดบริษัทล้มเหลว:', error);
+        } catch {
             setCompanies([]);
             setCurrentCompany(null);
             // ถ้าโหลดบริษัทล้มเหลว ให้ไปหน้า onboarding เพื่อให้ user สร้างองค์กรใหม่
             setNeedsOnboarding(true);
-            console.log('🚀 [CompanyContext] needsOnboarding = true (เกิด error)');
         } finally {
             setLoading(false);
-            console.log('✅ [CompanyContext] โหลดเสร็จสิ้น');
         }
     };
 
@@ -181,8 +160,6 @@ export const CompanyProvider: React.FC<CompanyProviderProps> = ({ children }) =>
         if (user && company.id) {
             saveLastCompanyId(company.id, user.uid);
         }
-        
-        console.log('📌 เลือกบริษัท:', company.name);
     };
 
     /**

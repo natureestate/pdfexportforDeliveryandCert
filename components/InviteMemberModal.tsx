@@ -7,6 +7,8 @@ import React, { useState } from 'react';
 import { UserRole } from '../types';
 import { createInvitation } from '../services/invitations';
 import { getFunctions, httpsCallable, connectFunctionsEmulator } from 'firebase/functions';
+import { useConfirm } from './ConfirmDialog';
+import { usePrompt } from './InputPromptDialog';
 
 interface InviteMemberModalProps {
     companyId: string;
@@ -24,6 +26,8 @@ const InviteMemberModal: React.FC<InviteMemberModalProps> = ({
     onClose,
     onSuccess,
 }) => {
+    const { confirm } = useConfirm();
+    const { prompt } = usePrompt();
     const [email, setEmail] = useState('');
     const [role, setRole] = useState<UserRole>('member');
     const [message, setMessage] = useState('');
@@ -83,7 +87,6 @@ const InviteMemberModal: React.FC<InviteMemberModalProps> = ({
                     });
 
                     console.log('✅ ส่งอีเมลเชิญสำเร็จ');
-                    alert(`✅ เชิญ ${email} เข้าองค์กรสำเร็จ และส่งอีเมลเรียบร้อยแล้ว`);
                 } catch (emailError: any) {
                     console.error('❌ ส่งอีเมลล้มเหลว:', emailError);
                     
@@ -92,24 +95,35 @@ const InviteMemberModal: React.FC<InviteMemberModalProps> = ({
                     const invitationLink = `${baseUrl}/accept-invitation?token=${invitation.token}`;
                     
                     // แสดง link ให้ copy
-                    const shouldCopy = confirm(
-                        `⚠️ เชิญสำเร็จ แต่ส่งอีเมลล้มเหลว!\n\n` +
-                        `กรุณาคัดลอกลิงก์ด้านล่างแล้วส่งให้ผู้ถูกเชิญ:\n\n` +
-                        `กด OK เพื่อคัดลอกลิงก์`
-                    );
+                    const shouldCopy = await confirm({
+                        title: '⚠️ ส่งอีเมลล้มเหลว',
+                        message: `เชิญสำเร็จ แต่ส่งอีเมลล้มเหลว!\n\nกรุณาคัดลอกลิงก์ด้านล่างแล้วส่งให้ผู้ถูกเชิญ:\n\n${invitationLink}`,
+                        confirmText: 'คัดลอกลิงก์',
+                        cancelText: 'ยกเลิก',
+                        variant: 'warning',
+                    });
                     
                     if (shouldCopy) {
                         try {
                             await navigator.clipboard.writeText(invitationLink);
-                            alert(`✅ คัดลอกลิงก์แล้ว!\n\nลิงก์: ${invitationLink}\n\nกรุณาส่งลิงก์นี้ให้ ${email}`);
+                            console.log(`✅ คัดลอกลิงก์แล้ว: ${invitationLink}`);
                         } catch (copyError) {
                             // ถ้า clipboard ไม่ทำงาน ให้แสดง link ให้ copy เอง
-                            prompt('กรุณาคัดลอกลิงก์ด้านล่าง:', invitationLink);
+                            const copiedLink = await prompt({
+                                title: 'กรุณาคัดลอกลิงก์',
+                                message: 'กรุณาคัดลอกลิงก์ด้านล่าง:',
+                                defaultValue: invitationLink,
+                                confirmText: 'ตกลง',
+                                cancelText: 'ยกเลิก',
+                            });
+                            if (copiedLink) {
+                                console.log(`✅ ผู้ใช้คัดลอกลิงก์: ${copiedLink}`);
+                            }
                         }
                     }
                 }
             } else {
-                alert(`✅ เชิญ ${email} เข้าองค์กรสำเร็จ\nกรุณาส่งลิงก์คำเชิญด้วยตนเอง`);
+                console.log(`✅ เชิญ ${email} เข้าองค์กรสำเร็จ - กรุณาส่งลิงก์คำเชิญด้วยตนเอง`);
             }
 
             // เรียก callback

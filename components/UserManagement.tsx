@@ -26,6 +26,7 @@ import { useAuth } from '../contexts/AuthContext';
 import InviteMemberModal from './InviteMemberModal';
 import OrganizationCodeManager from './OrganizationCodeManager';
 import AccessRequestsManager from './AccessRequestsManager';
+import { useConfirm } from './ConfirmDialog';
 import { Users, Crown, User, Save, Loader, KeyRound, UserPlus, X, AlertTriangle, Mail, Plus, RefreshCw, Trash2, Copy, Clock, CheckCircle, XCircle, Timer, Edit } from 'lucide-react';
 
 interface UserManagementProps {
@@ -58,6 +59,7 @@ interface AddMemberForm {
  */
 const UserManagement: React.FC<UserManagementProps> = ({ companyId, companyName, onClose }) => {
     const { user } = useAuth();
+    const { confirm } = useConfirm();
     const [members, setMembers] = useState<CompanyMember[]>([]);
     const [invitations, setInvitations] = useState<Invitation[]>([]);
     const [isAdmin, setIsAdmin] = useState(false);
@@ -129,17 +131,24 @@ const UserManagement: React.FC<UserManagementProps> = ({ companyId, companyName,
      * ยกเลิกคำเชิญ
      */
     const handleCancelInvitation = async (invitationId: string, email: string) => {
-        if (!confirm(`ต้องการยกเลิกคำเชิญสำหรับ ${email} หรือไม่?`)) {
+        const confirmed = await confirm({
+            title: 'ยืนยันการยกเลิกคำเชิญ',
+            message: `ต้องการยกเลิกคำเชิญสำหรับ ${email} หรือไม่?`,
+            variant: 'warning',
+            confirmText: 'ยกเลิกคำเชิญ',
+            cancelText: 'ไม่',
+        });
+        
+        if (!confirmed) {
             return;
         }
 
         try {
             await cancelInvitation(invitationId);
             await loadMembers();
-            alert('✅ ยกเลิกคำเชิญสำเร็จ');
+            console.log('✅ ยกเลิกคำเชิญสำเร็จ');
         } catch (err: any) {
             console.error('❌ ยกเลิกคำเชิญล้มเหลว:', err);
-            alert(err.message || 'ไม่สามารถยกเลิกคำเชิญได้');
         }
     };
 
@@ -147,17 +156,24 @@ const UserManagement: React.FC<UserManagementProps> = ({ companyId, companyName,
      * ส่งคำเชิญใหม่
      */
     const handleResendInvitation = async (invitationId: string, email: string) => {
-        if (!confirm(`ต้องการส่งคำเชิญใหม่ให้ ${email} หรือไม่?`)) {
+        const confirmed = await confirm({
+            title: 'ยืนยันการส่งคำเชิญใหม่',
+            message: `ต้องการส่งคำเชิญใหม่ให้ ${email} หรือไม่?`,
+            variant: 'default',
+            confirmText: 'ส่งใหม่',
+            cancelText: 'ไม่',
+        });
+        
+        if (!confirmed) {
             return;
         }
 
         try {
             await resendInvitation(invitationId);
             await loadMembers();
-            alert('✅ ส่งคำเชิญใหม่สำเร็จ');
+            console.log('✅ ส่งคำเชิญใหม่สำเร็จ');
         } catch (err: any) {
             console.error('❌ ส่งคำเชิญใหม่ล้มเหลว:', err);
-            alert(err.message || 'ไม่สามารถส่งคำเชิญใหม่ได้');
         }
     };
 
@@ -170,10 +186,12 @@ const UserManagement: React.FC<UserManagementProps> = ({ companyId, companyName,
         
         try {
             await navigator.clipboard.writeText(invitationLink);
-            alert(`✅ คัดลอกลิงก์สำเร็จ!\n\nลิงก์: ${invitationLink}\n\nกรุณาส่งลิงก์นี้ให้ ${email} ทาง Line, Email หรือช่องทางอื่น`);
+            console.log(`✅ คัดลอกลิงก์สำเร็จ! ลิงก์: ${invitationLink}`);
         } catch (err) {
             // Fallback สำหรับ browser ที่ไม่รองรับ clipboard API
-            prompt('กรุณาคัดลอกลิงก์ด้านล่าง:', invitationLink);
+            console.error('ไม่สามารถคัดลอกลิงก์ได้:', err);
+            // แสดง link ใน console แทน prompt
+            console.log('กรุณาคัดลอกลิงก์:', invitationLink);
         }
     };
 
@@ -221,7 +239,7 @@ const UserManagement: React.FC<UserManagementProps> = ({ companyId, companyName,
                 addMemberForm.phoneNumber.trim() || undefined
             );
 
-            alert('✅ เพิ่มสมาชิกสำเร็จ');
+            console.log('✅ เพิ่มสมาชิกสำเร็จ');
             setShowAddMemberModal(false);
             await loadMembers();
         } catch (err: any) {
@@ -264,7 +282,7 @@ const UserManagement: React.FC<UserManagementProps> = ({ companyId, companyName,
                 role: editMemberForm.role,
             });
 
-            alert('✅ แก้ไขข้อมูลสมาชิกสำเร็จ');
+            console.log('✅ แก้ไขข้อมูลสมาชิกสำเร็จ');
             setShowEditMemberModal(false);
             setEditingMember(null);
             await loadMembers();
@@ -282,17 +300,24 @@ const UserManagement: React.FC<UserManagementProps> = ({ companyId, companyName,
     const handleChangeRole = async (memberId: string, currentRole: UserRole) => {
         const newRole: UserRole = currentRole === 'admin' ? 'member' : 'admin';
         
-        if (!confirm(`ต้องการเปลี่ยนบทบาทเป็น ${newRole === 'admin' ? 'Admin' : 'Member'} หรือไม่?`)) {
+        const confirmed = await confirm({
+            title: 'ยืนยันการเปลี่ยนบทบาท',
+            message: `ต้องการเปลี่ยนบทบาทเป็น ${newRole === 'admin' ? 'Admin' : 'Member'} หรือไม่?`,
+            variant: 'warning',
+            confirmText: 'เปลี่ยนบทบาท',
+            cancelText: 'ไม่',
+        });
+        
+        if (!confirmed) {
             return;
         }
 
         try {
             await updateMemberRole(memberId, newRole);
             await loadMembers();
-            alert('✅ เปลี่ยนบทบาทสำเร็จ');
+            console.log('✅ เปลี่ยนบทบาทสำเร็จ');
         } catch (err: any) {
             console.error('❌ เปลี่ยนบทบาทล้มเหลว:', err);
-            alert(err.message || 'ไม่สามารถเปลี่ยนบทบาทได้');
         }
     };
 
@@ -300,7 +325,15 @@ const UserManagement: React.FC<UserManagementProps> = ({ companyId, companyName,
      * ลบสมาชิก
      */
     const handleRemoveMember = async (memberId: string, memberEmail: string) => {
-        if (!confirm(`ต้องการลบ ${memberEmail} ออกจากองค์กรหรือไม่?`)) {
+        const confirmed = await confirm({
+            title: 'ยืนยันการลบสมาชิก',
+            message: `ต้องการลบ ${memberEmail} ออกจากองค์กรหรือไม่?`,
+            variant: 'danger',
+            confirmText: 'ลบสมาชิก',
+            cancelText: 'ยกเลิก',
+        });
+        
+        if (!confirmed) {
             return;
         }
 
@@ -308,10 +341,9 @@ const UserManagement: React.FC<UserManagementProps> = ({ companyId, companyName,
             await removeMember(memberId);
             await updateMemberCount(companyId);
             await loadMembers();
-            alert('✅ ลบสมาชิกสำเร็จ');
+            console.log('✅ ลบสมาชิกสำเร็จ');
         } catch (err: any) {
             console.error('❌ ลบสมาชิกล้มเหลว:', err);
-            alert(err.message || 'ไม่สามารถลบสมาชิกได้');
         }
     };
 

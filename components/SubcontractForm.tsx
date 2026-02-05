@@ -4,10 +4,10 @@
  */
 import React, { useRef, useState, useEffect } from 'react';
 import { SubcontractData, SubcontractWorkItem, SubcontractPaymentMilestone, LogoType, EndCustomerProject } from '../types';
-import { formatDateForInput } from '../utils/dateUtils';
 import CustomerSelector from './CustomerSelector';
 import ContractorSelector from './ContractorSelector';
 import EndCustomerSelector from './EndCustomerSelector';
+import DatePicker from './DatePicker';
 import { Customer } from '../services/customers';
 import { Contractor } from '../services/contractors';
 import { EndCustomer } from '../services/endCustomers';
@@ -15,6 +15,7 @@ import { generateDocumentNumber, DocumentType } from '../services/documentNumber
 import { useCompany } from '../contexts/CompanyContext';
 import { numberToThaiText } from '../utils/numberToThaiText';
 import { INPUT_LIMITS, NUMBER_LIMITS } from '../utils/inputValidation';
+import { parseNumberInput, parseIntInput } from '../utils/numberInput';
 
 export interface SubcontractFormProps {
     data: SubcontractData;
@@ -231,12 +232,16 @@ const SubcontractForm: React.FC<SubcontractFormProps> = ({
     };
 
     // สร้างเลขที่สัญญาอัตโนมัติ
+    // ใช้ sessionStorage เก็บเลขที่ generate ไว้ป้องกันการ generate ซ้ำเมื่อ refresh
     useEffect(() => {
+        const SESSION_KEY = 'subcontract_docNumber';
+        
         const generateNumber = async () => {
             // ถ้ากำลังแก้ไขเอกสารเดิม ไม่ต้อง generate เลขใหม่
             if (isEditing) {
                 console.log('⏭️ [SC] Skip auto-generate - isEditing mode');
                 hasGeneratedNumberRef.current = true;
+                sessionStorage.removeItem(SESSION_KEY);
                 return;
             }
             
@@ -245,12 +250,16 @@ const SubcontractForm: React.FC<SubcontractFormProps> = ({
             if (hasValidNumber) {
                 console.log('⏭️ [SC] Skip auto-generate - already has valid number:', data.contractNumber);
                 hasGeneratedNumberRef.current = true;
+                sessionStorage.setItem(SESSION_KEY, data.contractNumber);
                 return;
             }
             
-            // ถ้า contractNumber ว่างเปล่า ให้ reset flag เพื่อให้สามารถสร้างเลขใหม่ได้
-            if (!data.contractNumber) {
-                hasGeneratedNumberRef.current = false;
+            // ตรวจสอบ sessionStorage ว่ามีเลขที่ generate ไว้แล้วหรือไม่
+            const savedDocNumber = sessionStorage.getItem(SESSION_KEY);
+            if (savedDocNumber && savedDocNumber.match(/^SC-\d{6}\d{2}$/)) {
+                handleDataChange('contractNumber', savedDocNumber);
+                hasGeneratedNumberRef.current = true;
+                return;
             }
             
             if (!data.contractNumber && currentCompany?.id && !hasGeneratedNumberRef.current && !isGeneratingNumber) {
@@ -260,6 +269,8 @@ const SubcontractForm: React.FC<SubcontractFormProps> = ({
                     const docNumber = await generateDocumentNumber('subcontract' as DocumentType);
                     handleDataChange('contractNumber', docNumber);
                     hasGeneratedNumberRef.current = true;
+                    // บันทึกเลขที่ใหม่ลง sessionStorage
+                    sessionStorage.setItem(SESSION_KEY, docNumber);
                     console.log('✅ [SC] Generated new document number:', docNumber);
                 } catch (error) {
                     console.error('❌ [SC] สร้างเลขที่สัญญาล้มเหลว:', error);
@@ -394,7 +405,13 @@ const SubcontractForm: React.FC<SubcontractFormProps> = ({
                         </div>
                         <div>
                             <label htmlFor="contractDate" className="block text-xs sm:text-sm font-medium text-slate-700 dark:text-slate-300">วันที่ทำสัญญา</label>
-                            <input type="date" id="contractDate" value={formatDateForInput(data.contractDate)} onChange={(e) => handleDataChange('contractDate', e.target.value ? new Date(e.target.value) : null)} className="mt-1 block w-full rounded-md border-gray-300 dark:border-gray-600 shadow-sm focus:border-indigo-500 focus:ring-indigo-500 text-xs sm:text-sm bg-gray-50 dark:bg-slate-700 dark:text-gray-100" />
+                            <DatePicker
+                                id="contractDate"
+                                value={data.contractDate}
+                                onChange={(date) => handleDataChange('contractDate', date)}
+                                placeholder="เลือกวันที่"
+                                className="mt-1"
+                            />
                         </div>
                     </div>
                     
@@ -564,13 +581,13 @@ const SubcontractForm: React.FC<SubcontractFormProps> = ({
                                             <textarea value={item.description} onChange={(e) => handleItemChange(index, 'description', e.target.value)} rows={2} maxLength={INPUT_LIMITS.itemDescription} className="w-full rounded-md border-gray-300 dark:border-gray-600 shadow-sm focus:border-indigo-300 focus:ring-indigo-200 focus:ring-opacity-50 text-xs sm:text-sm bg-gray-50 dark:bg-slate-700 text-gray-900 dark:text-gray-100 dark:placeholder-gray-400" placeholder="รายละเอียดงาน"></textarea>
                                         </td>
                                         <td className="px-1 sm:px-2 py-1 whitespace-nowrap">
-                                            <input type="number" value={item.quantity} onChange={(e) => handleItemChange(index, 'quantity', parseFloat(e.target.value) || 0)} inputMode="decimal" min={NUMBER_LIMITS.quantity.min} max={NUMBER_LIMITS.quantity.max} step={NUMBER_LIMITS.quantity.step} className="w-full rounded-md border-gray-300 dark:border-gray-600 shadow-sm focus:border-indigo-300 focus:ring-indigo-200 focus:ring-opacity-50 text-xs sm:text-sm bg-gray-50 dark:bg-slate-700 text-gray-900 dark:text-gray-100" />
+                                            <input type="number" value={item.quantity} onChange={(e) => handleItemChange(index, 'quantity', parseNumberInput(e.target.value))} inputMode="decimal" min={NUMBER_LIMITS.quantity.min} max={NUMBER_LIMITS.quantity.max} step={NUMBER_LIMITS.quantity.step} className="w-full rounded-md border-gray-300 dark:border-gray-600 shadow-sm focus:border-indigo-300 focus:ring-indigo-200 focus:ring-opacity-50 text-xs sm:text-sm bg-gray-50 dark:bg-slate-700 text-gray-900 dark:text-gray-100" />
                                         </td>
                                         <td className="px-1 sm:px-2 py-1 whitespace-nowrap">
                                             <input type="text" value={item.unit} onChange={(e) => handleItemChange(index, 'unit', e.target.value)} maxLength={INPUT_LIMITS.unit} className="w-full rounded-md border-gray-300 dark:border-gray-600 shadow-sm focus:border-indigo-300 focus:ring-indigo-200 focus:ring-opacity-50 text-xs sm:text-sm bg-gray-50 dark:bg-slate-700 text-gray-900 dark:text-gray-100" />
                                         </td>
                                         <td className="px-1 sm:px-2 py-1 whitespace-nowrap">
-                                            <input type="number" step="0.01" value={item.unitPrice} onChange={(e) => handleItemChange(index, 'unitPrice', parseFloat(e.target.value) || 0)} inputMode="decimal" min={NUMBER_LIMITS.price.min} max={NUMBER_LIMITS.price.max} className="w-full rounded-md border-gray-300 dark:border-gray-600 shadow-sm focus:border-indigo-300 focus:ring-indigo-200 focus:ring-opacity-50 text-xs sm:text-sm bg-gray-50 dark:bg-slate-700 text-gray-900 dark:text-gray-100" />
+                                            <input type="number" step="0.01" value={item.unitPrice} onChange={(e) => handleItemChange(index, 'unitPrice', parseNumberInput(e.target.value))} inputMode="decimal" min={NUMBER_LIMITS.price.min} max={NUMBER_LIMITS.price.max} className="w-full rounded-md border-gray-300 dark:border-gray-600 shadow-sm focus:border-indigo-300 focus:ring-indigo-200 focus:ring-opacity-50 text-xs sm:text-sm bg-gray-50 dark:bg-slate-700 text-gray-900 dark:text-gray-100" />
                                         </td>
                                         <td className="px-1 sm:px-2 py-1 whitespace-nowrap">
                                             <input type="number" step="0.01" value={item.amount} readOnly className="w-full rounded-md border-gray-300 dark:border-gray-600 shadow-sm text-xs sm:text-sm bg-gray-100 dark:bg-slate-600 text-gray-900 dark:text-gray-100 font-medium" />
@@ -616,11 +633,23 @@ const SubcontractForm: React.FC<SubcontractFormProps> = ({
                         <div className="grid grid-cols-1 md:grid-cols-2 gap-3 sm:gap-4">
                             <div>
                                 <label htmlFor="startDate" className="block text-xs sm:text-sm font-medium text-slate-700 dark:text-slate-300">วันที่เริ่มทำงาน</label>
-                                <input type="date" id="startDate" value={formatDateForInput(data.startDate)} onChange={(e) => handleDataChange('startDate', e.target.value ? new Date(e.target.value) : null)} className="mt-1 block w-full rounded-md border-gray-300 dark:border-gray-600 shadow-sm focus:border-indigo-500 focus:ring-indigo-500 text-xs sm:text-sm bg-gray-50 dark:bg-slate-700 dark:text-gray-100" />
+                                <DatePicker
+                                    id="startDate"
+                                    value={data.startDate}
+                                    onChange={(date) => handleDataChange('startDate', date)}
+                                    placeholder="เลือกวันที่"
+                                    className="mt-1"
+                                />
                             </div>
                             <div>
                                 <label htmlFor="endDate" className="block text-xs sm:text-sm font-medium text-slate-700 dark:text-slate-300">วันที่แล้วเสร็จ</label>
-                                <input type="date" id="endDate" value={formatDateForInput(data.endDate)} onChange={(e) => handleDataChange('endDate', e.target.value ? new Date(e.target.value) : null)} className="mt-1 block w-full rounded-md border-gray-300 dark:border-gray-600 shadow-sm focus:border-indigo-500 focus:ring-indigo-500 text-xs sm:text-sm bg-gray-50 dark:bg-slate-700 dark:text-gray-100" />
+                                <DatePicker
+                                    id="endDate"
+                                    value={data.endDate}
+                                    onChange={(date) => handleDataChange('endDate', date)}
+                                    placeholder="เลือกวันที่"
+                                    className="mt-1"
+                                />
                             </div>
                         </div>
                     )}
@@ -632,7 +661,7 @@ const SubcontractForm: React.FC<SubcontractFormProps> = ({
                     <div className="grid grid-cols-1 md:grid-cols-2 gap-3 sm:gap-4">
                         <div>
                             <label htmlFor="totalContractAmount" className="block text-xs sm:text-sm font-medium text-slate-700 dark:text-slate-300">ค่าจ้างรวมทั้งสิ้น (บาท)</label>
-                            <input type="number" id="totalContractAmount" value={data.totalContractAmount} onChange={(e) => handleDataChange('totalContractAmount', parseFloat(e.target.value) || 0)} inputMode="decimal" min={NUMBER_LIMITS.price.min} max={NUMBER_LIMITS.price.max} step={NUMBER_LIMITS.price.step} className="mt-1 block w-full rounded-md border-gray-300 dark:border-gray-600 shadow-sm focus:border-indigo-500 focus:ring-indigo-500 text-xs sm:text-sm bg-gray-50 dark:bg-slate-700 dark:text-gray-100" />
+                            <input type="number" id="totalContractAmount" value={data.totalContractAmount} onChange={(e) => handleDataChange('totalContractAmount', parseNumberInput(e.target.value))} inputMode="decimal" min={NUMBER_LIMITS.price.min} max={NUMBER_LIMITS.price.max} step={NUMBER_LIMITS.price.step} className="mt-1 block w-full rounded-md border-gray-300 dark:border-gray-600 shadow-sm focus:border-indigo-500 focus:ring-indigo-500 text-xs sm:text-sm bg-gray-50 dark:bg-slate-700 dark:text-gray-100" />
                         </div>
                         <div>
                             <label htmlFor="totalContractAmountText" className="block text-xs sm:text-sm font-medium text-slate-700 dark:text-slate-300">ค่าจ้างเป็นตัวอักษร (คำนวณอัตโนมัติ)</label>
@@ -660,7 +689,7 @@ const SubcontractForm: React.FC<SubcontractFormProps> = ({
                                             <textarea value={milestone.description} onChange={(e) => handleMilestoneChange(index, 'description', e.target.value)} rows={2} maxLength={INPUT_LIMITS.itemDescription} className="w-full rounded-md border-gray-300 dark:border-gray-600 shadow-sm focus:border-green-300 focus:ring-green-200 focus:ring-opacity-50 text-xs sm:text-sm bg-gray-50 dark:bg-slate-700 text-gray-900 dark:text-gray-100 dark:placeholder-gray-400" placeholder="เช่น เบิกเงินล่วงหน้า / เมื่อดำเนินการ...เสร็จสิ้น"></textarea>
                                         </td>
                                         <td className="px-1 sm:px-2 py-1 whitespace-nowrap">
-                                            <input type="number" value={milestone.percentage} onChange={(e) => handleMilestoneChange(index, 'percentage', parseFloat(e.target.value) || 0)} inputMode="decimal" min={NUMBER_LIMITS.percentage.min} max={NUMBER_LIMITS.percentage.max} step={NUMBER_LIMITS.percentage.step} className="w-full rounded-md border-gray-300 dark:border-gray-600 shadow-sm focus:border-green-300 focus:ring-green-200 focus:ring-opacity-50 text-xs sm:text-sm bg-gray-50 dark:bg-slate-700 text-gray-900 dark:text-gray-100" />
+                                            <input type="number" value={milestone.percentage} onChange={(e) => handleMilestoneChange(index, 'percentage', parseNumberInput(e.target.value))} inputMode="decimal" min={NUMBER_LIMITS.percentage.min} max={NUMBER_LIMITS.percentage.max} step={NUMBER_LIMITS.percentage.step} className="w-full rounded-md border-gray-300 dark:border-gray-600 shadow-sm focus:border-green-300 focus:ring-green-200 focus:ring-opacity-50 text-xs sm:text-sm bg-gray-50 dark:bg-slate-700 text-gray-900 dark:text-gray-100" />
                                         </td>
                                         <td className="px-1 sm:px-2 py-1 whitespace-nowrap">
                                             <input type="number" step="0.01" value={milestone.amount} readOnly className="w-full rounded-md border-gray-300 dark:border-gray-600 shadow-sm text-xs sm:text-sm bg-gray-100 dark:bg-slate-600 text-gray-900 dark:text-gray-100 font-medium" />
@@ -719,11 +748,11 @@ const SubcontractForm: React.FC<SubcontractFormProps> = ({
                         <div className="grid grid-cols-1 md:grid-cols-2 gap-3 sm:gap-4">
                             <div>
                                 <label htmlFor="defectFixDays" className="block text-xs sm:text-sm font-medium text-slate-700 dark:text-slate-300">แก้ไขงานบกพร่องภายใน (วัน)</label>
-                                <input type="number" id="defectFixDays" value={data.defectFixDays} onChange={(e) => handleDataChange('defectFixDays', parseInt(e.target.value) || 0)} inputMode="numeric" min={NUMBER_LIMITS.days.min} max={NUMBER_LIMITS.days.max} step={NUMBER_LIMITS.days.step} className="mt-1 block w-full rounded-md border-gray-300 dark:border-gray-600 shadow-sm focus:border-indigo-500 focus:ring-indigo-500 text-xs sm:text-sm bg-gray-50 dark:bg-slate-700 dark:text-gray-100" />
+                                <input type="number" id="defectFixDays" value={data.defectFixDays} onChange={(e) => handleDataChange('defectFixDays', parseIntInput(e.target.value))} inputMode="numeric" min={NUMBER_LIMITS.days.min} max={NUMBER_LIMITS.days.max} step={NUMBER_LIMITS.days.step} className="mt-1 block w-full rounded-md border-gray-300 dark:border-gray-600 shadow-sm focus:border-indigo-500 focus:ring-indigo-500 text-xs sm:text-sm bg-gray-50 dark:bg-slate-700 dark:text-gray-100" />
                             </div>
                             <div>
                                 <label htmlFor="warrantyMonths" className="block text-xs sm:text-sm font-medium text-slate-700 dark:text-slate-300">รับประกันผลงาน (เดือน)</label>
-                                <input type="number" id="warrantyMonths" value={data.warrantyMonths} onChange={(e) => handleDataChange('warrantyMonths', parseInt(e.target.value) || 0)} inputMode="numeric" min={NUMBER_LIMITS.days.min} max={NUMBER_LIMITS.days.max} step={NUMBER_LIMITS.days.step} className="mt-1 block w-full rounded-md border-gray-300 dark:border-gray-600 shadow-sm focus:border-indigo-500 focus:ring-indigo-500 text-xs sm:text-sm bg-gray-50 dark:bg-slate-700 dark:text-gray-100" />
+                                <input type="number" id="warrantyMonths" value={data.warrantyMonths} onChange={(e) => handleDataChange('warrantyMonths', parseIntInput(e.target.value))} inputMode="numeric" min={NUMBER_LIMITS.days.min} max={NUMBER_LIMITS.days.max} step={NUMBER_LIMITS.days.step} className="mt-1 block w-full rounded-md border-gray-300 dark:border-gray-600 shadow-sm focus:border-indigo-500 focus:ring-indigo-500 text-xs sm:text-sm bg-gray-50 dark:bg-slate-700 dark:text-gray-100" />
                             </div>
                         </div>
                     )}
@@ -740,11 +769,11 @@ const SubcontractForm: React.FC<SubcontractFormProps> = ({
                         <div className="grid grid-cols-1 md:grid-cols-2 gap-3 sm:gap-4">
                             <div>
                                 <label htmlFor="abandonDays" className="block text-xs sm:text-sm font-medium text-slate-700 dark:text-slate-300">ไม่เข้าทำงานติดต่อกันเกิน (วัน)</label>
-                                <input type="number" id="abandonDays" value={data.abandonDays} onChange={(e) => handleDataChange('abandonDays', parseInt(e.target.value) || 0)} inputMode="numeric" min={NUMBER_LIMITS.days.min} max={NUMBER_LIMITS.days.max} step={NUMBER_LIMITS.days.step} className="mt-1 block w-full rounded-md border-gray-300 dark:border-gray-600 shadow-sm focus:border-indigo-500 focus:ring-indigo-500 text-xs sm:text-sm bg-gray-50 dark:bg-slate-700 dark:text-gray-100" />
+                                <input type="number" id="abandonDays" value={data.abandonDays} onChange={(e) => handleDataChange('abandonDays', parseIntInput(e.target.value))} inputMode="numeric" min={NUMBER_LIMITS.days.min} max={NUMBER_LIMITS.days.max} step={NUMBER_LIMITS.days.step} className="mt-1 block w-full rounded-md border-gray-300 dark:border-gray-600 shadow-sm focus:border-indigo-500 focus:ring-indigo-500 text-xs sm:text-sm bg-gray-50 dark:bg-slate-700 dark:text-gray-100" />
                             </div>
                             <div>
                                 <label htmlFor="penaltyPerDay" className="block text-xs sm:text-sm font-medium text-slate-700 dark:text-slate-300">ปรับเป็นรายวัน วันละ (บาท)</label>
-                                <input type="number" id="penaltyPerDay" value={data.penaltyPerDay} onChange={(e) => handleDataChange('penaltyPerDay', parseInt(e.target.value) || 0)} inputMode="decimal" min={NUMBER_LIMITS.price.min} max={NUMBER_LIMITS.price.max} step={NUMBER_LIMITS.price.step} className="mt-1 block w-full rounded-md border-gray-300 dark:border-gray-600 shadow-sm focus:border-indigo-500 focus:ring-indigo-500 text-xs sm:text-sm bg-gray-50 dark:bg-slate-700 dark:text-gray-100" />
+                                <input type="number" id="penaltyPerDay" value={data.penaltyPerDay} onChange={(e) => handleDataChange('penaltyPerDay', parseIntInput(e.target.value))} inputMode="decimal" min={NUMBER_LIMITS.price.min} max={NUMBER_LIMITS.price.max} step={NUMBER_LIMITS.price.step} className="mt-1 block w-full rounded-md border-gray-300 dark:border-gray-600 shadow-sm focus:border-indigo-500 focus:ring-indigo-500 text-xs sm:text-sm bg-gray-50 dark:bg-slate-700 dark:text-gray-100" />
                             </div>
                         </div>
                     )}

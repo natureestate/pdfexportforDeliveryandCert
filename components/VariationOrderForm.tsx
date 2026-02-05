@@ -1,11 +1,12 @@
 import React, { useRef, useState, useEffect } from 'react';
 import { VariationOrderData, VariationOrderItem, LogoType, EndCustomerProject } from '../types';
-import { formatDateForInput } from '../utils/dateUtils';
 import CustomerSelector from './CustomerSelector';
+import DatePicker from './DatePicker';
 import EndCustomerProjectSection from './EndCustomerProjectSection';
 import { generateDocumentNumber } from '../services/documentNumber';
 import { useCompany } from '../contexts/CompanyContext';
 import { INPUT_LIMITS, NUMBER_LIMITS } from '../utils/inputValidation';
+import { parseNumberInput, parseIntInput } from '../utils/numberInput';
 
 export interface VariationOrderFormProps {
     data: VariationOrderData;
@@ -137,7 +138,6 @@ const VariationOrderForm: React.FC<VariationOrderFormProps> = ({
             console.log('✅ [VO] Generated new document number:', newVoNumber);
         } catch (error) {
             console.error('❌ [VO] Error generating VO number:', error);
-            alert('ไม่สามารถสร้างเลขที่เอกสารได้ กรุณาลองใหม่อีกครั้ง');
         } finally {
             setIsGeneratingNumber(false);
         }
@@ -147,12 +147,16 @@ const VariationOrderForm: React.FC<VariationOrderFormProps> = ({
      * Auto-generate เลขที่เอกสารเมื่อฟอร์มว่างหรือเป็นค่า default
      * - ข้าม generate ถ้ากำลังแก้ไขเอกสารเดิม (isEditing = true)
      * - ข้าม generate ถ้ามีเลขเอกสารที่ valid อยู่แล้ว (จาก copy หรือ load)
+     * - ใช้ sessionStorage เก็บเลขที่ generate ไว้ป้องกันการ generate ซ้ำเมื่อ refresh
      */
     useEffect(() => {
+        const SESSION_KEY = 'variationorder_docNumber';
+        
         // ถ้ากำลังแก้ไขเอกสารเดิม ไม่ต้อง generate เลขใหม่
         if (isEditing) {
             console.log('⏭️ [VO] Skip auto-generate - isEditing mode');
             hasGeneratedNumberRef.current = true; // mark ว่าไม่ต้อง generate
+            sessionStorage.removeItem(SESSION_KEY);
             return;
         }
         
@@ -164,6 +168,15 @@ const VariationOrderForm: React.FC<VariationOrderFormProps> = ({
         if (hasValidNumber) {
             console.log('⏭️ [VO] Skip auto-generate - already has valid number:', data.voNumber);
             hasGeneratedNumberRef.current = true;
+            sessionStorage.setItem(SESSION_KEY, data.voNumber);
+            return;
+        }
+        
+        // ตรวจสอบ sessionStorage ว่ามีเลขที่ generate ไว้แล้วหรือไม่
+        const savedDocNumber = sessionStorage.getItem(SESSION_KEY);
+        if (savedDocNumber && savedDocNumber.match(/^VO-\d{6}\d{2}$/)) {
+            handleDataChange('voNumber', savedDocNumber);
+            hasGeneratedNumberRef.current = true;
             return;
         }
         
@@ -171,11 +184,6 @@ const VariationOrderForm: React.FC<VariationOrderFormProps> = ({
         const isDefaultOrEmpty = !data.voNumber || 
                                   data.voNumber.match(/^VO-\d{4}-\d{3}$/) || // รูปแบบเก่า
                                   data.voNumber === '';
-        
-        // ถ้า voNumber ว่างเปล่า ให้ reset flag เพื่อให้สามารถสร้างเลขใหม่ได้
-        if (isDefaultOrEmpty) {
-            hasGeneratedNumberRef.current = false;
-        }
         
         if (isDefaultOrEmpty && !hasGeneratedNumberRef.current && !isGeneratingNumber) {
             console.log('🔄 [VO] Auto-generating new document number...');
@@ -361,7 +369,13 @@ const VariationOrderForm: React.FC<VariationOrderFormProps> = ({
                 <div className="grid grid-cols-1 md:grid-cols-2 gap-3 sm:gap-4">
                     <div>
                         <label htmlFor="date" className="block text-xs sm:text-sm font-medium text-slate-700 dark:text-slate-300">วันที่ออกเอกสาร</label>
-                        <input type="date" id="date" value={formatDateForInput(data.date)} onChange={(e) => handleDataChange('date', e.target.value ? new Date(e.target.value) : null)} className="mt-1 block w-full rounded-md border-gray-300 dark:border-slate-600 shadow-sm focus:border-indigo-500 focus:ring-indigo-500 text-xs sm:text-sm bg-gray-50 dark:bg-slate-700 dark:text-gray-100" />
+                        <DatePicker
+                            id="date"
+                            value={data.date}
+                            onChange={(date) => handleDataChange('date', date)}
+                            placeholder="เลือกวันที่"
+                            className="mt-1"
+                        />
                     </div>
                     <div>
                         <label htmlFor="projectName" className="block text-xs sm:text-sm font-medium text-slate-700 dark:text-slate-300">โครงการ / ลูกค้า</label>
@@ -447,13 +461,13 @@ const VariationOrderForm: React.FC<VariationOrderFormProps> = ({
                                         <textarea value={item.description} onChange={(e) => handleItemChange(index, 'description', e.target.value)} rows={2} maxLength={INPUT_LIMITS.itemDescription} className="w-full rounded-md border-gray-300 dark:border-slate-600 shadow-sm focus:border-indigo-300 focus:ring-indigo-200 focus:ring-opacity-50 text-xs sm:text-sm bg-white dark:bg-slate-700 text-gray-900 dark:text-gray-100"></textarea>
                                     </td>
                                     <td className="px-1 sm:px-2 py-1 whitespace-nowrap">
-                                        <input type="number" value={item.quantity} onChange={(e) => handleItemChange(index, 'quantity', parseFloat(e.target.value) || 0)} inputMode="decimal" min={NUMBER_LIMITS.quantity.min} max={NUMBER_LIMITS.quantity.max} step={NUMBER_LIMITS.quantity.step} className="w-full rounded-md border-gray-300 dark:border-slate-600 shadow-sm focus:border-indigo-300 focus:ring-indigo-200 focus:ring-opacity-50 text-xs sm:text-sm bg-white dark:bg-slate-700 text-gray-900 dark:text-gray-100" />
+                                        <input type="number" value={item.quantity} onChange={(e) => handleItemChange(index, 'quantity', parseNumberInput(e.target.value))} inputMode="decimal" min={NUMBER_LIMITS.quantity.min} max={NUMBER_LIMITS.quantity.max} step={NUMBER_LIMITS.quantity.step} className="w-full rounded-md border-gray-300 dark:border-slate-600 shadow-sm focus:border-indigo-300 focus:ring-indigo-200 focus:ring-opacity-50 text-xs sm:text-sm bg-white dark:bg-slate-700 text-gray-900 dark:text-gray-100" />
                                     </td>
                                     <td className="px-1 sm:px-2 py-1 whitespace-nowrap">
                                         <input type="text" value={item.unit} onChange={(e) => handleItemChange(index, 'unit', e.target.value)} maxLength={INPUT_LIMITS.unit} className="w-full rounded-md border-gray-300 dark:border-slate-600 shadow-sm focus:border-indigo-300 focus:ring-indigo-200 focus:ring-opacity-50 text-xs sm:text-sm bg-white dark:bg-slate-700 text-gray-900 dark:text-gray-100" />
                                     </td>
                                     <td className="px-1 sm:px-2 py-1 whitespace-nowrap">
-                                        <input type="number" step="0.01" value={item.unitPrice} onChange={(e) => handleItemChange(index, 'unitPrice', parseFloat(e.target.value) || 0)} inputMode="decimal" min={NUMBER_LIMITS.price.min} max={NUMBER_LIMITS.price.max} className="w-full rounded-md border-gray-300 dark:border-slate-600 shadow-sm focus:border-indigo-300 focus:ring-indigo-200 focus:ring-opacity-50 text-xs sm:text-sm bg-white dark:bg-slate-700 text-gray-900 dark:text-gray-100" />
+                                        <input type="number" step="0.01" value={item.unitPrice} onChange={(e) => handleItemChange(index, 'unitPrice', parseNumberInput(e.target.value))} inputMode="decimal" min={NUMBER_LIMITS.price.min} max={NUMBER_LIMITS.price.max} className="w-full rounded-md border-gray-300 dark:border-slate-600 shadow-sm focus:border-indigo-300 focus:ring-indigo-200 focus:ring-opacity-50 text-xs sm:text-sm bg-white dark:bg-slate-700 text-gray-900 dark:text-gray-100" />
                                     </td>
                                     <td className="px-1 sm:px-2 py-1 whitespace-nowrap">
                                         <input type="number" step="0.01" value={item.amount} readOnly className={`w-full rounded-md border-gray-300 dark:border-slate-600 shadow-sm text-xs sm:text-sm font-medium ${item.itemType === 'new' ? 'bg-green-100 dark:bg-green-900/40 text-green-900 dark:text-green-200' : 'bg-red-100 dark:bg-red-900/40 text-red-900 dark:text-red-200'}`} />
@@ -475,7 +489,7 @@ const VariationOrderForm: React.FC<VariationOrderFormProps> = ({
                     <div className="space-y-3 sm:space-y-4">
                         <div className="flex flex-col sm:flex-row sm:justify-between sm:items-center gap-2">
                             <label htmlFor="taxRate" className="block text-xs sm:text-sm font-medium text-slate-700 dark:text-slate-300">อัตราภาษีมูลค่าเพิ่ม (%)</label>
-                            <input type="number" id="taxRate" value={data.taxRate} onChange={(e) => handleDataChange('taxRate', parseFloat(e.target.value) || 0)} inputMode="decimal" min={NUMBER_LIMITS.percentage.min} max={NUMBER_LIMITS.percentage.max} step={NUMBER_LIMITS.percentage.step} className="w-full sm:w-24 rounded-md border-gray-300 dark:border-slate-600 shadow-sm focus:border-indigo-500 focus:ring-indigo-500 text-xs sm:text-sm bg-gray-50 dark:bg-slate-700 dark:text-gray-100" />
+                            <input type="number" id="taxRate" value={data.taxRate} onChange={(e) => handleDataChange('taxRate', parseNumberInput(e.target.value))} inputMode="decimal" min={NUMBER_LIMITS.percentage.min} max={NUMBER_LIMITS.percentage.max} step={NUMBER_LIMITS.percentage.step} className="w-full sm:w-24 rounded-md border-gray-300 dark:border-slate-600 shadow-sm focus:border-indigo-500 focus:ring-indigo-500 text-xs sm:text-sm bg-gray-50 dark:bg-slate-700 dark:text-gray-100" />
                         </div>
                         <div>
                             <label htmlFor="paymentNote" className="block text-xs sm:text-sm font-medium text-slate-700 dark:text-slate-300">หมายเหตุการชำระเงิน</label>
@@ -521,7 +535,7 @@ const VariationOrderForm: React.FC<VariationOrderFormProps> = ({
                         <>
                             <div>
                                 <label htmlFor="timeImpactDays" className="block text-xs sm:text-sm font-medium text-slate-700 dark:text-slate-300">จำนวนวันที่ขยายออกไป (วันทำการ)</label>
-                                <input type="number" id="timeImpactDays" value={data.timeImpactDays || 0} onChange={(e) => handleDataChange('timeImpactDays', parseFloat(e.target.value) || 0)} inputMode="numeric" min={0} max={9999} className="mt-1 block w-full rounded-md border-gray-300 dark:border-slate-600 shadow-sm focus:border-indigo-500 focus:ring-indigo-500 text-xs sm:text-sm bg-gray-50 dark:bg-slate-700 dark:text-gray-100" />
+                                <input type="number" id="timeImpactDays" value={data.timeImpactDays || 0} onChange={(e) => handleDataChange('timeImpactDays', parseIntInput(e.target.value))} inputMode="numeric" min={0} max={9999} className="mt-1 block w-full rounded-md border-gray-300 dark:border-slate-600 shadow-sm focus:border-indigo-500 focus:ring-indigo-500 text-xs sm:text-sm bg-gray-50 dark:bg-slate-700 dark:text-gray-100" />
                             </div>
                             <div>
                                 <label htmlFor="timeImpactReason" className="block text-xs sm:text-sm font-medium text-slate-700 dark:text-slate-300">เหตุผล</label>
@@ -545,7 +559,13 @@ const VariationOrderForm: React.FC<VariationOrderFormProps> = ({
                         </div>
                         <div>
                             <label htmlFor="customerApproverDate" className="block text-xs sm:text-sm font-medium text-slate-700 dark:text-slate-300">วันที่อนุมัติ (ลูกค้า)</label>
-                            <input type="date" id="customerApproverDate" value={formatDateForInput(data.customerApproverDate)} onChange={(e) => handleDataChange('customerApproverDate', e.target.value ? new Date(e.target.value) : null)} className="mt-1 block w-full rounded-md border-gray-300 dark:border-slate-600 shadow-sm focus:border-indigo-500 focus:ring-indigo-500 text-xs sm:text-sm bg-gray-50 dark:bg-slate-700 dark:text-gray-100" />
+                            <DatePicker
+                                id="customerApproverDate"
+                                value={data.customerApproverDate}
+                                onChange={(date) => handleDataChange('customerApproverDate', date)}
+                                placeholder="เลือกวันที่"
+                                className="mt-1"
+                            />
                         </div>
                         <div>
                             <label htmlFor="companyApproverName" className="block text-xs sm:text-sm font-medium text-slate-700 dark:text-slate-300">ชื่อผู้เสนอ (บริษัท)</label>
@@ -553,7 +573,13 @@ const VariationOrderForm: React.FC<VariationOrderFormProps> = ({
                         </div>
                         <div>
                             <label htmlFor="companyApproverDate" className="block text-xs sm:text-sm font-medium text-slate-700 dark:text-slate-300">วันที่เสนอ (บริษัท)</label>
-                            <input type="date" id="companyApproverDate" value={formatDateForInput(data.companyApproverDate)} onChange={(e) => handleDataChange('companyApproverDate', e.target.value ? new Date(e.target.value) : null)} className="mt-1 block w-full rounded-md border-gray-300 dark:border-slate-600 shadow-sm focus:border-indigo-500 focus:ring-indigo-500 text-xs sm:text-sm bg-gray-50 dark:bg-slate-700 dark:text-gray-100" />
+                            <DatePicker
+                                id="companyApproverDate"
+                                value={data.companyApproverDate}
+                                onChange={(date) => handleDataChange('companyApproverDate', date)}
+                                placeholder="เลือกวันที่"
+                                className="mt-1"
+                            />
                         </div>
                     </div>
                 </div>

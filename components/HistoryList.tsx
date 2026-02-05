@@ -110,7 +110,7 @@ const HistoryList: React.FC<HistoryListProps> = ({ activeDocType, onLoadDocument
             setDeleteConfirm(null);
         } catch (err) {
             console.error('❌ Error deleting document:', err);
-            alert('ไม่สามารถลบเอกสารได้: ' + (err instanceof Error ? err.message : 'Unknown error'));
+            console.error('ไม่สามารถลบเอกสารได้: ' + (err instanceof Error ? err.message : 'Unknown error'));
         }
     };
 
@@ -124,16 +124,15 @@ const HistoryList: React.FC<HistoryListProps> = ({ activeDocType, onLoadDocument
             
             if (result.success) {
                 console.log(`✅ ยกเลิกเอกสาร ${cancelConfirm.docNumber} สำเร็จ`);
-                alert(`✅ ยกเลิกเอกสาร ${cancelConfirm.docNumber} สำเร็จ`);
                 setCancelConfirm(null);
                 setCancelReason('');
                 fetchData(); // รีเฟรชรายการ
             } else {
-                alert(`❌ ${result.error}`);
+                console.error(`❌ ${result.error}`);
             }
         } catch (err) {
             console.error('❌ Error cancelling document:', err);
-            alert('ไม่สามารถยกเลิกเอกสารได้: ' + (err instanceof Error ? err.message : 'Unknown error'));
+            console.error('ไม่สามารถยกเลิกเอกสารได้: ' + (err instanceof Error ? err.message : 'Unknown error'));
         } finally {
             setCancellingId(null);
         }
@@ -147,14 +146,13 @@ const HistoryList: React.FC<HistoryListProps> = ({ activeDocType, onLoadDocument
             
             if (result.success) {
                 console.log(`✅ กู้คืนเอกสารสำเร็จ`);
-                alert('✅ กู้คืนเอกสารสำเร็จ');
                 fetchData(); // รีเฟรชรายการ
             } else {
-                alert(`❌ ${result.error}`);
+                console.error(`❌ ${result.error}`);
             }
         } catch (err) {
             console.error('❌ Error restoring document:', err);
-            alert('ไม่สามารถกู้คืนเอกสารได้: ' + (err instanceof Error ? err.message : 'Unknown error'));
+            console.error('ไม่สามารถกู้คืนเอกสารได้: ' + (err instanceof Error ? err.message : 'Unknown error'));
         } finally {
             setRestoringId(null);
         }
@@ -181,13 +179,13 @@ const HistoryList: React.FC<HistoryListProps> = ({ activeDocType, onLoadDocument
                     onLoadDocument(result.data);
                 }
                 
-                alert(`✅ Copy เอกสารสำเร็จ! เลขที่เอกสารใหม่: ${result.newDocNumber}\nกรุณาตรวจสอบและบันทึกเอกสาร`);
+                console.log(`✅ Copy เอกสารสำเร็จ! เลขที่เอกสารใหม่: ${result.newDocNumber}\nกรุณาตรวจสอบและบันทึกเอกสาร`);
             } else {
-                alert(`❌ ${result.error || 'ไม่สามารถ copy เอกสารได้'}`);
+                console.error(`❌ ${result.error || 'ไม่สามารถ copy เอกสารได้'}`);
             }
         } catch (err) {
             console.error('❌ Error copying document:', err);
-            alert('ไม่สามารถ copy เอกสารได้: ' + (err instanceof Error ? err.message : 'Unknown error'));
+            console.error('ไม่สามารถ copy เอกสารได้: ' + (err instanceof Error ? err.message : 'Unknown error'));
         } finally {
             setCopyingId(null);
         }
@@ -201,14 +199,13 @@ const HistoryList: React.FC<HistoryListProps> = ({ activeDocType, onLoadDocument
             
             if (result.success) {
                 console.log(`✅ Lock เอกสารสำเร็จ`);
-                alert('✅ Lock เอกสารสำเร็จ');
                 fetchData(); // รีเฟรชรายการ
             } else {
-                alert(`❌ ${result.error}`);
+                console.error(`❌ ${result.error}`);
             }
         } catch (err) {
             console.error('❌ Error locking document:', err);
-            alert('ไม่สามารถ lock เอกสารได้: ' + (err instanceof Error ? err.message : 'Unknown error'));
+            console.error('ไม่สามารถ lock เอกสารได้: ' + (err instanceof Error ? err.message : 'Unknown error'));
         } finally {
             setLockingId(null);
         }
@@ -222,14 +219,13 @@ const HistoryList: React.FC<HistoryListProps> = ({ activeDocType, onLoadDocument
             
             if (result.success) {
                 console.log(`✅ Unlock เอกสารสำเร็จ`);
-                alert('✅ Unlock เอกสารสำเร็จ');
                 fetchData(); // รีเฟรชรายการ
             } else {
-                alert(`❌ ${result.error}`);
+                console.error(`❌ ${result.error}`);
             }
         } catch (err) {
             console.error('❌ Error unlocking document:', err);
-            alert('ไม่สามารถ unlock เอกสารได้: ' + (err instanceof Error ? err.message : 'Unknown error'));
+            console.error('ไม่สามารถ unlock เอกสารได้: ' + (err instanceof Error ? err.message : 'Unknown error'));
         } finally {
             setUnlockingId(null);
         }
@@ -243,14 +239,13 @@ const HistoryList: React.FC<HistoryListProps> = ({ activeDocType, onLoadDocument
             
             if (result.success) {
                 console.log(`✅ Archive เอกสารสำเร็จ`);
-                alert('✅ Archive เอกสารสำเร็จ');
                 fetchData(); // รีเฟรชรายการ
             } else {
-                alert(`❌ ${result.error}`);
+                console.error(`❌ ${result.error}`);
             }
         } catch (err) {
             console.error('❌ Error archiving document:', err);
-            alert('ไม่สามารถ archive เอกสารได้: ' + (err instanceof Error ? err.message : 'Unknown error'));
+            console.error('ไม่สามารถ archive เอกสารได้: ' + (err instanceof Error ? err.message : 'Unknown error'));
         } finally {
             setArchivingId(null);
         }
@@ -264,14 +259,13 @@ const HistoryList: React.FC<HistoryListProps> = ({ activeDocType, onLoadDocument
             
             if (result.success) {
                 console.log(`✅ Unarchive เอกสารสำเร็จ`);
-                alert('✅ Unarchive เอกสารสำเร็จ');
                 fetchData(); // รีเฟรชรายการ
             } else {
-                alert(`❌ ${result.error}`);
+                console.error(`❌ ${result.error}`);
             }
         } catch (err) {
             console.error('❌ Error unarchiving document:', err);
-            alert('ไม่สามารถ unarchive เอกสารได้: ' + (err instanceof Error ? err.message : 'Unknown error'));
+            console.error('ไม่สามารถ unarchive เอกสารได้: ' + (err instanceof Error ? err.message : 'Unknown error'));
         } finally {
             setUnarchivingId(null);
         }
@@ -365,7 +359,7 @@ const HistoryList: React.FC<HistoryListProps> = ({ activeDocType, onLoadDocument
                     
                     // ตรวจสอบว่า Free plan สามารถ export PDF ได้หรือไม่
                     if (!quota.features.exportPDF) {
-                        alert('❌ Free plan ไม่สามารถ Export PDF ได้ กรุณาอัพเกรดแผน');
+                        console.warn('❌ Free plan ไม่สามารถ Export PDF ได้ กรุณาอัพเกรดแผน');
                         setDownloadingPdfId(null);
                         return;
                     }
@@ -401,7 +395,7 @@ const HistoryList: React.FC<HistoryListProps> = ({ activeDocType, onLoadDocument
             console.log('✅ PDF downloaded successfully');
         } catch (error) {
             console.error('❌ Error downloading PDF:', error);
-            alert('ไม่สามารถดาวน์โหลด PDF ได้: ' + (error instanceof Error ? error.message : 'Unknown error'));
+            console.error('ไม่สามารถดาวน์โหลด PDF ได้: ' + (error instanceof Error ? error.message : 'Unknown error'));
         } finally {
             setDownloadingPdfId(null);
         }
@@ -420,7 +414,7 @@ const HistoryList: React.FC<HistoryListProps> = ({ activeDocType, onLoadDocument
                     
                     // ตรวจสอบว่า Free plan สามารถ export PDF ได้หรือไม่
                     if (!quota.features.exportPDF) {
-                        alert('❌ Free plan ไม่สามารถ Export PDF ได้ กรุณาอัพเกรดแผน');
+                        console.warn('❌ Free plan ไม่สามารถ Export PDF ได้ กรุณาอัพเกรดแผน');
                         setDownloadingPdfId(null);
                         return;
                     }
@@ -459,7 +453,7 @@ const HistoryList: React.FC<HistoryListProps> = ({ activeDocType, onLoadDocument
             console.log('✅ PDF downloaded successfully');
         } catch (error) {
             console.error('❌ Error downloading PDF:', error);
-            alert('ไม่สามารถดาวน์โหลด PDF ได้: ' + (error instanceof Error ? error.message : 'Unknown error'));
+            console.error('ไม่สามารถดาวน์โหลด PDF ได้: ' + (error instanceof Error ? error.message : 'Unknown error'));
         } finally {
             setDownloadingPdfId(null);
             // ล้างข้อมูล preview หลังจาก download เสร็จ (รอสักครู่เพื่อให้ PDF สร้างเสร็จ)
@@ -484,7 +478,7 @@ const HistoryList: React.FC<HistoryListProps> = ({ activeDocType, onLoadDocument
                     
                     // ตรวจสอบว่า Free plan สามารถ export ได้หรือไม่
                     if (!quota.features.exportPDF) {
-                        alert('❌ Free plan ไม่สามารถ Export ได้ กรุณาอัพเกรดแผน');
+                        console.warn('❌ Free plan ไม่สามารถ Export ได้ กรุณาอัพเกรดแผน');
                         setDownloadingPdfId(null);
                         return;
                     }
@@ -517,7 +511,7 @@ const HistoryList: React.FC<HistoryListProps> = ({ activeDocType, onLoadDocument
             console.log('✅ PNG downloaded successfully');
         } catch (error) {
             console.error('❌ Error downloading PNG:', error);
-            alert('ไม่สามารถดาวน์โหลด PNG ได้: ' + (error instanceof Error ? error.message : 'Unknown error'));
+            console.error('ไม่สามารถดาวน์โหลด PNG ได้: ' + (error instanceof Error ? error.message : 'Unknown error'));
         } finally {
             setDownloadingPdfId(null);
         }
@@ -535,7 +529,7 @@ const HistoryList: React.FC<HistoryListProps> = ({ activeDocType, onLoadDocument
                     const quota = await getQuota(currentCompany.id);
                     
                     if (!quota.features.exportPDF) {
-                        alert('❌ Free plan ไม่สามารถ Export ได้ กรุณาอัพเกรดแผน');
+                        console.warn('❌ Free plan ไม่สามารถ Export ได้ กรุณาอัพเกรดแผน');
                         setDownloadingPdfId(null);
                         return;
                     }
@@ -571,7 +565,7 @@ const HistoryList: React.FC<HistoryListProps> = ({ activeDocType, onLoadDocument
             console.log('✅ PNG downloaded successfully');
         } catch (error) {
             console.error('❌ Error downloading PNG:', error);
-            alert('ไม่สามารถดาวน์โหลด PNG ได้: ' + (error instanceof Error ? error.message : 'Unknown error'));
+            console.error('ไม่สามารถดาวน์โหลด PNG ได้: ' + (error instanceof Error ? error.message : 'Unknown error'));
         } finally {
             setDownloadingPdfId(null);
             setTimeout(() => {

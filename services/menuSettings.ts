@@ -46,7 +46,6 @@ export const getMenuSettings = async (companyId: string): Promise<CompanyMenuSet
         const docSnap = await getDoc(docRef);
 
         if (!docSnap.exists()) {
-            console.log('ℹ️ ยังไม่มีการตั้งค่าเมนูสำหรับบริษัทนี้, ใช้ค่า default');
             return null;
         }
 
@@ -59,8 +58,7 @@ export const getMenuSettings = async (companyId: string): Promise<CompanyMenuSet
             updatedAt: data.updatedAt?.toDate(),
             updatedBy: data.updatedBy,
         };
-    } catch (error) {
-        console.error('❌ ดึงการตั้งค่าเมนูล้มเหลว:', error);
+    } catch {
         return null;
     }
 };
@@ -95,8 +93,7 @@ export const getMenusForRole = async (
         return roleSettings.menus
             .filter(menu => menu.visible)
             .sort((a, b) => a.order - b.order);
-    } catch (error) {
-        console.error('❌ ดึงเมนูสำหรับ role ล้มเหลว:', error);
+    } catch {
         return [...DEFAULT_MENU_CONFIG];
     }
 };
@@ -127,8 +124,7 @@ export const getAllMenusForRole = async (
 
         // จัดเรียงตาม order แต่ไม่ filter visible
         return roleSettings.menus.sort((a, b) => a.order - b.order);
-    } catch (error) {
-        console.error('❌ ดึงเมนูทั้งหมดสำหรับ role ล้มเหลว:', error);
+    } catch {
         return [...DEFAULT_MENU_CONFIG];
     }
 };
@@ -186,10 +182,7 @@ export const saveMenuSettingsForRole = async (
             updatedAt: Timestamp.now(),
             updatedBy: currentUser.uid,
         });
-
-        console.log('✅ บันทึกการตั้งค่าเมนูสำเร็จ:', companyId, 'role:', role);
     } catch (error) {
-        console.error('❌ บันทึกการตั้งค่าเมนูล้มเหลว:', error);
         throw error;
     }
 };
@@ -232,10 +225,7 @@ export const resetMenuSettings = async (
                 updatedBy: currentUser.uid,
             });
         }
-
-        console.log('✅ รีเซ็ตการตั้งค่าเมนูสำเร็จ:', companyId);
     } catch (error) {
-        console.error('❌ รีเซ็ตการตั้งค่าเมนูล้มเหลว:', error);
         throw error;
     }
 };
@@ -260,9 +250,7 @@ export const toggleMenuVisibility = async (
         );
         
         await saveMenuSettingsForRole(companyId, role, updatedMenus);
-        console.log('✅ สลับการแสดงเมนูสำเร็จ:', menuId);
     } catch (error) {
-        console.error('❌ สลับการแสดงเมนูล้มเหลว:', error);
         throw error;
     }
 };
@@ -308,9 +296,7 @@ export const moveMenu = async (
         }));
 
         await saveMenuSettingsForRole(companyId, role, updatedMenus);
-        console.log('✅ ย้ายเมนูสำเร็จ:', menuId, direction);
     } catch (error) {
-        console.error('❌ ย้ายเมนูล้มเหลว:', error);
         throw error;
     }
 };
@@ -352,9 +338,7 @@ export const reorderMenus = async (
         }
 
         await saveMenuSettingsForRole(companyId, role, reorderedMenus);
-        console.log('✅ จัดเรียงเมนูใหม่สำเร็จ');
     } catch (error) {
-        console.error('❌ จัดเรียงเมนูใหม่ล้มเหลว:', error);
         throw error;
     }
 };
@@ -373,9 +357,7 @@ export const copyMenuSettings = async (
     try {
         const sourceMenus = await getAllMenusForRole(companyId, fromRole);
         await saveMenuSettingsForRole(companyId, toRole, sourceMenus);
-        console.log('✅ คัดลอกการตั้งค่าเมนูสำเร็จ:', fromRole, '→', toRole);
     } catch (error) {
-        console.error('❌ คัดลอกการตั้งค่าเมนูล้มเหลว:', error);
         throw error;
     }
 };
@@ -426,8 +408,7 @@ export const getUserMenuSettings = async (
             updatedAt: data.updatedAt?.toDate(),
             updatedBy: data.updatedBy,
         };
-    } catch (error) {
-        console.error('❌ ดึงการตั้งค่าเมนูของ user ล้มเหลว:', error);
+    } catch {
         return null;
     }
 };
@@ -451,17 +432,14 @@ export const getMenusForUser = async (
         
         if (userSettings && userSettings.useCustomSettings && userSettings.menus.length > 0) {
             // ใช้การตั้งค่าเฉพาะ user
-            console.log('📋 [MenuSettings] ใช้การตั้งค่าเฉพาะ user:', userId);
             return userSettings.menus
                 .filter(menu => menu.visible)
                 .sort((a, b) => a.order - b.order);
         }
 
         // 2. ถ้าไม่มีการตั้งค่าเฉพาะ user ใช้ค่าจาก role
-        console.log('📋 [MenuSettings] ใช้การตั้งค่าจาก role:', role);
         return await getMenusForRole(companyId, role);
-    } catch (error) {
-        console.error('❌ ดึงเมนูสำหรับ user ล้มเหลว:', error);
+    } catch {
         return [...DEFAULT_MENU_CONFIG];
     }
 };
@@ -486,8 +464,7 @@ export const getAllMenusForUser = async (
         }
 
         return await getAllMenusForRole(companyId, role);
-    } catch (error) {
-        console.error('❌ ดึงเมนูทั้งหมดสำหรับ user ล้มเหลว:', error);
+    } catch {
         return [...DEFAULT_MENU_CONFIG];
     }
 };
@@ -538,10 +515,7 @@ export const saveUserMenuSettings = async (
             updatedAt: Timestamp.now(),
             updatedBy: currentUser.uid,
         });
-
-        console.log('✅ บันทึกการตั้งค่าเมนูของ user สำเร็จ:', targetUserId);
     } catch (error) {
-        console.error('❌ บันทึกการตั้งค่าเมนูของ user ล้มเหลว:', error);
         throw error;
     }
 };
@@ -571,10 +545,7 @@ export const removeUserMenuSettings = async (
         const docRef = doc(db, USER_MENU_SETTINGS_COLLECTION, docId);
         
         await deleteDoc(docRef);
-
-        console.log('✅ ลบการตั้งค่าเมนูของ user สำเร็จ:', targetUserId);
     } catch (error) {
-        console.error('❌ ลบการตั้งค่าเมนูของ user ล้มเหลว:', error);
         throw error;
     }
 };
@@ -631,10 +602,8 @@ export const getMembersWithMenuSettings = async (
             };
         });
 
-        console.log('📋 ดึงสมาชิกพร้อมการตั้งค่าเมนูสำเร็จ:', result.length, 'คน');
         return result;
-    } catch (error) {
-        console.error('❌ ดึงสมาชิกพร้อมการตั้งค่าเมนูล้มเหลว:', error);
+    } catch {
         return [];
     }
 };
@@ -657,9 +626,7 @@ export const copyRoleSettingsToUser = async (
     try {
         const roleMenus = await getAllMenusForRole(companyId, role);
         await saveUserMenuSettings(companyId, targetUserId, roleMenus, userEmail, userDisplayName);
-        console.log('✅ คัดลอกการตั้งค่าจาก role ไปยัง user สำเร็จ:', role, '→', targetUserId);
     } catch (error) {
-        console.error('❌ คัดลอกการตั้งค่าจาก role ไปยัง user ล้มเหลว:', error);
         throw error;
     }
 };

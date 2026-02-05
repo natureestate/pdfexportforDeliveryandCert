@@ -311,7 +311,7 @@ const MenuSettingsModal: React.FC<MenuSettingsModalProps> = ({
             
             {/* Modal */}
             <div className="flex min-h-full items-center justify-center p-4">
-                <div className="relative w-full max-w-2xl bg-white rounded-xl shadow-2xl transform transition-all">
+                <div className="relative w-full max-w-2xl bg-white dark:bg-slate-800 rounded-xl shadow-2xl transform transition-all">
                     {/* Notification */}
                     {notification.show && (
                         <div className={`absolute top-4 left-1/2 transform -translate-x-1/2 px-4 py-2 rounded-lg shadow-lg z-10 flex items-center gap-2 ${
@@ -326,28 +326,28 @@ const MenuSettingsModal: React.FC<MenuSettingsModalProps> = ({
                     )}
                     
                     {/* Header */}
-                    <div className="flex items-center justify-between p-4 border-b border-gray-200">
+                    <div className="flex items-center justify-between p-4 border-b border-gray-200 dark:border-slate-600">
                         <div className="flex items-center gap-3">
-                            <div className="p-2 bg-indigo-100 rounded-lg">
-                                <Settings className="w-6 h-6 text-indigo-600" />
+                            <div className="p-2 bg-indigo-100 dark:bg-indigo-900/30 rounded-lg">
+                                <Settings className="w-6 h-6 text-indigo-600 dark:text-indigo-400" />
                             </div>
                             <div>
-                                <h2 className="text-lg font-semibold text-gray-900">ตั้งค่าเมนู</h2>
-                                <p className="text-sm text-gray-500">เลือกเมนูที่ต้องการแสดงและจัดลำดับ</p>
+                                <h2 className="text-lg font-semibold text-gray-900 dark:text-gray-100">ตั้งค่าเมนู</h2>
+                                <p className="text-sm text-gray-500 dark:text-gray-400">เลือกเมนูที่ต้องการแสดงและจัดลำดับ</p>
                             </div>
                         </div>
                         <button
                             onClick={onClose}
-                            className="p-2 text-gray-400 hover:text-gray-500 hover:bg-gray-100 rounded-lg transition-colors"
+                            className="p-2 text-gray-400 hover:text-gray-500 dark:hover:text-gray-300 hover:bg-gray-100 dark:hover:bg-slate-700 rounded-lg transition-colors"
                         >
                             <X className="w-5 h-5" />
                         </button>
                     </div>
 
                     {/* Role Selector */}
-                    <div className="p-4 border-b border-gray-200 bg-gray-50">
+                    <div className="p-4 border-b border-gray-200 dark:border-slate-600 bg-gray-50 dark:bg-slate-700">
                         <div className="flex items-center justify-between mb-2">
-                            <span className="text-sm font-medium text-gray-700">ตั้งค่าสำหรับ:</span>
+                            <span className="text-sm font-medium text-gray-700 dark:text-gray-300">ตั้งค่าสำหรับ:</span>
                             {/* ปุ่มตั้งค่ารายบุคคล */}
                             {isAdmin && onOpenUserSettings && (
                                 <button
@@ -367,8 +367,8 @@ const MenuSettingsModal: React.FC<MenuSettingsModalProps> = ({
                                 onClick={() => setSelectedRole('admin')}
                                 className={`flex-1 flex items-center justify-center gap-2 px-4 py-2.5 rounded-lg border-2 transition-all ${
                                     selectedRole === 'admin'
-                                        ? 'border-indigo-500 bg-indigo-50 text-indigo-700'
-                                        : 'border-gray-200 bg-white text-gray-600 hover:border-gray-300'
+                                        ? 'border-indigo-500 bg-indigo-50 dark:bg-indigo-900/30 text-indigo-700 dark:text-indigo-300'
+                                        : 'border-gray-200 dark:border-slate-600 bg-white dark:bg-slate-700 text-gray-600 dark:text-gray-300 hover:border-gray-300 dark:hover:border-slate-500'
                                 }`}
                             >
                                 <UserCog className="w-4 h-4" />
@@ -378,8 +378,8 @@ const MenuSettingsModal: React.FC<MenuSettingsModalProps> = ({
                                 onClick={() => setSelectedRole('member')}
                                 className={`flex-1 flex items-center justify-center gap-2 px-4 py-2.5 rounded-lg border-2 transition-all ${
                                     selectedRole === 'member'
-                                        ? 'border-indigo-500 bg-indigo-50 text-indigo-700'
-                                        : 'border-gray-200 bg-white text-gray-600 hover:border-gray-300'
+                                        ? 'border-indigo-500 bg-indigo-50 dark:bg-indigo-900/30 text-indigo-700 dark:text-indigo-300'
+                                        : 'border-gray-200 dark:border-slate-600 bg-white dark:bg-slate-700 text-gray-600 dark:text-gray-300 hover:border-gray-300 dark:hover:border-slate-500'
                                 }`}
                             >
                                 <Users className="w-4 h-4" />
@@ -490,14 +490,14 @@ const MenuSettingsModal: React.FC<MenuSettingsModalProps> = ({
                     </div>
 
                     {/* Footer */}
-                    <div className="flex flex-col sm:flex-row items-stretch sm:items-center justify-between gap-3 p-4 border-t border-gray-200 bg-gray-50 rounded-b-xl">
+                    <div className="flex flex-col sm:flex-row items-stretch sm:items-center justify-between gap-3 p-4 border-t border-gray-200 dark:border-slate-600 bg-gray-50 dark:bg-slate-700 rounded-b-xl">
                         <div className="flex gap-2">
                             {isAdmin && (
                                 <>
                                     <button
                                         onClick={handleReset}
                                         disabled={isSaving}
-                                        className="flex items-center gap-1.5 px-3 py-2 text-sm text-gray-600 hover:text-gray-800 hover:bg-gray-200 rounded-lg transition-colors disabled:opacity-50"
+                                        className="flex items-center gap-1.5 px-3 py-2 text-sm text-gray-600 dark:text-gray-300 hover:text-gray-800 dark:hover:text-gray-100 hover:bg-gray-200 dark:hover:bg-slate-600 rounded-lg transition-colors disabled:opacity-50"
                                     >
                                         <RotateCcw className="w-4 h-4" />
                                         รีเซ็ต
@@ -505,7 +505,7 @@ const MenuSettingsModal: React.FC<MenuSettingsModalProps> = ({
                                     <button
                                         onClick={handleCopySettings}
                                         disabled={isSaving}
-                                        className="flex items-center gap-1.5 px-3 py-2 text-sm text-gray-600 hover:text-gray-800 hover:bg-gray-200 rounded-lg transition-colors disabled:opacity-50"
+                                        className="flex items-center gap-1.5 px-3 py-2 text-sm text-gray-600 dark:text-gray-300 hover:text-gray-800 dark:hover:text-gray-100 hover:bg-gray-200 dark:hover:bg-slate-600 rounded-lg transition-colors disabled:opacity-50"
                                         title={`คัดลอกไปยัง ${selectedRole === 'admin' ? 'Member' : 'Admin'}`}
                                     >
                                         <Copy className="w-4 h-4" />

@@ -42,7 +42,11 @@ const OnboardingPage: React.FC = () => {
      * จัดการเมื่อ join สำเร็จ
      */
     const handleJoinSuccess = async () => {
+        // รอให้ Firestore sync ก่อน refresh
+        await new Promise(resolve => setTimeout(resolve, 500));
         await refreshCompanies();
+        // รอ context อัปเดต state ก่อน navigate
+        await new Promise(resolve => setTimeout(resolve, 500));
         navigate('/');
     };
 

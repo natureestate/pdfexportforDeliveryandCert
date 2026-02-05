@@ -8,6 +8,7 @@ import { ServiceTemplate } from '../types';
 import { getUserServiceTemplates, deleteServiceTemplate, saveServiceTemplate } from '../services/serviceTemplates';
 import { useAuth } from '../contexts/AuthContext';
 import { Save } from 'lucide-react';
+import { useConfirm } from './ConfirmDialog';
 
 interface ServiceTemplateSelectorProps {
     onSelect: (template: ServiceTemplate) => void;
@@ -16,6 +17,7 @@ interface ServiceTemplateSelectorProps {
 
 const ServiceTemplateSelector: React.FC<ServiceTemplateSelectorProps> = ({ onSelect, onSaveNew }) => {
     const { user } = useAuth();
+    const { confirm } = useConfirm();
     const [templates, setTemplates] = useState<ServiceTemplate[]>([]);
     const [isLoading, setIsLoading] = useState(true);
     const [searchText, setSearchText] = useState('');
@@ -64,7 +66,7 @@ const ServiceTemplateSelector: React.FC<ServiceTemplateSelectorProps> = ({ onSel
             await deleteServiceTemplate(id);
             await loadTemplates(); // โหลดใหม่
         } catch (error) {
-            alert('ไม่สามารถลบ Template ได้');
+            console.error('ไม่สามารถลบ Template ได้', error);
         }
     };
 
@@ -75,7 +77,7 @@ const ServiceTemplateSelector: React.FC<ServiceTemplateSelectorProps> = ({ onSel
         if (!user) return;
         
         if (!newTemplate.serviceName || !newTemplate.productDetail) {
-            alert('กรุณากรอกประเภทสินค้าและรายการสินค้า');
+            console.error('กรุณากรอกประเภทสินค้าและรายการสินค้า');
             return;
         }
 
@@ -96,9 +98,8 @@ const ServiceTemplateSelector: React.FC<ServiceTemplateSelectorProps> = ({ onSel
             });
             
             await loadTemplates(); // โหลดใหม่
-            alert('✅ บันทึก Template สำเร็จ!');
         } catch (error) {
-            alert('ไม่สามารถบันทึก Template ได้');
+            console.error('ไม่สามารถบันทึก Template ได้', error);
         }
     };
 

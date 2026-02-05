@@ -163,12 +163,12 @@ const SharedDocumentPage: React.FC = () => {
     // ดาวน์โหลด PDF
     const handleDownloadPdf = async () => {
         if (!shareLink?.permissions.canDownload) {
-            alert('ลิงก์นี้ไม่อนุญาตให้ดาวน์โหลด');
+            console.warn('ลิงก์นี้ไม่อนุญาตให้ดาวน์โหลด');
             return;
         }
 
         if (!printableAreaRef.current || !documentData) {
-            alert('ไม่สามารถดาวน์โหลดได้');
+            console.error('ไม่สามารถดาวน์โหลดได้ - ไม่พบ printable area หรือ document data');
             return;
         }
 
@@ -177,8 +177,7 @@ const SharedDocumentPage: React.FC = () => {
             const filename = `${DOC_TYPE_NAMES[shareLink.documentType]}_${shareLink.documentNumber}.pdf`;
             await generatePdf(printableAreaRef.current, filename);
         } catch (err) {
-            console.error('Error downloading PDF:', err);
-            alert('เกิดข้อผิดพลาดในการดาวน์โหลด PDF');
+            console.error('เกิดข้อผิดพลาดในการดาวน์โหลด PDF:', err);
         } finally {
             setDownloading(false);
         }

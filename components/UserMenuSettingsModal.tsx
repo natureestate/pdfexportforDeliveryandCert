@@ -364,7 +364,7 @@ const UserMenuSettingsModal: React.FC<UserMenuSettingsModalProps> = ({
             
             {/* Modal */}
             <div className="flex min-h-full items-center justify-center p-4">
-                <div className="relative w-full max-w-2xl bg-white rounded-xl shadow-2xl transform transition-all">
+                <div className="relative w-full max-w-2xl bg-white dark:bg-slate-800 rounded-xl shadow-2xl transform transition-all">
                     {/* Notification */}
                     {notification.show && (
                         <div className={`absolute top-4 left-1/2 transform -translate-x-1/2 px-4 py-2 rounded-lg shadow-lg z-10 flex items-center gap-2 ${
@@ -379,12 +379,12 @@ const UserMenuSettingsModal: React.FC<UserMenuSettingsModalProps> = ({
                     )}
                     
                     {/* Header */}
-                    <div className="flex items-center justify-between p-4 border-b border-gray-200">
+                    <div className="flex items-center justify-between p-4 border-b border-gray-200 dark:border-slate-600">
                         <div className="flex items-center gap-3">
                             {viewMode === 'edit' && (
                                 <button
                                     onClick={handleBackToList}
-                                    className="p-2 text-gray-400 hover:text-gray-600 hover:bg-gray-100 rounded-lg transition-colors"
+                                    className="p-2 text-gray-400 dark:text-gray-500 hover:text-gray-600 dark:hover:text-gray-300 hover:bg-gray-100 dark:hover:bg-slate-700 rounded-lg transition-colors"
                                 >
                                     <ChevronLeft className="w-5 h-5" />
                                 </button>
@@ -393,17 +393,17 @@ const UserMenuSettingsModal: React.FC<UserMenuSettingsModalProps> = ({
                                 <Users className="w-6 h-6 text-purple-600" />
                             </div>
                             <div>
-                                <h2 className="text-lg font-semibold text-gray-900">
+                                <h2 className="text-lg font-semibold text-gray-900 dark:text-gray-100">
                                     {viewMode === 'list' ? 'ตั้งค่าเมนูรายบุคคล' : `ตั้งค่าเมนู: ${selectedMember?.displayName || selectedMember?.email}`}
                                 </h2>
-                                <p className="text-sm text-gray-500">
+                                <p className="text-sm text-gray-500 dark:text-gray-400">
                                     {viewMode === 'list' ? 'เลือก user ที่ต้องการกำหนดสิทธิ์เมนู' : `Role: ${selectedMember?.role === 'admin' ? 'Admin' : 'Member'}`}
                                 </p>
                             </div>
                         </div>
                         <button
                             onClick={onClose}
-                            className="p-2 text-gray-400 hover:text-gray-500 hover:bg-gray-100 rounded-lg transition-colors"
+                            className="p-2 text-gray-400 dark:text-gray-500 hover:text-gray-500 dark:hover:text-gray-400 hover:bg-gray-100 dark:hover:bg-slate-700 rounded-lg transition-colors"
                         >
                             <X className="w-5 h-5" />
                         </button>
@@ -426,7 +426,7 @@ const UserMenuSettingsModal: React.FC<UserMenuSettingsModalProps> = ({
                             /* Members List View */
                             <div className="space-y-2">
                                 {members.length === 0 ? (
-                                    <div className="text-center py-8 text-gray-500">
+                                    <div className="text-center py-8 text-gray-500 dark:text-gray-400">
                                         <Users className="w-12 h-12 mx-auto mb-2 opacity-50" />
                                         <p>ไม่พบสมาชิกในองค์กร</p>
                                     </div>
@@ -435,8 +435,8 @@ const UserMenuSettingsModal: React.FC<UserMenuSettingsModalProps> = ({
                                         <div
                                             key={member.memberId}
                                             onClick={() => isAdmin && handleSelectMember(member)}
-                                            className={`flex items-center gap-3 p-3 rounded-lg border border-gray-200 bg-white transition-all ${
-                                                isAdmin ? 'hover:border-purple-300 hover:bg-purple-50 cursor-pointer' : 'opacity-60'
+                                            className={`flex items-center gap-3 p-3 rounded-lg border border-gray-200 dark:border-slate-600 bg-white dark:bg-slate-800 transition-all ${
+                                                isAdmin ? 'hover:border-purple-300 dark:hover:border-purple-600 hover:bg-purple-50 dark:hover:bg-purple-900/30 cursor-pointer' : 'opacity-60'
                                             }`}
                                         >
                                             {/* Avatar */}
@@ -448,10 +448,10 @@ const UserMenuSettingsModal: React.FC<UserMenuSettingsModalProps> = ({
                                             
                                             {/* Info */}
                                             <div className="flex-1 min-w-0">
-                                                <p className="font-medium text-gray-900 truncate">
+                                                <p className="font-medium text-gray-900 dark:text-gray-100 truncate">
                                                     {member.displayName || member.email}
                                                 </p>
-                                                <div className="flex items-center gap-2 text-xs text-gray-500">
+                                                <div className="flex items-center gap-2 text-xs text-gray-500 dark:text-gray-400">
                                                     <span className={`px-1.5 py-0.5 rounded ${
                                                         member.role === 'admin' ? 'bg-amber-100 text-amber-700' : 'bg-blue-100 text-blue-700'
                                                     }`}>
@@ -473,7 +473,7 @@ const UserMenuSettingsModal: React.FC<UserMenuSettingsModalProps> = ({
                                             
                                             {/* Arrow */}
                                             {isAdmin && (
-                                                <ChevronLeft className="w-5 h-5 text-gray-400 rotate-180" />
+                                                <ChevronLeft className="w-5 h-5 text-gray-400 dark:text-gray-500 rotate-180" />
                                             )}
                                         </div>
                                     ))
@@ -499,29 +499,29 @@ const UserMenuSettingsModal: React.FC<UserMenuSettingsModalProps> = ({
                                         onDragEnd={handleDragEnd}
                                         className={`flex items-center gap-3 p-3 rounded-lg border transition-all ${
                                             dragOverIndex === index
-                                                ? 'border-purple-500 bg-purple-50'
+                                                ? 'border-purple-500 dark:border-purple-600 bg-purple-50 dark:bg-purple-900/30'
                                                 : menu.visible
-                                                    ? 'border-gray-200 bg-white hover:border-gray-300'
-                                                    : 'border-gray-200 bg-gray-50 opacity-60'
+                                                    ? 'border-gray-200 dark:border-slate-600 bg-white dark:bg-slate-800 hover:border-gray-300 dark:hover:border-slate-500'
+                                                    : 'border-gray-200 dark:border-slate-600 bg-gray-50 dark:bg-slate-700 opacity-60'
                                         } ${isAdmin ? 'cursor-grab active:cursor-grabbing' : ''}`}
                                     >
                                         {/* Drag Handle */}
                                         {isAdmin && (
-                                            <div className="text-gray-400 hover:text-gray-600">
+                                            <div className="text-gray-400 dark:text-gray-500 hover:text-gray-600 dark:hover:text-gray-300">
                                                 <GripVertical className="w-5 h-5" />
                                             </div>
                                         )}
                                         
                                         {/* Icon */}
                                         <div className={`p-2 rounded-lg ${
-                                            menu.visible ? 'bg-purple-100 text-purple-600' : 'bg-gray-200 text-gray-400'
+                                            menu.visible ? 'bg-purple-100 dark:bg-purple-900/30 text-purple-600 dark:text-purple-400' : 'bg-gray-200 dark:bg-slate-600 text-gray-400 dark:text-gray-500'
                                         }`}>
                                             {renderIcon(menu.icon)}
                                         </div>
                                         
                                         {/* Label */}
                                         <div className="flex-1 min-w-0">
-                                            <p className={`font-medium ${menu.visible ? 'text-gray-900' : 'text-gray-400'}`}>
+                                            <p className={`font-medium ${menu.visible ? 'text-gray-900 dark:text-gray-100' : 'text-gray-400 dark:text-gray-500'}`}>
                                                 {menu.label}
                                             </p>
                                         </div>
@@ -532,7 +532,7 @@ const UserMenuSettingsModal: React.FC<UserMenuSettingsModalProps> = ({
                                                 <button
                                                     onClick={() => handleMoveUp(index)}
                                                     disabled={index === 0}
-                                                    className="p-1.5 text-gray-400 hover:text-gray-600 hover:bg-gray-100 rounded disabled:opacity-30 disabled:cursor-not-allowed"
+                                                    className="p-1.5 text-gray-400 dark:text-gray-500 hover:text-gray-600 dark:hover:text-gray-300 hover:bg-gray-100 dark:hover:bg-slate-700 rounded disabled:opacity-30 disabled:cursor-not-allowed"
                                                     title="ย้ายขึ้น"
                                                 >
                                                     <ChevronUp className="w-4 h-4" />
@@ -541,7 +541,7 @@ const UserMenuSettingsModal: React.FC<UserMenuSettingsModalProps> = ({
                                                 <button
                                                     onClick={() => handleMoveDown(index)}
                                                     disabled={index === menus.length - 1}
-                                                    className="p-1.5 text-gray-400 hover:text-gray-600 hover:bg-gray-100 rounded disabled:opacity-30 disabled:cursor-not-allowed"
+                                                    className="p-1.5 text-gray-400 dark:text-gray-500 hover:text-gray-600 dark:hover:text-gray-300 hover:bg-gray-100 dark:hover:bg-slate-700 rounded disabled:opacity-30 disabled:cursor-not-allowed"
                                                     title="ย้ายลง"
                                                 >
                                                     <ChevronDown className="w-4 h-4" />
@@ -551,8 +551,8 @@ const UserMenuSettingsModal: React.FC<UserMenuSettingsModalProps> = ({
                                                     onClick={() => handleToggleVisibility(menu.id)}
                                                     className={`p-1.5 rounded transition-colors ${
                                                         menu.visible
-                                                            ? 'text-green-500 hover:text-green-600 hover:bg-green-50'
-                                                            : 'text-gray-400 hover:text-gray-600 hover:bg-gray-100'
+                                                            ? 'text-green-500 hover:text-green-600 hover:bg-green-50 dark:hover:bg-green-900/30'
+                                                            : 'text-gray-400 dark:text-gray-500 hover:text-gray-600 dark:hover:text-gray-300 hover:bg-gray-100 dark:hover:bg-slate-700'
                                                     }`}
                                                     title={menu.visible ? 'ซ่อนเมนู' : 'แสดงเมนู'}
                                                 >
@@ -572,7 +572,7 @@ const UserMenuSettingsModal: React.FC<UserMenuSettingsModalProps> = ({
 
                     {/* Footer */}
                     {viewMode === 'edit' && (
-                        <div className="flex flex-col sm:flex-row items-stretch sm:items-center justify-between gap-3 p-4 border-t border-gray-200 bg-gray-50 rounded-b-xl">
+                        <div className="flex flex-col sm:flex-row items-stretch sm:items-center justify-between gap-3 p-4 border-t border-gray-200 dark:border-slate-600 bg-gray-50 dark:bg-slate-700 rounded-b-xl">
                             <div className="flex gap-2">
                                 {isAdmin && (
                                     <>
@@ -588,7 +588,7 @@ const UserMenuSettingsModal: React.FC<UserMenuSettingsModalProps> = ({
                                         <button
                                             onClick={handleCopyFromRole}
                                             disabled={isSaving}
-                                            className="flex items-center gap-1.5 px-3 py-2 text-sm text-gray-600 hover:text-gray-800 hover:bg-gray-200 rounded-lg transition-colors disabled:opacity-50"
+                                            className="flex items-center gap-1.5 px-3 py-2 text-sm text-gray-600 dark:text-gray-300 hover:text-gray-800 dark:hover:text-gray-100 hover:bg-gray-200 dark:hover:bg-slate-600 rounded-lg transition-colors disabled:opacity-50"
                                             title="คัดลอกการตั้งค่าจาก Role มาแก้ไข"
                                         >
                                             <Copy className="w-4 h-4" />
@@ -601,7 +601,7 @@ const UserMenuSettingsModal: React.FC<UserMenuSettingsModalProps> = ({
                             <div className="flex gap-2">
                                 <button
                                     onClick={handleBackToList}
-                                    className="flex-1 sm:flex-none px-4 py-2 text-sm font-medium text-gray-700 bg-white border border-gray-300 rounded-lg hover:bg-gray-50 transition-colors"
+                                    className="flex-1 sm:flex-none px-4 py-2 text-sm font-medium text-gray-700 dark:text-gray-300 bg-white dark:bg-slate-800 border border-gray-300 dark:border-slate-600 rounded-lg hover:bg-gray-50 dark:hover:bg-slate-700 transition-colors"
                                 >
                                     ยกเลิก
                                 </button>
@@ -625,10 +625,10 @@ const UserMenuSettingsModal: React.FC<UserMenuSettingsModalProps> = ({
                     
                     {/* Footer for List View */}
                     {viewMode === 'list' && (
-                        <div className="flex justify-end p-4 border-t border-gray-200 bg-gray-50 rounded-b-xl">
+                        <div className="flex justify-end p-4 border-t border-gray-200 dark:border-slate-600 bg-gray-50 dark:bg-slate-700 rounded-b-xl">
                             <button
                                 onClick={onClose}
-                                className="px-4 py-2 text-sm font-medium text-gray-700 bg-white border border-gray-300 rounded-lg hover:bg-gray-50 transition-colors"
+                                className="px-4 py-2 text-sm font-medium text-gray-700 dark:text-gray-300 bg-white dark:bg-slate-800 border border-gray-300 dark:border-slate-600 rounded-lg hover:bg-gray-50 dark:hover:bg-slate-700 transition-colors"
                             >
                                 ปิด
                             </button>

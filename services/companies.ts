@@ -90,15 +90,12 @@ export const createCompany = async (
         // สร้าง quota เริ่มต้น (Free Plan) สำหรับบริษัทใหม่
         try {
             await createQuota(companyId, 'free');
-            console.log('✅ สร้าง quota เริ่มต้นสำเร็จ:', companyId);
-        } catch (quotaError) {
-            console.warn('⚠️ สร้าง quota ล้มเหลว (ไม่กระทบการสร้างบริษัท):', quotaError);
+        } catch {
+            // สร้าง quota ล้มเหลว - ไม่กระทบการสร้างบริษัท
         }
 
-        console.log('✅ สร้างบริษัทสำเร็จ:', companyId, '(Admin:', currentUser.uid, ')');
         return companyId;
-    } catch (error) {
-        console.error('❌ สร้างบริษัทล้มเหลว:', error);
+    } catch {
         throw new Error('ไม่สามารถสร้างบริษัทได้');
     }
 };
@@ -130,9 +127,8 @@ export const getUserCompanies = async (): Promise<Company[]> => {
                 }
             }
             
-            console.log(`📋 ดึงบริษัทจาก memberships: ${memberships.length} องค์กร`);
-        } catch (error) {
-            console.warn('⚠️ ไม่สามารถดึง memberships:', error);
+        } catch {
+            // ไม่สามารถดึง memberships - อาจเป็น user ใหม่
         }
 
         // 2. Fallback: ดึงองค์กรเก่าที่ User เป็นเจ้าของ (Backward Compatible)
@@ -170,15 +166,12 @@ export const getUserCompanies = async (): Promise<Company[]> => {
                 }
             }
             
-            console.log(`📋 ดึงบริษัทเก่า (fallback): ${querySnapshot.docs.length} องค์กร`);
-        } catch (error) {
-            console.warn('⚠️ ไม่สามารถดึงบริษัทเก่า:', error);
+        } catch {
+            // ไม่สามารถดึงบริษัทเก่า - อาจไม่มีสิทธิ์
         }
 
-        console.log(`📋 รวมทั้งหมด: ${companies.length} บริษัท`);
         return companies;
-    } catch (error) {
-        console.error('❌ ดึงรายการบริษัทล้มเหลว:', error);
+    } catch {
         throw new Error('ไม่สามารถดึงรายการบริษัทได้');
     }
 };
@@ -215,8 +208,7 @@ export const getCompanyById = async (companyId: string): Promise<Company | null>
             createdAt: data.createdAt?.toDate(),
             updatedAt: data.updatedAt?.toDate(),
         } as Company;
-    } catch (error) {
-        console.error('❌ ดึงข้อมูลบริษัทล้มเหลว:', error);
+    } catch {
         throw new Error('ไม่สามารถดึงข้อมูลบริษัทได้');
     }
 };
@@ -245,10 +237,7 @@ export const updateCompany = async (
         cleanedUpdates.updatedAt = Timestamp.now();
         
         await updateDoc(docRef, cleanedUpdates);
-
-        console.log('✅ อัปเดตบริษัทสำเร็จ:', companyId);
-    } catch (error) {
-        console.error('❌ อัปเดตบริษัทล้มเหลว:', error);
+    } catch {
         throw new Error('ไม่สามารถอัปเดตบริษัทได้');
     }
 };
@@ -268,10 +257,7 @@ export const setCompanyDefaultLogo = async (
             defaultLogoUrl: defaultLogoUrl,
             updatedAt: Timestamp.now(),
         });
-
-        console.log('✅ ตั้งค่า default logo สำเร็จ:', companyId, defaultLogoUrl);
-    } catch (error) {
-        console.error('❌ ตั้งค่า default logo ล้มเหลว:', error);
+    } catch {
         throw new Error('ไม่สามารถตั้งค่า default logo ได้');
     }
 };
@@ -299,10 +285,7 @@ export const deleteCompany = async (companyId: string): Promise<void> => {
 
         const docRef = doc(db, COMPANIES_COLLECTION, companyId);
         await deleteDoc(docRef);
-
-        console.log('✅ ลบบริษัทสำเร็จ:', companyId);
     } catch (error) {
-        console.error('❌ ลบบริษัทล้มเหลว:', error);
         throw error;
     }
 };

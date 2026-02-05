@@ -97,7 +97,6 @@ const VersionHistoryModal: React.FC<VersionHistoryModalProps> = ({
         try {
             const result = await restoreDocumentVersion(versionId);
             if (result.success) {
-                alert(`✅ Restore เป็นเวอร์ชัน ${versionNumber} สำเร็จ!`);
                 fetchVersions(); // รีเฟรชรายการ
                 if (onVersionRestored) {
                     onVersionRestored();

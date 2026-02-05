@@ -1,12 +1,12 @@
 import React, { useRef, useState, useEffect } from 'react';
 import { WarrantyData, LogoType, EndCustomerProject } from '../types';
-import { formatDateForInput } from '../utils/dateUtils';
 import CompanyProfileSelector from './CompanyProfileSelector';
 import EndCustomerProjectSection from './EndCustomerProjectSection';
 import ServiceTemplateSelector from './ServiceTemplateSelector';
 import CustomerSelector from './CustomerSelector';
 import { generateDocumentNumber } from '../services/documentNumber';
 import { INPUT_LIMITS } from '../utils/inputValidation';
+import DatePicker from './DatePicker';
 
 export interface WarrantyFormProps {
     data: WarrantyData;
@@ -87,7 +87,6 @@ const WarrantyForm: React.FC<WarrantyFormProps> = ({
             console.log('✅ [WR] Generated new document number:', newWarrantyNumber);
         } catch (error) {
             console.error('❌ [WR] Error generating warranty number:', error);
-            alert('ไม่สามารถสร้างเลขที่ใบรับประกันได้ กรุณาลองใหม่อีกครั้ง');
         } finally {
             setIsGeneratingNumber(false);
         }
@@ -134,11 +133,15 @@ const WarrantyForm: React.FC<WarrantyFormProps> = ({
 
     /**
      * Auto-generate warranty number เมื่อ component mount (ถ้ายังไม่มี)
+     * ใช้ sessionStorage เก็บเลขที่ generate ไว้ป้องกันการ generate ซ้ำเมื่อ refresh
      */
     useEffect(() => {
+        const SESSION_KEY = 'warranty_docNumber';
+        
         if (isEditing) {
             console.log('⏭️ [WR] Skip auto-generate - isEditing mode');
             hasGeneratedNumberRef.current = true;
+            sessionStorage.removeItem(SESSION_KEY);
             return;
         }
         
@@ -146,12 +149,16 @@ const WarrantyForm: React.FC<WarrantyFormProps> = ({
         if (hasValidNumber) {
             console.log('⏭️ [WR] Skip auto-generate - already has valid number:', data.warrantyNumber);
             hasGeneratedNumberRef.current = true;
+            sessionStorage.setItem(SESSION_KEY, data.warrantyNumber);
             return;
         }
         
-        // ถ้า warrantyNumber ว่างเปล่า ให้ reset flag เพื่อให้สามารถสร้างเลขใหม่ได้
-        if (!data.warrantyNumber) {
-            hasGeneratedNumberRef.current = false;
+        // ตรวจสอบ sessionStorage ว่ามีเลขที่ generate ไว้แล้วหรือไม่
+        const savedDocNumber = sessionStorage.getItem(SESSION_KEY);
+        if (savedDocNumber && savedDocNumber.match(/^WR-\d{6}\d{2}$/)) {
+            handleDataChange('warrantyNumber', savedDocNumber);
+            hasGeneratedNumberRef.current = true;
+            return;
         }
         
         if (!data.warrantyNumber && !hasGeneratedNumberRef.current && !isGeneratingNumber) {
@@ -244,7 +251,13 @@ const WarrantyForm: React.FC<WarrantyFormProps> = ({
                     </div>
                     <div>
                         <label htmlFor="purchaseDate" className="block text-xs sm:text-sm font-medium text-slate-700 dark:text-slate-300">วันที่ส่งมอบสินค้า</label>
-                        <input type="date" id="purchaseDate" value={formatDateForInput(data.purchaseDate)} onChange={(e) => handleDataChange('purchaseDate', e.target.value ? new Date(e.target.value) : null)} className="mt-1 block w-full rounded-md border-gray-300 shadow-sm focus:border-indigo-500 focus:ring-indigo-500 text-xs sm:text-sm bg-gray-50 dark:bg-slate-700 dark:text-gray-100 dark:border-slate-600" />
+                        <DatePicker
+                            id="purchaseDate"
+                            value={data.purchaseDate}
+                            onChange={(date) => handleDataChange('purchaseDate', date)}
+                            placeholder="เลือกวันที่"
+                            className="mt-1"
+                        />
                     </div>
                     
                     {/* ส่วนโครงการลูกค้าปลายทาง (End Customer Project) */}
@@ -460,12 +473,12 @@ const WarrantyForm: React.FC<WarrantyFormProps> = ({
                         </div>
                         <div>
                             <label htmlFor="issueDate" className="block text-xs sm:text-sm font-medium text-slate-700 dark:text-slate-300">วันที่ออกเอกสาร</label>
-                            <input 
-                                type="date" 
-                                id="issueDate" 
-                                value={formatDateForInput(data.issueDate)} 
-                                onChange={(e) => handleDataChange('issueDate', e.target.value ? new Date(e.target.value) : null)} 
-                                className="mt-1 block w-full rounded-md border-gray-300 shadow-sm focus:border-indigo-500 focus:ring-indigo-500 text-xs sm:text-sm bg-gray-50 dark:bg-slate-700 dark:text-gray-100 dark:border-slate-600" 
+                            <DatePicker
+                                id="issueDate"
+                                value={data.issueDate}
+                                onChange={(date) => handleDataChange('issueDate', date)}
+                                placeholder="เลือกวันที่"
+                                className="mt-1"
                             />
                         </div>
                     </div>

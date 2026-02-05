@@ -11,6 +11,8 @@ import { ThemeProvider } from './contexts/ThemeContext';
 import { TabConfig, TabType } from './types';
 import ProtectedRoute from './components/ProtectedRoute';
 import Header from './components/Header';
+import { ConfirmProvider } from './components/ConfirmDialog';
+import { PromptProvider } from './components/InputPromptDialog';
 import DeliveryForm from './components/DeliveryForm';
 import DocumentPreview from './components/DocumentPreview';
 import WarrantyForm from './components/WarrantyForm';
@@ -819,8 +821,6 @@ const AppContent: React.FC = () => {
     // Sync ข้อมูลบริษัทจาก currentCompany ไปยัง form data
     useEffect(() => {
         if (currentCompany) {
-            console.log('📝 [App] Syncing company data to forms:', currentCompany);
-            
             // Sync ไปยัง DeliveryForm (ข้อมูลผู้ส่ง)
             // รวมถึงข้อมูลสาขาตามประกาศอธิบดีกรมสรรพากร (ฉบับที่ 200)
             setDeliveryData(prev => ({
@@ -963,16 +963,8 @@ const AppContent: React.FC = () => {
     useEffect(() => {
         const loadCompanyLogo = async () => {
             if (currentCompany) {
-                console.log('🎨 [App] Loading company logo:', {
-                    logoBase64: currentCompany.logoBase64 ? 'มี Base64' : 'ไม่มี',
-                    logoUrl: currentCompany.logoUrl,
-                    logoType: currentCompany.logoType,
-                    defaultLogoUrl: currentCompany.defaultLogoUrl
-                });
-
                 // ✅ ใช้ logoBase64 ก่อน (ใหม่ - เก็บใน Firestore โดยตรง)
                 if (currentCompany.logoBase64) {
-                    console.log('✅ [App] ใช้ logoBase64 จาก Firestore');
                     setSharedLogo(currentCompany.logoBase64);
                     setSharedLogoUrl(null);
                     setSharedLogoType(currentCompany.logoType || 'custom');
@@ -985,25 +977,21 @@ const AppContent: React.FC = () => {
                         const base64Logo = await convertStorageUrlToBase64(currentCompany.logoUrl);
                         
                         if (base64Logo) {
-                            console.log('✅ [App] โหลด logo จาก Storage สำเร็จ (backwards compatibility)');
                             setSharedLogo(base64Logo);
                             setSharedLogoUrl(currentCompany.logoUrl);
                             setSharedLogoType('uploaded');
                         } else {
-                            console.warn('⚠️  [App] แปลง logo เป็น Base64 ไม่สำเร็จ, ใช้ default logo');
                             setSharedLogo(null);
                             setSharedLogoUrl(null);
                             setSharedLogoType('default');
                         }
-                    } catch (error) {
-                        console.error('❌ [App] โหลด logo ล้มเหลว:', error);
+                    } catch {
                         setSharedLogo(null);
                         setSharedLogoUrl(null);
                         setSharedLogoType('default');
                     }
                 } else {
                     // ถ้าไม่มี logo หรือใช้ default ให้รีเซ็ตเป็น default
-                    console.log('📝 [App] ใช้ default logo');
                     setSharedLogo(null);
                     setSharedLogoUrl(null);
                     setSharedLogoType('default');
@@ -1144,8 +1132,7 @@ const AppContent: React.FC = () => {
                 showToast(t('notifications.readyForNewDocument'), 'info');
             }, 500); // delay เล็กน้อยเพื่อให้ผู้ใช้เห็น toast บันทึกสำเร็จก่อน
             
-        } catch (error) {
-            console.error('Failed to save to Firestore:', error);
+        } catch {
             showToast(t('notifications.saveError'), 'error');
         } finally {
             setIsSaving(false);
@@ -1176,8 +1163,7 @@ const AppContent: React.FC = () => {
                     showToast(`❌ ${t('notifications.freePlanNoPdf')}`, 'error');
                     return;
                 }
-            } catch (error) {
-                console.error('Failed to check quota:', error);
+            } catch {
                 // ถ้าเช็ค quota ไม่ได้ ให้ดำเนินการต่อ (เพื่อไม่ให้ระบบหยุดทำงาน)
             }
         }
@@ -1193,8 +1179,7 @@ const AppContent: React.FC = () => {
         try {
             await generatePdf(printableAreaRef.current, filename);
             showToast(t('notifications.pdfCreated'), 'success');
-        } catch (error) {
-            console.error('Failed to generate PDF:', error);
+        } catch {
             showToast(t('notifications.pdfError'), 'error');
         } finally {
             setIsLoading(false);
@@ -1216,8 +1201,8 @@ const AppContent: React.FC = () => {
                     showToast(`❌ ${t('notifications.freePlanNoPdf')}`, 'error');
                     return;
                 }
-            } catch (error) {
-                console.error('Failed to check quota:', error);
+            } catch {
+                // ถ้าเช็ค quota ไม่ได้ ให้ดำเนินการต่อ
             }
         }
         
@@ -1231,8 +1216,7 @@ const AppContent: React.FC = () => {
         try {
             await generatePng(printableAreaRef.current, filename);
             showToast('สร้างไฟล์ PNG เรียบร้อยแล้ว', 'success');
-        } catch (error) {
-            console.error('Failed to generate PNG:', error);
+        } catch {
             showToast('ไม่สามารถสร้างไฟล์ PNG ได้', 'error');
         } finally {
             setIsLoading(false);
@@ -1934,26 +1918,26 @@ const App: React.FC = () => {
 
     const handleCookieAccept = () => {
         setCookieConsent('accepted');
-        console.log('✅ User accepted PDPA cookie consent');
     };
 
     const handleCookieDecline = () => {
         setCookieConsent('declined');
-        console.log('⚠️ User declined PDPA cookie consent');
     };
 
     return (
         <ThemeProvider>
             <AuthProvider>
-                {/* Cookie Consent Modal */}
-                {!cookieConsent && (
-                    <CookieConsentModal 
-                        onAccept={handleCookieAccept}
-                        onDecline={handleCookieDecline}
-                    />
-                )}
-                
-                <Routes>
+                <ConfirmProvider>
+                    <PromptProvider>
+                        {/* Cookie Consent Modal */}
+                        {!cookieConsent && (
+                            <CookieConsentModal 
+                                onAccept={handleCookieAccept}
+                                onDecline={handleCookieDecline}
+                            />
+                        )}
+                        
+                        <Routes>
                 {/* หน้ายอมรับคำเชิญ - ไม่ต้อง login ก่อน */}
                 <Route path="/accept-invitation" element={<AcceptInvitationPage />} />
                 
@@ -2051,7 +2035,9 @@ const App: React.FC = () => {
                         </CompanyProvider>
                     }
                 />
-                </Routes>
+                        </Routes>
+                    </PromptProvider>
+                </ConfirmProvider>
             </AuthProvider>
         </ThemeProvider>
     );

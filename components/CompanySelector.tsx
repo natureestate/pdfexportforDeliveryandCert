@@ -20,13 +20,6 @@ const CompanySelector: React.FC = () => {
     const [isCreating, setIsCreating] = useState(false);
     const [error, setError] = useState<string | null>(null);
     const [quotaInfo, setQuotaInfo] = useState<{ currentCount: number; maxCount: number; plan?: string } | null>(null);
-    
-    // Debug logs - แสดงข้อมูลทุกครั้งที่ render
-    console.log('🏢 [CompanySelector] Rendered');
-    console.log('🏢 [CompanySelector] Current Company:', currentCompany);
-    console.log('🏢 [CompanySelector] All Companies:', companies);
-    console.log('🏢 [CompanySelector] Loading:', loading);
-    console.log('🏢 [CompanySelector] Show Dropdown:', showDropdown);
 
     /**
      * เลือกบริษัท
@@ -52,7 +45,7 @@ const CompanySelector: React.FC = () => {
             
             if (!result.canCreate) {
                 // แสดง error message
-                alert(result.reason || 'ไม่สามารถสร้างบริษัทใหม่ได้');
+                console.error(result.reason || 'ไม่สามารถสร้างบริษัทใหม่ได้');
                 return;
             }
 
@@ -68,7 +61,6 @@ const CompanySelector: React.FC = () => {
             setShowCreateModal(true);
             setError(null);
         } catch (err: any) {
-            console.error('❌ ตรวจสอบสิทธิ์ล้มเหลว:', err);
             setError(err.message || 'ไม่สามารถตรวจสอบสิทธิ์ได้');
         }
     };

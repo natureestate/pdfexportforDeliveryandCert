@@ -267,7 +267,7 @@ const CRMPage: React.FC = () => {
     const handleSave = async () => {
         if (!currentCompany?.id) return;
         if (!formData.name.trim() || !formData.phone.trim()) {
-            alert('กรุณากรอกชื่อและเบอร์โทรศัพท์');
+            console.warn('กรุณากรอกชื่อและเบอร์โทรศัพท์');
             return;
         }
 
@@ -364,8 +364,7 @@ const CRMPage: React.FC = () => {
             setShowModal(false);
             loadData();
         } catch (err) {
-            console.error('Save error:', err);
-            alert('ไม่สามารถบันทึกข้อมูลได้');
+            console.error('ไม่สามารถบันทึกข้อมูลได้:', err);
         } finally {
             setSaving(false);
         }
@@ -383,8 +382,7 @@ const CRMPage: React.FC = () => {
             setDeleteConfirm(null);
             loadData();
         } catch (err) {
-            console.error('Delete error:', err);
-            alert('ไม่สามารถลบข้อมูลได้');
+            console.error('ไม่สามารถลบข้อมูลได้:', err);
         } finally {
             setDeleting(false);
         }

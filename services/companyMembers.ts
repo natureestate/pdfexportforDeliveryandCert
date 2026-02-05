@@ -67,10 +67,8 @@ export const addCompanyMember = async (
         // บันทึกข้อมูล
         await setDoc(docRef, memberData);
 
-        console.log('✅ เพิ่มสมาชิกสำเร็จ:', memberId, '(Email:', email, ')');
         return memberId;
     } catch (error) {
-        console.error('❌ เพิ่มสมาชิกล้มเหลว:', error);
         throw error;
     }
 };
@@ -92,9 +90,9 @@ export const addFirstAdmin = async (
     displayName?: string
 ): Promise<string> => {
     try {
-        // สร้าง ID
-        const docRef = doc(collection(db, MEMBERS_COLLECTION));
-        const memberId = docRef.id;
+        // สร้าง ID ตามรูปแบบ {userId}_{companyId} เพื่อให้ตรงกับ Firestore Rules
+        const memberId = `${userId}_${companyId}`;
+        const docRef = doc(db, MEMBERS_COLLECTION, memberId);
 
         // เตรียมข้อมูล Admin คนแรก
         const memberData: any = {
@@ -115,10 +113,8 @@ export const addFirstAdmin = async (
         // บันทึกข้อมูล
         await setDoc(docRef, memberData);
 
-        console.log('✅ เพิ่ม Admin คนแรกสำเร็จ:', memberId);
         return memberId;
     } catch (error) {
-        console.error('❌ เพิ่ม Admin คนแรกล้มเหลว:', error);
         throw error;
     }
 };
@@ -147,19 +143,17 @@ export const addMemberFromInvitation = async (
         // ตรวจสอบว่ามีสมาชิกอยู่แล้วหรือไม่ (ตรวจสอบทั้ง userId และ invitedEmail)
         const existingByUserId = await getMemberByUserId(companyId, userId);
         if (existingByUserId) {
-            console.log('ℹ️ สมาชิก userId นี้มีอยู่แล้ว:', existingByUserId.id);
             return existingByUserId.id!;
         }
 
         const existingByEmail = await getMemberByEmail(companyId, invitedEmail);
         if (existingByEmail && existingByEmail.status === 'active') {
-            console.log('ℹ️ สมาชิก email นี้มีอยู่แล้ว:', existingByEmail.id);
             return existingByEmail.id!;
         }
 
-        // สร้าง ID
-        const docRef = doc(collection(db, MEMBERS_COLLECTION));
-        const memberId = docRef.id;
+        // สร้าง ID ตามรูปแบบ {userId}_{companyId} เพื่อให้ตรงกับ Firestore Rules
+        const memberId = `${userId}_${companyId}`;
+        const docRef = doc(db, MEMBERS_COLLECTION, memberId);
 
         // เตรียมข้อมูลสมาชิก
         const memberData: any = {
@@ -186,13 +180,11 @@ export const addMemberFromInvitation = async (
         // บันทึกข้อมูล
         await setDoc(docRef, memberData);
 
-        // อัปเดตจำนวนสมาชิก
-        await updateMemberCount(companyId);
+        // หมายเหตุ: ไม่อัปเดตจำนวนสมาชิกที่นี่เพราะ user ใหม่อาจไม่มีสิทธิ์อัปเดต companies
+        // จำนวนสมาชิกจะถูกอัปเดตตอน Admin ดูหน้าสมาชิก
 
-        console.log('✅ เพิ่มสมาชิกจากคำเชิญสำเร็จ:', memberId, '(Email:', invitedEmail, ')');
         return memberId;
     } catch (error) {
-        console.error('❌ เพิ่มสมาชิกจากคำเชิญล้มเหลว:', error);
         throw error;
     }
 };
@@ -238,7 +230,6 @@ export const getMemberByUserId = async (
             updatedAt: data.updatedAt?.toDate(),
         } as CompanyMember;
     } catch (error) {
-        console.error('❌ ค้นหาสมาชิกตาม userId ล้มเหลว:', error);
         return null;
     }
 };
@@ -275,10 +266,8 @@ export const getCompanyMembers = async (companyId: string): Promise<CompanyMembe
             } as CompanyMember;
         });
 
-        console.log(`📋 ดึงสมาชิกในองค์กร ${companyId}: ${members.length} คน`);
         return members;
     } catch (error) {
-        console.error('❌ ดึงรายการสมาชิกล้มเหลว:', error);
         throw error;
     }
 };
@@ -316,10 +305,8 @@ export const getUserMemberships = async (userId: string): Promise<CompanyMember[
             } as CompanyMember;
         });
 
-        console.log(`📋 ดึงองค์กรของ User ${userId}: ${memberships.length} องค์กร`);
         return memberships;
     } catch (error) {
-        console.error('❌ ดึงรายการองค์กรล้มเหลว:', error);
         throw error;
     }
 };
@@ -343,7 +330,6 @@ export const checkIsAdmin = async (companyId: string, userId: string): Promise<b
         const querySnapshot = await getDocs(q);
         return !querySnapshot.empty;
     } catch (error) {
-        console.error('❌ ตรวจสอบสิทธิ์ Admin ล้มเหลว:', error);
         return false;
     }
 };
@@ -366,7 +352,6 @@ export const checkIsMember = async (companyId: string, userId: string): Promise<
         const querySnapshot = await getDocs(q);
         return !querySnapshot.empty;
     } catch (error) {
-        console.error('❌ ตรวจสอบสมาชิกล้มเหลว:', error);
         return false;
     }
 };
@@ -401,8 +386,6 @@ export const activatePendingMemberships = async (
             return 0;
         }
 
-        console.log(`🔍 พบ ${querySnapshot.docs.length} pending memberships สำหรับ ${email}`);
-
         // อัปเดตทุก pending membership
         const batch = writeBatch(db);
         let activatedCount = 0;
@@ -426,20 +409,15 @@ export const activatePendingMemberships = async (
 
                 batch.update(docSnapshot.ref, updateData);
                 activatedCount++;
-
-                console.log(`✅ Activating membership: ${docSnapshot.id} (Company: ${data.companyId})`);
             } else {
                 // ถ้าเป็นสมาชิกอยู่แล้ว ให้ลบ pending membership ออก
                 batch.delete(docSnapshot.ref);
-                console.log(`🗑️ Removing duplicate pending membership: ${docSnapshot.id}`);
             }
         }
 
         await batch.commit();
 
         if (activatedCount > 0) {
-            console.log(`✅ Activated ${activatedCount} memberships สำหรับ ${email}`);
-            
             // อัปเดตจำนวนสมาชิกในแต่ละองค์กร
             const companyIds = new Set(querySnapshot.docs.map(doc => doc.data().companyId));
             for (const companyId of companyIds) {
@@ -449,7 +427,6 @@ export const activatePendingMemberships = async (
 
         return activatedCount;
     } catch (error) {
-        console.error('❌ Activate pending memberships ล้มเหลว:', error);
         return 0;
     }
 };
@@ -487,10 +464,7 @@ export const updateMemberRole = async (memberId: string, role: UserRole): Promis
             role,
             updatedAt: Timestamp.now(),
         });
-
-        console.log('✅ อัปเดตบทบาทสำเร็จ:', memberId, '→', role);
     } catch (error) {
-        console.error('❌ อัปเดตบทบาทล้มเหลว:', error);
         throw error;
     }
 };
@@ -532,10 +506,7 @@ export const removeMember = async (memberId: string): Promise<void> => {
 
         // ลบสมาชิก
         await deleteDoc(memberRef);
-
-        console.log('✅ ลบสมาชิกสำเร็จ:', memberId);
     } catch (error) {
-        console.error('❌ ลบสมาชิกล้มเหลว:', error);
         throw error;
     }
 };
@@ -564,7 +535,6 @@ export const confirmMembership = async (
         const querySnapshot = await getDocs(q);
 
         if (querySnapshot.empty) {
-            console.log('ℹ️ ไม่พบคำเชิญเข้าองค์กรสำหรับอีเมลนี้');
             return;
         }
 
@@ -586,10 +556,7 @@ export const confirmMembership = async (
         });
 
         await batch.commit();
-
-        console.log('✅ ยืนยันการเข้าร่วมองค์กรสำเร็จ:', querySnapshot.docs.length, 'องค์กร');
     } catch (error) {
-        console.error('❌ ยืนยันการเข้าร่วมองค์กรล้มเหลว:', error);
         throw error;
     }
 };
@@ -608,10 +575,8 @@ export const updateMemberCount = async (companyId: string): Promise<void> => {
             memberCount: activeMembers.length,
             updatedAt: Timestamp.now(),
         });
-
-        console.log('✅ อัปเดตจำนวนสมาชิกสำเร็จ:', companyId, '→', activeMembers.length, 'คน');
     } catch (error) {
-        console.error('❌ อัปเดตจำนวนสมาชิกล้มเหลว:', error);
+        // ไม่ต้องทำอะไร เป็นการอัปเดตข้อมูลเสริม
     }
 };
 
@@ -667,10 +632,7 @@ export const updateMemberInfo = async (
 
         // อัปเดตข้อมูล
         await updateDoc(memberRef, updateData);
-
-        console.log('✅ อัปเดตข้อมูลสมาชิกสำเร็จ:', memberId);
     } catch (error) {
-        console.error('❌ อัปเดตข้อมูลสมาชิกล้มเหลว:', error);
         throw error;
     }
 };
@@ -735,10 +697,8 @@ export const addMemberDirect = async (
         // อัปเดตจำนวนสมาชิก
         await updateMemberCount(companyId);
 
-        console.log('✅ เพิ่มสมาชิกโดยตรงสำเร็จ:', memberId, '(Email:', email, ')');
         return memberId;
     } catch (error) {
-        console.error('❌ เพิ่มสมาชิกโดยตรงล้มเหลว:', error);
         throw error;
     }
 };
@@ -784,7 +744,6 @@ export const getMemberByEmail = async (
             updatedAt: data.updatedAt?.toDate(),
         } as CompanyMember;
     } catch (error) {
-        console.error('❌ ค้นหาสมาชิกล้มเหลว:', error);
         return null;
     }
 };
@@ -862,7 +821,6 @@ export const getMemberByPhoneNumber = async (
             updatedAt: data.updatedAt?.toDate(),
         } as CompanyMember;
     } catch (error) {
-        console.error('❌ ค้นหาสมาชิกตามเบอร์โทรล้มเหลว:', error);
         return null;
     }
 };
@@ -911,11 +869,8 @@ export const activatePendingMembershipsByPhone = async (
         );
 
         if (uniqueDocs.length === 0) {
-            console.log('ℹ️ ไม่พบ pending memberships สำหรับเบอร์โทร:', phoneNumber);
             return 0;
         }
-
-        console.log(`🔍 พบ ${uniqueDocs.length} pending memberships สำหรับ ${phoneNumber}`);
 
         // อัปเดตทุก pending membership
         const batch = writeBatch(db);
@@ -940,20 +895,15 @@ export const activatePendingMembershipsByPhone = async (
 
                 batch.update(docSnapshot.ref, updateData);
                 activatedCount++;
-
-                console.log(`✅ Activating membership: ${docSnapshot.id} (Company: ${data.companyId})`);
             } else {
                 // ถ้าเป็นสมาชิกอยู่แล้ว ให้ลบ pending membership ออก
                 batch.delete(docSnapshot.ref);
-                console.log(`🗑️ Removing duplicate pending membership: ${docSnapshot.id}`);
             }
         }
 
         await batch.commit();
 
         if (activatedCount > 0) {
-            console.log(`✅ Activated ${activatedCount} memberships สำหรับ ${phoneNumber}`);
-            
             // อัปเดตจำนวนสมาชิกในแต่ละองค์กร
             const companyIds = new Set(uniqueDocs.map(doc => doc.data().companyId));
             for (const companyId of companyIds) {
@@ -963,7 +913,6 @@ export const activatePendingMembershipsByPhone = async (
 
         return activatedCount;
     } catch (error) {
-        console.error('❌ Activate pending memberships by phone ล้มเหลว:', error);
         return 0;
     }
 };
@@ -1057,11 +1006,9 @@ export const findPendingMemberships = async (
                 }
             });
         }
-        
-        console.log(`🔍 พบ ${results.length} pending memberships`);
+
         return results;
     } catch (error) {
-        console.error('❌ ค้นหา pending memberships ล้มเหลว:', error);
         return [];
     }
 };

@@ -309,7 +309,7 @@ const SuperAdminDashboard: React.FC = () => {
             console.log('✅ Logout สำเร็จ');
         } catch (error) {
             console.error('❌ Logout ล้มเหลว:', error);
-            alert('ไม่สามารถ Logout ได้ กรุณาลองใหม่อีกครั้ง');
+            console.error('ไม่สามารถ Logout ได้ กรุณาลองใหม่อีกครั้ง');
         }
     };
 
@@ -329,10 +329,10 @@ const SuperAdminDashboard: React.FC = () => {
             const quotasData = await getAllQuotas();
             setQuotas(quotasData);
             
-            alert('เปลี่ยนแผนสำเร็จ!');
+            console.log('✅ เปลี่ยนแผนสำเร็จ!');
         } catch (error) {
             console.error('❌ เปลี่ยนแผนล้มเหลว:', error);
-            alert('ไม่สามารถเปลี่ยนแผนได้ กรุณาลองใหม่อีกครั้ง');
+            console.error('ไม่สามารถเปลี่ยนแผนได้ กรุณาลองใหม่อีกครั้ง');
         } finally {
             setQuotaUpdating(false);
             setEditingQuota(null);
@@ -363,10 +363,10 @@ const SuperAdminDashboard: React.FC = () => {
             const templatesData = await getAllPlanTemplates();
             setPlanTemplates(templatesData);
             
-            alert('อัปเดตแผนสำเร็จ!');
+            console.log('✅ อัปเดตแผนสำเร็จ!');
         } catch (error) {
             console.error('❌ อัปเดตแผนล้มเหลว:', error);
-            alert('ไม่สามารถอัปเดตแผนได้ กรุณาลองใหม่อีกครั้ง');
+            console.error('ไม่สามารถอัปเดตแผนได้ กรุณาลองใหม่อีกครั้ง');
         } finally {
             setPlanUpdating(false);
             setEditingPlan(null);

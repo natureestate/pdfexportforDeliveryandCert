@@ -116,11 +116,11 @@ const SignApprovalPage: React.FC = () => {
     // Handle Proceed to Confirm
     const handleProceedToConfirm = useCallback(() => {
         if (!signerName.trim()) {
-            alert('กรุณากรอกชื่อผู้รับมอบ');
+            console.warn('กรุณากรอกชื่อผู้รับมอบ');
             return;
         }
         if (!signatureData) {
-            alert('กรุณาเซ็นชื่อ');
+            console.warn('กรุณาเซ็นชื่อ');
             return;
         }
         setStep('confirm');

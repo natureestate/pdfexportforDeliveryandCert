@@ -6,6 +6,7 @@
 import React, { useState, useEffect } from 'react';
 import { Contractor, getContractors, saveContractor, updateContractor, deleteContractor, updateContractorUsage, searchContractors, getRecentContractors } from '../services/contractors';
 import { useCompany } from '../contexts/CompanyContext';
+import { useConfirm } from './ConfirmDialog';
 import { Wrench, Save } from 'lucide-react';
 import { INPUT_LIMITS } from '../utils/inputValidation';
 
@@ -23,6 +24,7 @@ const ContractorSelector: React.FC<ContractorSelectorProps> = ({
     showSaveButton = true,
 }) => {
     const { currentCompany } = useCompany();
+    const { confirm } = useConfirm();
     const [contractors, setContractors] = useState<Contractor[]>([]);
     const [recentContractors, setRecentContractors] = useState<Contractor[]>([]);
     const [isModalOpen, setIsModalOpen] = useState(false);
@@ -116,12 +118,12 @@ const ContractorSelector: React.FC<ContractorSelectorProps> = ({
 
     const handleSaveNewContractor = async () => {
         if (!currentCompany?.id) {
-            alert('กรุณาเลือกบริษัทก่อน');
+            console.warn('กรุณาเลือกบริษัทก่อน');
             return;
         }
 
         if (!newContractor.contractorName || !newContractor.phone) {
-            alert('กรุณากรอกชื่อช่างและเบอร์โทรศัพท์');
+            console.warn('กรุณากรอกชื่อช่างและเบอร์โทรศัพท์');
             return;
         }
 
@@ -153,10 +155,10 @@ const ContractorSelector: React.FC<ContractorSelectorProps> = ({
             });
             setSpecialtiesInput('');
             
-            alert('✅ บันทึกข้อมูลช่างสำเร็จ!');
+            console.log('✅ บันทึกข้อมูลช่างสำเร็จ!');
         } catch (error) {
             console.error('Failed to save contractor:', error);
-            alert('❌ ไม่สามารถบันทึกข้อมูลช่างได้');
+            console.error('❌ ไม่สามารถบันทึกข้อมูลช่างได้');
         } finally {
             setIsSaving(false);
         }
@@ -164,7 +166,7 @@ const ContractorSelector: React.FC<ContractorSelectorProps> = ({
 
     const handleSaveCurrentAsContractor = () => {
         if (!currentContractor?.contractorName || !currentContractor?.phone) {
-            alert('กรุณากรอกชื่อช่างและเบอร์โทรศัพท์ก่อนบันทึก');
+            console.warn('กรุณากรอกชื่อช่างและเบอร์โทรศัพท์ก่อนบันทึก');
             return;
         }
 
@@ -192,7 +194,7 @@ const ContractorSelector: React.FC<ContractorSelectorProps> = ({
         if (!editingContractor?.id) return;
         
         if (!editingContractor.contractorName || !editingContractor.phone) {
-            alert('กรุณากรอกชื่อช่างและเบอร์โทรศัพท์');
+            console.warn('กรุณากรอกชื่อช่างและเบอร์โทรศัพท์');
             return;
         }
         
@@ -223,10 +225,10 @@ const ContractorSelector: React.FC<ContractorSelectorProps> = ({
             setEditingContractor(null);
             setSpecialtiesInput('');
             
-            alert('✅ อัปเดตข้อมูลช่างสำเร็จ!');
+            console.log('✅ อัปเดตข้อมูลช่างสำเร็จ!');
         } catch (error) {
             console.error('Failed to update contractor:', error);
-            alert('❌ ไม่สามารถอัปเดตข้อมูลช่างได้');
+            console.error('❌ ไม่สามารถอัปเดตข้อมูลช่างได้');
         } finally {
             setIsSaving(false);
         }
@@ -235,15 +237,22 @@ const ContractorSelector: React.FC<ContractorSelectorProps> = ({
     const handleDeleteContractor = async (id: string, event: React.MouseEvent) => {
         event.stopPropagation();
         
-        if (!window.confirm('ต้องการลบข้อมูลช่างนี้หรือไม่?')) return;
+        const confirmed = await confirm({
+            title: 'ยืนยันการลบ',
+            message: 'ต้องการลบข้อมูลช่างนี้หรือไม่?',
+            variant: 'danger',
+            confirmText: 'ลบ',
+            cancelText: 'ยกเลิก'
+        });
+        if (!confirmed) return;
 
         try {
             await deleteContractor(id);
             await loadContractors();
-            alert('✅ ลบข้อมูลช่างสำเร็จ!');
+            console.log('✅ ลบข้อมูลช่างสำเร็จ!');
         } catch (error) {
             console.error('Failed to delete contractor:', error);
-            alert('❌ ไม่สามารถลบข้อมูลช่างได้');
+            throw error;
         }
     };
 

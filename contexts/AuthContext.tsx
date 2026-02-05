@@ -63,55 +63,38 @@ export const AuthProvider: React.FC<AuthProviderProps> = ({ children }) => {
             setLoading(false);
             
             if (currentUser) {
-                console.log('👤 ผู้ใช้ Login:', {
-                    name: currentUser.displayName,
-                    email: currentUser.email,
-                    phoneNumber: currentUser.phoneNumber,
-                    uid: currentUser.uid,
-                    providers: currentUser.providerData.map(p => p.providerId),
-                });
-
                 // อัปเดต linked providers
                 const providers = getLinkedProviders();
                 setLinkedProviders(providers);
 
                 // ตรวจสอบและ activate pending memberships
-                let totalActivated = 0;
                 
                 // 1. Activate ด้วย Email (ถ้ามี)
                 if (currentUser.email) {
                     try {
-                        const activatedByEmail = await activatePendingMemberships(
+                        await activatePendingMemberships(
                             currentUser.email,
                             currentUser.uid,
                             currentUser.displayName || undefined,
                             currentUser.phoneNumber || undefined
                         );
-                        totalActivated += activatedByEmail;
-                        console.log(`✅ Activated ${activatedByEmail} memberships by email`);
-                    } catch (error) {
-                        console.error('❌ ไม่สามารถ activate pending memberships by email:', error);
+                    } catch {
+                        // ไม่ต้องทำอะไร - อาจไม่มี pending memberships
                     }
                 }
                 
                 // 2. Activate ด้วย Phone Number (ถ้ามี)
                 if (currentUser.phoneNumber) {
                     try {
-                        const activatedByPhone = await activatePendingMembershipsByPhone(
+                        await activatePendingMembershipsByPhone(
                             currentUser.phoneNumber,
                             currentUser.uid,
                             currentUser.displayName || undefined,
                             currentUser.email || undefined
                         );
-                        totalActivated += activatedByPhone;
-                        console.log(`✅ Activated ${activatedByPhone} memberships by phone`);
-                    } catch (error) {
-                        console.error('❌ ไม่สามารถ activate pending memberships by phone:', error);
+                    } catch {
+                        // ไม่ต้องทำอะไร - อาจไม่มี pending memberships
                     }
-                }
-
-                if (totalActivated > 0) {
-                    console.log(`🎉 รวม activated ${totalActivated} memberships`);
                 }
 
                 // 3. ตรวจสอบว่ามี pending memberships ที่ยังไม่ได้ activate หรือไม่
@@ -122,17 +105,11 @@ export const AuthProvider: React.FC<AuthProviderProps> = ({ children }) => {
                         currentUser.phoneNumber || undefined
                     );
                     setPendingMembershipsCount(pendingMemberships.length);
-                    
-                    if (pendingMemberships.length > 0) {
-                        console.log(`⚠️ พบ ${pendingMemberships.length} pending memberships ที่ยังไม่ได้ activate`);
-                        console.log('💡 อาจต้อง Link Account เพื่อเข้าถึงองค์กรเหล่านี้');
-                    }
-                } catch (error) {
-                    console.error('❌ ไม่สามารถตรวจสอบ pending memberships:', error);
+                } catch {
+                    // ไม่สามารถตรวจสอบ pending memberships
                 }
                 
             } else {
-                console.log('👤 ไม่มีผู้ใช้ Login');
                 setLinkedProviders([]);
                 setPendingMembershipsCount(0);
             }
@@ -151,7 +128,6 @@ export const AuthProvider: React.FC<AuthProviderProps> = ({ children }) => {
             await authLogout();
             // State จะถูก reset อัตโนมัติผ่าน onAuthStateChanged
         } catch (error) {
-            console.error('❌ Logout ล้มเหลว:', error);
             throw error;
         }
     };

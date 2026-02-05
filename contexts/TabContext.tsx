@@ -49,7 +49,6 @@ export const TabProvider: React.FC<TabProviderProps> = ({ children }) => {
      */
     const loadTabSettings = useCallback(async () => {
         if (!currentCompany?.id || !user?.uid) {
-            console.log('⚠️ [TabContext] ไม่มี company หรือ user');
             setVisibleTabs([...DEFAULT_TAB_CONFIG]);
             setAllTabs([...DEFAULT_TAB_CONFIG]);
             setIsAdmin(false);
@@ -60,7 +59,6 @@ export const TabProvider: React.FC<TabProviderProps> = ({ children }) => {
 
         try {
             setLoading(true);
-            console.log('🔄 [TabContext] กำลังโหลดการตั้งค่า Tab...');
 
             // ตรวจสอบว่า user เป็น Admin หรือไม่
             const adminStatus = await checkIsAdmin(currentCompany.id, user.uid);
@@ -69,15 +67,9 @@ export const TabProvider: React.FC<TabProviderProps> = ({ children }) => {
             const role: UserRole = adminStatus ? 'admin' : 'member';
             setUserRole(role);
 
-            console.log('👤 [TabContext] User role:', role);
-
             // ตรวจสอบว่ามีการตั้งค่าเฉพาะ user หรือไม่
             const userSettings = await getUserTabSettings(currentCompany.id, user.uid);
             setHasCustomTabSettings(!!userSettings?.useCustomSettings);
-
-            if (userSettings?.useCustomSettings) {
-                console.log('📋 [TabContext] ใช้การตั้งค่า Tab เฉพาะ user');
-            }
 
             // โหลด Tab สำหรับ user นี้ (รวม user-specific settings)
             const [visible, all] = await Promise.all([
@@ -87,10 +79,7 @@ export const TabProvider: React.FC<TabProviderProps> = ({ children }) => {
 
             setVisibleTabs(visible);
             setAllTabs(all);
-
-            console.log('✅ [TabContext] โหลด Tab สำเร็จ:', visible.length, 'Tab ที่แสดง');
-        } catch (error) {
-            console.error('❌ [TabContext] โหลดการตั้งค่า Tab ล้มเหลว:', error);
+        } catch {
             // ใช้ค่า default ตาม role
             const defaultTabs = getDefaultTabsForRole(userRole);
             setVisibleTabs(defaultTabs);

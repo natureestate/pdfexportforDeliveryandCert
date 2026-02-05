@@ -23,8 +23,6 @@ export const migrateOldCompanies = async (): Promise<void> => {
             throw new Error('กรุณา Login ก่อน Migrate');
         }
 
-        console.log('🔄 เริ่ม Migration องค์กรเก่า...');
-
         // ดึงองค์กรทั้งหมดที่ User เป็นเจ้าของ
         const q = query(
             collection(db, 'companies'),
@@ -33,11 +31,9 @@ export const migrateOldCompanies = async (): Promise<void> => {
 
         const querySnapshot = await getDocs(q);
         let migratedCount = 0;
-        let skippedCount = 0;
 
         for (const doc of querySnapshot.docs) {
             const companyId = doc.id;
-            const companyData = doc.data();
 
             try {
                 // ตรวจสอบว่ามีข้อมูลสมาชิกแล้วหรือยัง
@@ -52,22 +48,12 @@ export const migrateOldCompanies = async (): Promise<void> => {
                         currentUser.phoneNumber || undefined,
                         currentUser.displayName || undefined
                     );
-
-                    console.log(`✅ Migrate สำเร็จ: ${companyData.name} (${companyId})`);
                     migratedCount++;
-                } else {
-                    console.log(`⏭️ ข้าม: ${companyData.name} (มีสมาชิกแล้ว)`);
-                    skippedCount++;
                 }
-            } catch (error) {
-                console.error(`❌ Migrate ล้มเหลว: ${companyData.name}`, error);
+            } catch {
+                // Migrate ล้มเหลว - ข้ามไป
             }
         }
-
-        console.log(`\n📊 สรุปผล Migration:`);
-        console.log(`   ✅ Migrate สำเร็จ: ${migratedCount} องค์กร`);
-        console.log(`   ⏭️ ข้าม: ${skippedCount} องค์กร`);
-        console.log(`   📋 รวมทั้งหมด: ${querySnapshot.docs.length} องค์กร\n`);
 
         if (migratedCount > 0) {
             alert(`✅ Migration สำเร็จ!\n\nเพิ่มข้อมูลสมาชิกให้กับ ${migratedCount} องค์กร`);
@@ -75,7 +61,6 @@ export const migrateOldCompanies = async (): Promise<void> => {
             alert('ℹ️ ไม่มีองค์กรที่ต้อง Migrate');
         }
     } catch (error) {
-        console.error('❌ Migration ล้มเหลว:', error);
         throw error;
     }
 };
@@ -105,7 +90,6 @@ export const checkNeedMigration = async (): Promise<boolean> => {
             // User ใหม่อาจไม่มีสิทธิ์ query companies collection
             // เพราะยังไม่มีองค์กรใดๆ - ไม่เป็นไร return false
             if (queryError?.code === 'permission-denied') {
-                console.log('ℹ️ [Migration] User ใหม่ - ไม่มีองค์กรเก่าที่ต้อง migrate');
                 return false;
             }
             throw queryError;
@@ -126,14 +110,13 @@ export const checkNeedMigration = async (): Promise<boolean> => {
                     // พบองค์กรที่ยังไม่มีสมาชิก
                     return true;
                 }
-            } catch (error) {
-                console.warn(`⚠️ ไม่สามารถตรวจสอบองค์กร ${companyId}:`, error);
+            } catch {
+                // ไม่สามารถตรวจสอบองค์กร - ข้ามไป
             }
         }
 
         return false;
-    } catch (error) {
-        console.error('❌ ตรวจสอบ Migration ล้มเหลว:', error);
+    } catch {
         // Return false เพื่อไม่ให้หยุดการทำงาน
         return false;
     }

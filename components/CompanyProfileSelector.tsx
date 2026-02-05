@@ -6,6 +6,7 @@
 import React, { useState, useEffect } from 'react';
 import { CompanyProfile, getCompanyProfiles, saveCompanyProfile, deleteCompanyProfile, getProfilesByType } from '../services/companyProfiles';
 import { Save } from 'lucide-react';
+import { useConfirm } from './ConfirmDialog';
 
 interface CompanyProfileSelectorProps {
     type: 'sender' | 'receiver';
@@ -22,6 +23,7 @@ const CompanyProfileSelector: React.FC<CompanyProfileSelectorProps> = ({
     currentCompany,
     currentAddress,
 }) => {
+    const { confirm } = useConfirm();
     const [profiles, setProfiles] = useState<CompanyProfile[]>([]);
     const [filteredProfiles, setFilteredProfiles] = useState<CompanyProfile[]>([]);
     const [isModalOpen, setIsModalOpen] = useState(false);
@@ -56,12 +58,12 @@ const CompanyProfileSelector: React.FC<CompanyProfileSelectorProps> = ({
 
     const handleSaveCurrentAsProfile = async () => {
         if (!newProfileName.trim()) {
-            alert('กรุณาใส่ชื่อ Profile');
+            console.warn('กรุณาใส่ชื่อ Profile');
             return;
         }
 
         if (!currentCompany || !currentAddress) {
-            alert('กรุณากรอกข้อมูลบริษัทและที่อยู่ก่อนบันทึก');
+            console.warn('กรุณากรอกข้อมูลบริษัทและที่อยู่ก่อนบันทึก');
             return;
         }
 
@@ -77,25 +79,29 @@ const CompanyProfileSelector: React.FC<CompanyProfileSelectorProps> = ({
             await loadProfiles();
             setIsModalOpen(false);
             setNewProfileName('');
-            alert('บันทึก Profile สำเร็จ!');
         } catch (error) {
             console.error('Failed to save profile:', error);
-            alert('ไม่สามารถบันทึก Profile ได้');
+            console.error('ไม่สามารถบันทึก Profile ได้');
         } finally {
             setIsSaving(false);
         }
     };
 
     const handleDeleteProfile = async (id: string) => {
-        if (!window.confirm('ต้องการลบ Profile นี้หรือไม่?')) return;
+        const confirmed = await confirm({
+            title: 'ยืนยันการลบ',
+            message: 'ต้องการลบ Profile นี้หรือไม่?',
+            variant: 'danger',
+            confirmText: 'ลบ',
+            cancelText: 'ยกเลิก'
+        });
+        if (!confirmed) return;
 
         try {
             await deleteCompanyProfile(id);
             await loadProfiles();
-            alert('ลบ Profile สำเร็จ!');
         } catch (error) {
             console.error('Failed to delete profile:', error);
-            alert('ไม่สามารถลบ Profile ได้');
         }
     };
 

@@ -10,6 +10,7 @@ import { useCompany } from '../contexts/CompanyContext';
 import { migrateCustomersLastUsedAt } from '../services/customerMigration';
 import { Users, Save, Home, Plus, Trash2 } from 'lucide-react';
 import { INPUT_LIMITS } from '../utils/inputValidation';
+import { useConfirm } from './ConfirmDialog';
 
 interface CustomerSelectorProps {
     label?: string;
@@ -25,6 +26,7 @@ const CustomerSelector: React.FC<CustomerSelectorProps> = ({
     showSaveButton = true,
 }) => {
     const { currentCompany } = useCompany();
+    const { confirm } = useConfirm();
     const [customers, setCustomers] = useState<Customer[]>([]);
     const [recentCustomers, setRecentCustomers] = useState<Customer[]>([]);
     const [isModalOpen, setIsModalOpen] = useState(false);
@@ -135,12 +137,12 @@ const CustomerSelector: React.FC<CustomerSelectorProps> = ({
 
     const handleSaveNewCustomer = async () => {
         if (!currentCompany?.id) {
-            alert('กรุณาเลือกบริษัทก่อน');
+            console.warn('กรุณาเลือกบริษัทก่อน');
             return;
         }
 
         if (!newCustomer.customerName || !newCustomer.phone) {
-            alert('กรุณากรอกชื่อลูกค้าและเบอร์โทรศัพท์');
+            console.warn('กรุณากรอกชื่อลูกค้าและเบอร์โทรศัพท์');
             return;
         }
 
@@ -162,11 +164,8 @@ const CustomerSelector: React.FC<CustomerSelectorProps> = ({
                 address: '',
                 projectName: '',
             });
-            
-            alert('✅ บันทึกข้อมูลลูกค้าสำเร็จ!');
         } catch (error) {
             console.error('Failed to save customer:', error);
-            alert('❌ ไม่สามารถบันทึกข้อมูลลูกค้าได้');
         } finally {
             setIsSaving(false);
         }
@@ -174,7 +173,7 @@ const CustomerSelector: React.FC<CustomerSelectorProps> = ({
 
     const handleSaveCurrentAsCustomer = () => {
         if (!currentCustomer?.customerName || !currentCustomer?.phone) {
-            alert('กรุณากรอกชื่อลูกค้าและเบอร์โทรศัพท์ก่อนบันทึก');
+            console.warn('กรุณากรอกชื่อลูกค้าและเบอร์โทรศัพท์ก่อนบันทึก');
             return;
         }
 
@@ -201,7 +200,7 @@ const CustomerSelector: React.FC<CustomerSelectorProps> = ({
         if (!editingCustomer?.id) return;
         
         if (!editingCustomer.customerName || !editingCustomer.phone) {
-            alert('กรุณากรอกชื่อลูกค้าและเบอร์โทรศัพท์');
+            console.warn('กรุณากรอกชื่อลูกค้าและเบอร์โทรศัพท์');
             return;
         }
         
@@ -222,11 +221,8 @@ const CustomerSelector: React.FC<CustomerSelectorProps> = ({
             await loadCustomers();
             setIsEditModalOpen(false);
             setEditingCustomer(null);
-            
-            alert('✅ อัปเดตข้อมูลลูกค้าสำเร็จ!');
         } catch (error) {
             console.error('Failed to update customer:', error);
-            alert('❌ ไม่สามารถอัปเดตข้อมูลลูกค้าได้');
         } finally {
             setIsSaving(false);
         }
@@ -235,15 +231,20 @@ const CustomerSelector: React.FC<CustomerSelectorProps> = ({
     const handleDeleteCustomer = async (id: string, event: React.MouseEvent) => {
         event.stopPropagation();
         
-        if (!window.confirm('ต้องการลบข้อมูลลูกค้านี้หรือไม่?')) return;
+        const confirmed = await confirm({
+            title: 'ยืนยันการลบ',
+            message: 'ต้องการลบข้อมูลลูกค้านี้หรือไม่?',
+            variant: 'danger',
+            confirmText: 'ลบ',
+            cancelText: 'ยกเลิก'
+        });
+        if (!confirmed) return;
 
         try {
             await deleteCustomer(id);
             await loadCustomers();
-            alert('✅ ลบข้อมูลลูกค้าสำเร็จ!');
         } catch (error) {
             console.error('Failed to delete customer:', error);
-            alert('❌ ไม่สามารถลบข้อมูลลูกค้าได้');
         }
     };
     
@@ -278,12 +279,12 @@ const CustomerSelector: React.FC<CustomerSelectorProps> = ({
     // บันทึก End Customer ใหม่
     const handleSaveNewEndCustomer = async () => {
         if (!currentCompany?.id || !selectedCustomerForEndCustomers?.id) {
-            alert('กรุณาเลือกลูกค้าก่อน');
+            console.warn('กรุณาเลือกลูกค้าก่อน');
             return;
         }
         
         if (!newEndCustomer.projectName) {
-            alert('กรุณากรอกชื่อโครงการ End Customer');
+            console.warn('กรุณากรอกชื่อโครงการ End Customer');
             return;
         }
         
@@ -303,11 +304,8 @@ const CustomerSelector: React.FC<CustomerSelectorProps> = ({
                 contactName: '',
                 contactPhone: '',
             });
-            
-            alert('✅ บันทึก End Customer สำเร็จ!');
         } catch (error) {
             console.error('Failed to save end customer:', error);
-            alert('❌ ไม่สามารถบันทึก End Customer ได้');
         } finally {
             setIsSaving(false);
         }
@@ -315,17 +313,22 @@ const CustomerSelector: React.FC<CustomerSelectorProps> = ({
     
     // ลบ End Customer
     const handleDeleteEndCustomer = async (endCustomerId: string) => {
-        if (!window.confirm('ต้องการลบ End Customer นี้หรือไม่?')) return;
+        const confirmed = await confirm({
+            title: 'ยืนยันการลบ',
+            message: 'ต้องการลบ End Customer นี้หรือไม่?',
+            variant: 'danger',
+            confirmText: 'ลบ',
+            cancelText: 'ยกเลิก'
+        });
+        if (!confirmed) return;
         
         try {
             await deleteEndCustomer(endCustomerId);
             if (selectedCustomerForEndCustomers?.id) {
                 await loadEndCustomers(selectedCustomerForEndCustomers.id);
             }
-            alert('✅ ลบ End Customer สำเร็จ!');
         } catch (error) {
             console.error('Failed to delete end customer:', error);
-            alert('❌ ไม่สามารถลบ End Customer ได้');
         }
     };
 

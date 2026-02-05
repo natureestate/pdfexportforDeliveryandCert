@@ -22,7 +22,7 @@ import {
 } from 'firebase/firestore';
 import { OrganizationCode, OrganizationCodeUsage, UserRole } from '../types';
 import { checkIsAdmin } from './companyMembers';
-import { addMemberFromInvitation, updateMemberCount } from './companyMembers';
+import { addMemberFromInvitation } from './companyMembers';
 
 // Collection names
 const CODES_COLLECTION = 'organizationCodes';
@@ -138,8 +138,6 @@ export const createOrganizationCode = async (
         // บันทึกข้อมูล
         await setDoc(docRef, codeData);
 
-        console.log('✅ สร้าง Join Code สำเร็จ:', code);
-
         return {
             id: codeId,
             ...codeData,
@@ -148,7 +146,6 @@ export const createOrganizationCode = async (
             updatedAt: new Date(),
         } as OrganizationCode;
     } catch (error) {
-        console.error('❌ สร้าง Join Code ล้มเหลว:', error);
         throw error;
     }
 };
@@ -191,7 +188,6 @@ export const getOrganizationCodeByCode = async (code: string): Promise<Organizat
             updatedAt: data.updatedAt?.toDate(),
         } as OrganizationCode;
     } catch (error) {
-        console.error('❌ ดึง Join Code ล้มเหลว:', error);
         throw error;
     }
 };
@@ -227,7 +223,6 @@ export const validateOrganizationCode = async (
 
         return { valid: true, codeData };
     } catch (error) {
-        console.error('❌ ตรวจสอบ Join Code ล้มเหลว:', error);
         return { valid: false, message: 'เกิดข้อผิดพลาดในการตรวจสอบ' };
     }
 };
@@ -287,14 +282,11 @@ export const joinByCode = async (code: string): Promise<OrganizationCodeUsage> =
             joinedAt: Timestamp.now(),
         });
 
-        // อัปเดตจำนวนสมาชิก
-        await updateMemberCount(codeData.companyId);
-
-        console.log('✅ เข้าร่วมองค์กรด้วย Join Code สำเร็จ:', codeData.companyName);
+        // หมายเหตุ: ไม่ต้อง updateMemberCount เพราะ user ใหม่ไม่มีสิทธิ์อัปเดต companies
+        // จำนวนสมาชิกจะถูกอัปเดตตอน Admin ดูหน้าสมาชิก หรือ background job
 
         return usageData;
     } catch (error) {
-        console.error('❌ เข้าร่วมด้วย Join Code ล้มเหลว:', error);
         throw error;
     }
 };
@@ -344,10 +336,8 @@ export const getCompanyOrganizationCodes = async (companyId: string): Promise<Or
             } as OrganizationCode;
         });
 
-        console.log(`📋 ดึง Join Codes ขององค์กร ${companyId}: ${codes.length} codes`);
         return codes;
     } catch (error) {
-        console.error('❌ ดึง Join Codes ล้มเหลว:', error);
         throw error;
     }
 };
@@ -384,10 +374,7 @@ export const deactivateOrganizationCode = async (codeId: string): Promise<void> 
             isActive: false,
             updatedAt: Timestamp.now(),
         });
-
-        console.log('✅ ปิดใช้งาน Join Code สำเร็จ:', codeId);
     } catch (error) {
-        console.error('❌ ปิดใช้งาน Join Code ล้มเหลว:', error);
         throw error;
     }
 };
@@ -424,10 +411,7 @@ export const activateOrganizationCode = async (codeId: string): Promise<void> =>
             isActive: true,
             updatedAt: Timestamp.now(),
         });
-
-        console.log('✅ เปิดใช้งาน Join Code สำเร็จ:', codeId);
     } catch (error) {
-        console.error('❌ เปิดใช้งาน Join Code ล้มเหลว:', error);
         throw error;
     }
 };
@@ -461,10 +445,7 @@ export const deleteOrganizationCode = async (codeId: string): Promise<void> => {
 
         // ลบ code
         await deleteDoc(codeRef);
-
-        console.log('✅ ลบ Join Code สำเร็จ:', codeId);
     } catch (error) {
-        console.error('❌ ลบ Join Code ล้มเหลว:', error);
         throw error;
     }
 };
@@ -518,10 +499,8 @@ export const getCodeUsageHistory = async (codeId: string): Promise<OrganizationC
             } as OrganizationCodeUsage;
         });
 
-        console.log(`📋 ดึงประวัติการใช้งาน code ${codeId}: ${usages.length} ครั้ง`);
         return usages;
     } catch (error) {
-        console.error('❌ ดึงประวัติการใช้งานล้มเหลว:', error);
         throw error;
     }
 };

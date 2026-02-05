@@ -11,6 +11,7 @@ import { getInvitationByToken, acceptInvitation } from '../services/invitations'
 import { updateMemberCount, addMemberFromInvitation } from '../services/companyMembers';
 import { Invitation } from '../types';
 import { Building2, Crown, User } from 'lucide-react';
+import { useConfirm } from './ConfirmDialog';
 
 /**
  * หน้ายอมรับคำเชิญ
@@ -19,6 +20,7 @@ const AcceptInvitationPage: React.FC = () => {
     const navigate = useNavigate();
     const [searchParams] = useSearchParams();
     const { user, loading: authLoading } = useAuth();
+    const { confirm } = useConfirm();
 
     const [invitation, setInvitation] = useState<Invitation | null>(null);
     const [loading, setLoading] = useState(true);
@@ -182,8 +184,15 @@ const AcceptInvitationPage: React.FC = () => {
     /**
      * ปฏิเสธคำเชิญ
      */
-    const handleReject = () => {
-        if (confirm('คุณแน่ใจหรือไม่ว่าต้องการปฏิเสธคำเชิญนี้?')) {
+    const handleReject = async () => {
+        const confirmed = await confirm({
+            title: 'ยืนยันการปฏิเสธ',
+            message: 'คุณแน่ใจหรือไม่ว่าต้องการปฏิเสธคำเชิญนี้?',
+            variant: 'warning',
+            confirmText: 'ปฏิเสธ',
+            cancelText: 'ยกเลิก'
+        });
+        if (confirmed) {
             navigate('/');
         }
     };

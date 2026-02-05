@@ -57,7 +57,6 @@ export const MenuProvider: React.FC<MenuProviderProps> = ({ children }) => {
      */
     const loadMenuSettings = useCallback(async () => {
         if (!currentCompany?.id || !user?.uid) {
-            console.log('⚠️ [MenuContext] ไม่มี company หรือ user');
             setVisibleMenus([...DEFAULT_MENU_CONFIG]);
             setAllMenus([...DEFAULT_MENU_CONFIG]);
             setIsAdmin(false);
@@ -69,7 +68,6 @@ export const MenuProvider: React.FC<MenuProviderProps> = ({ children }) => {
 
         try {
             setLoading(true);
-            console.log('🔄 [MenuContext] กำลังโหลดการตั้งค่าเมนู...');
 
             // ตรวจสอบว่า user เป็น Admin หรือไม่
             const adminStatus = await checkIsAdmin(currentCompany.id, user.uid);
@@ -77,16 +75,10 @@ export const MenuProvider: React.FC<MenuProviderProps> = ({ children }) => {
             
             const role: UserRole = adminStatus ? 'admin' : 'member';
             setUserRole(role);
-            
-            console.log('👤 [MenuContext] User role:', role);
 
             // ตรวจสอบว่ามีการตั้งค่าเฉพาะ user หรือไม่
             const userSettings = await getUserMenuSettings(currentCompany.id, user.uid);
             setHasCustomMenuSettings(!!userSettings?.useCustomSettings);
-            
-            if (userSettings?.useCustomSettings) {
-                console.log('📋 [MenuContext] ใช้การตั้งค่าเฉพาะ user');
-            }
 
             // โหลดเมนูสำหรับ user นี้ (รวม user-specific settings)
             const [visible, all] = await Promise.all([
@@ -96,10 +88,7 @@ export const MenuProvider: React.FC<MenuProviderProps> = ({ children }) => {
 
             setVisibleMenus(visible);
             setAllMenus(all);
-            
-            console.log('✅ [MenuContext] โหลดเมนูสำเร็จ:', visible.length, 'เมนูที่แสดง');
-        } catch (error) {
-            console.error('❌ [MenuContext] โหลดการตั้งค่าเมนูล้มเหลว:', error);
+        } catch {
             setVisibleMenus([...DEFAULT_MENU_CONFIG]);
             setAllMenus([...DEFAULT_MENU_CONFIG]);
             setHasCustomMenuSettings(false);

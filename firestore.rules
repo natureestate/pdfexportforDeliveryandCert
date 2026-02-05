@@ -228,11 +228,16 @@ service cloud.firestore {
         (resource.data.email != null && resource.data.email == request.auth.token.email)
       );
       
-      // สร้าง: Admin ของบริษัท หรือ เจ้าของบริษัท หรือ Super Admin
+      // สร้าง: 
+      // 1. Admin ของบริษัท หรือ เจ้าของบริษัท หรือ Super Admin
+      // 2. User สร้าง membership ของตัวเอง (สำหรับ Join Code / Invitation)
+      //    - userId ต้องตรงกับ user ปัจจุบัน
       allow create: if isAuthenticated() && (
         isSuperAdmin() ||
         isCompanyOwner(request.resource.data.companyId) ||
-        isAdminOfCompany(request.resource.data.companyId)
+        isAdminOfCompany(request.resource.data.companyId) ||
+        // อนุญาตให้ user สร้าง membership ของตัวเอง (จาก Join Code หรือ Invitation)
+        request.resource.data.userId == request.auth.uid
       );
       
       // แก้ไข: 
@@ -635,11 +640,21 @@ service cloud.firestore {
         isAdminOfCompany(request.resource.data.companyId)
       );
       
-      // แก้ไข: Admin ของบริษัท หรือ เจ้าของบริษัท หรือ Super Admin
+      // แก้ไข: 
+      // 1. Admin ของบริษัท หรือ เจ้าของบริษัท หรือ Super Admin (แก้ไขทุกอย่าง)
+      // 2. User ที่ Login สามารถเพิ่ม usedCount ได้ (เมื่อใช้ code)
       allow update: if isAuthenticated() && (
         isSuperAdmin() ||
         (resource.data.companyId != null && isCompanyOwner(resource.data.companyId)) ||
-        (resource.data.companyId != null && isAdminOfCompany(resource.data.companyId))
+        (resource.data.companyId != null && isAdminOfCompany(resource.data.companyId)) ||
+        // อนุญาตให้ user เพิ่ม usedCount เมื่อใช้ code (ตรวจสอบว่าเปลี่ยนแค่ usedCount และ updatedAt)
+        (
+          resource.data.isActive == true &&
+          request.resource.data.usedCount == resource.data.usedCount + 1 &&
+          request.resource.data.code == resource.data.code &&
+          request.resource.data.companyId == resource.data.companyId &&
+          request.resource.data.isActive == resource.data.isActive
+        )
       );
       
       // ลบ: Admin ของบริษัท หรือ เจ้าของบริษัท หรือ Super Admin

@@ -63,18 +63,14 @@ export const uploadLogoFile = async (
         const storagePath = getOrganizationStoragePath(organizationId);
         const logoRef = ref(storage, `${storagePath}/${fileName}`);
 
-        console.log(`📤 [Storage] Uploading to: ${storagePath}/${fileName}`);
-
         // อัปโหลดไฟล์
         const snapshot = await uploadBytes(logoRef, file);
         
         // ดึง URL สำหรับดาวน์โหลด
         const downloadURL = await getDownloadURL(snapshot.ref);
         
-        console.log('✅ Logo uploaded successfully:', downloadURL);
         return downloadURL;
-    } catch (error) {
-        console.error('❌ Error uploading logo:', error);
+    } catch {
         throw new Error('ไม่สามารถอัปโหลดโลโก้ได้');
     }
 };
@@ -98,18 +94,14 @@ export const uploadLogoBase64 = async (
         const storagePath = getOrganizationStoragePath(organizationId);
         const logoRef = ref(storage, `${storagePath}/${fileName}`);
 
-        console.log(`📤 [Storage] Uploading Base64 to: ${storagePath}/${fileName}`);
-
         // อัปโหลด Base64 string
         const snapshot = await uploadString(logoRef, base64String, 'data_url');
         
         // ดึง URL สำหรับดาวน์โหลด
         const downloadURL = await getDownloadURL(snapshot.ref);
         
-        console.log('✅ Logo uploaded successfully:', downloadURL);
         return downloadURL;
-    } catch (error) {
-        console.error('❌ Error uploading logo:', error);
+    } catch {
         throw new Error('ไม่สามารถอัปโหลดโลโก้ได้');
     }
 };
@@ -122,7 +114,6 @@ export const deleteLogo = async (logoUrl: string): Promise<void> => {
     try {
         // ตรวจสอบว่าเป็น URL จาก Firebase Storage หรือไม่
         if (!logoUrl.includes('firebasestorage.googleapis.com')) {
-            console.log('Not a Firebase Storage URL, skipping delete');
             return;
         }
 
@@ -131,9 +122,7 @@ export const deleteLogo = async (logoUrl: string): Promise<void> => {
         
         // ลบไฟล์
         await deleteObject(logoRef);
-        console.log('Logo deleted successfully');
-    } catch (error) {
-        console.error('Error deleting logo:', error);
+    } catch {
         throw new Error('ไม่สามารถลบโลโก้ได้');
     }
 };
@@ -148,8 +137,7 @@ export const getLogoUrl = async (logoPath: string): Promise<string> => {
         const logoRef = ref(storage, logoPath);
         const downloadURL = await getDownloadURL(logoRef);
         return downloadURL;
-    } catch (error) {
-        console.error('Error getting logo URL:', error);
+    } catch {
         throw new Error('ไม่สามารถดึง URL โลโก้ได้');
     }
 };
@@ -167,8 +155,7 @@ export const getStoragePathFromUrl = (url: string): string | null => {
             return decodeURIComponent(match[1]);
         }
         return null;
-    } catch (error) {
-        console.error('Error parsing storage path:', error);
+    } catch {
         return null;
     }
 };
@@ -207,8 +194,6 @@ export const listAllLogos = async (organizationId?: string): Promise<LogoItem[]>
         const storagePath = getOrganizationStoragePath(organizationId);
         const logosRef = ref(storage, storagePath);
         
-        console.log(`📋 [Storage] Listing logos from: ${storagePath}`);
-        
         const result = await listAll(logosRef);
         
         // ดึงข้อมูลของแต่ละไฟล์
@@ -228,8 +213,7 @@ export const listAllLogos = async (organizationId?: string): Promise<LogoItem[]>
                     contentType: metadata.contentType,
                     organizationId: organizationId // เพิ่ม organizationId
                 } as LogoItem;
-            } catch (error) {
-                console.error(`Error getting metadata for ${itemRef.name}:`, error);
+            } catch {
                 return null;
             }
         });
@@ -240,8 +224,7 @@ export const listAllLogos = async (organizationId?: string): Promise<LogoItem[]>
         return logos
             .filter((logo): logo is LogoItem => logo !== null)
             .sort((a, b) => b.uploadedAt.getTime() - a.uploadedAt.getTime());
-    } catch (error) {
-        console.error('❌ Error listing logos:', error);
+    } catch {
         throw new Error('ไม่สามารถดึงรายการโลโก้ได้');
     }
 };
@@ -254,9 +237,7 @@ export const deleteLogoByPath = async (fullPath: string): Promise<void> => {
     try {
         const logoRef = ref(storage, fullPath);
         await deleteObject(logoRef);
-        console.log('Logo deleted successfully:', fullPath);
-    } catch (error) {
-        console.error('Error deleting logo:', error);
+    } catch {
         throw new Error('ไม่สามารถลบโลโก้ได้');
     }
 };
@@ -284,13 +265,9 @@ export const formatFileSize = (bytes: number): string => {
  */
 export const getImageAsBase64FromPath = async (storagePath: string): Promise<string | null> => {
     try {
-        console.log('📥 Converting image to Base64 from path:', storagePath);
-        
         // ดึง Download URL ที่มี token
         const imageRef = ref(storage, storagePath);
         const downloadURL = await getDownloadURL(imageRef);
-        
-        console.log('🔗 Got download URL:', downloadURL);
         
         // ใช้ Image element + Canvas เพื่อแปลงเป็น Base64
         // วิธีนี้ทำงานได้ดีกว่าเพราะ browser จัดการ CORS ให้เอง
@@ -317,24 +294,20 @@ export const getImageAsBase64FromPath = async (storagePath: string): Promise<str
                     
                     // แปลง canvas เป็น Base64 (ใช้ PNG เพื่อรักษา transparency)
                     const base64 = canvas.toDataURL('image/png');
-                    console.log('✅ Successfully converted via Image+Canvas method');
                     resolve(base64);
                 } catch (canvasError) {
-                    console.error('Canvas conversion error:', canvasError);
                     reject(canvasError);
                 }
             };
             
             img.onerror = (error) => {
-                console.error('❌ Image load error:', error);
                 reject(error);
             };
             
             // โหลดรูปภาพ
             img.src = downloadURL;
         });
-    } catch (error) {
-        console.error('❌ Error converting image to base64:', error);
+    } catch {
         return null;
     }
 };
@@ -347,11 +320,8 @@ export const getImageAsBase64FromPath = async (storagePath: string): Promise<str
  */
 export const convertStorageUrlToBase64 = async (url: string): Promise<string | null> => {
     try {
-        console.log('Converting Storage URL to Base64:', url);
-        
         // ตรวจสอบว่าเป็น Firebase Storage URL หรือไม่
         if (!url.includes('firebasestorage.googleapis.com')) {
-            console.log('Not a Firebase Storage URL, skipping conversion');
             return url; // คืนค่า URL เดิม ถ้าไม่ใช่ Firebase Storage
         }
 
@@ -359,14 +329,12 @@ export const convertStorageUrlToBase64 = async (url: string): Promise<string | n
         // URL format: https://firebasestorage.googleapis.com/v0/b/{bucket}/o/{path}?alt=media&token={token}
         const storagePath = getStoragePathFromUrl(url);
         if (!storagePath) {
-            console.error('Could not extract storage path from URL');
             return null;
         }
 
         // ใช้ Firebase SDK ดึง blob และแปลงเป็น Base64
         return await getImageAsBase64FromPath(storagePath);
-    } catch (error) {
-        console.error('Error converting storage URL to base64:', error);
+    } catch {
         return null;
     }
 };

@@ -1,11 +1,12 @@
 import React, { useRef, useState, useEffect } from 'react';
 import { QuotationData, QuotationItem, LogoType, EndCustomerProject } from '../types';
-import { formatDateForInput } from '../utils/dateUtils';
 import CustomerSelector from './CustomerSelector';
+import DatePicker from './DatePicker';
 import { generateDocumentNumber } from '../services/documentNumber';
 import { useCompany } from '../contexts/CompanyContext';
 import { numberToThaiText } from '../utils/numberToThaiText';
 import { INPUT_LIMITS, NUMBER_LIMITS } from '../utils/inputValidation';
+import { parseNumberInput } from '../utils/numberInput';
 
 export interface QuotationFormProps {
     data: QuotationData;
@@ -126,7 +127,6 @@ const QuotationForm: React.FC<QuotationFormProps> = ({
             console.log('✅ [QT] Generated new document number:', newQuotationNumber);
         } catch (error) {
             console.error('❌ [QT] Error generating quotation number:', error);
-            alert('ไม่สามารถสร้างเลขที่เอกสารได้ กรุณาลองใหม่อีกครั้ง');
         } finally {
             setIsGeneratingNumber(false);
         }
@@ -134,11 +134,15 @@ const QuotationForm: React.FC<QuotationFormProps> = ({
 
     /**
      * Auto-generate เลขที่เอกสารเมื่อฟอร์มว่างหรือเป็นค่า default
+     * ใช้ sessionStorage เก็บเลขที่ generate ไว้ป้องกันการ generate ซ้ำเมื่อ refresh
      */
     useEffect(() => {
+        const SESSION_KEY = 'quotation_docNumber';
+        
         if (isEditing) {
             console.log('⏭️ [QT] Skip auto-generate - isEditing mode');
             hasGeneratedNumberRef.current = true;
+            sessionStorage.removeItem(SESSION_KEY);
             return;
         }
         
@@ -146,17 +150,21 @@ const QuotationForm: React.FC<QuotationFormProps> = ({
         if (hasValidNumber) {
             console.log('⏭️ [QT] Skip auto-generate - already has valid number:', data.quotationNumber);
             hasGeneratedNumberRef.current = true;
+            sessionStorage.setItem(SESSION_KEY, data.quotationNumber);
+            return;
+        }
+        
+        // ตรวจสอบ sessionStorage ว่ามีเลขที่ generate ไว้แล้วหรือไม่
+        const savedDocNumber = sessionStorage.getItem(SESSION_KEY);
+        if (savedDocNumber && savedDocNumber.match(/^QT-\d{6}\d{2}$/)) {
+            handleDataChange('quotationNumber', savedDocNumber);
+            hasGeneratedNumberRef.current = true;
             return;
         }
         
         const isDefaultOrEmpty = !data.quotationNumber || 
                                   data.quotationNumber.match(/^QT-\d{4}-\d{3}$/) || // รูปแบบเก่า
                                   data.quotationNumber === '';
-        
-        // ถ้า quotationNumber ว่างเปล่า ให้ reset flag เพื่อให้สามารถสร้างเลขใหม่ได้
-        if (isDefaultOrEmpty) {
-            hasGeneratedNumberRef.current = false;
-        }
         
         if (isDefaultOrEmpty && !hasGeneratedNumberRef.current && !isGeneratingNumber) {
             console.log('🔄 [QT] Auto-generating new document number...');
@@ -422,11 +430,23 @@ const QuotationForm: React.FC<QuotationFormProps> = ({
                 <div className="grid grid-cols-1 md:grid-cols-3 gap-3 sm:gap-4">
                     <div>
                         <label htmlFor="quotationDate" className="block text-xs sm:text-sm font-medium text-slate-700 dark:text-slate-300">วันที่ออกใบเสนอราคา</label>
-                        <input type="date" id="quotationDate" value={formatDateForInput(data.quotationDate)} onChange={(e) => handleDataChange('quotationDate', e.target.value ? new Date(e.target.value) : null)} className="mt-1 block w-full rounded-md border-gray-300 shadow-sm focus:border-indigo-500 focus:ring-indigo-500 text-xs sm:text-sm bg-gray-50 dark:bg-slate-700 dark:text-gray-100 dark:border-slate-600" />
+                        <DatePicker
+                            id="quotationDate"
+                            value={data.quotationDate}
+                            onChange={(date) => handleDataChange('quotationDate', date)}
+                            placeholder="เลือกวันที่"
+                            className="mt-1"
+                        />
                     </div>
                     <div>
                         <label htmlFor="validUntilDate" className="block text-xs sm:text-sm font-medium text-slate-700 dark:text-slate-300">วันที่หมดอายุใบเสนอราคา</label>
-                        <input type="date" id="validUntilDate" value={formatDateForInput(data.validUntilDate)} onChange={(e) => handleDataChange('validUntilDate', e.target.value ? new Date(e.target.value) : null)} className="mt-1 block w-full rounded-md border-gray-300 shadow-sm focus:border-indigo-500 focus:ring-indigo-500 text-xs sm:text-sm bg-gray-50 dark:bg-slate-700 dark:text-gray-100 dark:border-slate-600" />
+                        <DatePicker
+                            id="validUntilDate"
+                            value={data.validUntilDate}
+                            onChange={(date) => handleDataChange('validUntilDate', date)}
+                            placeholder="เลือกวันที่"
+                            className="mt-1"
+                        />
                     </div>
                     <div>
                         <label htmlFor="referenceNumber" className="block text-xs sm:text-sm font-medium text-slate-700 dark:text-slate-300">เลขที่อ้างอิง</label>
@@ -455,13 +475,13 @@ const QuotationForm: React.FC<QuotationFormProps> = ({
                                         <textarea value={item.description} onChange={(e) => handleItemChange(index, 'description', e.target.value)} rows={2} maxLength={INPUT_LIMITS.itemDescription} className="w-full rounded-md border-gray-300 dark:border-slate-600 shadow-sm focus:border-indigo-300 focus:ring-indigo-200 focus:ring-opacity-50 text-xs sm:text-sm bg-gray-50 dark:bg-slate-700 text-gray-900 dark:text-gray-100"></textarea>
                                     </td>
                                     <td className="px-1 sm:px-2 py-1 whitespace-nowrap">
-                                        <input type="number" value={item.quantity} onChange={(e) => handleItemChange(index, 'quantity', parseFloat(e.target.value) || 0)} inputMode="decimal" min={NUMBER_LIMITS.quantity.min} max={NUMBER_LIMITS.quantity.max} step={NUMBER_LIMITS.quantity.step} className="w-full rounded-md border-gray-300 dark:border-slate-600 shadow-sm focus:border-indigo-300 focus:ring-indigo-200 focus:ring-opacity-50 text-xs sm:text-sm bg-gray-50 dark:bg-slate-700 text-gray-900 dark:text-gray-100" />
+                                        <input type="number" value={item.quantity} onChange={(e) => handleItemChange(index, 'quantity', parseNumberInput(e.target.value))} inputMode="decimal" min={NUMBER_LIMITS.quantity.min} max={NUMBER_LIMITS.quantity.max} step={NUMBER_LIMITS.quantity.step} className="w-full rounded-md border-gray-300 dark:border-slate-600 shadow-sm focus:border-indigo-300 focus:ring-indigo-200 focus:ring-opacity-50 text-xs sm:text-sm bg-gray-50 dark:bg-slate-700 text-gray-900 dark:text-gray-100" />
                                     </td>
                                     <td className="px-1 sm:px-2 py-1 whitespace-nowrap">
                                         <input type="text" value={item.unit} onChange={(e) => handleItemChange(index, 'unit', e.target.value)} maxLength={INPUT_LIMITS.unit} className="w-full rounded-md border-gray-300 dark:border-slate-600 shadow-sm focus:border-indigo-300 focus:ring-indigo-200 focus:ring-opacity-50 text-xs sm:text-sm bg-gray-50 dark:bg-slate-700 text-gray-900 dark:text-gray-100" />
                                     </td>
                                     <td className="px-1 sm:px-2 py-1 whitespace-nowrap">
-                                        <input type="number" step="0.01" value={item.unitPrice} onChange={(e) => handleItemChange(index, 'unitPrice', parseFloat(e.target.value) || 0)} inputMode="decimal" min={NUMBER_LIMITS.price.min} max={NUMBER_LIMITS.price.max} className="w-full rounded-md border-gray-300 dark:border-slate-600 shadow-sm focus:border-indigo-300 focus:ring-indigo-200 focus:ring-opacity-50 text-xs sm:text-sm bg-gray-50 dark:bg-slate-700 text-gray-900 dark:text-gray-100" />
+                                        <input type="number" step="0.01" value={item.unitPrice} onChange={(e) => handleItemChange(index, 'unitPrice', parseNumberInput(e.target.value))} inputMode="decimal" min={NUMBER_LIMITS.price.min} max={NUMBER_LIMITS.price.max} className="w-full rounded-md border-gray-300 dark:border-slate-600 shadow-sm focus:border-indigo-300 focus:ring-indigo-200 focus:ring-opacity-50 text-xs sm:text-sm bg-gray-50 dark:bg-slate-700 text-gray-900 dark:text-gray-100" />
                                     </td>
                                     <td className="px-1 sm:px-2 py-1 whitespace-nowrap">
                                         <input type="number" step="0.01" value={item.amount} readOnly className="w-full rounded-md border-gray-300 dark:border-slate-600 shadow-sm text-xs sm:text-sm bg-gray-100 dark:bg-slate-600 text-gray-900 dark:text-gray-100 font-medium" />
@@ -489,11 +509,11 @@ const QuotationForm: React.FC<QuotationFormProps> = ({
                     <div className="space-y-3 sm:space-y-4">
                         <div className="flex flex-col sm:flex-row sm:justify-between sm:items-center gap-2">
                             <label htmlFor="taxRate" className="block text-xs sm:text-sm font-medium text-slate-700 dark:text-slate-300">อัตราภาษีมูลค่าเพิ่ม (%)</label>
-                            <input type="number" id="taxRate" value={data.taxRate} onChange={(e) => handleDataChange('taxRate', parseFloat(e.target.value) || 0)} inputMode="decimal" min={NUMBER_LIMITS.percentage.min} max={NUMBER_LIMITS.percentage.max} step={NUMBER_LIMITS.percentage.step} className="w-full sm:w-24 rounded-md border-gray-300 shadow-sm focus:border-indigo-500 focus:ring-indigo-500 text-xs sm:text-sm bg-gray-50 dark:bg-slate-700 dark:text-gray-100 dark:border-slate-600" />
+                            <input type="number" id="taxRate" value={data.taxRate} onChange={(e) => handleDataChange('taxRate', parseNumberInput(e.target.value))} inputMode="decimal" min={NUMBER_LIMITS.percentage.min} max={NUMBER_LIMITS.percentage.max} step={NUMBER_LIMITS.percentage.step} className="w-full sm:w-24 rounded-md border-gray-300 shadow-sm focus:border-indigo-500 focus:ring-indigo-500 text-xs sm:text-sm bg-gray-50 dark:bg-slate-700 dark:text-gray-100 dark:border-slate-600" />
                         </div>
                         <div className="flex flex-col sm:flex-row sm:justify-between sm:items-center gap-2">
                             <label htmlFor="discount" className="block text-xs sm:text-sm font-medium text-slate-700 dark:text-slate-300">ส่วนลด (บาท)</label>
-                            <input type="number" id="discount" value={data.discount} onChange={(e) => handleDataChange('discount', parseFloat(e.target.value) || 0)} inputMode="decimal" min={NUMBER_LIMITS.price.min} max={NUMBER_LIMITS.price.max} step={NUMBER_LIMITS.price.step} className="w-full sm:w-32 rounded-md border-gray-300 shadow-sm focus:border-indigo-500 focus:ring-indigo-500 text-xs sm:text-sm bg-gray-50 dark:bg-slate-700 dark:text-gray-100 dark:border-slate-600" />
+                            <input type="number" id="discount" value={data.discount} onChange={(e) => handleDataChange('discount', parseNumberInput(e.target.value))} inputMode="decimal" min={NUMBER_LIMITS.price.min} max={NUMBER_LIMITS.price.max} step={NUMBER_LIMITS.price.step} className="w-full sm:w-32 rounded-md border-gray-300 shadow-sm focus:border-indigo-500 focus:ring-indigo-500 text-xs sm:text-sm bg-gray-50 dark:bg-slate-700 dark:text-gray-100 dark:border-slate-600" />
                         </div>
                     </div>
                     <div className="space-y-2 bg-gray-50 dark:bg-slate-700 p-4 rounded-lg">

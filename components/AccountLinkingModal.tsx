@@ -338,32 +338,32 @@ export const AccountLinkingModal: React.FC<AccountLinkingModalProps> = ({
             return (
                 <div className="space-y-4">
                     {/* ข้อความแจ้งเตือน */}
-                    <div className="bg-yellow-50 border border-yellow-200 rounded-lg p-4">
-                        <p className="text-sm text-yellow-800">
+                    <div className="bg-yellow-50 dark:bg-yellow-900/30 border border-yellow-200 dark:border-slate-600 rounded-lg p-4">
+                        <p className="text-sm text-yellow-800 dark:text-yellow-300">
                             <strong>⚠️ พบ Account ที่มีอยู่แล้ว</strong>
                         </p>
                         {email && (
-                            <p className="text-sm text-yellow-800 mt-1">
+                            <p className="text-sm text-yellow-800 dark:text-yellow-300 mt-1">
                                 <strong>อีเมล:</strong> {email}
                             </p>
                         )}
                         {phoneNumber && (
-                            <p className="text-sm text-yellow-800 mt-1">
+                            <p className="text-sm text-yellow-800 dark:text-yellow-300 mt-1">
                                 <strong>เบอร์โทร:</strong> {phoneNumber}
                             </p>
                         )}
-                        <p className="text-sm text-yellow-800 mt-2">
+                        <p className="text-sm text-yellow-800 dark:text-yellow-300 mt-2">
                             มีการ Login ด้วย:{' '}
                             <strong>{existingProviders.map(getProviderName).join(', ')}</strong>
                         </p>
                     </div>
 
                     {/* ตัวเลือก: Login ด้วย Provider ที่มีอยู่ */}
-                    <div className="border-2 border-gray-200 rounded-lg p-4">
-                        <h4 className="font-semibold text-gray-800 mb-2">
+                    <div className="border-2 border-gray-200 dark:border-slate-600 rounded-lg p-4">
+                        <h4 className="font-semibold text-gray-800 dark:text-gray-100 mb-2">
                             ตัวเลือก 1: Login ด้วย {existingProviders.map(getProviderName).join(', ')}
                         </h4>
-                        <p className="text-sm text-gray-600 mb-3">
+                        <p className="text-sm text-gray-600 dark:text-gray-400 mb-3">
                             ใช้วิธี Login ที่มีอยู่แล้ว
                         </p>
                         <button
@@ -434,18 +434,18 @@ export const AccountLinkingModal: React.FC<AccountLinkingModalProps> = ({
         // mode === 'suggest' - แนะนำให้ link
         return (
             <div className="space-y-4">
-                <div className="bg-blue-50 border border-blue-200 rounded-lg p-4">
-                    <p className="text-sm text-blue-800">
+                <div className="bg-blue-50 dark:bg-blue-900/30 border border-blue-200 dark:border-slate-600 rounded-lg p-4">
+                    <p className="text-sm text-blue-800 dark:text-blue-300">
                         <strong>💡 แนะนำ: Link Account เพิ่มเติม</strong>
                     </p>
-                    <p className="text-sm text-blue-800 mt-2">
+                    <p className="text-sm text-blue-800 dark:text-blue-300 mt-2">
                         การ Link Account ช่วยให้คุณสามารถ Login ได้หลายวิธี และป้องกันปัญหาการเข้าถึงบัญชี
                     </p>
                 </div>
 
                 {/* แสดง providers ที่ link แล้ว */}
                 <div className="space-y-2">
-                    <h4 className="font-medium text-gray-700">Providers ที่ Link แล้ว:</h4>
+                    <h4 className="font-medium text-gray-700 dark:text-gray-300">Providers ที่ Link แล้ว:</h4>
                     <div className="flex flex-wrap gap-2">
                         {linkedStatus.hasGoogle && (
                             <span className="px-3 py-1 bg-green-100 text-green-700 rounded-full text-sm">
@@ -565,11 +565,11 @@ export const AccountLinkingModal: React.FC<AccountLinkingModalProps> = ({
      */
     const renderPhoneForm = () => (
         <div className="space-y-4">
-            <div className="bg-green-50 border border-green-200 rounded-lg p-4">
-                <p className="text-sm text-green-800">
+            <div className="bg-green-50 dark:bg-green-900/30 border border-green-200 dark:border-slate-600 rounded-lg p-4">
+                <p className="text-sm text-green-800 dark:text-green-300">
                     <strong>📱 Link กับเบอร์โทรศัพท์</strong>
                 </p>
-                <p className="text-sm text-green-800 mt-1">
+                <p className="text-sm text-green-800 dark:text-green-300 mt-1">
                     กรอกเบอร์โทรศัพท์เพื่อรับรหัส OTP
                 </p>
             </div>
@@ -578,7 +578,7 @@ export const AccountLinkingModal: React.FC<AccountLinkingModalProps> = ({
                 // ขั้นตอนกรอกเบอร์โทร
                 <>
                     <div>
-                        <label className="block text-sm font-medium text-gray-700 mb-1">
+                        <label className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-1">
                             เบอร์โทรศัพท์
                         </label>
                         <input
@@ -586,10 +586,10 @@ export const AccountLinkingModal: React.FC<AccountLinkingModalProps> = ({
                             value={phoneToLink}
                             onChange={(e) => setPhoneToLink(e.target.value)}
                             placeholder="0812345678"
-                            className="w-full px-4 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-green-500 focus:border-transparent"
+                            className="w-full px-4 py-2 border border-gray-300 dark:border-slate-500 rounded-lg focus:ring-2 focus:ring-green-500 focus:border-transparent bg-white dark:bg-slate-800 text-gray-900 dark:text-gray-100"
                             disabled={loading}
                         />
-                        <p className="mt-1 text-xs text-gray-500">
+                        <p className="mt-1 text-xs text-gray-500 dark:text-gray-400">
                             รูปแบบ: 0XXXXXXXXX (เบอร์ไทย)
                         </p>
                     </div>
@@ -603,7 +603,7 @@ export const AccountLinkingModal: React.FC<AccountLinkingModalProps> = ({
                                 setError(null);
                             }}
                             disabled={loading}
-                            className="flex-1 py-2 px-4 bg-gray-200 text-gray-700 rounded-lg font-medium hover:bg-gray-300 transition-colors disabled:opacity-50"
+                            className="flex-1 py-2 px-4 bg-gray-200 dark:bg-slate-700 text-gray-700 dark:text-gray-300 rounded-lg font-medium hover:bg-gray-300 dark:hover:bg-slate-600 transition-colors disabled:opacity-50"
                         >
                             ← ย้อนกลับ
                         </button>
@@ -621,16 +621,16 @@ export const AccountLinkingModal: React.FC<AccountLinkingModalProps> = ({
                 // ขั้นตอนกรอก OTP
                 <>
                     <div className="text-center">
-                        <p className="text-sm text-gray-600">
+                        <p className="text-sm text-gray-600 dark:text-gray-400">
                             ส่ง OTP ไปยัง
                         </p>
-                        <p className="text-lg font-semibold text-gray-800">
+                        <p className="text-lg font-semibold text-gray-800 dark:text-gray-100">
                             {formatPhoneNumber(phoneToLink)}
                         </p>
                     </div>
 
                     <div>
-                        <label className="block text-sm font-medium text-gray-700 mb-1">
+                        <label className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-1">
                             รหัส OTP
                         </label>
                         <input
@@ -639,7 +639,7 @@ export const AccountLinkingModal: React.FC<AccountLinkingModalProps> = ({
                             onChange={(e) => setOtp(e.target.value.replace(/\D/g, '').slice(0, 6))}
                             placeholder="123456"
                             maxLength={6}
-                            className="w-full px-4 py-3 border border-gray-300 rounded-lg text-center text-2xl tracking-widest focus:ring-2 focus:ring-green-500 focus:border-transparent"
+                            className="w-full px-4 py-3 border border-gray-300 dark:border-slate-500 rounded-lg text-center text-2xl tracking-widest focus:ring-2 focus:ring-green-500 focus:border-transparent bg-white dark:bg-slate-800 text-gray-900 dark:text-gray-100"
                             disabled={loading}
                         />
                     </div>
@@ -653,7 +653,7 @@ export const AccountLinkingModal: React.FC<AccountLinkingModalProps> = ({
                                 setError(null);
                             }}
                             disabled={loading}
-                            className="flex-1 py-2 px-4 bg-gray-200 text-gray-700 rounded-lg font-medium hover:bg-gray-300 transition-colors disabled:opacity-50"
+                            className="flex-1 py-2 px-4 bg-gray-200 dark:bg-slate-700 text-gray-700 dark:text-gray-300 rounded-lg font-medium hover:bg-gray-300 dark:hover:bg-slate-600 transition-colors disabled:opacity-50"
                         >
                             ← เปลี่ยนเบอร์
                         </button>
@@ -670,14 +670,14 @@ export const AccountLinkingModal: React.FC<AccountLinkingModalProps> = ({
                     {/* ปุ่มขอ OTP ใหม่ */}
                     <div className="text-center">
                         {countdown > 0 ? (
-                            <p className="text-sm text-gray-500">
+                            <p className="text-sm text-gray-500 dark:text-gray-400">
                                 ขอรหัสใหม่ได้ใน {countdown} วินาที
                             </p>
                         ) : (
                             <button
                                 onClick={handleSendPhoneOTP}
                                 disabled={loading}
-                                className="text-sm text-green-600 hover:text-green-700 font-medium disabled:opacity-50"
+                                className="text-sm text-green-600 dark:text-green-400 hover:text-green-700 dark:hover:text-green-300 font-medium disabled:opacity-50"
                             >
                                 ขอรหัส OTP ใหม่
                             </button>
@@ -693,10 +693,10 @@ export const AccountLinkingModal: React.FC<AccountLinkingModalProps> = ({
 
     return (
         <div className="fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center z-50 p-4">
-            <div className="bg-white rounded-2xl shadow-2xl max-w-md w-full p-6 max-h-[90vh] overflow-y-auto">
+            <div className="bg-white dark:bg-slate-800 rounded-2xl shadow-2xl max-w-md w-full p-6 max-h-[90vh] overflow-y-auto">
                 {/* Header */}
                 <div className="flex items-center justify-between mb-4">
-                    <h3 className="text-xl font-bold text-gray-800">
+                    <h3 className="text-xl font-bold text-gray-800 dark:text-gray-100">
                         <Link2 className="w-5 h-5 inline mr-1" />Account Linking
                     </h3>
                     <button
@@ -704,7 +704,7 @@ export const AccountLinkingModal: React.FC<AccountLinkingModalProps> = ({
                             resetStates();
                             onClose();
                         }}
-                        className="text-gray-400 hover:text-gray-600 transition-colors"
+                        className="text-gray-400 dark:text-gray-500 hover:text-gray-600 dark:hover:text-gray-300 transition-colors"
                     >
                         <svg className="w-6 h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                             <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M6 18L18 6M6 6l12 12" />
@@ -716,15 +716,15 @@ export const AccountLinkingModal: React.FC<AccountLinkingModalProps> = ({
                 <div className="space-y-4">
                     {/* แสดง Success Message */}
                     {success && (
-                        <div className="p-3 bg-green-50 border border-green-200 rounded-lg">
-                            <p className="text-sm text-green-600">{success}</p>
+                        <div className="p-3 bg-green-50 dark:bg-green-900/30 border border-green-200 dark:border-slate-600 rounded-lg">
+                            <p className="text-sm text-green-600 dark:text-green-400">{success}</p>
                         </div>
                     )}
 
                     {/* แสดง Error Message */}
                     {error && (
-                        <div className="p-3 bg-red-50 border border-red-200 rounded-lg">
-                            <p className="text-sm text-red-600">{error}</p>
+                        <div className="p-3 bg-red-50 dark:bg-red-900/30 border border-red-200 dark:border-slate-600 rounded-lg">
+                            <p className="text-sm text-red-600 dark:text-red-400">{error}</p>
                         </div>
                     )}
 
@@ -735,8 +735,8 @@ export const AccountLinkingModal: React.FC<AccountLinkingModalProps> = ({
 
                     {/* ข้อมูลเพิ่มเติม */}
                     {!showPasswordInput && !showPhoneInput && (
-                        <div className="bg-gray-50 rounded-lg p-3">
-                            <p className="text-xs text-gray-600">
+                        <div className="bg-gray-50 dark:bg-slate-700 rounded-lg p-3">
+                            <p className="text-xs text-gray-600 dark:text-gray-400">
                                 💡 <strong>Account Linking คืออะไร?</strong>
                                 <br />
                                 การเชื่อมโยง accounts ทำให้คุณสามารถ Login ได้หลายวิธี (เช่น ทั้ง Google, Email/Password และเบอร์โทร) ด้วยบัญชีเดียวกัน

@@ -23,6 +23,7 @@ import { useCompany } from '../contexts/CompanyContext';
 import { EndCustomerProject } from '../types';
 import { Users, Save, Home, Plus } from 'lucide-react';
 import { INPUT_LIMITS } from '../utils/inputValidation';
+import { useConfirm } from './ConfirmDialog';
 
 interface EndCustomerSelectorProps {
     /** Label ที่แสดง */
@@ -51,6 +52,7 @@ const EndCustomerSelector: React.FC<EndCustomerSelectorProps> = ({
     inline = false,
 }) => {
     const { currentCompany } = useCompany();
+    const { confirm } = useConfirm();
     const [endCustomers, setEndCustomers] = useState<EndCustomer[]>([]);
     const [recentEndCustomers, setRecentEndCustomers] = useState<EndCustomer[]>([]);
     const [isModalOpen, setIsModalOpen] = useState(false);
@@ -162,17 +164,17 @@ const EndCustomerSelector: React.FC<EndCustomerSelectorProps> = ({
     // บันทึก End Customer ใหม่ (พร้อม sync ไปยัง Customer.endCustomerProjects)
     const handleSaveNewEndCustomer = async () => {
         if (!currentCompany?.id) {
-            alert('กรุณาเลือกบริษัทก่อน');
+            console.warn('กรุณาเลือกบริษัทก่อน');
             return;
         }
 
         if (!customerId) {
-            alert('กรุณาเลือกลูกค้าก่อนเพิ่ม End Customer');
+            console.warn('กรุณาเลือกลูกค้าก่อนเพิ่ม End Customer');
             return;
         }
 
         if (!newEndCustomer.projectName) {
-            alert('กรุณากรอกชื่อโครงการ End Customer');
+            console.warn('กรุณากรอกชื่อโครงการ End Customer');
             return;
         }
 
@@ -197,10 +199,9 @@ const EndCustomerSelector: React.FC<EndCustomerSelectorProps> = ({
                 notes: '',
             });
             
-            alert('✅ บันทึกข้อมูล End Customer สำเร็จ! (Sync กับ CRM แล้ว)');
+            console.log('✅ บันทึกข้อมูล End Customer สำเร็จ! (Sync กับ CRM แล้ว)');
         } catch (error) {
-            console.error('Failed to save end customer:', error);
-            alert('❌ ไม่สามารถบันทึกข้อมูล End Customer ได้');
+            console.error('❌ ไม่สามารถบันทึกข้อมูล End Customer ได้:', error);
         } finally {
             setIsSaving(false);
         }
@@ -209,7 +210,7 @@ const EndCustomerSelector: React.FC<EndCustomerSelectorProps> = ({
     // เปิด Modal บันทึกใหม่พร้อมข้อมูลปัจจุบัน
     const handleSaveCurrentAsEndCustomer = () => {
         if (!currentEndCustomer?.projectName) {
-            alert('กรุณากรอกชื่อโครงการ End Customer ก่อนบันทึก');
+            console.warn('กรุณากรอกชื่อโครงการ End Customer ก่อนบันทึก');
             return;
         }
 
@@ -233,7 +234,7 @@ const EndCustomerSelector: React.FC<EndCustomerSelectorProps> = ({
         if (!editingEndCustomer?.id) return;
         
         if (!editingEndCustomer.projectName) {
-            alert('กรุณากรอกชื่อโครงการ End Customer');
+            console.warn('กรุณากรอกชื่อโครงการ End Customer');
             return;
         }
         
@@ -251,10 +252,9 @@ const EndCustomerSelector: React.FC<EndCustomerSelectorProps> = ({
             setIsEditModalOpen(false);
             setEditingEndCustomer(null);
             
-            alert('✅ อัปเดตข้อมูล End Customer สำเร็จ!');
+            console.log('✅ อัปเดตข้อมูล End Customer สำเร็จ!');
         } catch (error) {
-            console.error('Failed to update end customer:', error);
-            alert('❌ ไม่สามารถอัปเดตข้อมูล End Customer ได้');
+            console.error('❌ ไม่สามารถอัปเดตข้อมูล End Customer ได้:', error);
         } finally {
             setIsSaving(false);
         }
@@ -264,16 +264,23 @@ const EndCustomerSelector: React.FC<EndCustomerSelectorProps> = ({
     const handleDeleteEndCustomer = async (id: string, event: React.MouseEvent) => {
         event.stopPropagation();
         
-        if (!window.confirm('ต้องการลบข้อมูล End Customer นี้หรือไม่?\n(จะลบจากทั้ง CRM และรายการเลือกด้วย)')) return;
+        const confirmed = await confirm({
+            title: 'ยืนยันการลบ',
+            message: 'ต้องการลบข้อมูล End Customer นี้หรือไม่?\n(จะลบจากทั้ง CRM และรายการเลือกด้วย)',
+            variant: 'danger',
+            confirmText: 'ลบ',
+            cancelText: 'ยกเลิก'
+        });
+        if (!confirmed) return;
 
         try {
             // ใช้ deleteEndCustomerWithSync เพื่อลบและ sync ไปยัง Customer.endCustomerProjects
             await deleteEndCustomerWithSync(id, customerId, currentCompany?.id);
             await loadEndCustomers();
-            alert('✅ ลบข้อมูล End Customer สำเร็จ! (Sync กับ CRM แล้ว)');
+            console.log('✅ ลบข้อมูล End Customer สำเร็จ! (Sync กับ CRM แล้ว)');
         } catch (error) {
-            console.error('Failed to delete end customer:', error);
-            alert('❌ ไม่สามารถลบข้อมูล End Customer ได้');
+            console.error('❌ ไม่สามารถลบข้อมูล End Customer ได้:', error);
+            throw error;
         }
     };
 

@@ -158,7 +158,7 @@ const Dashboard: React.FC<DashboardProps> = ({ onNavigateToDocType, onQuickActio
             loadStats(true);
         } catch (err) {
             console.error('Error saving goal:', err);
-            alert('ไม่สามารถบันทึกเป้าหมายได้');
+            console.error('ไม่สามารถบันทึกเป้าหมายได้');
         } finally {
             setSavingGoal(false);
         }
