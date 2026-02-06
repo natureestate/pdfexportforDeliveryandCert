@@ -594,27 +594,40 @@ const ViewModeTabSelector: React.FC<ViewModeTabSelectorProps> = ({
     tabIconMap,
 }) => {
     const { scrollContainerRef, showLeftFade, showRightFade, canScroll } = useScrollFadeIndicator([visibleTabs]);
+    // เก็บ ref ของแต่ละ tab button เพื่อวัดตำแหน่ง
+    const tabRefs = useRef<Map<string, HTMLButtonElement>>(new Map());
+    // เก็บตำแหน่ง (left, width) ของ tab ที่ active อยู่
+    const [indicatorStyle, setIndicatorStyle] = useState<{ left: number; width: number } | null>(null);
+    const groupRef = useRef<HTMLDivElement>(null);
 
-    // คำนวณ CSS mask สำหรับ fade effect - ใช้ mask แทน overlay gradient
-    // mask จะทำให้ content fade ออกไปที่ขอบแทนที่จะใช้ gradient overlay
+    // วัดตำแหน่งของ active tab ทุกครั้งที่ viewMode เปลี่ยน
+    useEffect(() => {
+        const activeEl = tabRefs.current.get(viewMode);
+        const groupEl = groupRef.current;
+        if (activeEl && groupEl) {
+            const groupRect = groupEl.getBoundingClientRect();
+            const tabRect = activeEl.getBoundingClientRect();
+            setIndicatorStyle({
+                left: tabRect.left - groupRect.left,
+                width: tabRect.width,
+            });
+        }
+    }, [viewMode, visibleTabs]);
+
+    // คำนวณ CSS mask สำหรับ fade effect
     const getMaskStyle = (): React.CSSProperties => {
         if (!canScroll) return {};
-        
-        // สร้าง mask gradient ตามสถานะ scroll
         if (showLeftFade && showRightFade) {
-            // ทั้งซ้ายและขวา fade
             return {
                 maskImage: 'linear-gradient(to right, transparent, black 24px, black calc(100% - 24px), transparent)',
                 WebkitMaskImage: 'linear-gradient(to right, transparent, black 24px, black calc(100% - 24px), transparent)',
             };
         } else if (showLeftFade) {
-            // เฉพาะซ้าย fade
             return {
                 maskImage: 'linear-gradient(to right, transparent, black 24px)',
                 WebkitMaskImage: 'linear-gradient(to right, transparent, black 24px)',
             };
         } else if (showRightFade) {
-            // เฉพาะขวา fade
             return {
                 maskImage: 'linear-gradient(to right, black calc(100% - 24px), transparent)',
                 WebkitMaskImage: 'linear-gradient(to right, black calc(100% - 24px), transparent)',
@@ -631,8 +644,19 @@ const ViewModeTabSelector: React.FC<ViewModeTabSelectorProps> = ({
                     className="overflow-x-auto px-1 sm:mx-0 sm:px-0 scrollbar-hide"
                     style={getMaskStyle()}
                 >
-                    <div className="inline-flex rounded-md shadow-sm min-w-max" role="group">
-                        {/* Dynamic Tab Rendering - แสดง tabs ตามสิทธิ์ของ user พร้อม motion sliding indicator */}
+                    <div ref={groupRef} className="relative inline-flex rounded-md shadow-sm min-w-max" role="group">
+                        {/* Sliding Indicator - พื้นหลัง indigo ที่เลื่อนลื่นไหลระหว่าง tab */}
+                        {indicatorStyle && (
+                            <motion.div
+                                className="absolute top-0 bottom-0 bg-indigo-600 rounded-lg z-0"
+                                animate={{
+                                    left: indicatorStyle.left,
+                                    width: indicatorStyle.width,
+                                }}
+                                transition={{ type: "spring", stiffness: 350, damping: 30 }}
+                            />
+                        )}
+                        {/* Tab buttons */}
                         {visibleTabs.map((tab, index) => {
                             const TabIcon = tabIconMap[tab.icon];
                             const isFirst = index === 0;
@@ -640,31 +664,22 @@ const ViewModeTabSelector: React.FC<ViewModeTabSelectorProps> = ({
                             const isActive = viewMode === tab.id;
                             
                             return (
-                                <motion.button
+                                <button
                                     key={tab.id}
+                                    ref={(el) => { if (el) tabRefs.current.set(tab.id, el); }}
                                     onClick={() => setViewMode(tab.id as ViewMode)}
-                                    whileTap={{ scale: 0.96 }}
-                                    className={`relative px-3 sm:px-4 py-2 text-xs sm:text-sm font-medium flex items-center justify-center gap-1.5 transition-colors duration-200 ${
+                                    className={`relative z-[1] px-3 sm:px-4 py-2 text-xs sm:text-sm font-medium flex items-center justify-center gap-1.5 transition-colors duration-200 ${
                                         isFirst ? 'rounded-l-lg border' : isLast ? 'rounded-r-lg border' : 'border-t border-b'
                                     } ${
                                         isActive
-                                            ? 'text-white border-indigo-600 z-[1]'
+                                            ? 'text-white border-indigo-600'
                                             : 'bg-white dark:bg-slate-800 text-gray-700 dark:text-gray-200 border-gray-300 dark:border-slate-600 hover:bg-gray-50 dark:hover:bg-slate-700'
                                     }`}
                                 >
-                                    {/* พื้นหลังเคลื่อนที่แบบลื่นไหล - ใช้ layoutId ของ framer-motion */}
-                                    {isActive && (
-                                        <motion.div
-                                            layoutId="activeViewModeTab"
-                                            className={`absolute inset-0 bg-indigo-600 ${isFirst ? 'rounded-l-lg' : ''} ${isLast ? 'rounded-r-lg' : ''}`}
-                                            transition={{ type: "spring", stiffness: 380, damping: 30 }}
-                                            style={{ zIndex: -1 }}
-                                        />
-                                    )}
                                     {TabIcon && <TabIcon className="w-4 h-4" />}
                                     <span className="hidden sm:inline">{tab.label}</span>
                                     <span className="sm:hidden">{tab.shortLabel}</span>
-                                </motion.button>
+                                </button>
                             );
                         })}
                     </div>
@@ -700,12 +715,29 @@ const DocumentTypeTabMenu: React.FC<DocumentTypeTabMenuProps> = ({
     showShortLabel = false,
 }) => {
     const { scrollContainerRef, showLeftFade, showRightFade, canScroll } = useScrollFadeIndicator([visibleMenus]);
+    // เก็บ ref ของแต่ละ tab button เพื่อวัดตำแหน่ง
+    const tabRefs = useRef<Map<string, HTMLButtonElement>>(new Map());
+    // เก็บตำแหน่ง (left, width) ของ tab ที่ active อยู่
+    const [indicatorStyle, setIndicatorStyle] = useState<{ left: number; width: number } | null>(null);
+    const navRef = useRef<HTMLElement>(null);
 
-    // คำนวณ CSS mask สำหรับ fade effect - ใช้ mask แทน overlay gradient
+    // วัดตำแหน่งของ active tab ทุกครั้งที่ activeTab เปลี่ยน
+    useEffect(() => {
+        const activeEl = tabRefs.current.get(activeTab);
+        const navEl = navRef.current;
+        if (activeEl && navEl) {
+            const navRect = navEl.getBoundingClientRect();
+            const tabRect = activeEl.getBoundingClientRect();
+            setIndicatorStyle({
+                left: tabRect.left - navRect.left,
+                width: tabRect.width,
+            });
+        }
+    }, [activeTab, visibleMenus]);
+
+    // คำนวณ CSS mask สำหรับ fade effect
     const getMaskStyle = (): React.CSSProperties => {
         if (!canScroll) return {};
-        
-        // สร้าง mask gradient ตามสถานะ scroll
         if (showLeftFade && showRightFade) {
             return {
                 maskImage: 'linear-gradient(to right, transparent, black 24px, black calc(100% - 24px), transparent)',
@@ -733,40 +765,44 @@ const DocumentTypeTabMenu: React.FC<DocumentTypeTabMenuProps> = ({
                 className="overflow-x-auto sm:mx-0 px-1 sm:px-0 tab-menu-scroll overscroll-x-contain touch-pan-x scrollbar-hide"
                 style={getMaskStyle()}
             >
-                <nav className="-mb-px flex space-x-1 sm:space-x-2 min-w-max" aria-label="Tabs">
-                    {/* Dynamic Menu Rendering - แสดงเมนูตามการตั้งค่า พร้อม motion sliding underline */}
+                <nav ref={navRef} className="relative -mb-px flex space-x-1 sm:space-x-2 min-w-max" aria-label="Tabs">
+                    {/* Sliding Background Indicator - พื้นหลัง active ที่เลื่อนลื่นไหลระหว่าง tab */}
+                    {indicatorStyle && (
+                        <motion.div
+                            className="absolute top-0 bottom-0 z-0 bg-indigo-50 dark:bg-indigo-900/30 rounded-t-lg"
+                            animate={{
+                                left: indicatorStyle.left,
+                                width: indicatorStyle.width,
+                            }}
+                            transition={{ type: "spring", stiffness: 350, damping: 30 }}
+                        />
+                    )}
+                    {/* Sliding Underline Indicator - เส้นใต้ active ที่เลื่อนลื่นไหล */}
+                    {indicatorStyle && (
+                        <motion.div
+                            className="absolute bottom-0 h-0.5 z-0 bg-indigo-500"
+                            animate={{
+                                left: indicatorStyle.left,
+                                width: indicatorStyle.width,
+                            }}
+                            transition={{ type: "spring", stiffness: 350, damping: 30 }}
+                        />
+                    )}
+                    {/* Tab Buttons */}
                     {visibleMenus.map((menu) => {
                         const IconComponent = iconMap[menu.icon];
                         const isActive = activeTab === menu.id;
                         return (
-                            <motion.button
+                            <button
                                 key={menu.id}
+                                ref={(el) => { if (el) tabRefs.current.set(menu.id, el); }}
                                 onClick={() => setActiveTab(menu.id as DocType)}
-                                whileTap={{ scale: 0.96 }}
-                                className={`relative ${isActive ? 'text-indigo-600 dark:text-indigo-400' : 'text-gray-500 dark:text-gray-400 hover:text-gray-700 dark:hover:text-gray-200'} whitespace-nowrap py-2.5 sm:py-3 px-3 sm:px-4 border-b-2 border-transparent font-medium text-xs sm:text-sm transition-colors duration-200 flex-shrink-0 rounded-t-lg flex items-center gap-1.5`}
+                                className={`relative z-[1] ${isActive ? 'text-indigo-600 dark:text-indigo-400' : 'text-gray-500 dark:text-gray-400 hover:text-gray-700 dark:hover:text-gray-200 hover:bg-gray-50 dark:hover:bg-slate-700/50 hover:border-gray-300 dark:hover:border-slate-500'} whitespace-nowrap py-2.5 sm:py-3 px-3 sm:px-4 border-b-2 border-transparent font-medium text-xs sm:text-sm transition-colors duration-200 flex-shrink-0 rounded-t-lg flex items-center gap-1.5`}
                             >
-                                {/* พื้นหลัง active แบบลื่นไหล */}
-                                {isActive && (
-                                    <motion.div
-                                        layoutId="activeDocTypeTab"
-                                        className="absolute inset-0 bg-indigo-50 dark:bg-indigo-900/30 rounded-t-lg"
-                                        transition={{ type: "spring", stiffness: 380, damping: 30 }}
-                                        style={{ zIndex: -1 }}
-                                    />
-                                )}
-                                {/* เส้นใต้ active แบบเลื่อนลื่นไหล */}
-                                {isActive && (
-                                    <motion.div
-                                        layoutId="activeDocTypeUnderline"
-                                        className="absolute bottom-0 left-0 right-0 h-0.5 bg-indigo-500"
-                                        transition={{ type: "spring", stiffness: 380, damping: 30 }}
-                                    />
-                                )}
                                 {IconComponent && <IconComponent className="w-4 h-4" />}
-                                {/* แสดง shortLabel บนมือถือ, label เต็มบนหน้าจอใหญ่ */}
                                 <span className="sm:hidden">{menu.shortLabel || menu.label}</span>
                                 <span className="hidden sm:inline">{menu.label}</span>
-                            </motion.button>
+                            </button>
                         );
                     })}
                     
@@ -774,7 +810,7 @@ const DocumentTypeTabMenu: React.FC<DocumentTypeTabMenuProps> = ({
                     {isAdmin && onSettingsClick && (
                         <button
                             onClick={onSettingsClick}
-                            className="whitespace-nowrap py-2.5 sm:py-3 px-3 sm:px-4 border-b-2 border-transparent text-gray-400 dark:text-gray-500 hover:text-gray-600 dark:hover:text-gray-300 hover:bg-gray-50 dark:hover:bg-slate-700 font-medium text-xs sm:text-sm transition-all flex-shrink-0 rounded-t-lg flex items-center gap-1.5"
+                            className="relative z-[1] whitespace-nowrap py-2.5 sm:py-3 px-3 sm:px-4 border-b-2 border-transparent text-gray-400 dark:text-gray-500 hover:text-gray-600 dark:hover:text-gray-300 hover:bg-gray-50 dark:hover:bg-slate-700 font-medium text-xs sm:text-sm transition-all flex-shrink-0 rounded-t-lg flex items-center gap-1.5"
                             title="ตั้งค่าเมนู"
                         >
                             <Settings className="w-4 h-4" />
@@ -1468,7 +1504,7 @@ const AppContent: React.FC = () => {
                 )}
             </AnimatePresence>
             <Header />
-            <main className="p-3 sm:p-4 md:p-8 max-w-7xl mx-auto">
+            <main className="p-3 sm:p-4 md:p-6 max-w-[1536px] mx-auto">
                 {/* View Mode Selector - Dynamic Tab Rendering ตามสิทธิ์ */}
                 <ViewModeTabSelector 
                     visibleTabs={visibleTabs}
@@ -1500,9 +1536,9 @@ const AppContent: React.FC = () => {
                         />
                     </div>
                 ) : viewMode === 'form' ? (
-                    <div className="grid grid-cols-1 lg:grid-cols-2 lg:gap-6 xl:gap-8">
-                        {/* Form Section */}
-                        <div className="bg-white dark:bg-slate-800 p-3 sm:p-4 md:p-6 rounded-lg shadow-lg mb-6 lg:mb-0 transition-colors">
+                    <div className="grid grid-cols-1 lg:grid-cols-5 lg:gap-4 xl:gap-6">
+                        {/* Form Section - ใช้ 3/5 ของพื้นที่บน Desktop เพื่อให้ตาราง input กว้างขึ้น */}
+                        <div className="lg:col-span-3 bg-white dark:bg-slate-800 p-3 sm:p-4 md:p-4 rounded-lg shadow-lg mb-6 lg:mb-0 transition-colors">
                             {/* Edit Mode Indicator */}
                             {/* Locked Document Indicator - แสดงเมื่อเอกสารถูกเซ็นแล้ว */}
                             {isCurrentDocumentSigned && (
@@ -1779,8 +1815,8 @@ const AppContent: React.FC = () => {
                             )}
                         </div>
                         
-                        {/* Preview Section */}
-                        <div>
+                        {/* Preview Section - ใช้ 2/5 ของพื้นที่บน Desktop */}
+                        <div className="lg:col-span-2">
                             <div className="sticky top-4 lg:top-8">
                                 <div className="flex flex-col sm:flex-row sm:justify-between sm:items-center mb-3 sm:mb-4 gap-2 sm:gap-2">
                                     <h2 className="text-lg sm:text-xl font-semibold text-slate-700 dark:text-slate-200">{t('form.documentPreview')}</h2>
