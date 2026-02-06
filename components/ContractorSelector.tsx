@@ -155,7 +155,7 @@ const ContractorSelector: React.FC<ContractorSelectorProps> = ({
             });
             setSpecialtiesInput('');
             
-            console.log('✅ บันทึกข้อมูลช่างสำเร็จ!');
+            // บันทึกข้อมูลช่างสำเร็จ
         } catch (error) {
             console.error('Failed to save contractor:', error);
             console.error('❌ ไม่สามารถบันทึกข้อมูลช่างได้');
@@ -225,7 +225,7 @@ const ContractorSelector: React.FC<ContractorSelectorProps> = ({
             setEditingContractor(null);
             setSpecialtiesInput('');
             
-            console.log('✅ อัปเดตข้อมูลช่างสำเร็จ!');
+            // อัปเดตข้อมูลช่างสำเร็จ
         } catch (error) {
             console.error('Failed to update contractor:', error);
             console.error('❌ ไม่สามารถอัปเดตข้อมูลช่างได้');
@@ -249,7 +249,7 @@ const ContractorSelector: React.FC<ContractorSelectorProps> = ({
         try {
             await deleteContractor(id);
             await loadContractors();
-            console.log('✅ ลบข้อมูลช่างสำเร็จ!');
+            // ลบข้อมูลช่างสำเร็จ
         } catch (error) {
             console.error('Failed to delete contractor:', error);
             throw error;

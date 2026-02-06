@@ -7,6 +7,7 @@ import { generateDocumentNumber } from '../services/documentNumber';
 import { useCompany } from '../contexts/CompanyContext';
 import { INPUT_LIMITS, NUMBER_LIMITS } from '../utils/inputValidation';
 import { parseNumberInput, parseIntInput } from '../utils/numberInput';
+import FormDivider from './shared/FormDivider';
 
 export interface VariationOrderFormProps {
     data: VariationOrderData;
@@ -20,17 +21,6 @@ export interface VariationOrderFormProps {
     /** true = กำลังแก้ไขเอกสารเดิม หรือ copy เอกสาร (ไม่ต้อง auto-generate เลขใหม่) */
     isEditing?: boolean;
 }
-
-const FormDivider: React.FC<{ title: string }> = ({ title }) => (
-    <div className="relative">
-        <div className="absolute inset-0 flex items-center" aria-hidden="true">
-            <div className="w-full border-t border-gray-300 dark:border-gray-600" />
-        </div>
-        <div className="relative flex justify-start">
-            <span className="bg-white dark:bg-slate-800 pr-3 text-lg font-medium text-gray-900 dark:text-gray-100">{title}</span>
-        </div>
-    </div>
-);
 
 const VariationOrderForm: React.FC<VariationOrderFormProps> = ({ 
     data, 

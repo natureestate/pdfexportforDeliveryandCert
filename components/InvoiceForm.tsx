@@ -8,6 +8,8 @@ import { getDefaultLogoUrl } from '../services/logoStorage';
 import { useCompany } from '../contexts/CompanyContext';
 import { INPUT_LIMITS, NUMBER_LIMITS } from '../utils/inputValidation';
 import { parseNumberInput } from '../utils/numberInput';
+import FormDivider from './shared/FormDivider';
+import { useDocumentForm } from '../hooks/useDocumentForm';
 
 export interface InvoiceFormProps {
     data: InvoiceData;
@@ -22,16 +24,6 @@ export interface InvoiceFormProps {
     isEditing?: boolean;
 }
 
-const FormDivider: React.FC<{ title: string }> = ({ title }) => (
-    <div className="relative">
-        <div className="absolute inset-0 flex items-center" aria-hidden="true">
-            <div className="w-full border-t border-gray-300 dark:border-gray-600" />
-        </div>
-        <div className="relative flex justify-start">
-            <span className="bg-white dark:bg-slate-800 pr-3 text-lg font-medium text-gray-900 dark:text-gray-100">{title}</span>
-        </div>
-    </div>
-);
 
 const InvoiceForm: React.FC<InvoiceFormProps> = ({ 
     data, 
@@ -51,57 +43,22 @@ const InvoiceForm: React.FC<InvoiceFormProps> = ({
     const hasSyncedCompanyRef = useRef<string | undefined>(undefined); // Track ว่า sync แล้วหรือยัง
     const hasGeneratedNumberRef = useRef(false); // Track ว่า generate เลขแล้วหรือยัง
 
-    const handleDataChange = <K extends keyof InvoiceData,>(key: K, value: InvoiceData[K]) => {
-        setData(prev => ({ ...prev, [key]: value }));
-    };
-    
-    const handleItemChange = (index: number, field: keyof InvoiceItem, value: string | number) => {
-        const newItems = [...data.items];
-        const item = newItems[index];
-        (item[field] as any) = value;
-        
-        // คำนวณ amount อัตโนมัติเมื่อ quantity หรือ unitPrice เปลี่ยน
-        if (field === 'quantity' || field === 'unitPrice') {
-            item.amount = item.quantity * item.unitPrice;
-        }
-        
-        handleDataChange('items', newItems);
-        calculateTotals(newItems);
-    };
-
-    // คำนวณยอดรวมทั้งหมด
-    const calculateTotals = (items: InvoiceItem[] = data.items) => {
-        const subtotal = items.reduce((sum, item) => sum + item.amount, 0);
-        const taxAmount = (subtotal * data.taxRate) / 100;
-        const total = subtotal + taxAmount - data.discount;
-        
-        setData(prev => ({
-            ...prev,
-            subtotal,
-            taxAmount,
-            total,
-        }));
-    };
-
-    const addItem = () => {
-        const newItem: InvoiceItem = {
+    // ใช้ useDocumentForm hook แทน logic ที่ซ้ำกัน
+    const { handleDataChange, handleItemChange, addItem, removeItem: removeItemFromForm, calculateTotals } = useDocumentForm<InvoiceData, InvoiceItem>({
+        data,
+        setData,
+        createNewItem: () => ({
             description: '',
             quantity: 1,
             unit: 'ชิ้น',
             unitPrice: 0,
             amount: 0,
             notes: '',
-        };
-        setData(prev => ({
-            ...prev,
-            items: [...prev.items, newItem]
-        }));
-    };
+        }),
+    });
 
     const removeItem = (index: number) => {
-        const newItems = data.items.filter((_, i) => i !== index);
-        handleDataChange('items', newItems);
-        calculateTotals(newItems);
+        removeItemFromForm(index);
         setIsConfirmModalOpen(false);
         setItemToRemove(null);
     };

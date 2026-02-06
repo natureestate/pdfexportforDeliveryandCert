@@ -4,6 +4,7 @@ import CustomerSelector from './CustomerSelector';
 import DatePicker from './DatePicker';
 import { generateDocumentNumber } from '../services/documentNumber';
 import { useCompany } from '../contexts/CompanyContext';
+import FormDivider from './shared/FormDivider';
 
 export interface MemoFormProps {
     data: MemoData;
@@ -17,17 +18,6 @@ export interface MemoFormProps {
     /** true = กำลังแก้ไขเอกสารเดิม หรือ copy เอกสาร (ไม่ต้อง auto-generate เลขใหม่) */
     isEditing?: boolean;
 }
-
-const FormDivider: React.FC<{ title: string }> = ({ title }) => (
-    <div className="relative">
-        <div className="absolute inset-0 flex items-center" aria-hidden="true">
-            <div className="w-full border-t border-gray-300 dark:border-gray-600" />
-        </div>
-        <div className="relative flex justify-start">
-            <span className="bg-white dark:bg-slate-800 pr-3 text-lg font-medium text-gray-900 dark:text-gray-100">{title}</span>
-        </div>
-    </div>
-);
 
 const MemoForm: React.FC<MemoFormProps> = ({ 
     data, 

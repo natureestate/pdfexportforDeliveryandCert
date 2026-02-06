@@ -6,6 +6,7 @@ import DatePicker from './DatePicker';
 import { generateDocumentNumber } from '../services/documentNumber';
 import { INPUT_LIMITS, NUMBER_LIMITS } from '../utils/inputValidation';
 import { parseNumberInput } from '../utils/numberInput';
+import FormDivider from './shared/FormDivider';
 
 export interface DeliveryFormProps {
     data: DeliveryNoteData;
@@ -20,16 +21,6 @@ export interface DeliveryFormProps {
     isEditing?: boolean;
 }
 
-const FormDivider: React.FC<{ title: string }> = ({ title }) => (
-    <div className="relative">
-        <div className="absolute inset-0 flex items-center" aria-hidden="true">
-            <div className="w-full border-t border-gray-300 dark:border-slate-600" />
-        </div>
-        <div className="relative flex justify-start">
-            <span className="bg-white dark:bg-slate-800 pr-3 text-lg font-medium text-gray-900 dark:text-gray-100">{title}</span>
-        </div>
-    </div>
-);
 
 const DeliveryForm: React.FC<DeliveryFormProps> = ({ 
     data, 
