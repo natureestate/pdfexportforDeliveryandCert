@@ -259,12 +259,12 @@ const ContractorSelector: React.FC<ContractorSelectorProps> = ({
     return (
         <div className="space-y-2">
             <div className="flex items-center justify-between">
-                <label className="block text-sm font-medium text-slate-700">{label}</label>
+                <label className="block text-sm font-medium text-slate-700 dark:text-slate-300">{label}</label>
                 <div className="flex gap-2">
                     <button
                         type="button"
                         onClick={() => setIsModalOpen(true)}
-                        className="text-xs border border-orange-300 rounded px-3 py-1 text-orange-700 hover:bg-orange-50 focus:outline-none focus:ring-2 focus:ring-orange-500"
+                        className="text-xs border border-orange-300 dark:border-orange-600 rounded px-3 py-1 text-orange-700 dark:text-orange-400 hover:bg-orange-50 dark:hover:bg-orange-900/30 focus:outline-none focus:ring-2 focus:ring-orange-500"
                     >
                         <Wrench className="w-3.5 h-3.5 inline mr-1" />เลือกช่าง
                     </button>
@@ -282,10 +282,10 @@ const ContractorSelector: React.FC<ContractorSelectorProps> = ({
 
             {/* Modal เลือกช่าง */}
             {isModalOpen && (
-                <div className="fixed inset-0 bg-gray-600 bg-opacity-50 overflow-y-auto h-full w-full z-50 flex items-center justify-center p-2 sm:p-4">
-                    <div className="bg-white p-3 sm:p-6 rounded-lg shadow-xl max-w-2xl w-full max-h-[90vh] sm:max-h-[80vh] overflow-y-auto">
+                <div className="fixed inset-0 bg-gray-600 bg-opacity-50 dark:bg-black dark:bg-opacity-60 overflow-y-auto h-full w-full z-50 flex items-center justify-center p-2 sm:p-4">
+                    <div className="bg-white dark:bg-slate-800 p-3 sm:p-6 rounded-lg shadow-xl max-w-2xl w-full max-h-[90vh] sm:max-h-[80vh] overflow-y-auto">
                         <div className="flex items-center justify-between mb-3 sm:mb-4">
-                            <h3 className="text-base sm:text-lg font-semibold text-gray-800">
+                            <h3 className="text-base sm:text-lg font-semibold text-gray-800 dark:text-gray-100">
                                 <Wrench className="w-4 h-4 inline mr-1" />เลือกข้อมูลช่าง
                             </h3>
                             <button
@@ -293,7 +293,7 @@ const ContractorSelector: React.FC<ContractorSelectorProps> = ({
                                     setIsModalOpen(false);
                                     setSearchText('');
                                 }}
-                                className="text-gray-500 hover:text-gray-700 p-1"
+                                className="text-gray-500 hover:text-gray-700 dark:text-gray-400 dark:hover:text-gray-200 p-1"
                             >
                                 <svg className="w-5 h-5 sm:w-6 sm:h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                                     <path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M6 18L18 6M6 6l12 12" />
@@ -309,7 +309,7 @@ const ContractorSelector: React.FC<ContractorSelectorProps> = ({
                                 value={searchText}
                                 onChange={(e) => setSearchText(e.target.value)}
                                 onKeyPress={(e) => e.key === 'Enter' && handleSearch()}
-                                className="flex-1 rounded-md border-gray-300 shadow-sm focus:border-orange-500 focus:ring-orange-500 text-xs sm:text-sm px-3 py-2"
+                                className="flex-1 rounded-md border-gray-300 dark:border-slate-600 shadow-sm focus:border-orange-500 focus:ring-orange-500 text-xs sm:text-sm px-3 py-2 dark:bg-slate-700 dark:text-gray-100"
                             />
                             <button
                                 onClick={handleSearch}
@@ -328,29 +328,29 @@ const ContractorSelector: React.FC<ContractorSelectorProps> = ({
                         {/* Recent Contractors */}
                         {!searchText && recentContractors.length > 0 && (
                             <div className="mb-3 sm:mb-4">
-                                <h4 className="text-xs sm:text-sm font-medium text-gray-700 mb-2">🕒 ช่างล่าสุด</h4>
+                                <h4 className="text-xs sm:text-sm font-medium text-gray-700 dark:text-gray-200 mb-2">🕒 ช่างล่าสุด</h4>
                                 <div className="space-y-1">
                                     {recentContractors.map((contractor) => (
                                         <button
                                             key={contractor.id}
                                             onClick={() => handleSelectContractor(contractor)}
-                                            className="w-full text-left p-2 sm:p-3 bg-orange-50 border border-orange-200 rounded hover:bg-orange-100 transition-colors"
+                                            className="w-full text-left p-2 sm:p-3 bg-orange-50 dark:bg-orange-900/20 border border-orange-200 dark:border-orange-700 rounded hover:bg-orange-100 dark:hover:bg-orange-900/30 transition-colors"
                                         >
                                             <div className="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-1 sm:gap-0">
                                                 <div className="flex-1 min-w-0">
-                                                    <p className="text-xs sm:text-sm font-medium text-gray-800 truncate">
+                                                    <p className="text-xs sm:text-sm font-medium text-gray-800 dark:text-gray-100 truncate">
                                                         🔧 {contractor.contractorName}
                                                         {contractor.specialties && contractor.specialties.length > 0 && (
-                                                            <span className="ml-1 sm:ml-2 text-xs text-orange-600">
+                                                            <span className="ml-1 sm:ml-2 text-xs text-orange-600 dark:text-orange-400">
                                                                 ({contractor.specialties.slice(0, 2).join(', ')})
                                                             </span>
                                                         )}
                                                     </p>
-                                                    <p className="text-xs text-gray-600">
+                                                    <p className="text-xs text-gray-600 dark:text-gray-400">
                                                         📞 {contractor.phone}
                                                     </p>
                                                 </div>
-                                                <span className="text-xs text-gray-500 whitespace-nowrap">
+                                                <span className="text-xs text-gray-500 dark:text-gray-400 whitespace-nowrap">
                                                     ใช้ {contractor.usageCount || 0} ครั้ง
                                                 </span>
                                             </div>
@@ -362,7 +362,7 @@ const ContractorSelector: React.FC<ContractorSelectorProps> = ({
 
                         {/* Contractor List */}
                         <div>
-                            <h4 className="text-xs sm:text-sm font-medium text-gray-700 mb-2">
+                            <h4 className="text-xs sm:text-sm font-medium text-gray-700 dark:text-gray-200 mb-2">
                                 📋 ช่างทั้งหมด ({contractors.length})
                             </h4>
                             {isLoading ? (
@@ -371,14 +371,14 @@ const ContractorSelector: React.FC<ContractorSelectorProps> = ({
                                         <circle className="opacity-25" cx="12" cy="12" r="10" stroke="currentColor" strokeWidth="4"></circle>
                                         <path className="opacity-75" fill="currentColor" d="M4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4zm2 5.291A7.962 7.962 0 014 12H0c0 3.042 1.135 5.824 3 7.938l3-2.647z"></path>
                                     </svg>
-                                    <p className="mt-2 text-xs sm:text-sm text-gray-500">กำลังโหลด...</p>
+                                    <p className="mt-2 text-xs sm:text-sm text-gray-500 dark:text-gray-400">กำลังโหลด...</p>
                                 </div>
                             ) : contractors.length === 0 ? (
-                                <div className="text-center py-6 sm:py-8 text-gray-500">
+                                <div className="text-center py-6 sm:py-8 text-gray-500 dark:text-gray-400">
                                     <p className="text-xs sm:text-sm">ยังไม่มีข้อมูลช่าง</p>
                                     <button
                                         onClick={() => setIsSaveModalOpen(true)}
-                                        className="mt-2 text-xs sm:text-sm text-orange-600 hover:text-orange-700 font-medium"
+                                        className="mt-2 text-xs sm:text-sm text-orange-600 dark:text-orange-400 hover:text-orange-700 font-medium"
                                     >
                                         + เพิ่มช่างใหม่
                                     </button>
@@ -389,7 +389,7 @@ const ContractorSelector: React.FC<ContractorSelectorProps> = ({
                                         <div
                                             key={contractor.id}
                                             onClick={() => handleSelectContractor(contractor)}
-                                            className="relative p-2 sm:p-3 bg-gray-50 border border-gray-200 rounded-md hover:border-orange-400 hover:bg-orange-50 cursor-pointer transition-all group"
+                                            className="relative p-2 sm:p-3 bg-gray-50 dark:bg-slate-700 border border-gray-200 dark:border-slate-600 rounded-md hover:border-orange-400 hover:bg-orange-50 dark:hover:bg-orange-900/20 cursor-pointer transition-all group"
                                         >
                                             {/* Edit and Delete Buttons */}
                                             <div className="absolute top-1.5 sm:top-2 right-1.5 sm:right-2 flex gap-1 opacity-100 sm:opacity-0 sm:group-hover:opacity-100 transition-opacity">
@@ -419,20 +419,20 @@ const ContractorSelector: React.FC<ContractorSelectorProps> = ({
                                             <div>
                                                 <div className="flex items-start justify-between pr-12 sm:pr-6">
                                                     <div className="flex-1 min-w-0">
-                                                        <p className="text-xs sm:text-sm font-semibold text-gray-800 truncate">
+                                                        <p className="text-xs sm:text-sm font-semibold text-gray-800 dark:text-gray-100 truncate">
                                                             🔧 {contractor.contractorName}
-                                                            <span className="ml-1 sm:ml-2 text-xs bg-gray-200 text-gray-600 px-1.5 sm:px-2 py-0.5 rounded whitespace-nowrap">
+                                                            <span className="ml-1 sm:ml-2 text-xs bg-gray-200 dark:bg-slate-600 text-gray-600 dark:text-gray-300 px-1.5 sm:px-2 py-0.5 rounded whitespace-nowrap">
                                                                 {contractor.contractorType === 'individual' ? '👤 บุคคล' : '🏢 นิติบุคคล'}
                                                             </span>
                                                         </p>
                                                         {contractor.specialties && contractor.specialties.length > 0 && (
-                                                            <p className="text-xs sm:text-sm text-orange-600 mt-0.5 truncate">
+                                                            <p className="text-xs sm:text-sm text-orange-600 dark:text-orange-400 mt-0.5 truncate">
                                                                 🛠️ {contractor.specialties.join(', ')}
                                                             </p>
                                                         )}
                                                     </div>
                                                 </div>
-                                                <div className="mt-1.5 sm:mt-2 text-xs text-gray-600 space-y-0.5">
+                                                <div className="mt-1.5 sm:mt-2 text-xs text-gray-600 dark:text-gray-400 space-y-0.5">
                                                     <div>📞 {contractor.phone}</div>
                                                     {contractor.address && (
                                                         <div className="truncate">📍 {contractor.address}</div>
@@ -440,14 +440,14 @@ const ContractorSelector: React.FC<ContractorSelectorProps> = ({
                                                     {contractor.tags && contractor.tags.length > 0 && (
                                                         <div className="flex flex-wrap gap-1 mt-1">
                                                             {contractor.tags.map((tag, idx) => (
-                                                                <span key={idx} className="bg-orange-100 text-orange-700 px-1.5 sm:px-2 py-0.5 rounded text-xs">
+                                                                <span key={idx} className="bg-orange-100 dark:bg-orange-900/30 text-orange-700 dark:text-orange-300 px-1.5 sm:px-2 py-0.5 rounded text-xs">
                                                                     {tag}
                                                                 </span>
                                                             ))}
                                                         </div>
                                                     )}
                                                 </div>
-                                                <div className="mt-1.5 sm:mt-2 text-xs text-gray-400">
+                                                <div className="mt-1.5 sm:mt-2 text-xs text-gray-400 dark:text-gray-500">
                                                     ใช้งาน {contractor.usageCount || 0} ครั้ง
                                                 </div>
                                             </div>
@@ -457,7 +457,7 @@ const ContractorSelector: React.FC<ContractorSelectorProps> = ({
                             )}
                         </div>
 
-                        <div className="mt-3 sm:mt-4 text-xs text-gray-500 text-center">
+                        <div className="mt-3 sm:mt-4 text-xs text-gray-500 dark:text-gray-400 text-center">
                             💡 คลิกเพื่อเลือกช่าง • <span className="hidden sm:inline">Hover</span><span className="sm:hidden">แตะ</span> เพื่อแก้ไข/ลบ
                         </div>
                     </div>
@@ -466,9 +466,9 @@ const ContractorSelector: React.FC<ContractorSelectorProps> = ({
 
             {/* Modal บันทึกช่างใหม่ */}
             {isSaveModalOpen && (
-                <div className="fixed inset-0 bg-gray-600 bg-opacity-50 overflow-y-auto h-full w-full z-50 flex items-center justify-center p-2 sm:p-4">
-                    <div className="bg-white p-3 sm:p-6 rounded-lg shadow-xl max-w-2xl w-full max-h-[90vh] overflow-y-auto">
-                        <h3 className="text-base sm:text-lg font-semibold text-gray-800 mb-3 sm:mb-4">
+                <div className="fixed inset-0 bg-gray-600 bg-opacity-50 dark:bg-black dark:bg-opacity-60 overflow-y-auto h-full w-full z-50 flex items-center justify-center p-2 sm:p-4">
+                    <div className="bg-white dark:bg-slate-800 p-3 sm:p-6 rounded-lg shadow-xl max-w-2xl w-full max-h-[90vh] overflow-y-auto">
+                        <h3 className="text-base sm:text-lg font-semibold text-gray-800 dark:text-gray-100 mb-3 sm:mb-4">
                             <Save className="w-4 h-4 inline mr-1" />บันทึกข้อมูลช่างใหม่
                         </h3>
 
@@ -476,7 +476,7 @@ const ContractorSelector: React.FC<ContractorSelectorProps> = ({
                             {/* ข้อมูลพื้นฐาน */}
                             <div className="grid grid-cols-1 md:grid-cols-2 gap-3 sm:gap-4">
                                 <div className="md:col-span-2">
-                                    <label className="block text-xs sm:text-sm font-medium text-gray-700 mb-1">
+                                    <label className="block text-xs sm:text-sm font-medium text-gray-700 dark:text-gray-200 mb-1">
                                         ชื่อช่าง/หัวหน้าชุดช่าง <span className="text-red-500">*</span>
                                     </label>
                                     <input
@@ -484,19 +484,19 @@ const ContractorSelector: React.FC<ContractorSelectorProps> = ({
                                         value={newContractor.contractorName}
                                         onChange={(e) => setNewContractor(prev => ({ ...prev, contractorName: e.target.value }))}
                                         maxLength={INPUT_LIMITS.customerName}
-                                        className="w-full rounded-md border-gray-300 shadow-sm focus:border-orange-500 focus:ring-orange-500 text-xs sm:text-sm px-3 py-2"
+                                        className="w-full rounded-md border-gray-300 dark:border-slate-600 shadow-sm focus:border-orange-500 focus:ring-orange-500 text-xs sm:text-sm px-3 py-2 dark:bg-slate-700 dark:text-gray-100"
                                         placeholder="เช่น นายสมชาย ช่างเก่ง"
                                     />
                                 </div>
 
                                 <div>
-                                    <label className="block text-xs sm:text-sm font-medium text-gray-700 mb-1">
+                                    <label className="block text-xs sm:text-sm font-medium text-gray-700 dark:text-gray-200 mb-1">
                                         ประเภท
                                     </label>
                                     <select
                                         value={newContractor.contractorType}
                                         onChange={(e) => setNewContractor(prev => ({ ...prev, contractorType: e.target.value as 'individual' | 'company' }))}
-                                        className="w-full rounded-md border-gray-300 shadow-sm focus:border-orange-500 focus:ring-orange-500 text-xs sm:text-sm px-3 py-2"
+                                        className="w-full rounded-md border-gray-300 dark:border-slate-600 shadow-sm focus:border-orange-500 focus:ring-orange-500 text-xs sm:text-sm px-3 py-2 dark:bg-slate-700 dark:text-gray-100"
                                     >
                                         <option value="individual">👤 บุคคลธรรมดา</option>
                                         <option value="company">🏢 นิติบุคคล</option>
@@ -504,7 +504,7 @@ const ContractorSelector: React.FC<ContractorSelectorProps> = ({
                                 </div>
 
                                 <div>
-                                    <label className="block text-xs sm:text-sm font-medium text-gray-700 mb-1">
+                                    <label className="block text-xs sm:text-sm font-medium text-gray-700 dark:text-gray-200 mb-1">
                                         เบอร์โทรศัพท์ <span className="text-red-500">*</span>
                                     </label>
                                     <input
@@ -513,13 +513,13 @@ const ContractorSelector: React.FC<ContractorSelectorProps> = ({
                                         onChange={(e) => setNewContractor(prev => ({ ...prev, phone: e.target.value }))}
                                         maxLength={INPUT_LIMITS.phone}
                                         inputMode="tel"
-                                        className="w-full rounded-md border-gray-300 shadow-sm focus:border-orange-500 focus:ring-orange-500 text-xs sm:text-sm px-3 py-2"
+                                        className="w-full rounded-md border-gray-300 dark:border-slate-600 shadow-sm focus:border-orange-500 focus:ring-orange-500 text-xs sm:text-sm px-3 py-2 dark:bg-slate-700 dark:text-gray-100"
                                         placeholder="08x-xxx-xxxx"
                                     />
                                 </div>
 
                                 <div>
-                                    <label className="block text-xs sm:text-sm font-medium text-gray-700 mb-1">
+                                    <label className="block text-xs sm:text-sm font-medium text-gray-700 dark:text-gray-200 mb-1">
                                         เบอร์สำรอง
                                     </label>
                                     <input
@@ -528,13 +528,13 @@ const ContractorSelector: React.FC<ContractorSelectorProps> = ({
                                         onChange={(e) => setNewContractor(prev => ({ ...prev, alternatePhone: e.target.value }))}
                                         maxLength={INPUT_LIMITS.phone}
                                         inputMode="tel"
-                                        className="w-full rounded-md border-gray-300 shadow-sm focus:border-orange-500 focus:ring-orange-500 text-xs sm:text-sm px-3 py-2"
+                                        className="w-full rounded-md border-gray-300 dark:border-slate-600 shadow-sm focus:border-orange-500 focus:ring-orange-500 text-xs sm:text-sm px-3 py-2 dark:bg-slate-700 dark:text-gray-100"
                                         placeholder="08x-xxx-xxxx"
                                     />
                                 </div>
 
                                 <div>
-                                    <label className="block text-xs sm:text-sm font-medium text-gray-700 mb-1">
+                                    <label className="block text-xs sm:text-sm font-medium text-gray-700 dark:text-gray-200 mb-1">
                                         อีเมล
                                     </label>
                                     <input
@@ -543,7 +543,7 @@ const ContractorSelector: React.FC<ContractorSelectorProps> = ({
                                         onChange={(e) => setNewContractor(prev => ({ ...prev, email: e.target.value }))}
                                         maxLength={INPUT_LIMITS.email}
                                         inputMode="email"
-                                        className="w-full rounded-md border-gray-300 shadow-sm focus:border-orange-500 focus:ring-orange-500 text-xs sm:text-sm px-3 py-2"
+                                        className="w-full rounded-md border-gray-300 dark:border-slate-600 shadow-sm focus:border-orange-500 focus:ring-orange-500 text-xs sm:text-sm px-3 py-2 dark:bg-slate-700 dark:text-gray-100"
                                         placeholder="example@email.com"
                                     />
                                 </div>
@@ -551,7 +551,7 @@ const ContractorSelector: React.FC<ContractorSelectorProps> = ({
 
                             {/* เลขบัตรประชาชน */}
                             <div>
-                                <label className="block text-xs sm:text-sm font-medium text-gray-700 mb-1">
+                                <label className="block text-xs sm:text-sm font-medium text-gray-700 dark:text-gray-200 mb-1">
                                     เลขบัตรประชาชน/เลขผู้เสียภาษี
                                 </label>
                                 <input
@@ -561,35 +561,35 @@ const ContractorSelector: React.FC<ContractorSelectorProps> = ({
                                     maxLength={INPUT_LIMITS.taxId}
                                     inputMode="numeric"
                                     pattern="[0-9]*"
-                                    className="w-full rounded-md border-gray-300 shadow-sm focus:border-orange-500 focus:ring-orange-500 text-xs sm:text-sm px-3 py-2"
+                                    className="w-full rounded-md border-gray-300 dark:border-slate-600 shadow-sm focus:border-orange-500 focus:ring-orange-500 text-xs sm:text-sm px-3 py-2 dark:bg-slate-700 dark:text-gray-100"
                                     placeholder="1-2345-67890-12-3"
                                 />
                             </div>
 
                             {/* ความเชี่ยวชาญ */}
                             <div>
-                                <label className="block text-xs sm:text-sm font-medium text-gray-700 mb-1">
+                                <label className="block text-xs sm:text-sm font-medium text-gray-700 dark:text-gray-200 mb-1">
                                     ความเชี่ยวชาญ (คั่นด้วย comma)
                                 </label>
                                 <input
                                     type="text"
                                     value={specialtiesInput}
                                     onChange={(e) => setSpecialtiesInput(e.target.value)}
-                                    className="w-full rounded-md border-gray-300 shadow-sm focus:border-orange-500 focus:ring-orange-500 text-xs sm:text-sm px-3 py-2"
+                                    className="w-full rounded-md border-gray-300 dark:border-slate-600 shadow-sm focus:border-orange-500 focus:ring-orange-500 text-xs sm:text-sm px-3 py-2 dark:bg-slate-700 dark:text-gray-100"
                                     placeholder="เช่น งานปูกระเบื้อง, งานไฟฟ้า, งานประปา"
                                 />
                             </div>
 
                             {/* ข้อมูลสาขา (แสดงเมื่อเป็นนิติบุคคล) */}
                             {newContractor.contractorType === 'company' && (
-                                <div className="grid grid-cols-1 md:grid-cols-2 gap-3 p-3 bg-orange-50 rounded-lg border border-orange-200">
+                                <div className="grid grid-cols-1 md:grid-cols-2 gap-3 p-3 bg-orange-50 dark:bg-orange-900/20 rounded-lg border border-orange-200 dark:border-orange-700">
                                     <div className="md:col-span-2">
-                                        <p className="text-xs font-medium text-orange-700 mb-2">
+                                        <p className="text-xs font-medium text-orange-700 dark:text-orange-300 mb-2">
                                             📋 ข้อมูลสาขา (ตามประกาศอธิบดีกรมสรรพากร ฉบับที่ 200)
                                         </p>
                                     </div>
                                     <div>
-                                        <label className="block text-xs sm:text-sm font-medium text-gray-700 mb-1">
+                                        <label className="block text-xs sm:text-sm font-medium text-gray-700 dark:text-gray-200 mb-1">
                                             รหัสสาขา (5 หลัก)
                                         </label>
                                         <input
@@ -597,20 +597,20 @@ const ContractorSelector: React.FC<ContractorSelectorProps> = ({
                                             value={newContractor.branchCode || ''}
                                             onChange={(e) => setNewContractor(prev => ({ ...prev, branchCode: e.target.value }))}
                                             maxLength={5}
-                                            className="w-full rounded-md border-gray-300 shadow-sm focus:border-orange-500 focus:ring-orange-500 text-xs sm:text-sm px-3 py-2"
+                                            className="w-full rounded-md border-gray-300 dark:border-slate-600 shadow-sm focus:border-orange-500 focus:ring-orange-500 text-xs sm:text-sm px-3 py-2 dark:bg-slate-700 dark:text-gray-100"
                                             placeholder="00000 (สำนักงานใหญ่)"
                                         />
-                                        <p className="text-xs text-gray-500 mt-1">00000 = สำนักงานใหญ่</p>
+                                        <p className="text-xs text-gray-500 dark:text-gray-400 mt-1">00000 = สำนักงานใหญ่</p>
                                     </div>
                                     <div>
-                                        <label className="block text-xs sm:text-sm font-medium text-gray-700 mb-1">
+                                        <label className="block text-xs sm:text-sm font-medium text-gray-700 dark:text-gray-200 mb-1">
                                             ชื่อสาขา
                                         </label>
                                         <input
                                             type="text"
                                             value={newContractor.branchName || ''}
                                             onChange={(e) => setNewContractor(prev => ({ ...prev, branchName: e.target.value }))}
-                                            className="w-full rounded-md border-gray-300 shadow-sm focus:border-orange-500 focus:ring-orange-500 text-xs sm:text-sm px-3 py-2"
+                                            className="w-full rounded-md border-gray-300 dark:border-slate-600 shadow-sm focus:border-orange-500 focus:ring-orange-500 text-xs sm:text-sm px-3 py-2 dark:bg-slate-700 dark:text-gray-100"
                                             placeholder="เช่น สำนักงานใหญ่, สาขาลาดพร้าว"
                                         />
                                     </div>
@@ -619,7 +619,7 @@ const ContractorSelector: React.FC<ContractorSelectorProps> = ({
 
                             {/* ที่อยู่ */}
                             <div>
-                                <label className="block text-xs sm:text-sm font-medium text-gray-700 mb-1">
+                                <label className="block text-xs sm:text-sm font-medium text-gray-700 dark:text-gray-200 mb-1">
                                     ที่อยู่
                                 </label>
                                 <textarea
@@ -627,14 +627,14 @@ const ContractorSelector: React.FC<ContractorSelectorProps> = ({
                                     onChange={(e) => setNewContractor(prev => ({ ...prev, address: e.target.value }))}
                                     rows={3}
                                     maxLength={INPUT_LIMITS.companyAddress}
-                                    className="w-full rounded-md border-gray-300 shadow-sm focus:border-orange-500 focus:ring-orange-500 text-xs sm:text-sm px-3 py-2"
+                                    className="w-full rounded-md border-gray-300 dark:border-slate-600 shadow-sm focus:border-orange-500 focus:ring-orange-500 text-xs sm:text-sm px-3 py-2 dark:bg-slate-700 dark:text-gray-100"
                                     placeholder="เช่น 123 หมู่ 5 ตำบลแวง อำเภอแกดำ มหาสารคาม"
                                 />
                             </div>
 
                             {/* หมายเหตุ */}
                             <div>
-                                <label className="block text-xs sm:text-sm font-medium text-gray-700 mb-1">
+                                <label className="block text-xs sm:text-sm font-medium text-gray-700 dark:text-gray-200 mb-1">
                                     หมายเหตุ
                                 </label>
                                 <textarea
@@ -642,7 +642,7 @@ const ContractorSelector: React.FC<ContractorSelectorProps> = ({
                                     onChange={(e) => setNewContractor(prev => ({ ...prev, notes: e.target.value }))}
                                     rows={2}
                                     maxLength={INPUT_LIMITS.notes}
-                                    className="w-full rounded-md border-gray-300 shadow-sm focus:border-orange-500 focus:ring-orange-500 text-xs sm:text-sm px-3 py-2"
+                                    className="w-full rounded-md border-gray-300 dark:border-slate-600 shadow-sm focus:border-orange-500 focus:ring-orange-500 text-xs sm:text-sm px-3 py-2 dark:bg-slate-700 dark:text-gray-100"
                                     placeholder="บันทึกข้อมูลเพิ่มเติม..."
                                 />
                             </div>
@@ -664,7 +664,7 @@ const ContractorSelector: React.FC<ContractorSelectorProps> = ({
                                     setSpecialtiesInput('');
                                 }}
                                 disabled={isSaving}
-                                className="w-full sm:w-auto px-4 py-2 bg-gray-200 text-gray-700 rounded hover:bg-gray-300 focus:outline-none focus:ring-2 focus:ring-gray-500 text-xs sm:text-sm"
+                                className="w-full sm:w-auto px-4 py-2 bg-gray-200 dark:bg-slate-600 text-gray-700 dark:text-gray-200 rounded hover:bg-gray-300 dark:hover:bg-slate-500 focus:outline-none focus:ring-2 focus:ring-gray-500 text-xs sm:text-sm"
                             >
                                 ยกเลิก
                             </button>
@@ -683,20 +683,20 @@ const ContractorSelector: React.FC<ContractorSelectorProps> = ({
             
             {/* Modal แก้ไขช่าง */}
             {isEditModalOpen && editingContractor && (
-                <div className="fixed inset-0 bg-gray-600 bg-opacity-50 overflow-y-auto h-full w-full z-50 flex items-center justify-center p-2 sm:p-4">
-                    <div className="bg-white p-3 sm:p-6 rounded-lg shadow-xl max-w-2xl w-full max-h-[90vh] overflow-y-auto">
-                        <h2 className="text-base sm:text-xl font-semibold text-gray-800 mb-3 sm:mb-4">✏️ แก้ไขข้อมูลช่าง</h2>
+                <div className="fixed inset-0 bg-gray-600 bg-opacity-50 dark:bg-black dark:bg-opacity-60 overflow-y-auto h-full w-full z-50 flex items-center justify-center p-2 sm:p-4">
+                    <div className="bg-white dark:bg-slate-800 p-3 sm:p-6 rounded-lg shadow-xl max-w-2xl w-full max-h-[90vh] overflow-y-auto">
+                        <h2 className="text-base sm:text-xl font-semibold text-gray-800 dark:text-gray-100 mb-3 sm:mb-4">✏️ แก้ไขข้อมูลช่าง</h2>
                         
                         <div className="space-y-3 sm:space-y-4">
                             {/* ประเภทช่าง */}
                             <div>
-                                <label className="block text-xs sm:text-sm font-medium text-gray-700 mb-1">
+                                <label className="block text-xs sm:text-sm font-medium text-gray-700 dark:text-gray-200 mb-1">
                                     ประเภทช่าง
                                 </label>
                                 <select
                                     value={editingContractor.contractorType}
                                     onChange={(e) => setEditingContractor(prev => prev ? ({ ...prev, contractorType: e.target.value as 'individual' | 'company' }) : null)}
-                                    className="w-full rounded-md border-gray-300 shadow-sm focus:border-orange-500 focus:ring-orange-500 text-xs sm:text-sm px-3 py-2"
+                                    className="w-full rounded-md border-gray-300 dark:border-slate-600 shadow-sm focus:border-orange-500 focus:ring-orange-500 text-xs sm:text-sm px-3 py-2 dark:bg-slate-700 dark:text-gray-100"
                                 >
                                     <option value="individual">👤 บุคคล</option>
                                     <option value="company">🏢 นิติบุคคล</option>
@@ -705,14 +705,14 @@ const ContractorSelector: React.FC<ContractorSelectorProps> = ({
 
                             {/* ชื่อช่าง */}
                             <div>
-                                <label className="block text-xs sm:text-sm font-medium text-gray-700 mb-1">
+                                <label className="block text-xs sm:text-sm font-medium text-gray-700 dark:text-gray-200 mb-1">
                                     ชื่อช่าง <span className="text-red-500">*</span>
                                 </label>
                                 <input
                                     type="text"
                                     value={editingContractor.contractorName}
                                     onChange={(e) => setEditingContractor(prev => prev ? ({ ...prev, contractorName: e.target.value }) : null)}
-                                    className="w-full rounded-md border-gray-300 shadow-sm focus:border-orange-500 focus:ring-orange-500 text-xs sm:text-sm px-3 py-2"
+                                    className="w-full rounded-md border-gray-300 dark:border-slate-600 shadow-sm focus:border-orange-500 focus:ring-orange-500 text-xs sm:text-sm px-3 py-2 dark:bg-slate-700 dark:text-gray-100"
                                     placeholder="เช่น นายสมชาย ช่างเก่ง"
                                     required
                                 />
@@ -720,14 +720,14 @@ const ContractorSelector: React.FC<ContractorSelectorProps> = ({
 
                             {/* เบอร์โทร */}
                             <div>
-                                <label className="block text-xs sm:text-sm font-medium text-gray-700 mb-1">
+                                <label className="block text-xs sm:text-sm font-medium text-gray-700 dark:text-gray-200 mb-1">
                                     เบอร์โทรศัพท์ <span className="text-red-500">*</span>
                                 </label>
                                 <input
                                     type="tel"
                                     value={editingContractor.phone}
                                     onChange={(e) => setEditingContractor(prev => prev ? ({ ...prev, phone: e.target.value }) : null)}
-                                    className="w-full rounded-md border-gray-300 shadow-sm focus:border-orange-500 focus:ring-orange-500 text-xs sm:text-sm px-3 py-2"
+                                    className="w-full rounded-md border-gray-300 dark:border-slate-600 shadow-sm focus:border-orange-500 focus:ring-orange-500 text-xs sm:text-sm px-3 py-2 dark:bg-slate-700 dark:text-gray-100"
                                     placeholder="0812345678"
                                     required
                                 />
@@ -735,56 +735,56 @@ const ContractorSelector: React.FC<ContractorSelectorProps> = ({
 
                             {/* อีเมล */}
                             <div>
-                                <label className="block text-xs sm:text-sm font-medium text-gray-700 mb-1">
+                                <label className="block text-xs sm:text-sm font-medium text-gray-700 dark:text-gray-200 mb-1">
                                     อีเมล
                                 </label>
                                 <input
                                     type="email"
                                     value={editingContractor.email || ''}
                                     onChange={(e) => setEditingContractor(prev => prev ? ({ ...prev, email: e.target.value }) : null)}
-                                    className="w-full rounded-md border-gray-300 shadow-sm focus:border-orange-500 focus:ring-orange-500 text-xs sm:text-sm px-3 py-2"
+                                    className="w-full rounded-md border-gray-300 dark:border-slate-600 shadow-sm focus:border-orange-500 focus:ring-orange-500 text-xs sm:text-sm px-3 py-2 dark:bg-slate-700 dark:text-gray-100"
                                     placeholder="example@email.com"
                                 />
                             </div>
 
                             {/* เลขบัตรประชาชน */}
                             <div>
-                                <label className="block text-xs sm:text-sm font-medium text-gray-700 mb-1">
+                                <label className="block text-xs sm:text-sm font-medium text-gray-700 dark:text-gray-200 mb-1">
                                     เลขบัตรประชาชน/เลขผู้เสียภาษี
                                 </label>
                                 <input
                                     type="text"
                                     value={editingContractor.idCard || ''}
                                     onChange={(e) => setEditingContractor(prev => prev ? ({ ...prev, idCard: e.target.value }) : null)}
-                                    className="w-full rounded-md border-gray-300 shadow-sm focus:border-orange-500 focus:ring-orange-500 text-xs sm:text-sm px-3 py-2"
+                                    className="w-full rounded-md border-gray-300 dark:border-slate-600 shadow-sm focus:border-orange-500 focus:ring-orange-500 text-xs sm:text-sm px-3 py-2 dark:bg-slate-700 dark:text-gray-100"
                                     placeholder="1-2345-67890-12-3"
                                 />
                             </div>
 
                             {/* ความเชี่ยวชาญ */}
                             <div>
-                                <label className="block text-xs sm:text-sm font-medium text-gray-700 mb-1">
+                                <label className="block text-xs sm:text-sm font-medium text-gray-700 dark:text-gray-200 mb-1">
                                     ความเชี่ยวชาญ (คั่นด้วย comma)
                                 </label>
                                 <input
                                     type="text"
                                     value={specialtiesInput}
                                     onChange={(e) => setSpecialtiesInput(e.target.value)}
-                                    className="w-full rounded-md border-gray-300 shadow-sm focus:border-orange-500 focus:ring-orange-500 text-xs sm:text-sm px-3 py-2"
+                                    className="w-full rounded-md border-gray-300 dark:border-slate-600 shadow-sm focus:border-orange-500 focus:ring-orange-500 text-xs sm:text-sm px-3 py-2 dark:bg-slate-700 dark:text-gray-100"
                                     placeholder="เช่น งานปูกระเบื้อง, งานไฟฟ้า, งานประปา"
                                 />
                             </div>
 
                             {/* ข้อมูลสาขา (แสดงเมื่อเป็นนิติบุคคล) */}
                             {editingContractor.contractorType === 'company' && (
-                                <div className="grid grid-cols-1 md:grid-cols-2 gap-3 p-3 bg-orange-50 rounded-lg border border-orange-200">
+                                <div className="grid grid-cols-1 md:grid-cols-2 gap-3 p-3 bg-orange-50 dark:bg-orange-900/20 rounded-lg border border-orange-200 dark:border-orange-700">
                                     <div className="md:col-span-2">
-                                        <p className="text-xs font-medium text-orange-700 mb-2">
+                                        <p className="text-xs font-medium text-orange-700 dark:text-orange-300 mb-2">
                                             📋 ข้อมูลสาขา (ตามประกาศอธิบดีกรมสรรพากร ฉบับที่ 200)
                                         </p>
                                     </div>
                                     <div>
-                                        <label className="block text-xs sm:text-sm font-medium text-gray-700 mb-1">
+                                        <label className="block text-xs sm:text-sm font-medium text-gray-700 dark:text-gray-200 mb-1">
                                             รหัสสาขา (5 หลัก)
                                         </label>
                                         <input
@@ -792,20 +792,20 @@ const ContractorSelector: React.FC<ContractorSelectorProps> = ({
                                             value={editingContractor.branchCode || ''}
                                             onChange={(e) => setEditingContractor(prev => prev ? ({ ...prev, branchCode: e.target.value }) : null)}
                                             maxLength={5}
-                                            className="w-full rounded-md border-gray-300 shadow-sm focus:border-orange-500 focus:ring-orange-500 text-xs sm:text-sm px-3 py-2"
+                                            className="w-full rounded-md border-gray-300 dark:border-slate-600 shadow-sm focus:border-orange-500 focus:ring-orange-500 text-xs sm:text-sm px-3 py-2 dark:bg-slate-700 dark:text-gray-100"
                                             placeholder="00000 (สำนักงานใหญ่)"
                                         />
-                                        <p className="text-xs text-gray-500 mt-1">00000 = สำนักงานใหญ่</p>
+                                        <p className="text-xs text-gray-500 dark:text-gray-400 mt-1">00000 = สำนักงานใหญ่</p>
                                     </div>
                                     <div>
-                                        <label className="block text-xs sm:text-sm font-medium text-gray-700 mb-1">
+                                        <label className="block text-xs sm:text-sm font-medium text-gray-700 dark:text-gray-200 mb-1">
                                             ชื่อสาขา
                                         </label>
                                         <input
                                             type="text"
                                             value={editingContractor.branchName || ''}
                                             onChange={(e) => setEditingContractor(prev => prev ? ({ ...prev, branchName: e.target.value }) : null)}
-                                            className="w-full rounded-md border-gray-300 shadow-sm focus:border-orange-500 focus:ring-orange-500 text-xs sm:text-sm px-3 py-2"
+                                            className="w-full rounded-md border-gray-300 dark:border-slate-600 shadow-sm focus:border-orange-500 focus:ring-orange-500 text-xs sm:text-sm px-3 py-2 dark:bg-slate-700 dark:text-gray-100"
                                             placeholder="เช่น สำนักงานใหญ่, สาขาลาดพร้าว"
                                         />
                                     </div>
@@ -814,14 +814,14 @@ const ContractorSelector: React.FC<ContractorSelectorProps> = ({
 
                             {/* ที่อยู่ */}
                             <div>
-                                <label className="block text-xs sm:text-sm font-medium text-gray-700 mb-1">
+                                <label className="block text-xs sm:text-sm font-medium text-gray-700 dark:text-gray-200 mb-1">
                                     ที่อยู่
                                 </label>
                                 <textarea
                                     value={editingContractor.address || ''}
                                     onChange={(e) => setEditingContractor(prev => prev ? ({ ...prev, address: e.target.value }) : null)}
                                     rows={3}
-                                    className="w-full rounded-md border-gray-300 shadow-sm focus:border-orange-500 focus:ring-orange-500 text-xs sm:text-sm px-3 py-2"
+                                    className="w-full rounded-md border-gray-300 dark:border-slate-600 shadow-sm focus:border-orange-500 focus:ring-orange-500 text-xs sm:text-sm px-3 py-2 dark:bg-slate-700 dark:text-gray-100"
                                     placeholder="เช่น 123 หมู่ 5 ตำบลแวง อำเภอแกดำ มหาสารคาม"
                                 />
                             </div>
@@ -836,7 +836,7 @@ const ContractorSelector: React.FC<ContractorSelectorProps> = ({
                                     setSpecialtiesInput('');
                                 }}
                                 disabled={isSaving}
-                                className="w-full sm:w-auto px-4 py-2 bg-gray-200 text-gray-700 rounded hover:bg-gray-300 focus:outline-none focus:ring-2 focus:ring-gray-500 text-xs sm:text-sm"
+                                className="w-full sm:w-auto px-4 py-2 bg-gray-200 dark:bg-slate-600 text-gray-700 dark:text-gray-200 rounded hover:bg-gray-300 dark:hover:bg-slate-500 focus:outline-none focus:ring-2 focus:ring-gray-500 text-xs sm:text-sm"
                             >
                                 ยกเลิก
                             </button>

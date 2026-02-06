@@ -1116,20 +1116,20 @@ const CRMPage: React.FC = () => {
                                             value={specialtyInput}
                                             onChange={(e) => setSpecialtyInput(e.target.value)}
                                             onKeyPress={(e) => e.key === 'Enter' && (e.preventDefault(), addSpecialty())}
-                                            className="flex-1 px-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-indigo-500 focus:border-transparent"
+                                            className="flex-1 px-3 py-2 border border-gray-300 dark:border-slate-600 rounded-lg focus:ring-2 focus:ring-indigo-500 focus:border-transparent bg-white dark:bg-slate-700 text-gray-800 dark:text-gray-100"
                                             placeholder="เช่น งานปูกระเบื้อง, งานไฟฟ้า"
                                         />
                                         <button
                                             type="button"
                                             onClick={addSpecialty}
-                                            className="px-3 py-2 bg-amber-100 text-amber-700 rounded-lg hover:bg-amber-200"
+                                            className="px-3 py-2 bg-amber-100 dark:bg-amber-900/30 text-amber-700 dark:text-amber-300 rounded-lg hover:bg-amber-200 dark:hover:bg-amber-900/50"
                                         >
                                             <Plus className="w-5 h-5" />
                                         </button>
                                     </div>
                                     <div className="flex flex-wrap gap-2">
                                         {formData.specialties.map((spec, idx) => (
-                                            <span key={idx} className="flex items-center gap-1 px-2 py-1 bg-amber-50 text-amber-700 text-sm rounded-full">
+                                            <span key={idx} className="flex items-center gap-1 px-2 py-1 bg-amber-50 dark:bg-amber-900/30 text-amber-700 dark:text-amber-300 text-sm rounded-full">
                                                 {spec}
                                                 <button type="button" onClick={() => removeSpecialty(spec)}>
                                                     <X className="w-3 h-3" />
@@ -1149,8 +1149,8 @@ const CRMPage: React.FC = () => {
                                         value={tagInput}
                                         onChange={(e) => setTagInput(e.target.value)}
                                         onKeyPress={(e) => e.key === 'Enter' && (e.preventDefault(), addTag())}
-                                        className="flex-1 px-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-indigo-500 focus:border-transparent"
-                                        placeholder="เช่น VIP, ลูกค้าประจำ"
+className="flex-1 px-3 py-2 border border-gray-300 dark:border-slate-600 rounded-lg focus:ring-2 focus:ring-indigo-500 focus:border-transparent bg-white dark:bg-slate-700 text-gray-800 dark:text-gray-100"
+                                            placeholder="เช่น VIP, ลูกค้าประจำ"
                                     />
                                     <button
                                         type="button"
