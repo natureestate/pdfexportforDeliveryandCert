@@ -832,6 +832,25 @@ service cloud.firestore {
     }
     
     // ============================================================
+    // ระบบ Activity Log (Activity Log System)
+    // ============================================================
+    
+    // Activity Logs (บันทึกกิจกรรม)
+    match /activityLogs/{logId} {
+      // อ่าน: สมาชิกบริษัทเดียวกัน หรือ Super Admin
+      allow read: if isAuthenticated() && (
+        isSuperAdmin() ||
+        (resource.data.companyId != null && isMemberOfCompany(resource.data.companyId))
+      );
+      
+      // สร้าง: ผู้ใช้ที่ login แล้ว (ระบบบันทึก log อัตโนมัติ)
+      allow create: if isAuthenticated() && request.resource.data.userId == request.auth.uid;
+      
+      // ไม่อนุญาตให้แก้ไขหรือลบ log (immutable)
+      allow update, delete: if isSuperAdmin();
+    }
+    
+    // ============================================================
     // Default Rule - ปฏิเสธทุก collection อื่นๆ
     // ============================================================
     match /{document=**} {

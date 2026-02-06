@@ -16,6 +16,7 @@ import {
     Timestamp,
     updateDoc,
 } from 'firebase/firestore';
+import { logCustomerAction } from './activityLog';
 
 // Collection name
 const CUSTOMERS_COLLECTION = 'customers';
@@ -133,6 +134,12 @@ export const saveCustomer = async (
         });
 
         console.log('✅ บันทึกข้อมูลลูกค้าสำเร็จ:', docId);
+        
+        // บันทึก Activity Log
+        try {
+            await logCustomerAction(companyId || customer.companyId, 'create', customer.customerName, docId);
+        } catch (e) { /* ไม่ให้ error จาก log กระทบ flow หลัก */ }
+        
         return docId;
     } catch (error) {
         console.error('❌ Error saving customer:', error);
@@ -273,6 +280,12 @@ export const updateCustomer = async (
         });
         
         console.log('✅ อัปเดตข้อมูลลูกค้าสำเร็จ:', id);
+        
+        // บันทึก Activity Log
+        try {
+            const customerName = (updates as any).customerName || id;
+            await logCustomerAction('', 'update', customerName, id);
+        } catch (e) { /* ไม่ให้ error จาก log กระทบ flow หลัก */ }
     } catch (error) {
         console.error('❌ Error updating customer:', error);
         throw new Error('ไม่สามารถอัปเดตข้อมูลลูกค้าได้');
@@ -288,6 +301,11 @@ export const deleteCustomer = async (id: string): Promise<void> => {
         await deleteDoc(docRef);
         
         console.log('✅ ลบข้อมูลลูกค้าสำเร็จ:', id);
+        
+        // บันทึก Activity Log
+        try {
+            await logCustomerAction('', 'delete', id, id);
+        } catch (e) { /* ไม่ให้ error จาก log กระทบ flow หลัก */ }
     } catch (error) {
         console.error('❌ Error deleting customer:', error);
         throw new Error('ไม่สามารถลบข้อมูลลูกค้าได้');

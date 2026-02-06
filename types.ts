@@ -1148,7 +1148,7 @@ export const DEFAULT_MENU_CONFIG: MenuItemConfig[] = [
 // ============================================================
 
 // ประเภท Tab ที่มีในระบบ
-export type TabType = 'dashboard' | 'form' | 'history' | 'crm' | 'reports' | 'calendar';
+export type TabType = 'dashboard' | 'form' | 'history' | 'crm' | 'reports' | 'calendar' | 'activityLog';
 
 // ข้อมูล Tab แต่ละรายการ
 export interface TabConfig {
@@ -1169,6 +1169,7 @@ export const DEFAULT_TAB_CONFIG: TabConfig[] = [
     { id: 'crm', label: 'CRM', shortLabel: 'CRM', icon: 'Users', visible: true, order: 3, adminOnly: false },
     { id: 'reports', label: 'รายงาน', shortLabel: 'รายงาน', icon: 'BarChart2', visible: true, order: 4, adminOnly: true },
     { id: 'calendar', label: 'ปฏิทิน', shortLabel: 'ปฏิทิน', icon: 'Calendar', visible: true, order: 5, adminOnly: false },
+    { id: 'activityLog', label: 'Activity Log', shortLabel: 'Log', icon: 'ClipboardList', visible: true, order: 6, adminOnly: false },
 ];
 
 // การตั้งค่า Tab ตาม Role

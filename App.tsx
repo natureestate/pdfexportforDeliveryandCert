@@ -2,7 +2,7 @@ import React, { useState, useRef, useCallback, useEffect } from 'react';
 import { Routes, Route, Navigate } from 'react-router-dom';
 import { useTranslation } from 'react-i18next';
 import { motion, AnimatePresence } from 'framer-motion';
-import { Package, Shield, FileText, Receipt, FileCheck, DollarSign, ShoppingCart, StickyNote, PlusCircle, FilePlus, History, Save, HardHat, Settings, LayoutDashboard, Users, BarChart2, Calendar } from 'lucide-react';
+import { Package, Shield, FileText, Receipt, FileCheck, DollarSign, ShoppingCart, StickyNote, PlusCircle, FilePlus, History, Save, HardHat, Settings, LayoutDashboard, Users, BarChart2, Calendar, ClipboardList } from 'lucide-react';
 import { DeliveryNoteData, WarrantyData, InvoiceData, ReceiptData, TaxInvoiceData, QuotationData, PurchaseOrderData, MemoData, VariationOrderData, SubcontractData, LogoType, MenuItemConfig } from './types';
 import { AuthProvider } from './contexts/AuthContext';
 import { CompanyProvider, useCompany } from './contexts/CompanyContext';
@@ -51,6 +51,7 @@ import ReportsPage from './components/ReportsPage';
 import CalendarPage from './components/CalendarPage';
 import UserGuidePage from './components/UserGuidePage';
 import SharedDocumentPage from './components/SharedDocumentPage';
+import ActivityLogPage from './components/ActivityLogPage';
 import { generatePdf, generatePng } from './services/pdfGenerator';
 import { saveDeliveryNote, saveWarrantyCard, saveInvoice, saveReceipt, saveTaxInvoice, saveQuotation, savePurchaseOrder } from './services/firestore';
 import type { DeliveryNoteDocument, WarrantyDocument, InvoiceDocument, ReceiptDocument, TaxInvoiceDocument, QuotationDocument, PurchaseOrderDocument, MemoDocument, VariationOrderDocument, SubcontractDocument } from './services/firestore';
@@ -469,7 +470,7 @@ const initialSubcontractData: SubcontractData = {
     issuedBy: '',
 };
 
-type ViewMode = 'form' | 'history' | 'dashboard' | 'crm' | 'reports' | 'calendar';
+type ViewMode = 'form' | 'history' | 'dashboard' | 'crm' | 'reports' | 'calendar' | 'activityLog';
 type Notification = { show: boolean; message: string; type: 'success' | 'info' | 'error' | 'warning' };
 
 // Icon mapping สำหรับ dynamic menu rendering
@@ -495,6 +496,7 @@ const tabIconMap: Record<string, React.ComponentType<{ className?: string }>> = 
     Users,
     BarChart2,
     Calendar,
+    ClipboardList,
 };
 
 /**
@@ -1953,6 +1955,11 @@ const AppContent: React.FC = () => {
                     // Calendar View
                     <div className="bg-white dark:bg-slate-800 p-3 sm:p-4 md:p-6 rounded-lg shadow-lg transition-colors">
                         <CalendarPage />
+                    </div>
+                ) : viewMode === 'activityLog' ? (
+                    // Activity Log View - แสดง log การดำเนินการทั้งหมด
+                    <div className="bg-white dark:bg-slate-800 p-3 sm:p-4 md:p-6 rounded-lg shadow-lg transition-colors">
+                        <ActivityLogPage />
                     </div>
                 ) : null}
                 </motion.div>

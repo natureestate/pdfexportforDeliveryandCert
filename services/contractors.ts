@@ -16,6 +16,7 @@ import {
     Timestamp,
     updateDoc,
 } from 'firebase/firestore';
+import { logContractorAction } from './activityLog';
 
 // Collection name
 const CONTRACTORS_COLLECTION = 'contractors';
@@ -113,6 +114,12 @@ export const saveContractor = async (
         });
 
         console.log('✅ บันทึกข้อมูลช่างสำเร็จ:', docId);
+        
+        // บันทึก Activity Log
+        try {
+            await logContractorAction(companyId || contractor.companyId, 'create', contractor.contractorName, docId);
+        } catch (e) { /* ไม่ให้ error จาก log กระทบ flow หลัก */ }
+        
         return docId;
     } catch (error) {
         console.error('❌ Error saving contractor:', error);
@@ -231,6 +238,12 @@ export const updateContractor = async (
         });
         
         console.log('✅ อัปเดตข้อมูลช่างสำเร็จ:', id);
+        
+        // บันทึก Activity Log
+        try {
+            const contractorName = (updates as any).contractorName || id;
+            await logContractorAction('', 'update', contractorName, id);
+        } catch (e) { /* ไม่ให้ error จาก log กระทบ flow หลัก */ }
     } catch (error) {
         console.error('❌ Error updating contractor:', error);
         throw new Error('ไม่สามารถอัปเดตข้อมูลช่างได้');
@@ -246,6 +259,11 @@ export const deleteContractor = async (id: string): Promise<void> => {
         await deleteDoc(docRef);
         
         console.log('✅ ลบข้อมูลช่างสำเร็จ:', id);
+        
+        // บันทึก Activity Log
+        try {
+            await logContractorAction('', 'delete', id, id);
+        } catch (e) { /* ไม่ให้ error จาก log กระทบ flow หลัก */ }
     } catch (error) {
         console.error('❌ Error deleting contractor:', error);
         throw new Error('ไม่สามารถลบข้อมูลช่างได้');

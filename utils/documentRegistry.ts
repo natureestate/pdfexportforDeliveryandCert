@@ -14,6 +14,7 @@ import {
     SubcontractData
 } from '../types';
 import { logDocumentCreated, logDocumentUpdated } from '../services/documentHistory';
+import { logDocumentCreate, logDocumentUpdate } from '../services/activityLog';
 import { createDocumentVersion } from '../services/documentVersion';
 import {
     saveDeliveryNote,
@@ -374,6 +375,15 @@ export const saveOrUpdateDocument = async (
             console.error('⚠️ [History] Failed to log update:', historyError);
         }
         
+        // บันทึก Activity Log สำหรับการ update
+        try {
+            if (companyId) {
+                await logDocumentUpdate(companyId, type, documentNumber, documentId);
+            }
+        } catch (activityError) {
+            console.error('⚠️ [ActivityLog] Failed to log update:', activityError);
+        }
+        
         // บันทึก version สำหรับการ update
         try {
             await createDocumentVersion(documentId, type, documentNumber, data, {
@@ -399,6 +409,15 @@ export const saveOrUpdateDocument = async (
             console.log('✅ [History] Logged document creation:', id);
         } catch (historyError) {
             console.error('⚠️ [History] Failed to log creation:', historyError);
+        }
+        
+        // บันทึก Activity Log สำหรับการ create
+        try {
+            if (companyId) {
+                await logDocumentCreate(companyId, type, documentNumber, id);
+            }
+        } catch (activityError) {
+            console.error('⚠️ [ActivityLog] Failed to log creation:', activityError);
         }
         
         // บันทึก version แรกสำหรับเอกสารใหม่
