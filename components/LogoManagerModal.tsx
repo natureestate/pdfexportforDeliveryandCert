@@ -225,7 +225,7 @@ const LogoManagerModal: React.FC<LogoManagerModalProps> = ({
                                     </div>
                                     {/* Logo Type Badge */}
                                     <div className="absolute -bottom-2 left-1/2 transform -translate-x-1/2">
-                                        <span className="text-xs px-3 py-1 rounded-full bg-green-100 text-green-700 dark:bg-green-900/50 dark:text-green-300 shadow">
+                                        <span className="text-xs px-3 py-1 rounded-full bg-green-100 text-green-700 dark:bg-green-800 dark:text-green-200 shadow whitespace-nowrap">
                                             โลโก้กำหนดเอง
                                         </span>
                                     </div>

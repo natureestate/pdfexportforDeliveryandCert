@@ -103,17 +103,17 @@ const JoinByCodeForm: React.FC<JoinByCodeFormProps> = ({ onSuccess, onCancel }) 
     // แสดงหน้าสำเร็จ
     if (success) {
         return (
-            <div className="bg-white rounded-2xl border border-gray-200 p-6 shadow-sm text-center">
-                <div className="w-16 h-16 bg-emerald-100 rounded-full flex items-center justify-center mx-auto mb-4">
-                    <CheckCircle2 className="w-8 h-8 text-emerald-600" />
+            <div className="bg-white dark:bg-slate-800 rounded-2xl border border-gray-200 dark:border-slate-700 p-6 shadow-sm text-center">
+                <div className="w-16 h-16 bg-emerald-100 dark:bg-emerald-900/30 rounded-full flex items-center justify-center mx-auto mb-4">
+                    <CheckCircle2 className="w-8 h-8 text-emerald-600 dark:text-emerald-400" />
                 </div>
-                <h2 className="text-xl font-semibold text-gray-900 mb-2">
+                <h2 className="text-xl font-semibold text-gray-900 dark:text-gray-100 mb-2">
                     เข้าร่วมสำเร็จ!
                 </h2>
-                <p className="text-gray-600 mb-4">
+                <p className="text-gray-600 dark:text-gray-400 mb-4">
                     คุณเป็นสมาชิกของ <span className="font-medium">{validatedCode?.companyName}</span> แล้ว
                 </p>
-                <p className="text-sm text-gray-500">
+                <p className="text-sm text-gray-500 dark:text-gray-500">
                     กำลังพาคุณไปหน้าหลัก...
                 </p>
             </div>
@@ -121,14 +121,14 @@ const JoinByCodeForm: React.FC<JoinByCodeFormProps> = ({ onSuccess, onCancel }) 
     }
 
     return (
-        <div className="bg-white rounded-2xl border border-gray-200 p-6 shadow-sm">
+        <div className="bg-white dark:bg-slate-800 rounded-2xl border border-gray-200 dark:border-slate-700 p-6 shadow-sm">
             <div className="flex items-center gap-3 mb-6">
-                <div className="w-12 h-12 bg-emerald-100 rounded-xl flex items-center justify-center">
-                    <KeyRound className="w-6 h-6 text-emerald-600" />
+                <div className="w-12 h-12 bg-emerald-100 dark:bg-emerald-900/30 rounded-xl flex items-center justify-center">
+                    <KeyRound className="w-6 h-6 text-emerald-600 dark:text-emerald-400" />
                 </div>
                 <div>
-                    <h2 className="font-semibold text-gray-900">ใช้ Join Code</h2>
-                    <p className="text-sm text-gray-500">กรอกรหัสที่ได้รับจากองค์กร</p>
+                    <h2 className="font-semibold text-gray-900 dark:text-gray-100">ใช้ Join Code</h2>
+                    <p className="text-sm text-gray-500 dark:text-gray-400">กรอกรหัสที่ได้รับจากองค์กร</p>
                 </div>
             </div>
 
@@ -136,7 +136,7 @@ const JoinByCodeForm: React.FC<JoinByCodeFormProps> = ({ onSuccess, onCancel }) 
             {!validatedCode && (
                 <div className="space-y-4">
                     <div>
-                        <label className="block text-sm font-medium text-gray-700 mb-1">
+                        <label className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-1">
                             Join Code
                         </label>
                         <input
@@ -147,19 +147,19 @@ const JoinByCodeForm: React.FC<JoinByCodeFormProps> = ({ onSuccess, onCancel }) 
                                 setError(null);
                             }}
                             placeholder="เช่น ABC123XY"
-                            className="w-full px-4 py-3 text-center text-lg font-mono tracking-widest border border-gray-300 rounded-lg focus:ring-2 focus:ring-emerald-500 focus:border-transparent uppercase"
+                            className="w-full px-4 py-3 text-center text-lg font-mono tracking-widest border border-gray-300 dark:border-slate-600 rounded-lg focus:ring-2 focus:ring-emerald-500 focus:border-transparent uppercase bg-white dark:bg-slate-700 text-gray-900 dark:text-gray-100 placeholder-gray-400 dark:placeholder-gray-500"
                             disabled={isValidating}
                             maxLength={10}
                         />
-                        <p className="text-xs text-gray-500 mt-1 text-center">
+                        <p className="text-xs text-gray-500 dark:text-gray-400 mt-1 text-center">
                             รหัส 8-10 ตัวอักษร (ตัวพิมพ์ใหญ่และตัวเลข)
                         </p>
                     </div>
 
                     {error && (
-                        <div className="flex items-start gap-2 bg-red-50 border border-red-200 rounded-lg p-3">
-                            <AlertCircle className="w-5 h-5 text-red-500 flex-shrink-0 mt-0.5" />
-                            <p className="text-sm text-red-700">{error}</p>
+                        <div className="flex items-start gap-2 bg-red-50 dark:bg-red-900/20 border border-red-200 dark:border-red-800 rounded-lg p-3">
+                            <AlertCircle className="w-5 h-5 text-red-500 dark:text-red-400 flex-shrink-0 mt-0.5" />
+                            <p className="text-sm text-red-700 dark:text-red-300">{error}</p>
                         </div>
                     )}
 
@@ -186,28 +186,28 @@ const JoinByCodeForm: React.FC<JoinByCodeFormProps> = ({ onSuccess, onCancel }) 
             {/* แสดงข้อมูลองค์กรที่ตรวจสอบแล้ว */}
             {validatedCode && (
                 <div className="space-y-4">
-                    <div className="bg-emerald-50 border border-emerald-200 rounded-lg p-4">
+                    <div className="bg-emerald-50 dark:bg-emerald-900/20 border border-emerald-200 dark:border-emerald-800 rounded-lg p-4">
                         <div className="flex items-center gap-2 mb-3">
-                            <CheckCircle2 className="w-5 h-5 text-emerald-600" />
-                            <span className="text-sm font-medium text-emerald-800">
+                            <CheckCircle2 className="w-5 h-5 text-emerald-600 dark:text-emerald-400" />
+                            <span className="text-sm font-medium text-emerald-800 dark:text-emerald-300">
                                 Join Code ถูกต้อง
                             </span>
                         </div>
                         
                         <div className="space-y-3">
                             <div className="flex items-start gap-3">
-                                <Building2 className="w-5 h-5 text-gray-500 flex-shrink-0 mt-0.5" />
+                                <Building2 className="w-5 h-5 text-gray-500 dark:text-gray-400 flex-shrink-0 mt-0.5" />
                                 <div>
-                                    <p className="text-xs text-gray-500">องค์กร</p>
-                                    <p className="font-medium text-gray-900">{validatedCode.companyName}</p>
+                                    <p className="text-xs text-gray-500 dark:text-gray-400">องค์กร</p>
+                                    <p className="font-medium text-gray-900 dark:text-gray-100">{validatedCode.companyName}</p>
                                 </div>
                             </div>
                             
                             <div className="flex items-start gap-3">
-                                <Shield className="w-5 h-5 text-gray-500 flex-shrink-0 mt-0.5" />
+                                <Shield className="w-5 h-5 text-gray-500 dark:text-gray-400 flex-shrink-0 mt-0.5" />
                                 <div>
-                                    <p className="text-xs text-gray-500">บทบาทที่จะได้รับ</p>
-                                    <p className="font-medium text-gray-900">
+                                    <p className="text-xs text-gray-500 dark:text-gray-400">บทบาทที่จะได้รับ</p>
+                                    <p className="font-medium text-gray-900 dark:text-gray-100">
                                         {validatedCode.role === 'admin' ? 'Admin' : 'Member'}
                                     </p>
                                 </div>
@@ -215,10 +215,10 @@ const JoinByCodeForm: React.FC<JoinByCodeFormProps> = ({ onSuccess, onCancel }) 
                             
                             {validatedCode.description && (
                                 <div className="flex items-start gap-3">
-                                    <Users className="w-5 h-5 text-gray-500 flex-shrink-0 mt-0.5" />
+                                    <Users className="w-5 h-5 text-gray-500 dark:text-gray-400 flex-shrink-0 mt-0.5" />
                                     <div>
-                                        <p className="text-xs text-gray-500">คำอธิบาย</p>
-                                        <p className="text-sm text-gray-700">{validatedCode.description}</p>
+                                        <p className="text-xs text-gray-500 dark:text-gray-400">คำอธิบาย</p>
+                                        <p className="text-sm text-gray-700 dark:text-gray-300">{validatedCode.description}</p>
                                     </div>
                                 </div>
                             )}
@@ -226,9 +226,9 @@ const JoinByCodeForm: React.FC<JoinByCodeFormProps> = ({ onSuccess, onCancel }) 
                     </div>
 
                     {error && (
-                        <div className="flex items-start gap-2 bg-red-50 border border-red-200 rounded-lg p-3">
-                            <AlertCircle className="w-5 h-5 text-red-500 flex-shrink-0 mt-0.5" />
-                            <p className="text-sm text-red-700">{error}</p>
+                        <div className="flex items-start gap-2 bg-red-50 dark:bg-red-900/20 border border-red-200 dark:border-red-800 rounded-lg p-3">
+                            <AlertCircle className="w-5 h-5 text-red-500 dark:text-red-400 flex-shrink-0 mt-0.5" />
+                            <p className="text-sm text-red-700 dark:text-red-300">{error}</p>
                         </div>
                     )}
 
@@ -236,7 +236,7 @@ const JoinByCodeForm: React.FC<JoinByCodeFormProps> = ({ onSuccess, onCancel }) 
                         <button
                             onClick={handleReset}
                             disabled={isJoining}
-                            className="flex-1 py-3 border border-gray-300 text-gray-700 rounded-lg font-medium hover:bg-gray-50 disabled:opacity-50"
+                            className="flex-1 py-3 border border-gray-300 dark:border-slate-600 text-gray-700 dark:text-gray-300 rounded-lg font-medium hover:bg-gray-50 dark:hover:bg-slate-700 disabled:opacity-50"
                         >
                             ใช้ Code อื่น
                         </button>

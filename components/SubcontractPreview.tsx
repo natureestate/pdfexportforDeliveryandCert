@@ -8,6 +8,7 @@ import { SubcontractData } from '../types';
 import QRCodeFooter from './QRCodeFooter';
 import EndCustomerProjectPreview from './EndCustomerProjectPreview';
 import { getDefaultLogoUrl } from '../services/logoStorage';
+import LogoWithSkeleton from './LogoWithSkeleton';
 
 interface SubcontractPreviewProps {
     data: SubcontractData;
@@ -66,11 +67,10 @@ const SubcontractPreview = forwardRef<HTMLDivElement, SubcontractPreviewProps>((
             <div className="flex justify-between items-start mb-2 text-xs text-gray-800 border-b pb-1.5">
                 {/* โลโก้บริษัท - แสดงเสมอ (ใช้ default logo ถ้าไม่มี) */}
                 <div className="flex items-center gap-2">
-                    <img 
+                    <LogoWithSkeleton 
                         src={displayLogo} 
-                        alt="Company Logo" 
-                        className="w-10 h-10 sm:w-12 sm:h-12 object-contain"
-                        crossOrigin="anonymous"
+                        containerClassName=""
+                        imgClassName="w-10 h-10 sm:w-12 sm:h-12 object-contain"
                     />
                     <p><strong>เลขที่สัญญา:</strong> <span className="font-semibold text-gray-900">{data.contractNumber || '-'}</span></p>
                 </div>

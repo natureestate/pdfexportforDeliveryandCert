@@ -18,6 +18,7 @@ import TabSettingsModal from './TabSettingsModal';
 import OrganizationLogoManager from './OrganizationLogoManager';
 import ThemeToggle from './ThemeToggle';
 import LanguageSwitcher from './LanguageSwitcher';
+import NotificationBell from './NotificationBell';
 import { checkIsAdmin } from '../services/companyMembers';
 import { getQuota } from '../services/quota';
 import { updateCompany } from '../services/companies';
@@ -517,6 +518,9 @@ const Header: React.FC = () => {
                                 <div className="hidden md:flex items-center gap-4">
                                     <CompanySelector />
                                     
+                                    {/* กระดิ่งแจ้งเตือนเอกสารใหม่ */}
+                                    <NotificationBell />
+                                    
                                     {/* Desktop User Menu */}
                         <div className="relative">
                             <button
@@ -833,6 +837,11 @@ const Header: React.FC = () => {
                                         )}
                                         </AnimatePresence>
                                     </div>
+                                </div>
+
+                                {/* กระดิ่งแจ้งเตือน - Mobile */}
+                                <div className="md:hidden">
+                                    <NotificationBell />
                                 </div>
 
                                 {/* Mobile Hamburger Button */}

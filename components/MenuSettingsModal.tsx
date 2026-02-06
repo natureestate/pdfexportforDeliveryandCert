@@ -391,7 +391,7 @@ const MenuSettingsModal: React.FC<MenuSettingsModalProps> = ({
                     {/* Menu List */}
                     <div className="p-4 max-h-[400px] overflow-y-auto">
                         {!isAdmin && (
-                            <div className="mb-4 p-3 bg-amber-50 border border-amber-200 rounded-lg flex items-center gap-2 text-amber-700">
+                            <div className="mb-4 p-3 bg-amber-50 dark:bg-amber-900/20 border border-amber-200 dark:border-amber-800 rounded-lg flex items-center gap-2 text-amber-700 dark:text-amber-300">
                                 <AlertCircle className="w-5 h-5 flex-shrink-0" />
                                 <span className="text-sm">คุณไม่มีสิทธิ์ตั้งค่าเมนู (ต้องเป็น Admin ขององค์กร)</span>
                             </div>
@@ -412,66 +412,68 @@ const MenuSettingsModal: React.FC<MenuSettingsModalProps> = ({
                                         onDragEnd={handleDragEnd}
                                         className={`flex items-center gap-3 p-3 rounded-lg border transition-all ${
                                             dragOverIndex === index
-                                                ? 'border-indigo-500 bg-indigo-50'
+                                                ? 'border-indigo-500 bg-indigo-50 dark:bg-indigo-900/30'
                                                 : menu.visible
-                                                    ? 'border-gray-200 bg-white hover:border-gray-300'
-                                                    : 'border-gray-200 bg-gray-50 opacity-60'
+                                                    ? 'border-gray-200 dark:border-slate-600 bg-white dark:bg-slate-700 hover:border-gray-300 dark:hover:border-slate-500'
+                                                    : 'border-gray-200 dark:border-slate-600 bg-gray-50 dark:bg-slate-800 opacity-60'
                                         } ${isAdmin ? 'cursor-grab active:cursor-grabbing' : ''}`}
                                     >
-                                        {/* Drag Handle */}
+                                        {/* Drag Handle - จุดลาก */}
                                         {isAdmin && (
-                                            <div className="text-gray-400 hover:text-gray-600">
+                                            <div className="text-gray-400 hover:text-gray-600 dark:hover:text-gray-300">
                                                 <GripVertical className="w-5 h-5" />
                                             </div>
                                         )}
                                         
                                         {/* Icon */}
                                         <div className={`p-2 rounded-lg ${
-                                            menu.visible ? 'bg-indigo-100 text-indigo-600' : 'bg-gray-200 text-gray-400'
+                                            menu.visible 
+                                                ? 'bg-indigo-100 dark:bg-indigo-900/40 text-indigo-600 dark:text-indigo-400' 
+                                                : 'bg-gray-200 dark:bg-slate-600 text-gray-400 dark:text-gray-500'
                                         }`}>
                                             {renderIcon(menu.icon)}
                                         </div>
                                         
-                                        {/* Label */}
+                                        {/* Label - ชื่อเมนู */}
                                         <div className="flex-1 min-w-0">
-                                            <p className={`font-medium ${menu.visible ? 'text-gray-900' : 'text-gray-400'}`}>
+                                            <p className={`font-medium ${menu.visible ? 'text-gray-900 dark:text-gray-100' : 'text-gray-400 dark:text-gray-500'}`}>
                                                 {menu.label}
                                             </p>
-                                            <p className="text-xs text-gray-400">
+                                            <p className="text-xs text-gray-400 dark:text-gray-500">
                                                 {menu.shortLabel}
                                             </p>
                                         </div>
                                         
-                                        {/* Actions */}
+                                        {/* Actions - ปุ่มจัดการ */}
                                         {isAdmin && (
                                             <div className="flex items-center gap-1">
-                                                {/* Move Up */}
+                                                {/* Move Up - ย้ายขึ้น */}
                                                 <button
                                                     onClick={() => handleMoveUp(index)}
                                                     disabled={index === 0}
-                                                    className="p-1.5 text-gray-400 hover:text-gray-600 hover:bg-gray-100 rounded disabled:opacity-30 disabled:cursor-not-allowed"
+                                                    className="p-1.5 text-gray-400 hover:text-gray-600 dark:hover:text-gray-300 hover:bg-gray-100 dark:hover:bg-slate-600 rounded disabled:opacity-30 disabled:cursor-not-allowed"
                                                     title="ย้ายขึ้น"
                                                 >
                                                     <ChevronUp className="w-4 h-4" />
                                                 </button>
                                                 
-                                                {/* Move Down */}
+                                                {/* Move Down - ย้ายลง */}
                                                 <button
                                                     onClick={() => handleMoveDown(index)}
                                                     disabled={index === menus.length - 1}
-                                                    className="p-1.5 text-gray-400 hover:text-gray-600 hover:bg-gray-100 rounded disabled:opacity-30 disabled:cursor-not-allowed"
+                                                    className="p-1.5 text-gray-400 hover:text-gray-600 dark:hover:text-gray-300 hover:bg-gray-100 dark:hover:bg-slate-600 rounded disabled:opacity-30 disabled:cursor-not-allowed"
                                                     title="ย้ายลง"
                                                 >
                                                     <ChevronDown className="w-4 h-4" />
                                                 </button>
                                                 
-                                                {/* Toggle Visibility */}
+                                                {/* Toggle Visibility - สลับแสดง/ซ่อน */}
                                                 <button
                                                     onClick={() => handleToggleVisibility(menu.id)}
                                                     className={`p-1.5 rounded transition-colors ${
                                                         menu.visible
-                                                            ? 'text-green-500 hover:text-green-600 hover:bg-green-50'
-                                                            : 'text-gray-400 hover:text-gray-600 hover:bg-gray-100'
+                                                            ? 'text-green-500 hover:text-green-600 hover:bg-green-50 dark:hover:bg-green-900/30'
+                                                            : 'text-gray-400 hover:text-gray-600 dark:hover:text-gray-300 hover:bg-gray-100 dark:hover:bg-slate-600'
                                                     }`}
                                                     title={menu.visible ? 'ซ่อนเมนู' : 'แสดงเมนู'}
                                                 >
@@ -518,7 +520,7 @@ const MenuSettingsModal: React.FC<MenuSettingsModalProps> = ({
                         <div className="flex gap-2">
                             <button
                                 onClick={onClose}
-                                className="flex-1 sm:flex-none px-4 py-2 text-sm font-medium text-gray-700 bg-white border border-gray-300 rounded-lg hover:bg-gray-50 transition-colors"
+                                className="flex-1 sm:flex-none px-4 py-2 text-sm font-medium text-gray-700 dark:text-gray-300 bg-white dark:bg-slate-600 border border-gray-300 dark:border-slate-500 rounded-lg hover:bg-gray-50 dark:hover:bg-slate-500 transition-colors"
                             >
                                 ยกเลิก
                             </button>

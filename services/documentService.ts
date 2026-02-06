@@ -17,6 +17,7 @@ import {
 } from "firebase/firestore";
 import { db, auth } from "../firebase.config";
 import { generateVerificationToken } from "./verification";
+import { createNotification, COLLECTION_TO_DOC_TYPE } from "./notifications";
 
 // Interface สำหรับ Document Data ที่มี logo และ logoUrl
 interface DocumentDataWithLogo {
@@ -198,6 +199,22 @@ export const createDocumentService = <T extends DocumentDataWithLogo>(
             
             await setDoc(docRef, dataToSave);
             console.log(`✅ [DocumentService] Saved with verification token: ${verificationToken.substring(0, 8)}...`);
+            
+            // สร้าง Notification แจ้งเตือนสมาชิกในองค์กร (ไม่ block การ save)
+            const notifDocType = COLLECTION_TO_DOC_TYPE[config.collection];
+            if (notifDocType && companyId) {
+                const docTitle = docNumber || docId;
+                const userName = currentUser.displayName || currentUser.email || 'ไม่ทราบชื่อ';
+                createNotification(
+                    companyId,
+                    notifDocType,
+                    docTitle,
+                    docId,
+                    currentUser.uid,
+                    userName,
+                ).catch(() => {}); // ไม่ block ถ้า notification ล้มเหลว
+            }
+            
             return docId;
         } catch (error) {
             console.error(`Error saving ${config.collection}:`, error);

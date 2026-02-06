@@ -335,12 +335,12 @@ const CustomerSelector: React.FC<CustomerSelectorProps> = ({
     return (
         <div className="space-y-2">
             <div className="flex items-center justify-between">
-                <label className="block text-sm font-medium text-slate-700">{label}</label>
+                <label className="block text-sm font-medium text-slate-700 dark:text-slate-300">{label}</label>
                 <div className="flex gap-2">
                     <button
                         type="button"
                         onClick={() => setIsModalOpen(true)}
-                        className="text-xs border border-indigo-300 rounded px-3 py-1 text-indigo-700 hover:bg-indigo-50 focus:outline-none focus:ring-2 focus:ring-indigo-500"
+                        className="text-xs border border-indigo-300 dark:border-indigo-600 rounded px-3 py-1 text-indigo-700 dark:text-indigo-400 hover:bg-indigo-50 dark:hover:bg-indigo-900/30 focus:outline-none focus:ring-2 focus:ring-indigo-500"
                     >
                         <Users className="w-3.5 h-3.5 inline mr-1" />เลือกลูกค้า
                     </button>

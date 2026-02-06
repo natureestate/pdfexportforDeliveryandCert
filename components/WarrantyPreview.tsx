@@ -3,6 +3,7 @@ import { WarrantyData } from '../types';
 import { getDefaultLogoUrl } from '../services/logoStorage';
 import QRCodeFooter from './QRCodeFooter';
 import EndCustomerProjectPreview from './EndCustomerProjectPreview';
+import LogoWithSkeleton from './LogoWithSkeleton';
 
 interface WarrantyPreviewProps {
     data: WarrantyData;
@@ -233,14 +234,11 @@ const WarrantyPreview = forwardRef<HTMLDivElement, WarrantyPreviewProps>(({ data
                         </div>
                         <div className="text-center">
                             {/* แสดงโลโก้บริษัทแทนตราประทับ */}
-                            <div className="max-w-[120px] max-h-[120px] mx-auto flex items-center justify-center overflow-hidden">
-                                <img 
-                                    src={displayLogo} 
-                                    alt="Company Logo" 
-                                    className="max-h-[120px] w-auto max-w-[120px] object-contain object-center"
-                                    crossOrigin="anonymous"
-                                />
-                            </div>
+                            <LogoWithSkeleton 
+                                src={displayLogo} 
+                                containerClassName="max-w-[120px] max-h-[120px] mx-auto flex items-center justify-center overflow-hidden"
+                                imgClassName="max-h-[120px] w-auto max-w-[120px] object-contain object-center"
+                            />
                             <p className="mt-0.5 text-indigo-700 text-xs font-medium">ขอขอบคุณที่เลือกใช้สินค้าและบริการของเรา</p>
                         </div>
                         {/* QR Code สำหรับตรวจสอบเอกสาร */}

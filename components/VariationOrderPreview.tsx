@@ -3,6 +3,7 @@ import { VariationOrderData } from '../types';
 import { getDefaultLogoUrl } from '../services/logoStorage';
 import QRCodeFooter from './QRCodeFooter';
 import EndCustomerProjectPreview from './EndCustomerProjectPreview';
+import LogoWithSkeleton from './LogoWithSkeleton';
 
 interface VariationOrderPreviewProps {
     data: VariationOrderData;
@@ -44,15 +45,11 @@ const VariationOrderPreview = forwardRef<HTMLDivElement, VariationOrderPreviewPr
             {/* Header - ปรับขนาดให้อ่านง่ายขึ้น */}
             <header className="flex justify-between items-start pb-3 border-b border-gray-300 mb-4">
                 <div className="w-1/3">
-                    {/* Logo */}
-                    <div className="max-h-[100px] overflow-hidden flex items-center justify-start">
-                        <img 
-                            src={displayLogo} 
-                            alt="Company Logo" 
-                            className="max-h-[100px] w-auto max-w-full object-contain object-center"
-                            crossOrigin="anonymous"
-                        />
-                    </div>
+                    <LogoWithSkeleton 
+                        src={displayLogo} 
+                        containerClassName="max-h-[100px] overflow-hidden flex items-center justify-start"
+                        imgClassName="max-h-[100px] w-auto max-w-full object-contain object-center"
+                    />
                 </div>
                 <div className="w-2/3 text-right">
                     <h1 className="text-xl font-bold text-gray-800 leading-tight">ใบแจ้งเปลี่ยนแปลงงาน</h1>

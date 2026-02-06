@@ -2,6 +2,7 @@ import React, { forwardRef } from 'react';
 import { PurchaseOrderData } from '../types';
 import { getDefaultLogoUrl } from '../services/logoStorage';
 import QRCodeFooter from './QRCodeFooter';
+import LogoWithSkeleton from './LogoWithSkeleton';
 
 interface PurchaseOrderPreviewProps {
     data: PurchaseOrderData;
@@ -24,15 +25,7 @@ const PurchaseOrderPreview = forwardRef<HTMLDivElement, PurchaseOrderPreviewProp
         <div ref={ref} className="bg-white shadow-lg p-8 md:p-12 w-full aspect-[210/297] overflow-auto text-sm" id="printable-area">
             <header className="flex justify-between items-start pb-4 border-b border-gray-400">
                 <div className="w-2/5">
-                    {/* Wrapper สำหรับ trim ขอบบนล่าง */}
-                    <div className="max-h-[168px] overflow-hidden flex items-center justify-start">
-                        <img 
-                            src={displayLogo} 
-                            alt="Company Logo" 
-                            className="max-h-[168px] w-auto max-w-full object-contain object-center"
-                            crossOrigin="anonymous"
-                        />
-                    </div>
+                    <LogoWithSkeleton src={displayLogo} />
                 </div>
                 <div className="w-3/5 text-right">
                     <h1 className="text-2xl font-bold text-gray-800">ใบสั่งซื้อ</h1>

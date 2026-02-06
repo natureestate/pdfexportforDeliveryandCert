@@ -592,6 +592,7 @@ const UserManagement: React.FC<UserManagementProps> = ({ companyId, companyName,
                                                     : '-'}
                                             </td>
                                             <td className="actions-cell px-4 py-3">
+                                                {/* ปุ่มจัดการคำเชิญ - แสดงตามสถานะ */}
                                                 {invitation.status === 'pending' && (
                                                     <>
                                                         <button
@@ -608,15 +609,16 @@ const UserManagement: React.FC<UserManagementProps> = ({ companyId, companyName,
                                                         >
                                                             <RefreshCw className="w-4 h-4" />
                                                         </button>
-                                                        <button
-                                                            onClick={() => handleCancelInvitation(invitation.id!, invitation.email)}
-                                                            className="btn-small btn-danger"
-                                                            title="ยกเลิก"
-                                                        >
-                                                            <Trash2 className="w-4 h-4" />
-                                                        </button>
                                                     </>
                                                 )}
+                                                {/* ปุ่มยกเลิก/ลบ - แสดงสำหรับทุกสถานะ */}
+                                                <button
+                                                    onClick={() => handleCancelInvitation(invitation.id!, invitation.email)}
+                                                    className="btn-small btn-danger"
+                                                    title={invitation.status === 'pending' ? 'ยกเลิกคำเชิญ' : 'ลบคำเชิญ'}
+                                                >
+                                                    <Trash2 className="w-4 h-4" />
+                                                </button>
                                             </td>
                                         </tr>
                                     ))}

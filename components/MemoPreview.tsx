@@ -2,6 +2,7 @@ import React, { forwardRef } from 'react';
 import { MemoData } from '../types';
 import { getDefaultLogoUrl } from '../services/logoStorage';
 import QRCodeFooter from './QRCodeFooter';
+import LogoWithSkeleton from './LogoWithSkeleton';
 
 interface MemoPreviewProps {
     data: MemoData;
@@ -25,14 +26,7 @@ const MemoPreview = forwardRef<HTMLDivElement, MemoPreviewProps>(({ data }, ref)
             {/* Header */}
             <header className="flex justify-between items-start pb-4 border-b border-gray-400">
                 <div className="w-2/5">
-                    <div className="max-h-[168px] overflow-hidden flex items-center justify-start">
-                        <img 
-                            src={displayLogo} 
-                            alt="Company Logo" 
-                            className="max-h-[168px] w-auto max-w-full object-contain object-center"
-                            crossOrigin="anonymous"
-                        />
-                    </div>
+                    <LogoWithSkeleton src={displayLogo} />
                 </div>
                 <div className="w-3/5 text-right">
                     <h1 className="text-2xl font-bold text-gray-800">ใบบันทึก</h1>
