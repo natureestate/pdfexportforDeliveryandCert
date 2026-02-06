@@ -5,6 +5,7 @@
  */
 
 import React, { useState, useRef, useEffect } from 'react';
+import { motion, AnimatePresence } from 'framer-motion';
 import { useTranslation } from 'react-i18next';
 import { Globe, Check, ChevronDown } from 'lucide-react';
 import { supportedLanguages } from '../i18n';
@@ -59,27 +60,39 @@ const LanguageSwitcher: React.FC<LanguageSwitcherProps> = ({
                     <FlagIcon country={currentLanguage.code as 'th' | 'en'} size={28} />
                 </button>
                 
-                {isOpen && (
-                    <div className="absolute right-0 mt-2 w-44 bg-white dark:bg-slate-800 rounded-xl shadow-xl border border-gray-200 dark:border-slate-600 py-2 z-50 animate-fadeIn">
-                        {supportedLanguages.map((lang) => (
-                            <button
-                                key={lang.code}
-                                onClick={() => handleLanguageChange(lang.code)}
-                                className={`w-full px-4 py-2.5 text-left flex items-center gap-3 hover:bg-gray-100 dark:hover:bg-slate-700 transition-all duration-200 ${
-                                    i18n.language === lang.code 
-                                        ? 'bg-indigo-50 dark:bg-indigo-900/30 text-indigo-600 dark:text-indigo-400' 
-                                        : 'text-gray-700 dark:text-gray-300'
-                                }`}
-                            >
-                                <FlagIcon country={lang.code as 'th' | 'en'} size={24} />
-                                <span className="text-sm font-medium">{lang.nativeName}</span>
-                                {i18n.language === lang.code && (
-                                    <Check className="w-4 h-4 ml-auto text-indigo-600 dark:text-indigo-400" />
-                                )}
-                            </button>
-                        ))}
-                    </div>
-                )}
+                {/* Dropdown พร้อม enter/exit animation */}
+                <AnimatePresence>
+                    {isOpen && (
+                        <motion.div
+                            initial={{ opacity: 0, scale: 0.9, y: -4 }}
+                            animate={{ opacity: 1, scale: 1, y: 0 }}
+                            exit={{ opacity: 0, scale: 0.9, y: -4 }}
+                            transition={{ duration: 0.15, ease: "easeOut" }}
+                            className="absolute right-0 mt-2 w-44 bg-white dark:bg-slate-800 rounded-xl shadow-xl border border-gray-200 dark:border-slate-600 py-2 z-50 origin-top-right"
+                        >
+                            {supportedLanguages.map((lang, index) => (
+                                <motion.button
+                                    key={lang.code}
+                                    initial={{ opacity: 0, x: -8 }}
+                                    animate={{ opacity: 1, x: 0 }}
+                                    transition={{ duration: 0.15, delay: index * 0.04 }}
+                                    onClick={() => handleLanguageChange(lang.code)}
+                                    className={`w-full px-4 py-2.5 text-left flex items-center gap-3 hover:bg-gray-100 dark:hover:bg-slate-700 transition-all duration-200 ${
+                                        i18n.language === lang.code 
+                                            ? 'bg-indigo-50 dark:bg-indigo-900/30 text-indigo-600 dark:text-indigo-400' 
+                                            : 'text-gray-700 dark:text-gray-300'
+                                    }`}
+                                >
+                                    <FlagIcon country={lang.code as 'th' | 'en'} size={24} />
+                                    <span className="text-sm font-medium">{lang.nativeName}</span>
+                                    {i18n.language === lang.code && (
+                                        <Check className="w-4 h-4 ml-auto text-indigo-600 dark:text-indigo-400" />
+                                    )}
+                                </motion.button>
+                            ))}
+                        </motion.div>
+                    )}
+                </AnimatePresence>
             </div>
         );
     }
@@ -101,33 +114,45 @@ const LanguageSwitcher: React.FC<LanguageSwitcherProps> = ({
                 <ChevronDown className={`w-3 h-3 text-gray-400 transition-transform duration-200 ${isOpen ? 'rotate-180' : ''}`} />
             </button>
             
-            {isOpen && (
-                <div className="absolute right-0 top-full mt-1 w-40 bg-white dark:bg-slate-800 rounded-lg shadow-xl border border-gray-200 dark:border-slate-600 py-1 z-50 animate-fadeIn overflow-hidden">
-                    {supportedLanguages.map((lang) => (
-                        <button
-                            key={lang.code}
-                            onClick={() => handleLanguageChange(lang.code)}
-                            className={`w-full px-3 py-2 text-left flex items-center gap-2 hover:bg-gray-100 dark:hover:bg-slate-700 transition-all duration-200 ${
-                                i18n.language === lang.code 
-                                    ? 'bg-indigo-50 dark:bg-indigo-900/30' 
-                                    : ''
-                            }`}
-                        >
-                            <FlagIcon country={lang.code as 'th' | 'en'} size={20} />
-                            <span className={`text-sm font-medium flex-1 ${
-                                i18n.language === lang.code 
-                                    ? 'text-indigo-600 dark:text-indigo-400' 
-                                    : 'text-gray-700 dark:text-gray-300'
-                            }`}>
-                                {lang.nativeName}
-                            </span>
-                            {i18n.language === lang.code && (
-                                <Check className="w-4 h-4 text-indigo-600 dark:text-indigo-400" />
-                            )}
-                        </button>
-                    ))}
-                </div>
-            )}
+            {/* Full mode dropdown พร้อม enter/exit animation */}
+            <AnimatePresence>
+                {isOpen && (
+                    <motion.div
+                        initial={{ opacity: 0, scale: 0.9, y: -4 }}
+                        animate={{ opacity: 1, scale: 1, y: 0 }}
+                        exit={{ opacity: 0, scale: 0.9, y: -4 }}
+                        transition={{ duration: 0.15, ease: "easeOut" }}
+                        className="absolute right-0 top-full mt-1 w-40 bg-white dark:bg-slate-800 rounded-lg shadow-xl border border-gray-200 dark:border-slate-600 py-1 z-50 origin-top-right overflow-hidden"
+                    >
+                        {supportedLanguages.map((lang, index) => (
+                            <motion.button
+                                key={lang.code}
+                                initial={{ opacity: 0, x: -8 }}
+                                animate={{ opacity: 1, x: 0 }}
+                                transition={{ duration: 0.15, delay: index * 0.04 }}
+                                onClick={() => handleLanguageChange(lang.code)}
+                                className={`w-full px-3 py-2 text-left flex items-center gap-2 hover:bg-gray-100 dark:hover:bg-slate-700 transition-all duration-200 ${
+                                    i18n.language === lang.code 
+                                        ? 'bg-indigo-50 dark:bg-indigo-900/30' 
+                                        : ''
+                                }`}
+                            >
+                                <FlagIcon country={lang.code as 'th' | 'en'} size={20} />
+                                <span className={`text-sm font-medium flex-1 ${
+                                    i18n.language === lang.code 
+                                        ? 'text-indigo-600 dark:text-indigo-400' 
+                                        : 'text-gray-700 dark:text-gray-300'
+                                }`}>
+                                    {lang.nativeName}
+                                </span>
+                                {i18n.language === lang.code && (
+                                    <Check className="w-4 h-4 text-indigo-600 dark:text-indigo-400" />
+                                )}
+                            </motion.button>
+                        ))}
+                    </motion.div>
+                )}
+            </AnimatePresence>
         </div>
     );
 };

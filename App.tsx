@@ -1,6 +1,7 @@
 import React, { useState, useRef, useCallback, useEffect } from 'react';
 import { Routes, Route, Navigate } from 'react-router-dom';
 import { useTranslation } from 'react-i18next';
+import { motion, AnimatePresence } from 'framer-motion';
 import { Package, Shield, FileText, Receipt, FileCheck, DollarSign, ShoppingCart, StickyNote, PlusCircle, FilePlus, History, Save, HardHat, Settings, LayoutDashboard, Users, BarChart2, Calendar } from 'lucide-react';
 import { DeliveryNoteData, WarrantyData, InvoiceData, ReceiptData, TaxInvoiceData, QuotationData, PurchaseOrderData, MemoData, VariationOrderData, SubcontractData, LogoType, MenuItemConfig } from './types';
 import { AuthProvider } from './contexts/AuthContext';
@@ -631,7 +632,7 @@ const ViewModeTabSelector: React.FC<ViewModeTabSelectorProps> = ({
                     style={getMaskStyle()}
                 >
                     <div className="inline-flex rounded-md shadow-sm min-w-max" role="group">
-                        {/* Dynamic Tab Rendering - แสดง tabs ตามสิทธิ์ของ user */}
+                        {/* Dynamic Tab Rendering - แสดง tabs ตามสิทธิ์ของ user พร้อม motion sliding indicator */}
                         {visibleTabs.map((tab, index) => {
                             const TabIcon = tabIconMap[tab.icon];
                             const isFirst = index === 0;
@@ -639,21 +640,31 @@ const ViewModeTabSelector: React.FC<ViewModeTabSelectorProps> = ({
                             const isActive = viewMode === tab.id;
                             
                             return (
-                                <button
+                                <motion.button
                                     key={tab.id}
                                     onClick={() => setViewMode(tab.id as ViewMode)}
-                                    className={`px-3 sm:px-4 py-2 text-xs sm:text-sm font-medium flex items-center justify-center gap-1.5 ${
+                                    whileTap={{ scale: 0.96 }}
+                                    className={`relative px-3 sm:px-4 py-2 text-xs sm:text-sm font-medium flex items-center justify-center gap-1.5 transition-colors duration-200 ${
                                         isFirst ? 'rounded-l-lg border' : isLast ? 'rounded-r-lg border' : 'border-t border-b'
                                     } ${
                                         isActive
-                                            ? 'bg-indigo-600 text-white border-indigo-600'
+                                            ? 'text-white border-indigo-600 z-[1]'
                                             : 'bg-white dark:bg-slate-800 text-gray-700 dark:text-gray-200 border-gray-300 dark:border-slate-600 hover:bg-gray-50 dark:hover:bg-slate-700'
                                     }`}
                                 >
+                                    {/* พื้นหลังเคลื่อนที่แบบลื่นไหล - ใช้ layoutId ของ framer-motion */}
+                                    {isActive && (
+                                        <motion.div
+                                            layoutId="activeViewModeTab"
+                                            className={`absolute inset-0 bg-indigo-600 ${isFirst ? 'rounded-l-lg' : ''} ${isLast ? 'rounded-r-lg' : ''}`}
+                                            transition={{ type: "spring", stiffness: 380, damping: 30 }}
+                                            style={{ zIndex: -1 }}
+                                        />
+                                    )}
                                     {TabIcon && <TabIcon className="w-4 h-4" />}
                                     <span className="hidden sm:inline">{tab.label}</span>
                                     <span className="sm:hidden">{tab.shortLabel}</span>
-                                </button>
+                                </motion.button>
                             );
                         })}
                     </div>
@@ -723,20 +734,39 @@ const DocumentTypeTabMenu: React.FC<DocumentTypeTabMenuProps> = ({
                 style={getMaskStyle()}
             >
                 <nav className="-mb-px flex space-x-1 sm:space-x-2 min-w-max" aria-label="Tabs">
-                    {/* Dynamic Menu Rendering - แสดงเมนูตามการตั้งค่า */}
+                    {/* Dynamic Menu Rendering - แสดงเมนูตามการตั้งค่า พร้อม motion sliding underline */}
                     {visibleMenus.map((menu) => {
                         const IconComponent = iconMap[menu.icon];
+                        const isActive = activeTab === menu.id;
                         return (
-                            <button
+                            <motion.button
                                 key={menu.id}
                                 onClick={() => setActiveTab(menu.id as DocType)}
-                                className={`${activeTab === menu.id ? 'border-indigo-500 text-indigo-600 dark:text-indigo-400 bg-indigo-50 dark:bg-indigo-900/30' : 'border-transparent text-gray-500 dark:text-gray-400 hover:text-gray-700 dark:hover:text-gray-200 hover:border-gray-300'} whitespace-nowrap py-2.5 sm:py-3 px-3 sm:px-4 border-b-2 font-medium text-xs sm:text-sm transition-all flex-shrink-0 rounded-t-lg flex items-center gap-1.5`}
+                                whileTap={{ scale: 0.96 }}
+                                className={`relative ${isActive ? 'text-indigo-600 dark:text-indigo-400' : 'text-gray-500 dark:text-gray-400 hover:text-gray-700 dark:hover:text-gray-200'} whitespace-nowrap py-2.5 sm:py-3 px-3 sm:px-4 border-b-2 border-transparent font-medium text-xs sm:text-sm transition-colors duration-200 flex-shrink-0 rounded-t-lg flex items-center gap-1.5`}
                             >
+                                {/* พื้นหลัง active แบบลื่นไหล */}
+                                {isActive && (
+                                    <motion.div
+                                        layoutId="activeDocTypeTab"
+                                        className="absolute inset-0 bg-indigo-50 dark:bg-indigo-900/30 rounded-t-lg"
+                                        transition={{ type: "spring", stiffness: 380, damping: 30 }}
+                                        style={{ zIndex: -1 }}
+                                    />
+                                )}
+                                {/* เส้นใต้ active แบบเลื่อนลื่นไหล */}
+                                {isActive && (
+                                    <motion.div
+                                        layoutId="activeDocTypeUnderline"
+                                        className="absolute bottom-0 left-0 right-0 h-0.5 bg-indigo-500"
+                                        transition={{ type: "spring", stiffness: 380, damping: 30 }}
+                                    />
+                                )}
                                 {IconComponent && <IconComponent className="w-4 h-4" />}
                                 {/* แสดง shortLabel บนมือถือ, label เต็มบนหน้าจอใหญ่ */}
                                 <span className="sm:hidden">{menu.shortLabel || menu.label}</span>
                                 <span className="hidden sm:inline">{menu.label}</span>
-                            </button>
+                            </motion.button>
                         );
                     })}
                     
@@ -1416,19 +1446,27 @@ const AppContent: React.FC = () => {
 
     return (
         <div className="bg-slate-100 dark:bg-slate-900 min-h-screen text-slate-800 dark:text-slate-100 transition-colors duration-300">
-            {/* Toast Notification - ปรับปรุงให้สวยงามและชัดเจนขึ้น */}
-            {notification.show && (
-                <div className={`fixed top-5 right-2 sm:right-5 ${notificationColors[notification.type]} text-white py-3 px-4 sm:px-5 rounded-xl shadow-2xl z-[9999] animate-fade-in-down text-sm sm:text-base max-w-[calc(100vw-1rem)] sm:max-w-md flex items-center gap-3 border border-white/20`}>
-                    <span className="text-xl">{notificationIcons[notification.type]}</span>
-                    <span className="flex-1">{notification.message}</span>
-                    <button 
-                        onClick={() => setNotification({ ...notification, show: false })}
-                        className="text-white/80 hover:text-white transition-colors ml-2"
+            {/* Toast Notification - พร้อม framer-motion slide + fade animation */}
+            <AnimatePresence>
+                {notification.show && (
+                    <motion.div
+                        initial={{ opacity: 0, y: -30, scale: 0.95 }}
+                        animate={{ opacity: 1, y: 0, scale: 1 }}
+                        exit={{ opacity: 0, y: -20, scale: 0.95 }}
+                        transition={{ type: "spring", stiffness: 400, damping: 25 }}
+                        className={`fixed top-5 right-2 sm:right-5 ${notificationColors[notification.type]} text-white py-3 px-4 sm:px-5 rounded-xl shadow-2xl z-[9999] text-sm sm:text-base max-w-[calc(100vw-1rem)] sm:max-w-md flex items-center gap-3 border border-white/20`}
                     >
-                        ✕
-                    </button>
-                </div>
-            )}
+                        <span className="text-xl">{notificationIcons[notification.type]}</span>
+                        <span className="flex-1">{notification.message}</span>
+                        <button 
+                            onClick={() => setNotification({ ...notification, show: false })}
+                            className="text-white/80 hover:text-white transition-colors ml-2"
+                        >
+                            ✕
+                        </button>
+                    </motion.div>
+                )}
+            </AnimatePresence>
             <Header />
             <main className="p-3 sm:p-4 md:p-8 max-w-7xl mx-auto">
                 {/* View Mode Selector - Dynamic Tab Rendering ตามสิทธิ์ */}
@@ -1439,6 +1477,14 @@ const AppContent: React.FC = () => {
                     tabIconMap={tabIconMap}
                 />
 
+                <AnimatePresence mode="wait">
+                <motion.div
+                    key={viewMode}
+                    initial={{ opacity: 0, y: 12 }}
+                    animate={{ opacity: 1, y: 0 }}
+                    exit={{ opacity: 0, y: -12 }}
+                    transition={{ duration: 0.25, ease: "easeInOut" }}
+                >
                 {viewMode === 'dashboard' ? (
                     // Dashboard View
                     <div className="bg-white dark:bg-slate-800 p-3 sm:p-4 md:p-6 rounded-lg shadow-lg transition-colors">
@@ -1873,6 +1919,8 @@ const AppContent: React.FC = () => {
                         <CalendarPage />
                     </div>
                 ) : null}
+                </motion.div>
+                </AnimatePresence>
             </main>
         </div>
     );

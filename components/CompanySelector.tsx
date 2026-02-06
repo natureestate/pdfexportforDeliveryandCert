@@ -4,6 +4,7 @@
  */
 
 import React, { useState } from 'react';
+import { motion, AnimatePresence } from 'framer-motion';
 import { useCompany } from '../contexts/CompanyContext';
 import { createCompany } from '../services/companies';
 import { canCreateCompany } from '../services/quota';
@@ -149,9 +150,15 @@ const CompanySelector: React.FC = () => {
                 </svg>
             </button>
 
-            {/* Dropdown Menu */}
+            {/* Dropdown Menu - พร้อม enter/exit animation */}
+            <AnimatePresence>
             {showDropdown && companies.length > 0 && (
-                <div className="fixed md:absolute left-2 right-2 sm:left-4 sm:right-4 md:left-auto md:right-0 mt-2 md:w-80 bg-white dark:bg-slate-800 border border-gray-200 dark:border-slate-600 rounded-lg shadow-lg z-50 max-h-[80vh] sm:max-h-[70vh] flex flex-col">
+                <motion.div
+                    initial={{ opacity: 0, scale: 0.95, y: -8 }}
+                    animate={{ opacity: 1, scale: 1, y: 0 }}
+                    exit={{ opacity: 0, scale: 0.95, y: -8 }}
+                    transition={{ duration: 0.2, ease: "easeOut" }}
+                    className="fixed md:absolute left-2 right-2 sm:left-4 sm:right-4 md:left-auto md:right-0 mt-2 md:w-80 bg-white dark:bg-slate-800 border border-gray-200 dark:border-slate-600 rounded-lg shadow-lg z-50 max-h-[80vh] sm:max-h-[70vh] flex flex-col origin-top-right">
                     <div className="p-2 sm:p-3 border-b border-gray-200 dark:border-slate-600 bg-gray-50 dark:bg-slate-700 flex-shrink-0 rounded-t-lg">
                         <p className="text-xs sm:text-sm font-semibold text-gray-700 dark:text-gray-200">เลือกองค์กร</p>
                         <p className="text-xs text-gray-500 dark:text-gray-400 mt-0.5">{companies.length} องค์กรทั้งหมด</p>
@@ -227,13 +234,26 @@ const CompanySelector: React.FC = () => {
                             <span className="font-medium">เพิ่มบริษัทใหม่</span>
                         </button>
                     </div>
-                </div>
+                </motion.div>
             )}
+            </AnimatePresence>
 
-            {/* Create Company Modal */}
+            {/* Create Company Modal - พร้อม enter/exit animation */}
+            <AnimatePresence>
             {showCreateModal && (
-                <div className="fixed inset-0 bg-black bg-opacity-50 dark:bg-opacity-70 flex items-center justify-center z-50 p-2 sm:p-4">
-                    <div className="bg-white dark:bg-slate-800 rounded-lg shadow-xl max-w-md w-full max-h-[90vh] overflow-y-auto">
+                <motion.div
+                    initial={{ opacity: 0 }}
+                    animate={{ opacity: 1 }}
+                    exit={{ opacity: 0 }}
+                    transition={{ duration: 0.2 }}
+                    className="fixed inset-0 bg-black bg-opacity-50 dark:bg-opacity-70 flex items-center justify-center z-50 p-2 sm:p-4"
+                >
+                    <motion.div
+                        initial={{ opacity: 0, scale: 0.9, y: 20 }}
+                        animate={{ opacity: 1, scale: 1, y: 0 }}
+                        exit={{ opacity: 0, scale: 0.9, y: 20 }}
+                        transition={{ duration: 0.25, ease: "easeOut" }}
+                        className="bg-white dark:bg-slate-800 rounded-lg shadow-xl max-w-md w-full max-h-[90vh] overflow-y-auto">
                         <div className="p-4 sm:p-6">
                             <h3 className="text-base sm:text-lg font-semibold text-gray-900 dark:text-gray-100 mb-2">
                                 เพิ่มบริษัทใหม่
@@ -327,9 +347,10 @@ const CompanySelector: React.FC = () => {
                                 </button>
                             </div>
                         </div>
-                    </div>
-                </div>
+                    </motion.div>
+                </motion.div>
             )}
+            </AnimatePresence>
 
             {/* Backdrop สำหรับปิด dropdown */}
             {showDropdown && (

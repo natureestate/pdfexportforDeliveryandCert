@@ -1,7 +1,7 @@
 import React, { useRef, useState, useEffect } from 'react';
 import { MemoData, LogoType } from '../types';
-import { formatDateForInput } from '../utils/dateUtils';
 import CustomerSelector from './CustomerSelector';
+import DatePicker from './DatePicker';
 import { generateDocumentNumber } from '../services/documentNumber';
 import { useCompany } from '../contexts/CompanyContext';
 

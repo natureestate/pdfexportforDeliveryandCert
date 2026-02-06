@@ -1,4 +1,5 @@
 import React, { useState, useEffect } from 'react';
+import { motion, AnimatePresence } from 'framer-motion';
 import { useNavigate } from 'react-router-dom';
 import { useTranslation } from 'react-i18next';
 import { useAuth } from '../contexts/AuthContext';
@@ -462,10 +463,16 @@ const Header: React.FC = () => {
 
     return (
         <>
-            {/* Toast Notification */}
-            {notification.show && (
-                <>
-                    <div className={`fixed top-5 right-2 sm:right-5 ${notificationColors[notification.type]} text-white py-3 px-4 sm:px-5 rounded-xl shadow-2xl z-[9999] text-sm sm:text-base max-w-[calc(100vw-1rem)] sm:max-w-md flex items-center gap-3 border border-white/20 animate-fade-in-down`}>
+            {/* Toast Notification - พร้อม framer-motion slide + fade animation */}
+            <AnimatePresence>
+                {notification.show && (
+                    <motion.div
+                        initial={{ opacity: 0, y: -30, scale: 0.95 }}
+                        animate={{ opacity: 1, y: 0, scale: 1 }}
+                        exit={{ opacity: 0, y: -20, scale: 0.95 }}
+                        transition={{ type: "spring", stiffness: 400, damping: 25 }}
+                        className={`fixed top-5 right-2 sm:right-5 ${notificationColors[notification.type]} text-white py-3 px-4 sm:px-5 rounded-xl shadow-2xl z-[9999] text-sm sm:text-base max-w-[calc(100vw-1rem)] sm:max-w-md flex items-center gap-3 border border-white/20`}
+                    >
                         <span className="text-xl">{notificationIcons[notification.type]}</span>
                         <span className="flex-1">{notification.message}</span>
                         <button 
@@ -475,25 +482,9 @@ const Header: React.FC = () => {
                         >
                             ✕
                         </button>
-                    </div>
-                    {/* CSS Animation for toast */}
-                    <style>{`
-                        @keyframes fade-in-down {
-                            from {
-                                opacity: 0;
-                                transform: translateY(-20px);
-                            }
-                            to {
-                                opacity: 1;
-                                transform: translateY(0);
-                            }
-                        }
-                        .animate-fade-in-down {
-                            animation: fade-in-down 0.3s ease-out forwards;
-                        }
-                    `}</style>
-                </>
-            )}
+                    </motion.div>
+                )}
+            </AnimatePresence>
             <header className="bg-white dark:bg-slate-800 shadow-md sticky top-0 z-30 transition-colors">
                 <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-3 md:py-4">
                 <div className="flex items-center justify-between">
@@ -565,9 +556,15 @@ const Header: React.FC = () => {
                                 </svg>
                             </button>
 
-                                        {/* Desktop Dropdown */}
+                                        {/* Desktop Dropdown - พร้อม enter/exit animation */}
+                                        <AnimatePresence>
                                         {showDropdown && (
-                                            <div className="absolute right-0 mt-2 w-72 bg-white dark:bg-slate-800 rounded-lg shadow-xl border border-gray-200 dark:border-slate-600 py-2 z-50">
+                                            <motion.div
+                                                initial={{ opacity: 0, scale: 0.95, y: -8 }}
+                                                animate={{ opacity: 1, scale: 1, y: 0 }}
+                                                exit={{ opacity: 0, scale: 0.95, y: -8 }}
+                                                transition={{ duration: 0.2, ease: "easeOut" }}
+                                                className="absolute right-0 mt-2 w-72 bg-white dark:bg-slate-800 rounded-lg shadow-xl border border-gray-200 dark:border-slate-600 py-2 z-50 origin-top-right">
                                                 {/* ข้อมูล Profile */}
                                                 <div className="px-4 py-3 border-b border-gray-200 dark:border-slate-600 bg-gradient-to-r from-indigo-50 to-purple-50 dark:from-indigo-900/30 dark:to-purple-900/30">
                                                     <p className="text-xs text-gray-500 dark:text-gray-400 font-medium mb-2 flex items-center gap-1">
@@ -682,9 +679,15 @@ const Header: React.FC = () => {
                                                             <ChevronRight className={`w-4 h-4 transition-transform ${showSettingsSubmenu ? 'rotate-90' : ''}`} />
                                                         </button>
                                                         
-                                                        {/* Settings Submenu */}
+                                                        {/* Settings Submenu - พร้อม expand/collapse animation */}
+                                                        <AnimatePresence>
                                                         {showSettingsSubmenu && (
-                                                            <div className="bg-gray-50 dark:bg-slate-700 border-b border-gray-200 dark:border-slate-600">
+                                                            <motion.div
+                                                                initial={{ height: 0, opacity: 0 }}
+                                                                animate={{ height: "auto", opacity: 1 }}
+                                                                exit={{ height: 0, opacity: 0 }}
+                                                                transition={{ duration: 0.2, ease: "easeOut" }}
+                                                                className="bg-gray-50 dark:bg-slate-700 border-b border-gray-200 dark:border-slate-600 overflow-hidden">
                                                                 {/* ข้อมูลบริษัท */}
                                                                 <button
                                                                     onClick={() => {
@@ -746,8 +749,9 @@ const Header: React.FC = () => {
                                                                     <LayoutDashboard className="w-4 h-4" />
                                                                     <span>{t('header.tabSettings')}</span>
                                                                 </button>
-                                                            </div>
+                                                            </motion.div>
                                                         )}
+                                                        </AnimatePresence>
                                                     </div>
                                                 )}
 
@@ -825,8 +829,9 @@ const Header: React.FC = () => {
                                                         </>
                                                     )}
                                                 </button>
-                                            </div>
+                                            </motion.div>
                                         )}
+                                        </AnimatePresence>
                                     </div>
                                 </div>
 
@@ -1033,9 +1038,15 @@ const Header: React.FC = () => {
                                             <ChevronRight className={`w-5 h-5 transition-transform ${showSettingsSubmenu ? 'rotate-90' : ''}`} />
                                         </button>
                                         
-                                        {/* Settings Submenu - Mobile */}
+                                        {/* Settings Submenu - Mobile พร้อม expand/collapse animation */}
+                                        <AnimatePresence>
                                         {showSettingsSubmenu && (
-                                            <div className="mt-1 ml-4 space-y-1">
+                                            <motion.div
+                                                initial={{ height: 0, opacity: 0 }}
+                                                animate={{ height: "auto", opacity: 1 }}
+                                                exit={{ height: 0, opacity: 0 }}
+                                                transition={{ duration: 0.2, ease: "easeOut" }}
+                                                className="mt-1 ml-4 space-y-1 overflow-hidden">
                                                 {/* ข้อมูลบริษัท */}
                                                 <button
                                                     onClick={() => {
@@ -1110,8 +1121,9 @@ const Header: React.FC = () => {
                                                                 <div className="mt-2 pt-2 border-t border-gray-200 dark:border-slate-600">
                                                                     <LanguageSwitcher showLabel />
                                                                 </div>
-                                                            </div>
+                                                            </motion.div>
                                                         )}
+                                                        </AnimatePresence>
                                                     </div>
                                                 )}
 

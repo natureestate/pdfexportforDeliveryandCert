@@ -1,4 +1,5 @@
 import React, { useEffect, useState, useCallback, useRef } from 'react';
+import { motion } from 'framer-motion';
 import type { DeliveryNoteDocument, WarrantyDocument, InvoiceDocument, ReceiptDocument, QuotationDocument, PurchaseOrderDocument, MemoDocument, VariationOrderDocument, SubcontractDocument, TaxInvoiceDocument } from '../services/firestore';
 import { useCompany } from '../contexts/CompanyContext';
 import { generatePdf, generatePng } from '../services/pdfGenerator';
@@ -1156,15 +1157,22 @@ const HistoryList: React.FC<HistoryListProps> = ({ activeDocType, onLoadDocument
                 </div>
             )}
 
-            {/* รายการเอกสาร */}
+            {/* รายการเอกสาร - พร้อม stagger animation */}
             <div className="grid grid-cols-1 gap-4">
                 {activeDocType === 'delivery' ? (
                     // รายการใบส่งมอบงาน
-                    paginatedList.map((note) => {
+                    paginatedList.map((note, index) => {
                         const noteItem = note as DeliveryNoteDocument;
                         const isCancelled = (noteItem as any).documentStatus === 'cancelled';
                         return (
-                        <div key={noteItem.id} className={`group bg-white dark:bg-slate-800 border rounded-lg p-3 sm:p-4 hover:shadow-md transition-shadow ${isCancelled ? 'border-red-300 dark:border-red-700 bg-red-50 dark:bg-red-900/20' : 'border-gray-200 dark:border-slate-700'}`}>
+                        <motion.div
+                            key={noteItem.id}
+                            initial={{ opacity: 0, y: 16 }}
+                            animate={{ opacity: 1, y: 0 }}
+                            transition={{ duration: 0.3, delay: Math.min(index * 0.05, 0.3) }}
+                            whileHover={{ scale: 1.01, boxShadow: "0 8px 25px -5px rgba(0,0,0,0.1)" }}
+                            className={`group bg-white dark:bg-slate-800 border rounded-lg p-3 sm:p-4 transition-shadow ${isCancelled ? 'border-red-300 dark:border-red-700 bg-red-50 dark:bg-red-900/20' : 'border-gray-200 dark:border-slate-700'}`}
+                        >
                             <div className="flex flex-col sm:flex-row sm:justify-between sm:items-start gap-3">
                                 <div className="flex-1 min-w-0">
                                     {/* แสดงสถานะเอกสาร */}
@@ -1236,15 +1244,22 @@ const HistoryList: React.FC<HistoryListProps> = ({ activeDocType, onLoadDocument
                                     showOnHover={true}
                                 />
                             </div>
-                        </div>
+                        </motion.div>
                     );
                     })
                 ) : activeDocType === 'warranty' ? (
                     // รายการใบรับประกันสินค้า
-                    paginatedList.map((card) => {
+                    paginatedList.map((card, index) => {
                         const cardItem = card as WarrantyDocument;
                         return (
-                        <div key={cardItem.id} className="group bg-white dark:bg-slate-800 border border-gray-200 dark:border-slate-700 rounded-lg p-3 sm:p-4 hover:shadow-md transition-shadow">
+                        <motion.div
+                            key={cardItem.id}
+                            initial={{ opacity: 0, y: 16 }}
+                            animate={{ opacity: 1, y: 0 }}
+                            transition={{ duration: 0.3, delay: Math.min(index * 0.05, 0.3) }}
+                            whileHover={{ scale: 1.01, boxShadow: "0 8px 25px -5px rgba(0,0,0,0.1)" }}
+                            className="group bg-white dark:bg-slate-800 border border-gray-200 dark:border-slate-700 rounded-lg p-3 sm:p-4 transition-shadow"
+                        >
                             <div className="flex flex-col sm:flex-row sm:justify-between sm:items-start gap-3">
                                 <div className="flex-1 min-w-0">
                                     <h3 className="text-base sm:text-lg font-semibold text-gray-900 dark:text-gray-100 break-words">{cardItem.serviceName || cardItem.projectName || 'ไม่ระบุสินค้า'}</h3>
@@ -1306,16 +1321,16 @@ const HistoryList: React.FC<HistoryListProps> = ({ activeDocType, onLoadDocument
                                     showOnHover={true}
                                 />
                             </div>
-                        </div>
+                        </motion.div>
                     );
                     })
                 ) : activeDocType === 'invoice' ? (
                     // รายการใบแจ้งหนี้
-                    paginatedList.map((invoice) => {
+                    paginatedList.map((invoice, index) => {
                         const invoiceItem = invoice as InvoiceDocument;
                         const isCancelled = (invoiceItem as any).documentStatus === 'cancelled';
                         return (
-                        <div key={invoiceItem.id} className={`group bg-white dark:bg-slate-800 border rounded-lg p-3 sm:p-4 hover:shadow-md transition-shadow ${isCancelled ? 'border-red-300 dark:border-red-700 bg-red-50 dark:bg-red-900/20' : 'border-gray-200 dark:border-slate-700'}`}>
+                        <motion.div key={invoiceItem.id} initial={{ opacity: 0, y: 16 }} animate={{ opacity: 1, y: 0 }} transition={{ duration: 0.3, delay: Math.min(index * 0.05, 0.3) }} whileHover={{ scale: 1.01, boxShadow: "0 8px 25px -5px rgba(0,0,0,0.1)" }} className={`group bg-white dark:bg-slate-800 border rounded-lg p-3 sm:p-4 transition-shadow ${isCancelled ? 'border-red-300 dark:border-red-700 bg-red-50 dark:bg-red-900/20' : 'border-gray-200 dark:border-slate-700'}`}>
                             <div className="flex flex-col sm:flex-row sm:justify-between sm:items-start gap-3">
                                 <div className="flex-1 min-w-0">
                                     {/* แสดงสถานะเอกสาร */}
@@ -1385,15 +1400,15 @@ const HistoryList: React.FC<HistoryListProps> = ({ activeDocType, onLoadDocument
                                     showOnHover={true}
                                 />
                             </div>
-                        </div>
+                        </motion.div>
                     );
                     })
                 ) : activeDocType === 'receipt' ? (
                     // รายการใบเสร็จ
-                    paginatedList.map((receipt) => {
+                    paginatedList.map((receipt, index) => {
                         const receiptItem = receipt as ReceiptDocument;
                         return (
-                        <div key={receiptItem.id} className="group bg-white dark:bg-slate-800 border border-gray-200 dark:border-slate-700 rounded-lg p-3 sm:p-4 hover:shadow-md transition-shadow">
+                        <motion.div key={receiptItem.id} initial={{ opacity: 0, y: 16 }} animate={{ opacity: 1, y: 0 }} transition={{ duration: 0.3, delay: Math.min(index * 0.05, 0.3) }} whileHover={{ scale: 1.01, boxShadow: "0 8px 25px -5px rgba(0,0,0,0.1)" }} className="group bg-white dark:bg-slate-800 border border-gray-200 dark:border-slate-700 rounded-lg p-3 sm:p-4 transition-shadow">
                             <div className="flex flex-col sm:flex-row sm:justify-between sm:items-start gap-3">
                                 <div className="flex-1 min-w-0">
                                     <h3 className="text-base sm:text-lg font-semibold text-gray-900 dark:text-gray-100 break-words">{receiptItem.customerName || 'ไม่ระบุลูกค้า'}</h3>
@@ -1455,16 +1470,16 @@ const HistoryList: React.FC<HistoryListProps> = ({ activeDocType, onLoadDocument
                                     showOnHover={true}
                                 />
                             </div>
-                        </div>
+                        </motion.div>
                     );
                     })
                 ) : activeDocType === 'tax-invoice' ? (
                     // รายการใบกำกับภาษี
-                    paginatedList.map((taxInvoice) => {
+                    paginatedList.map((taxInvoice, index) => {
                         const taxInvoiceItem = taxInvoice as TaxInvoiceDocument;
                         const isCancelled = (taxInvoiceItem as any).documentStatus === 'cancelled';
                         return (
-                        <div key={taxInvoiceItem.id} className={`group bg-white dark:bg-slate-800 border rounded-lg p-3 sm:p-4 hover:shadow-md transition-shadow ${isCancelled ? 'border-red-300 dark:border-red-700 bg-red-50 dark:bg-red-900/20' : 'border-gray-200 dark:border-slate-700'}`}>
+                        <motion.div key={taxInvoiceItem.id} initial={{ opacity: 0, y: 16 }} animate={{ opacity: 1, y: 0 }} transition={{ duration: 0.3, delay: Math.min(index * 0.05, 0.3) }} whileHover={{ scale: 1.01, boxShadow: "0 8px 25px -5px rgba(0,0,0,0.1)" }} className={`group bg-white dark:bg-slate-800 border rounded-lg p-3 sm:p-4 transition-shadow ${isCancelled ? 'border-red-300 dark:border-red-700 bg-red-50 dark:bg-red-900/20' : 'border-gray-200 dark:border-slate-700'}`}>
                             <div className="flex flex-col sm:flex-row sm:justify-between sm:items-start gap-3">
                                 <div className="flex-1 min-w-0">
                                     {/* แสดงสถานะเอกสาร */}
@@ -1537,15 +1552,15 @@ const HistoryList: React.FC<HistoryListProps> = ({ activeDocType, onLoadDocument
                                     showOnHover={true}
                                 />
                             </div>
-                        </div>
+                        </motion.div>
                     );
                     })
                 ) : activeDocType === 'quotation' ? (
                     // รายการใบเสนอราคา
-                    paginatedList.map((quotation) => {
+                    paginatedList.map((quotation, index) => {
                         const quotationItem = quotation as QuotationDocument;
                         return (
-                        <div key={quotationItem.id} className="group bg-white dark:bg-slate-800 border border-gray-200 dark:border-slate-700 rounded-lg p-3 sm:p-4 hover:shadow-md transition-shadow">
+                        <motion.div key={quotationItem.id} initial={{ opacity: 0, y: 16 }} animate={{ opacity: 1, y: 0 }} transition={{ duration: 0.3, delay: Math.min(index * 0.05, 0.3) }} whileHover={{ scale: 1.01, boxShadow: "0 8px 25px -5px rgba(0,0,0,0.1)" }} className="group bg-white dark:bg-slate-800 border border-gray-200 dark:border-slate-700 rounded-lg p-3 sm:p-4 transition-shadow">
                             <div className="flex flex-col sm:flex-row sm:justify-between sm:items-start gap-3">
                                 <div className="flex-1 min-w-0">
                                     <h3 className="text-base sm:text-lg font-semibold text-gray-900 dark:text-gray-100 break-words">{quotationItem.customerName || 'ไม่ระบุลูกค้า'}</h3>
@@ -1607,15 +1622,15 @@ const HistoryList: React.FC<HistoryListProps> = ({ activeDocType, onLoadDocument
                                     showOnHover={true}
                                 />
                             </div>
-                        </div>
+                        </motion.div>
                     );
                     })
                 ) : activeDocType === 'purchase-order' ? (
                     // รายการใบสั่งซื้อ
-                    paginatedList.map((po) => {
+                    paginatedList.map((po, index) => {
                         const poItem = po as PurchaseOrderDocument;
                         return (
-                        <div key={poItem.id} className="group bg-white dark:bg-slate-800 border border-gray-200 dark:border-slate-700 rounded-lg p-3 sm:p-4 hover:shadow-md transition-shadow">
+                        <motion.div key={poItem.id} initial={{ opacity: 0, y: 16 }} animate={{ opacity: 1, y: 0 }} transition={{ duration: 0.3, delay: Math.min(index * 0.05, 0.3) }} whileHover={{ scale: 1.01, boxShadow: "0 8px 25px -5px rgba(0,0,0,0.1)" }} className="group bg-white dark:bg-slate-800 border border-gray-200 dark:border-slate-700 rounded-lg p-3 sm:p-4 transition-shadow">
                             <div className="flex flex-col sm:flex-row sm:justify-between sm:items-start gap-3">
                                 <div className="flex-1 min-w-0">
                                     <h3 className="text-base sm:text-lg font-semibold text-gray-900 dark:text-gray-100 break-words">{poItem.supplierName || 'ไม่ระบุผู้ขาย'}</h3>
@@ -1677,15 +1692,15 @@ const HistoryList: React.FC<HistoryListProps> = ({ activeDocType, onLoadDocument
                                     showOnHover={true}
                                 />
                             </div>
-                        </div>
+                        </motion.div>
                     );
                     })
                 ) : activeDocType === 'memo' ? (
                     // รายการใบบันทึก
-                    paginatedList.map((memo) => {
+                    paginatedList.map((memo, index) => {
                         const memoItem = memo as MemoDocument;
                         return (
-                        <div key={memoItem.id} className="group bg-white dark:bg-slate-800 border border-gray-200 dark:border-slate-700 rounded-lg p-3 sm:p-4 hover:shadow-md transition-shadow">
+                        <motion.div key={memoItem.id} initial={{ opacity: 0, y: 16 }} animate={{ opacity: 1, y: 0 }} transition={{ duration: 0.3, delay: Math.min(index * 0.05, 0.3) }} whileHover={{ scale: 1.01, boxShadow: "0 8px 25px -5px rgba(0,0,0,0.1)" }} className="group bg-white dark:bg-slate-800 border border-gray-200 dark:border-slate-700 rounded-lg p-3 sm:p-4 transition-shadow">
                             <div className="flex flex-col sm:flex-row sm:justify-between sm:items-start gap-3">
                                 <div className="flex-1 min-w-0">
                                     <h3 className="text-base sm:text-lg font-semibold text-gray-900 dark:text-gray-100 break-words">{memoItem.subject || 'ไม่ระบุเรื่อง'}</h3>
@@ -1747,15 +1762,15 @@ const HistoryList: React.FC<HistoryListProps> = ({ activeDocType, onLoadDocument
                                     showOnHover={true}
                                 />
                             </div>
-                        </div>
+                        </motion.div>
                     );
                     })
                 ) : activeDocType === 'variation-order' ? (
                     // รายการใบส่วนต่าง
-                    paginatedList.map((vo) => {
+                    paginatedList.map((vo, index) => {
                         const voItem = vo as VariationOrderDocument;
                         return (
-                        <div key={voItem.id} className="group bg-white dark:bg-slate-800 border border-gray-200 dark:border-slate-700 rounded-lg p-3 sm:p-4 hover:shadow-md transition-shadow">
+                        <motion.div key={voItem.id} initial={{ opacity: 0, y: 16 }} animate={{ opacity: 1, y: 0 }} transition={{ duration: 0.3, delay: Math.min(index * 0.05, 0.3) }} whileHover={{ scale: 1.01, boxShadow: "0 8px 25px -5px rgba(0,0,0,0.1)" }} className="group bg-white dark:bg-slate-800 border border-gray-200 dark:border-slate-700 rounded-lg p-3 sm:p-4 transition-shadow">
                             <div className="flex flex-col sm:flex-row sm:justify-between sm:items-start gap-3">
                                 <div className="flex-1 min-w-0">
                                     <h3 className="text-base sm:text-lg font-semibold text-gray-900 dark:text-gray-100 break-words">{voItem.subject || 'ไม่ระบุเรื่อง'}</h3>
@@ -1818,16 +1833,16 @@ const HistoryList: React.FC<HistoryListProps> = ({ activeDocType, onLoadDocument
                                     showOnHover={true}
                                 />
                             </div>
-                        </div>
+                        </motion.div>
                     );
                     })
                 ) : activeDocType === 'subcontract' ? (
                     // รายการสัญญาจ้างเหมาช่วง (สัญญาช่าง)
-                    paginatedList.map((contract) => {
+                    paginatedList.map((contract, index) => {
                         const contractItem = contract as SubcontractDocument;
                         const isCancelled = (contractItem as any).documentStatus === 'cancelled';
                         return (
-                        <div key={contractItem.id} className={`group bg-white dark:bg-slate-800 border rounded-lg p-3 sm:p-4 hover:shadow-md transition-shadow ${isCancelled ? 'border-red-300 dark:border-red-700 bg-red-50 dark:bg-red-900/20' : 'border-gray-200 dark:border-slate-700'}`}>
+                        <motion.div key={contractItem.id} initial={{ opacity: 0, y: 16 }} animate={{ opacity: 1, y: 0 }} transition={{ duration: 0.3, delay: Math.min(index * 0.05, 0.3) }} whileHover={{ scale: 1.01, boxShadow: "0 8px 25px -5px rgba(0,0,0,0.1)" }} className={`group bg-white dark:bg-slate-800 border rounded-lg p-3 sm:p-4 transition-shadow ${isCancelled ? 'border-red-300 dark:border-red-700 bg-red-50 dark:bg-red-900/20' : 'border-gray-200 dark:border-slate-700'}`}>
                             <div className="flex flex-col sm:flex-row sm:justify-between sm:items-start gap-3">
                                 <div className="flex-1 min-w-0">
                                     {/* แสดงสถานะเอกสาร */}
@@ -1908,7 +1923,7 @@ const HistoryList: React.FC<HistoryListProps> = ({ activeDocType, onLoadDocument
                                     showOnHover={true}
                                 />
                             </div>
-                        </div>
+                        </motion.div>
                     );
                     })
                 ) : null}
