@@ -24,139 +24,9 @@
     <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
     <link href="https://fonts.googleapis.com/css2?family=IBM+Plex+Sans+Thai:wght@300;400;500;600;700&display=swap" rel="stylesheet">
     
-    <!-- Tailwind CSS -->
-    <script src="https://cdn.tailwindcss.com"></script>
-    <script>
-      // Tailwind Config สำหรับ Dark Mode
-      tailwind.config = {
-        darkMode: 'class',
-        theme: {
-          extend: {
-            fontFamily: {
-              sans: ['IBM Plex Sans Thai', 'sans-serif'],
-            },
-          },
-        },
-      };
-    </script>
-    
     <!-- Google reCAPTCHA v3 -->
     <script src="https://www.google.com/recaptcha/api.js?render=6Lc_6t4rAAAAAChtA-8Cpl-2p2fSjm3_wlDyAuEj"></script>
     
-    <style>
-      body {
-        font-family: 'IBM Plex Sans Thai', sans-serif;
-        -webkit-font-smoothing: antialiased;
-        -moz-osx-font-smoothing: grayscale;
-        background-color: #f1f5f9; /* Slate 100 */
-        transition: background-color 0.3s ease;
-      }
-      
-      /* Dark Mode - Body background */
-      html.dark body {
-        background-color: #0f172a; /* Slate 900 */
-      }
-
-      /* Custom scrollbar for preview */
-      #printable-area::-webkit-scrollbar {
-        width: 8px;
-      }
-
-      #printable-area::-webkit-scrollbar-track {
-        background: #f1f1f1;
-        border-radius: 10px;
-      }
-
-      #printable-area::-webkit-scrollbar-thumb {
-        background: #d1d5db; /* Slate 300 */
-        border-radius: 10px;
-      }
-
-      #printable-area::-webkit-scrollbar-thumb:hover {
-        background: #9ca3af; /* Slate 400 */
-      }
-
-      /* ซ่อน reCAPTCHA badge โดย default (จะแสดงเมื่อคลิกที่ข้อความ) */
-      .grecaptcha-badge:not(.show-badge) {
-        visibility: hidden !important;
-        opacity: 0 !important;
-        display: none !important;
-      }
-      
-      /* เมื่อ badge ต้องแสดง (จะถูกควบคุมด้วย JavaScript) */
-      .grecaptcha-badge.show-badge {
-        visibility: visible !important;
-        opacity: 1 !important;
-        display: flex !important;
-        position: fixed !important;
-        bottom: 14px !important;
-        right: 14px !important;
-        z-index: 9999 !important;
-      }
-
-      /* Custom scrollbar สำหรับ tab menu ใน mobile */
-      .tab-menu-scroll::-webkit-scrollbar {
-        height: 4px;
-      }
-
-      .tab-menu-scroll::-webkit-scrollbar-track {
-        background: #f1f1f1;
-      }
-
-      .tab-menu-scroll::-webkit-scrollbar-thumb {
-        background: #cbd5e1;
-        border-radius: 2px;
-      }
-
-      .tab-menu-scroll::-webkit-scrollbar-thumb:hover {
-        background: #94a3b8;
-      }
-
-      /* สำหรับ Firefox */
-      .tab-menu-scroll {
-        scrollbar-width: thin;
-        scrollbar-color: #cbd5e1 #f1f1f1;
-        /* Lock vertical scroll เมื่อเลื่อน horizontal บน mobile */
-        overscroll-behavior-x: contain;
-        overscroll-behavior-y: none;
-        touch-action: pan-x;
-        -webkit-overflow-scrolling: touch;
-      }
-
-      /* ป้องกัน auto-zoom เมื่อ focus input ใน iOS/Android */
-      /* กำหนด font-size อย่างน้อย 16px เพื่อไม่ให้ browser zoom อัตโนมัติ */
-      @media screen and (max-width: 768px) {
-        input[type="text"],
-        input[type="email"],
-        input[type="tel"],
-        input[type="number"],
-        input[type="password"],
-        input[type="search"],
-        input[type="url"],
-        input[type="date"],
-        input[type="datetime-local"],
-        textarea,
-        select {
-          font-size: 16px !important;
-          /* ป้องกัน iOS zoom */
-          transform-origin: left top;
-        }
-      }
-
-      /* ป้องกัน double-tap zoom ทั้งหน้า */
-      * {
-        touch-action: manipulation;
-      }
-
-      /* ซ่อน scrollbar แต่ยังคง scroll ได้ */
-      .scrollbar-hide {
-        -ms-overflow-style: none;
-        scrollbar-width: none;
-      }
-      .scrollbar-hide::-webkit-scrollbar {
-        display: none;
-      }
-    </style>
   <script type="importmap">
 {
   "imports": {
@@ -164,8 +34,7 @@
     "react/": "https://aistudiocdn.com/react@^19.1.1/",
     "react": "https://aistudiocdn.com/react@^19.1.1",
     "jspdf": "https://aistudiocdn.com/jspdf@^3.0.3",
-    "html2canvas": "https://aistudiocdn.com/html2canvas@^1.4.1",
-    "primereact/": "https://aistudiocdn.com/primereact@^10.9.7/"
+    "html2canvas": "https://aistudiocdn.com/html2canvas@^1.4.1"
   }
 }
 </script>

@@ -3,6 +3,9 @@ import ReactDOM from 'react-dom/client';
 import { BrowserRouter } from 'react-router-dom';
 import App from './App';
 
+// Import global styles (Tailwind CSS + shadcn/ui)
+import './styles/globals.css';
+
 // Import i18n configuration - ต้อง import ก่อน App render
 import './i18n';
 

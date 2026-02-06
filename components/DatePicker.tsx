@@ -1,14 +1,23 @@
 /**
  * DatePicker Component
  * 
- * Wrapper สำหรับ PrimeReact Calendar แทนที่ native input type="date"
+ * ใช้ shadcn/ui Calendar + Popover แทน PrimeReact
  * รองรับ dark mode และ customization
  */
 
 import React from 'react';
-import { Calendar } from 'primereact/calendar';
-import 'primereact/resources/themes/lara-light-indigo/theme.css'; // Import theme
-import 'primereact/resources/primereact.min.css'; // Import PrimeReact CSS
+import { format } from 'date-fns';
+import { th } from 'date-fns/locale';
+import { Calendar as CalendarIcon, X } from 'lucide-react';
+
+import { cn } from '@/lib/utils';
+import { Button } from '@/components/ui/button';
+import { Calendar } from '@/components/ui/calendar';
+import {
+  Popover,
+  PopoverContent,
+  PopoverTrigger,
+} from '@/components/ui/popover';
 
 interface DatePickerProps {
   /** ค่า Date ปัจจุบัน */
@@ -31,14 +40,14 @@ interface DatePickerProps {
   showClear?: boolean;
   /** แสดง icon */
   showIcon?: boolean;
-  /** format การแสดงผล */
+  /** format การแสดงผล (ใช้ date-fns format) */
   dateFormat?: string;
-  /** อนุญาตให้กรอกเอง */
+  /** อนุญาตให้กรอกเอง (ไม่รองรับใน shadcn version) */
   manualInput?: boolean;
 }
 
 /**
- * DatePicker Component - ใช้แทน native input type="date"
+ * DatePicker Component - ใช้ shadcn/ui Calendar + Popover
  * 
  * @example
  * <DatePicker
@@ -58,83 +67,109 @@ const DatePicker: React.FC<DatePickerProps> = ({
   maxDate,
   showClear = true,
   showIcon = true,
-  dateFormat = 'dd/mm/yy',
-  manualInput = true,
+  dateFormat = 'dd/MM/yyyy',
+  manualInput = true, // ไม่ใช้ใน shadcn version แต่เก็บไว้เพื่อ backward compatibility
 }) => {
+  // state สำหรับเปิด/ปิด popover
+  const [open, setOpen] = React.useState(false);
+  
   // แปลง value ให้เป็น Date object ถ้าจำเป็น
-  const dateValue = value instanceof Date ? value : (value ? new Date(value) : null);
+  const dateValue = value instanceof Date ? value : (value ? new Date(value) : undefined);
   
   // ตรวจสอบว่า dateValue เป็น valid Date หรือไม่
   const isValidDate = dateValue instanceof Date && !isNaN(dateValue.getTime());
+  const selectedDate = isValidDate ? dateValue : undefined;
+
+  // จัดการเมื่อเลือกวันที่
+  const handleSelect = (date: Date | undefined) => {
+    onChange(date || null);
+    setOpen(false);
+  };
+
+  // จัดการเมื่อกดปุ่มล้าง
+  const handleClear = (e: React.MouseEvent) => {
+    e.stopPropagation();
+    onChange(null);
+  };
 
   return (
-    <div className={`date-picker-wrapper ${className}`}>
-      <Calendar
-        id={id}
-        value={isValidDate ? dateValue : null}
-        onChange={(e) => {
-          const newValue = e.value;
-          if (newValue instanceof Date) {
-            onChange(newValue);
-          } else if (Array.isArray(newValue)) {
-            // ถ้าเป็น range selection จะได้ array
-            onChange(newValue[0] || null);
-          } else {
-            onChange(null);
-          }
-        }}
-        placeholder={placeholder}
-        disabled={disabled}
-        minDate={minDate}
-        maxDate={maxDate}
-        showIcon={showIcon}
-        showButtonBar={showClear}
-        dateFormat={dateFormat}
-        touchUI={false}
-        showOnFocus={true}
-        readOnlyInput={!manualInput}
-        className="w-full"
-        inputClassName="w-full px-3 py-2 text-sm border border-gray-300 dark:border-slate-600 rounded-md shadow-sm 
-                       bg-white dark:bg-slate-700 text-gray-900 dark:text-gray-100
-                       focus:outline-none focus:ring-2 focus:ring-indigo-500 dark:focus:ring-indigo-400 focus:border-indigo-500
-                       placeholder-gray-400 dark:placeholder-gray-500"
-        pt={{
-          root: { className: 'w-full' },
-          input: { 
-            className: `w-full px-3 py-2 text-sm border border-gray-300 dark:border-slate-600 rounded-md shadow-sm 
-                       bg-white dark:bg-slate-700 text-gray-900 dark:text-gray-100
-                       focus:outline-none focus:ring-2 focus:ring-indigo-500 dark:focus:ring-indigo-400 focus:border-indigo-500
-                       placeholder-gray-400 dark:placeholder-gray-500`
-          },
-          dropdownButton: {
-            className: 'bg-gray-100 dark:bg-slate-600 border-gray-300 dark:border-slate-500 hover:bg-gray-200 dark:hover:bg-slate-500'
-          },
-          panel: {
-            className: 'bg-white dark:bg-slate-800 border border-gray-200 dark:border-slate-600 rounded-lg shadow-lg'
-          },
-          header: {
-            className: 'bg-gray-50 dark:bg-slate-700 text-gray-900 dark:text-gray-100 border-b border-gray-200 dark:border-slate-600'
-          },
-          title: {
-            className: 'text-gray-900 dark:text-gray-100 font-medium'
-          },
-          dayLabel: {
-            className: 'text-gray-600 dark:text-gray-400 text-xs'
-          },
-          day: {
-            className: 'text-gray-700 dark:text-gray-300 hover:bg-indigo-50 dark:hover:bg-indigo-900/30'
-          },
-          monthPicker: {
-            className: 'text-gray-900 dark:text-gray-100'
-          },
-          yearPicker: {
-            className: 'text-gray-900 dark:text-gray-100'
-          },
-          buttonbar: {
-            className: 'bg-gray-50 dark:bg-slate-700 border-t border-gray-200 dark:border-slate-600'
-          }
-        }}
-      />
+    <div className={cn('date-picker-wrapper', className)}>
+      <Popover open={open} onOpenChange={setOpen}>
+        <PopoverTrigger asChild>
+          <Button
+            id={id}
+            variant="outline"
+            disabled={disabled}
+            className={cn(
+              'w-full justify-start text-left font-normal',
+              'h-10 px-3 py-2 text-sm',
+              'border border-gray-300 dark:border-slate-600',
+              'bg-white dark:bg-slate-700',
+              'text-gray-900 dark:text-gray-100',
+              'hover:bg-gray-50 dark:hover:bg-slate-600',
+              'focus:ring-2 focus:ring-indigo-500 dark:focus:ring-indigo-400',
+              !selectedDate && 'text-gray-400 dark:text-gray-500'
+            )}
+          >
+            {/* Icon ปฏิทิน */}
+            {showIcon && (
+              <CalendarIcon className="mr-2 h-4 w-4 text-gray-400 dark:text-gray-500" />
+            )}
+            
+            {/* แสดงวันที่หรือ placeholder */}
+            <span className="flex-1">
+              {selectedDate
+                ? format(selectedDate, dateFormat, { locale: th })
+                : placeholder}
+            </span>
+            
+            {/* ปุ่มล้างค่า */}
+            {showClear && selectedDate && !disabled && (
+              <X
+                className="ml-2 h-4 w-4 text-gray-400 hover:text-gray-600 dark:text-gray-500 dark:hover:text-gray-300"
+                onClick={handleClear}
+              />
+            )}
+          </Button>
+        </PopoverTrigger>
+        
+        <PopoverContent className="w-auto p-0" align="start">
+          <Calendar
+            mode="single"
+            selected={selectedDate}
+            onSelect={handleSelect}
+            disabled={(date) => {
+              // ปิดการเลือกวันที่นอกช่วง min/max
+              if (minDate && date < minDate) return true;
+              if (maxDate && date > maxDate) return true;
+              return false;
+            }}
+            initialFocus
+          />
+          
+          {/* ปุ่ม Today และ Clear */}
+          {showClear && (
+            <div className="flex items-center justify-between border-t border-gray-200 dark:border-slate-600 p-2">
+              <Button
+                variant="ghost"
+                size="sm"
+                onClick={() => handleSelect(new Date())}
+                className="text-xs"
+              >
+                วันนี้
+              </Button>
+              <Button
+                variant="ghost"
+                size="sm"
+                onClick={() => handleSelect(undefined)}
+                className="text-xs text-gray-500"
+              >
+                ล้าง
+              </Button>
+            </div>
+          )}
+        </PopoverContent>
+      </Popover>
     </div>
   );
 };

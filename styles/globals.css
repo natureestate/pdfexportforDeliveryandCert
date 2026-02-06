@@ -1,0 +1,169 @@
+/* 
+ * Global CSS สำหรับโปรเจกต์
+ * รวม Tailwind CSS และ shadcn/ui CSS variables
+ */
+
+@tailwind base;
+@tailwind components;
+@tailwind utilities;
+
+/* shadcn/ui CSS Variables - Light Mode */
+@layer base {
+  :root {
+    --background: 0 0% 100%;
+    --foreground: 222.2 84% 4.9%;
+    --card: 0 0% 100%;
+    --card-foreground: 222.2 84% 4.9%;
+    --popover: 0 0% 100%;
+    --popover-foreground: 222.2 84% 4.9%;
+    --primary: 238.7 83.5% 66.7%;
+    --primary-foreground: 210 40% 98%;
+    --secondary: 210 40% 96.1%;
+    --secondary-foreground: 222.2 47.4% 11.2%;
+    --muted: 210 40% 96.1%;
+    --muted-foreground: 215.4 16.3% 46.9%;
+    --accent: 210 40% 96.1%;
+    --accent-foreground: 222.2 47.4% 11.2%;
+    --destructive: 0 84.2% 60.2%;
+    --destructive-foreground: 210 40% 98%;
+    --border: 214.3 31.8% 91.4%;
+    --input: 214.3 31.8% 91.4%;
+    --ring: 238.7 83.5% 66.7%;
+    --radius: 0.5rem;
+  }
+
+  /* Dark Mode */
+  .dark {
+    --background: 222.2 84% 4.9%;
+    --foreground: 210 40% 98%;
+    --card: 222.2 84% 4.9%;
+    --card-foreground: 210 40% 98%;
+    --popover: 222.2 84% 4.9%;
+    --popover-foreground: 210 40% 98%;
+    --primary: 238.7 83.5% 66.7%;
+    --primary-foreground: 222.2 47.4% 11.2%;
+    --secondary: 217.2 32.6% 17.5%;
+    --secondary-foreground: 210 40% 98%;
+    --muted: 217.2 32.6% 17.5%;
+    --muted-foreground: 215 20.2% 65.1%;
+    --accent: 217.2 32.6% 17.5%;
+    --accent-foreground: 210 40% 98%;
+    --destructive: 0 62.8% 30.6%;
+    --destructive-foreground: 210 40% 98%;
+    --border: 217.2 32.6% 17.5%;
+    --input: 217.2 32.6% 17.5%;
+    --ring: 238.7 83.5% 66.7%;
+  }
+}
+
+/* Base styles */
+@layer base {
+  * {
+    @apply border-border;
+  }
+
+  body {
+    @apply bg-background text-foreground;
+    font-family: 'IBM Plex Sans Thai', sans-serif;
+    -webkit-font-smoothing: antialiased;
+    -moz-osx-font-smoothing: grayscale;
+  }
+}
+
+/* Custom scrollbar สำหรับ preview */
+#printable-area::-webkit-scrollbar {
+  width: 8px;
+}
+
+#printable-area::-webkit-scrollbar-track {
+  background: #f1f1f1;
+  border-radius: 10px;
+}
+
+#printable-area::-webkit-scrollbar-thumb {
+  background: #d1d5db;
+  border-radius: 10px;
+}
+
+#printable-area::-webkit-scrollbar-thumb:hover {
+  background: #9ca3af;
+}
+
+/* ซ่อน reCAPTCHA badge โดย default */
+.grecaptcha-badge:not(.show-badge) {
+  visibility: hidden !important;
+  opacity: 0 !important;
+  display: none !important;
+}
+
+/* เมื่อ badge ต้องแสดง */
+.grecaptcha-badge.show-badge {
+  visibility: visible !important;
+  opacity: 1 !important;
+  display: flex !important;
+  position: fixed !important;
+  bottom: 14px !important;
+  right: 14px !important;
+  z-index: 9999 !important;
+}
+
+/* Custom scrollbar สำหรับ tab menu ใน mobile */
+.tab-menu-scroll::-webkit-scrollbar {
+  height: 4px;
+}
+
+.tab-menu-scroll::-webkit-scrollbar-track {
+  background: #f1f1f1;
+}
+
+.tab-menu-scroll::-webkit-scrollbar-thumb {
+  background: #cbd5e1;
+  border-radius: 2px;
+}
+
+.tab-menu-scroll::-webkit-scrollbar-thumb:hover {
+  background: #94a3b8;
+}
+
+/* สำหรับ Firefox */
+.tab-menu-scroll {
+  scrollbar-width: thin;
+  scrollbar-color: #cbd5e1 #f1f1f1;
+  overscroll-behavior-x: contain;
+  overscroll-behavior-y: none;
+  touch-action: pan-x;
+  -webkit-overflow-scrolling: touch;
+}
+
+/* ป้องกัน auto-zoom เมื่อ focus input ใน iOS/Android */
+@media screen and (max-width: 768px) {
+  input[type="text"],
+  input[type="email"],
+  input[type="tel"],
+  input[type="number"],
+  input[type="password"],
+  input[type="search"],
+  input[type="url"],
+  input[type="date"],
+  input[type="datetime-local"],
+  textarea,
+  select {
+    font-size: 16px !important;
+    transform-origin: left top;
+  }
+}
+
+/* ป้องกัน double-tap zoom ทั้งหน้า */
+* {
+  touch-action: manipulation;
+}
+
+/* ซ่อน scrollbar แต่ยังคง scroll ได้ */
+.scrollbar-hide {
+  -ms-overflow-style: none;
+  scrollbar-width: none;
+}
+
+.scrollbar-hide::-webkit-scrollbar {
+  display: none;
+}

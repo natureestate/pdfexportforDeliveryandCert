@@ -233,6 +233,9 @@ export const createDocumentService = <T extends DocumentDataWithLogo>(
 
     /**
      * ดึงรายการเอกสารทั้งหมด (มีการ limit)
+     * - ถ้ามี companyId จะดึงเอกสารทั้งหมดในองค์กรนั้น (ไม่กรอง userId)
+     *   เพื่อให้ member ทุกคนในองค์กรเห็นเอกสารของกันและกัน
+     * - ถ้าไม่มี companyId จะดึงเฉพาะเอกสารส่วนตัวของ user (personal documents)
      */
     const getAll = async (limitCount: number = 50, companyId?: string): Promise<(T & FirestoreDocument)[]> => {
         try {
@@ -242,12 +245,16 @@ export const createDocumentService = <T extends DocumentDataWithLogo>(
             }
             
             // สร้าง query constraints
-            const constraints: QueryConstraint[] = [
-                where("userId", "==", currentUser.uid),
-            ];
+            const constraints: QueryConstraint[] = [];
             
+            // ถ้ามี companyId ให้ query โดย companyId เท่านั้น
+            // Firestore Security Rules จะตรวจสอบสิทธิ์ว่า user เป็น member ขององค์กรหรือไม่
             if (companyId) {
                 constraints.push(where("companyId", "==", companyId));
+            } else {
+                // ถ้าไม่มี companyId ให้ query เฉพาะเอกสารส่วนตัวของ user
+                constraints.push(where("userId", "==", currentUser.uid));
+                constraints.push(where("companyId", "==", null));
             }
             
             constraints.push(where("isDeleted", "==", false));
@@ -360,6 +367,8 @@ export const createDocumentService = <T extends DocumentDataWithLogo>(
 
     /**
      * ค้นหาเอกสารตาม document number
+     * - ถ้ามี companyId จะค้นหาในเอกสารทั้งหมดขององค์กร
+     * - ถ้าไม่มี companyId จะค้นหาเฉพาะเอกสารส่วนตัวของ user
      */
     const searchByDocumentNumber = async (
         documentNumber: string,
@@ -373,12 +382,17 @@ export const createDocumentService = <T extends DocumentDataWithLogo>(
 
             const constraints: QueryConstraint[] = [
                 where(config.documentNumberField, "==", documentNumber),
-                where("userId", "==", currentUser.uid),
                 where("isDeleted", "==", false),
             ];
 
+            // ถ้ามี companyId ให้ค้นหาในเอกสารขององค์กร
+            // Firestore Security Rules จะตรวจสอบสิทธิ์ว่า user เป็น member ขององค์กรหรือไม่
             if (companyId) {
                 constraints.push(where("companyId", "==", companyId));
+            } else {
+                // ถ้าไม่มี companyId ให้ค้นหาเฉพาะเอกสารส่วนตัวของ user
+                constraints.push(where("userId", "==", currentUser.uid));
+                constraints.push(where("companyId", "==", null));
             }
 
             const q = query(collection(db, config.collection), ...constraints);
