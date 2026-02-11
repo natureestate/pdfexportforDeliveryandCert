@@ -490,6 +490,10 @@ export interface DeliveryNoteData extends DocumentVerificationFields {
     hasEndCustomerProject?: boolean;           // มีโครงการลูกค้าปลายทางหรือไม่
     endCustomerProject?: EndCustomerProject;   // ข้อมูลโครงการลูกค้าปลายทาง
     showEndCustomerInPdf?: boolean;            // แสดงข้อมูลโครงการลูกค้าปลายทางใน PDF หรือไม่
+    
+    // ตั้งค่าการแสดง QR Code ในเอกสาร
+    showVerificationQR?: boolean;              // แสดง QR ตรวจสอบต้นฉบับเอกสารหรือไม่ (default: true)
+    showSignQR?: boolean;                      // แสดง QR สแกนเพื่อเซ็นรับมอบหรือไม่ (default: false)
 }
 
 export interface WarrantyData extends DocumentVerificationFields {

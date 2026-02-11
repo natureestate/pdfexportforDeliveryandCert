@@ -77,6 +77,9 @@ const getInitialDeliveryData = (): DeliveryNoteData => ({
     // Signature fields (QR Scan to Sign/Approve)
     signToken: generateSignToken(), // สร้าง Token สำหรับเซ็นชื่อรับมอบ
     signatureStatus: 'pending',     // สถานะการเซ็น: pending, signed, rejected
+    // ตั้งค่าการแสดง QR Code ในเอกสาร
+    showVerificationQR: true,       // เปิดแสดง QR ตรวจสอบต้นฉบับ (default)
+    showSignQR: false,              // ปิดแสดง QR สแกนเพื่อเซ็นรับมอบ (default)
 });
 
 const initialDeliveryData = getInitialDeliveryData();

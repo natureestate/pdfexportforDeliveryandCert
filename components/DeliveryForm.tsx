@@ -436,6 +436,52 @@ const DeliveryForm: React.FC<DeliveryFormProps> = ({
                     <input type="text" id="receiverName" value={data.receiverName} onChange={(e) => handleDataChange('receiverName', e.target.value)} maxLength={INPUT_LIMITS.signerName} placeholder="เว้นว่างไว้เพื่อลงนาม" className="mt-1 block w-full rounded-md border-gray-300 shadow-sm focus:border-indigo-500 focus:ring-indigo-500 text-xs sm:text-sm bg-gray-50 dark:bg-slate-700 dark:text-gray-100 dark:border-slate-600" />
                 </div>
             </div>
+
+            {/* ส่วนที่ 5: ตั้งค่า QR Code ในเอกสาร */}
+            <FormDivider title="ส่วนที่ 5: ตั้งค่า QR Code" />
+            <div className="space-y-3">
+                <p className="text-xs text-slate-500 dark:text-slate-400">
+                    เลือก QR Code ที่ต้องการแสดงในเอกสาร (Preview / PDF / PNG)
+                </p>
+                
+                {/* Checkbox: QR ตรวจสอบต้นฉบับเอกสาร */}
+                <div className="flex items-start gap-3 p-3 rounded-lg border border-slate-200 dark:border-slate-600 bg-slate-50 dark:bg-slate-700/50">
+                    <input
+                        type="checkbox"
+                        id="showVerificationQR"
+                        checked={data.showVerificationQR !== false}
+                        onChange={(e) => handleDataChange('showVerificationQR', e.target.checked)}
+                        className="h-4 w-4 mt-0.5 text-indigo-600 focus:ring-indigo-500 border-gray-300 rounded"
+                    />
+                    <label htmlFor="showVerificationQR" className="flex-1 cursor-pointer">
+                        <span className="block text-sm font-medium text-slate-700 dark:text-slate-200">
+                            QR ตรวจสอบต้นฉบับเอกสาร
+                        </span>
+                        <span className="block text-xs text-slate-500 dark:text-slate-400 mt-0.5">
+                            แสดง QR Code สำหรับสแกนเพื่อตรวจสอบความถูกต้องของเอกสาร
+                        </span>
+                    </label>
+                </div>
+
+                {/* Checkbox: QR สแกนเพื่อเซ็นรับมอบ */}
+                <div className="flex items-start gap-3 p-3 rounded-lg border border-slate-200 dark:border-slate-600 bg-slate-50 dark:bg-slate-700/50">
+                    <input
+                        type="checkbox"
+                        id="showSignQR"
+                        checked={data.showSignQR || false}
+                        onChange={(e) => handleDataChange('showSignQR', e.target.checked)}
+                        className="h-4 w-4 mt-0.5 text-emerald-600 focus:ring-emerald-500 border-gray-300 rounded"
+                    />
+                    <label htmlFor="showSignQR" className="flex-1 cursor-pointer">
+                        <span className="block text-sm font-medium text-slate-700 dark:text-slate-200">
+                            QR สแกนเพื่อเซ็นรับมอบ
+                        </span>
+                        <span className="block text-xs text-slate-500 dark:text-slate-400 mt-0.5">
+                            แสดง QR Code สำหรับให้ผู้รับสแกนเพื่อลงนามยืนยันรับมอบงาน
+                        </span>
+                    </label>
+                </div>
+            </div>
         </div>
     );
 };
